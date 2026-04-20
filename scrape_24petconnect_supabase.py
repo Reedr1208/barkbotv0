@@ -53,8 +53,8 @@ def now_iso() -> str:
 def get_settings() -> Settings:
     try:
         return Settings(
-            supabase_url=os.environ["SUPABASE_URL"],
-            supabase_service_role_key=os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+            supabase_url=os.environ["storage_SUPABASE_URL"],
+            supabase_service_role_key=os.environ["storage_SUPABASE_SERVICE_ROLE_KEY"],
             supabase_bucket=os.getenv("SUPABASE_BUCKET", "animal-images"),
             scrape_sleep_seconds=float(os.getenv("SCRAPE_SLEEP_SECONDS", "1")),
         )
