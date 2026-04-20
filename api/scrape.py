@@ -46,7 +46,7 @@ class handler(BaseHTTPRequestHandler):
             logging.error(f"Missing required env vars: {missing}")
         else:
             logging.info("All required SUPABASE env vars are present.")
-            logging.info('URLS: ' + os.getenv("URLS"))
+            logging.info('SCRAPE_URLS_JSON: ' + os.getenv("SCRAPE_URLS_JSON"))
             
         try:
             cmd = [sys.executable, str(script_path), "--triggered-by", "vercel_api"]
