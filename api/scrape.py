@@ -35,8 +35,8 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"ok": False, "error": "Unauthorized"}).encode('utf-8'))
             return
 
-        script_path = Path(__file__).resolve().parent.parent / "scrape_24petconnect_supabase.py"
-        logging.info(f"Target script path: {script_path}")
+        script1_path = Path(__file__).resolve().parent.parent / "01_scrape_all_dogs.py"
+        script2_path = Path(__file__).resolve().parent.parent / "02_scrape_detailed_dogs.py"
         logging.info(f"Python executable: {sys.executable}")
         
         # Check required env vars to log if they are missing
@@ -46,20 +46,17 @@ class handler(BaseHTTPRequestHandler):
             logging.error(f"Missing required env vars: {missing}")
         else:
             logging.info("All required SUPABASE env vars are present.")
-            logging.info('SCRAPE_URLS_JSON: ' + os.getenv("SCRAPE_URLS_JSON"))
             
-        try:
-            cmd = [sys.executable, str(script_path), "--triggered-by", "vercel_api"]
+        def run_script(script_path, extra_args=None, timeout=140):
+            cmd = [sys.executable, str(script_path)] + (extra_args or [])
             logging.info(f"Running command: {' '.join(cmd)}")
             proc = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=55,
+                timeout=timeout,
                 env=os.environ.copy(),
             )
-            statusCode = 200 if proc.returncode == 0 else 500
-            
             if proc.returncode != 0:
                 logging.error(f"Subprocess failed with returncode {proc.returncode}")
             else:
@@ -67,18 +64,34 @@ class handler(BaseHTTPRequestHandler):
             
             if proc.stdout:
                 logging.info("--- STDOUT ---")
-                for line in proc.stdout.splitlines()[-50:]:  # Print last 50 lines to keep logs clean
+                for line in proc.stdout.splitlines()[-50:]:  # Print last 50 lines
                     logging.info(line)
             if proc.stderr:
                 logging.error("--- STDERR ---")
                 for line in proc.stderr.splitlines()[-50:]:
                     logging.error(line)
-                    
+            return proc
+
+        try:
+            logging.info("--- Running 01_scrape_all_dogs.py ---")
+            proc1 = run_script(script1_path, timeout=120)
+            
+            proc2 = None
+            if proc1.returncode == 0:
+                logging.info("--- Running 02_scrape_detailed_dogs.py ---")
+                proc2 = run_script(script2_path, ["--triggered-by", "vercel_api"], timeout=160)
+            else:
+                logging.error("Skipping 02_scrape_detailed_dogs.py because 01_scrape_all_dogs.py failed.")
+            
+            final_code = proc2.returncode if proc2 else proc1.returncode
+            statusCode = 200 if final_code == 0 else 500
             body = {
-                "ok": proc.returncode == 0,
-                "returncode": proc.returncode,
-                "stdout": proc.stdout[-12000:] if proc.stdout else "",
-                "stderr": proc.stderr[-12000:] if proc.stderr else "",
+                "ok": final_code == 0,
+                "returncode": final_code,
+                "stdout_1": proc1.stdout[-6000:] if proc1.stdout else "",
+                "stderr_1": proc1.stderr[-6000:] if proc1.stderr else "",
+                "stdout_2": (proc2.stdout[-6000:] if proc2.stdout else "") if proc2 else "",
+                "stderr_2": (proc2.stderr[-6000:] if proc2.stderr else "") if proc2 else "",
             }
         except subprocess.TimeoutExpired as e:
             statusCode = 504

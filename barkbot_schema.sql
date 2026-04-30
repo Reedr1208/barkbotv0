@@ -62,3 +62,15 @@ create table if not exists animal_change_events (
 
 create index if not exists idx_animal_change_events_animal_id on animal_change_events(animal_id, created_at desc);
 create index if not exists idx_animal_change_events_created_at on animal_change_events(created_at desc);
+
+create table if not exists pima_all_dogs (
+  animal_id text primary key,
+  name text,
+  gender text,
+  age text,
+  weight text,
+  location text,
+  view_type text,
+  image_url text,
+  scraped_at timestamptz default now()
+);

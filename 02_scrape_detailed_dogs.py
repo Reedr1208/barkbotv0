@@ -265,30 +265,52 @@ class BarkbotStore:
             }).eq("animal_id", record["animal_id"]).execute()
 
         return change_type
+    
+    def get_least_recently_updated_urls(self, limit: int = 10) -> List[str]:
+        # Get all currently adoptable dogs
+        adoptable_resp = self.client.table("pima_all_dogs").select("animal_id").execute()
+        adoptable_ids = [row["animal_id"] for row in adoptable_resp.data]
+
+        if not adoptable_ids:
+            return []
+
+        # Get the update times for dogs already in the animals table
+        animals_resp = self.client.table("animals").select("animal_id, updated_at").execute()
+        updated_times = {row["animal_id"]: row["updated_at"] for row in animals_resp.data if row["updated_at"]}
+
+        # Sort adoptable_ids by updated_at (oldest first). 
+        # Dogs not in updated_times get an empty string, putting them first (which is good, new dogs scraped first).
+        def get_time(aid: str):
+            return updated_times.get(aid, "")
+
+        adoptable_ids.sort(key=get_time)
+        
+        top_ids = adoptable_ids[:limit]
+        
+        urls = [f"https://24petconnect.com/PimaAdoptablePets/Details/PIMA/{aid}" for aid in top_ids]
+        return urls
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", action="append", dest="urls", help="One or more detail URLs to scrape")
     parser.add_argument("--triggered-by", default="manual")
     return parser.parse_args()
-
-
-def get_urls(args: argparse.Namespace) -> List[str]:
-    if args.urls:
-        return args.urls
-    raw = os.getenv("SCRAPE_URLS_JSON", "[]")
-    urls = json.loads(raw)
-    if not isinstance(urls, list) or not urls:
-        raise RuntimeError("Provide URLs with --url or SCRAPE_URLS_JSON")
-    return [str(u) for u in urls]
 
 
 def main() -> int:
     args = parse_args()
     settings = get_settings()
-    urls = get_urls(args)
     store = BarkbotStore(settings)
+    
+    urls = store.get_least_recently_updated_urls(limit=10)
+    
+    if not urls:
+        print("No adoptable dogs found to scrape.")
+        return 0
+    
+    print(f"Scraping the following {len(urls)} URLs:")
+    for u in urls:
+        print(f" - {u}")
 
     processed = inserted = updated = unchanged = errors = 0
     run_id = store.begin_run(args.triggered_by, len(urls))
