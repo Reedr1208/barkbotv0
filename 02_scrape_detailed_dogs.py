@@ -37,6 +37,7 @@ TRACKED_FIELDS = [
     "image_public_url",
 ]
 
+DOGS_PER_RUN = 30
 
 @dataclass
 class Settings:
@@ -266,7 +267,7 @@ class BarkbotStore:
 
         return change_type
     
-    def get_least_recently_updated_urls(self, limit: int = 10) -> List[str]:
+    def get_least_recently_updated_urls(self, limit: int = DOGS_PER_RUN) -> List[str]:
         # Get all currently adoptable dogs
         adoptable_resp = self.client.table("pima_all_dogs").select("animal_id").execute()
         adoptable_ids = [row["animal_id"] for row in adoptable_resp.data]
@@ -302,7 +303,7 @@ def main() -> int:
     settings = get_settings()
     store = BarkbotStore(settings)
     
-    urls = store.get_least_recently_updated_urls(limit=10)
+    urls = store.get_least_recently_updated_urls(limit=DOGS_PER_RUN)
     
     if not urls:
         print("No adoptable dogs found to scrape.")
