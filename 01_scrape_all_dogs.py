@@ -155,6 +155,10 @@ def save_to_supabase(dogs: list[dict]):
         print("No dogs to save.")
         return
 
+    # Safety check: ensure we have a meaningful amount of data before wiping the table
+    if len(dogs) < 30:
+        raise RuntimeError(f"Safety check failed: Only {len(dogs)} dogs scraped. Aborting to prevent accidental data loss.")
+
     client = get_supabase_client()
 
     print("Clearing existing pima_all_dogs table data...")

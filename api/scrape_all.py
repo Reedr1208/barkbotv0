@@ -26,7 +26,7 @@ class handler(BaseHTTPRequestHandler):
         return is_valid
 
     def do_GET(self):
-        logging.info("Starting up scrape handler...")
+        logging.info("Starting up scrape_all handler...")
         
         if not self._authorized():
             self.send_response(401)
@@ -35,7 +35,7 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"ok": False, "error": "Unauthorized"}).encode('utf-8'))
             return
 
-        script_path = Path(__file__).resolve().parent.parent / "02_scrape_detailed_dogs.py"
+        script_path = Path(__file__).resolve().parent.parent / "01_scrape_all_dogs.py"
         logging.info(f"Target script path: {script_path}")
         logging.info(f"Python executable: {sys.executable}")
         
@@ -48,7 +48,7 @@ class handler(BaseHTTPRequestHandler):
             logging.info("All required SUPABASE env vars are present.")
             
         try:
-            cmd = [sys.executable, str(script_path), "--triggered-by", "vercel_api"]
+            cmd = [sys.executable, str(script_path)]
             logging.info(f"Running command: {' '.join(cmd)}")
             proc = subprocess.run(
                 cmd,
