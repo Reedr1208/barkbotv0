@@ -21,8 +21,8 @@ HEADERS = {
     )
 }
 
-DEBUG_HTML_DIR = Path("html_debug")
-DEBUG_HTML_DIR.mkdir(exist_ok=True)
+# DEBUG_HTML_DIR = Path("html_debug")
+# DEBUG_HTML_DIR.mkdir(exist_ok=True)
 
 
 def now_iso() -> str:
@@ -109,8 +109,8 @@ def scrape_all_dogs() -> list[dict]:
             break
         print(f"Fetching dogs starting at index {index}...")
         html = fetch_page(index)
-        filepath = DEBUG_HTML_DIR / f"index_{index}.html"
-        filepath.write_text(html, encoding="utf-8")
+        # filepath = DEBUG_HTML_DIR / f"index_{index}.html"
+        # filepath.write_text(html, encoding="utf-8")
 
         soup = BeautifulSoup(html, "html.parser")
         page_text = soup.get_text("\n", strip=True)
