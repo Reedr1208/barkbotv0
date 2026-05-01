@@ -9,9 +9,19 @@ from http.server import BaseHTTPRequestHandler
 # Configure basic logging so Vercel can capture it nicely
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-MANUAL_RUN_SECRET = os.getenv("MANUAL_RUN_SECRET")
+MANUAL_RUN_SECRET = "test_secret_123"
 CRON_SECRET = os.getenv("CRON_SECRET")
 
+
+# Force load .env.local if present to bypass Vercel CLI bugs
+env_local = Path(__file__).resolve().parent.parent / ".env.local"
+if env_local.exists():
+    with open(env_local) as f:
+        for line in f:
+            line = line.strip()
+            if "=" in line and not line.startswith("#"):
+                k, v = line.split("=", 1)
+                os.environ[k] = v
 
 class handler(BaseHTTPRequestHandler):
     def _authorized(self):
@@ -20,7 +30,12 @@ class handler(BaseHTTPRequestHandler):
             logging.error("Authorization header is missing or malformed.")
             return False
         token = auth.split(" ", 1)[1]
-        is_valid = token in {MANUAL_RUN_SECRET, CRON_SECRET}
+        
+        # Read dynamically
+        manual_secret = os.getenv("MANUAL_RUN_SECRET")
+        cron_secret = os.getenv("CRON_SECRET")
+        
+        is_valid = token in {manual_secret, cron_secret}
         if not is_valid:
             logging.error("Token is invalid.")
         return is_valid
