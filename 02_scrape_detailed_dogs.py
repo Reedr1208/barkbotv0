@@ -332,6 +332,19 @@ def main() -> int:
                 else:
                     unchanged += 1
                 print(json.dumps({"animal_id": record["animal_id"], "result": result}, ensure_ascii=False))
+            except requests.exceptions.HTTPError as exc:
+                errors += 1
+                if exc.response.status_code in (404, 500):
+                    # If the server throws a 500 or 404 for this detail page, 
+                    # the animal was likely adopted/removed. We delete it from pima_all_dogs 
+                    # so we skip it in future update processes.
+                    aid = get_animal_id_from_url(url)
+                    try:
+                        store.client.table("pima_all_dogs").delete().eq("animal_id", aid).execute()
+                        print(json.dumps({"animal_id": aid, "result": "removed_from_pima_all_dogs_due_to_http_error", "status_code": exc.response.status_code}, ensure_ascii=False))
+                    except Exception as del_exc:
+                        print(json.dumps({"url": url, "error": f"Failed to delete after HTTP {exc.response.status_code}: {str(del_exc)}"}, ensure_ascii=False), file=sys.stderr)
+                print(json.dumps({"url": url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
             except Exception as exc:
                 errors += 1
                 print(json.dumps({"url": url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
@@ -339,7 +352,8 @@ def main() -> int:
 
         final_status = "success" if errors == 0 else "partial_success"
         store.finish_run(run_id, final_status, processed, inserted, updated, unchanged, errors)
-        return 0 if errors == 0 else 1
+        # Always return 0 so the Vercel cron job succeeds even if some individual dogs failed.
+        return 0
     except Exception as exc:
         store.finish_run(run_id, "failed", processed, inserted, updated, unchanged, errors + 1, notes=str(exc))
         raise
