@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barkbot - Meet a Dog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f3f4f6;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #111827;
+        --card-bg: rgba(31, 41, 55, 0.85);
+        --text-main: #f9fafb;
+        --text-muted: #9ca3af;
+        --accent: #6366f1;
+        --accent-hover: #818cf8;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      transition: background-color 0.3s;
+    }
+
+    .profile-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      max-width: 500px;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .image-container {
+      width: 100%;
+      height: 400px;
+      overflow: hidden;
+      position: relative;
+      background-color: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      .image-container {
+        background-color: #374151;
+      }
+    }
+
+    .profile-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: opacity 0.3s;
+    }
+
+    .content {
+      padding: 32px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .name {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .id-tag {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .location {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-box {
+      background: rgba(0, 0, 0, 0.04);
+      padding: 16px;
+      border-radius: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .stat-box {
+        background: rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .bio {
+      line-height: 1.6;
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 64px;
+      height: 64px;
+      border-radius: 32px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+      z-index: 100;
+    }
+
+    .fab:hover {
+      background: var(--accent-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 15px 25px rgba(79, 70, 229, 0.4);
+    }
+    
+    .fab:active {
+      transform: translateY(0);
+    }
+
+    .fab svg {
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
+    }
+
+    /* Loader */
+    .loader {
+      display: none;
+      width: 48px;
+      height: 48px;
+      border: 5px solid rgba(0, 0, 0, 0.1);
+      border-bottom-color: var(--accent);
+      border-radius: 50%;
+      display: inline-block;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
+      position: absolute;
+      top: calc(50% - 24px);
+      left: calc(50% - 24px);
+    }
+    @media (prefers-color-scheme: dark) {
+      .loader {
+        border-color: rgba(255, 255, 255, 0.1);
+        border-bottom-color: var(--accent);
+      }
+    }
+
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading .content-inner, .loading .profile-image {
+      opacity: 0.3;
+    }
+    .loading .loader {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="profile-card" id="card">
+    <span class="loader" id="loader" style="display:none;"></span>
+    <div class="image-container">
+      <img id="dogImage" class="profile-image" src="" alt="Dog Photo">
+    </div>
+    <div class="content">
+      <div class="content-inner">
+        <div class="header">
+          <h1 class="name" id="dogName">Loading...</h1>
+          <span class="id-tag" id="dogId"></span>
+        </div>
+        <div class="location" id="dogLocation">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span id="locText"></span>
+        </div>
+        
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-label">Age</div>
+            <div class="stat-value" id="dogAge">-</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Weight</div>
+            <div class="stat-value" id="dogWeight">-</div>
+          </div>
+        </div>
+
+        <p class="bio" id="dogBio"></p>
+        <p class="bio" id="dogDesc"></p>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab" id="nextBtn" aria-label="Next Dog" title="Next Random Dog">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+    </svg>
+  </button>
+
+  <script>
+    const nextBtn = document.getElementById('nextBtn');
+    const card = document.getElementById('card');
+    const loader = document.getElementById('loader');
+
+    async function fetchRandomDog() {
+      // Show loading state
+      card.classList.add('loading');
+      loader.style.display = 'block';
+
+      try {
+        const response = await fetch('/api/random_dog');
+        if (!response.ok) {
+          throw new Error('Failed to fetch a dog.');
+        }
+        
+        const dog = await response.json();
+        
+        document.getElementById('dogName').textContent = dog.name || 'Unknown Name';
+        document.getElementById('dogId').textContent = dog.animal_id || '';
+        document.getElementById('locText').textContent = dog.located_at || 'Unknown Location';
+        document.getElementById('dogAge').textContent = dog.age || 'Unknown';
+        document.getElementById('dogWeight').textContent = dog.weight || 'Unknown';
+        
+        const bioStr = dog.bio ? dog.bio : '';
+        document.getElementById('dogBio').textContent = bioStr;
+        
+        const descStr = dog.description ? dog.description : '';
+        document.getElementById('dogDesc').textContent = descStr;
+
+        const imgEl = document.getElementById('dogImage');
+        if (dog.image_file && dog.image_base_url) {
+          imgEl.src = dog.image_base_url + dog.image_file;
+        } else if (dog.image_public_url) {
+          imgEl.src = dog.image_public_url;
+        } else if (dog.image_url) {
+          imgEl.src = dog.image_url;
+        } else {
+          imgEl.src = 'https://via.placeholder.com/500x400?text=No+Photo';
+        }
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('dogName').textContent = 'Oops!';
+        document.getElementById('dogBio').textContent = 'Could not load a random dog. Please try again.';
+      } finally {
+        // Hide loading state
+        card.classList.remove('loading');
+        loader.style.display = 'none';
+      }
+    }
+
+    nextBtn.addEventListener('click', fetchRandomDog);
+
+    // Initial fetch
+    fetchRandomDog();
+  </script>
+</body>
+</html>
