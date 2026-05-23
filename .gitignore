@@ -10,3 +10,4 @@ __pycache__/
 *.pyc
 *.log
 html_debug/
+WorkingFiles/
