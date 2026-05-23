@@ -513,6 +513,74 @@
     .modal-start-btn:active {
       transform: translateY(0);
     }
+
+    /* Preference Button Selectors */
+    .pref-selector-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pref-btn {
+      padding: 10px 16px;
+      background: rgba(0, 0, 0, 0.03);
+      border: 1.5px solid rgba(128, 128, 128, 0.2);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    @media (prefers-color-scheme: dark) {
+      .pref-btn {
+        background: rgba(255, 255, 255, 0.03);
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+    }
+    .pref-btn:hover {
+      background: rgba(128, 128, 128, 0.08);
+      transform: translateY(-1px);
+    }
+    @media (prefers-color-scheme: dark) {
+      .pref-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+    .pref-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+    }
+    .pref-btn.active:hover {
+      background: var(--accent-hover);
+    }
+    
+    /* Preference Match Indicators */
+    .pref-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .pref-badge-fallback {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 8px;
+    }
   </style>
 </head>
 <body>
@@ -525,7 +593,10 @@
       </div>
       <div class="profile-content">
         <div class="header">
-          <h1 class="name" id="dogName">Loading...</h1>
+          <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+            <h1 class="name" id="dogName">Loading...</h1>
+            <span id="prefMatchBadgeContainer"></span>
+          </div>
           <span class="id-tag" id="dogId"></span>
         </div>
         
@@ -557,6 +628,10 @@
           <button class="about-btn" id="aboutBtn" title="About ChattyHound">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             <span>About</span>
+          </button>
+          <button class="about-btn" id="prefBtn" title="Preferences">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span id="prefBtnText">Preferences</span>
           </button>
           <button class="shuffle-btn" id="nextBtn">Shuffle Dog</button>
         </div>
@@ -616,9 +691,87 @@
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="modal-start-btn" id="modalStartBtn">Start Sniffing 🐶</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Preferences Modal -->
+  <div class="modal-overlay" id="prefModal" aria-hidden="true" role="dialog" aria-labelledby="prefTitle">
+    <div class="modal-card" style="max-width: 520px;">
+      <button class="modal-close-btn" id="prefCloseBtn" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      
+      <!-- LOGGED OUT STATE (Email Form) -->
+      <div id="prefLoggedOutState">
+        <div class="modal-header">
+          <div class="modal-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">🔐 Frictionless Profile</div>
+          <h2 class="modal-title" id="prefTitle">Preferences Profile</h2>
+          <p class="modal-subtitle">Save your preferences and find the perfect dog. Enter your email to begin instantly!</p>
+        </div>
+        <div class="modal-content" style="margin-bottom: 24px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label for="loginEmailInput" style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">EMAIL ADDRESS</label>
+            <input type="email" id="loginEmailInput" class="chat-input" placeholder="e.g. barker@gmail.com" style="width: 100%; border-radius: 12px; padding: 12px 16px; border: 1.5px solid rgba(128,128,128,0.3);" />
+            <div id="loginErrorMsg" style="color: #ef4444; font-size: 0.8rem; font-weight: 600; display: none; margin-top: 4px;"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-start-btn" id="loginSubmitBtn" style="background: #10b981; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">Continue</button>
+        </div>
+      </div>
+
+      <!-- LOGGED IN STATE (Preferences Form) -->
+      <div id="prefLoggedInState" style="display: none;">
+        <div class="modal-header">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div class="modal-badge" style="margin-bottom: 0;">💖 Preferences Active</div>
+            <button id="signOutBtn" style="background: transparent; border: none; color: #ef4444; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: underline;">Sign Out</button>
+          </div>
+          <h2 class="modal-title" style="font-size: 1.6rem; text-align: left;">Welcome, <span id="loggedInEmailText" style="color: var(--accent); word-break: break-all;">user</span></h2>
+          <p class="modal-subtitle" style="text-align: left;">Tailor your dog matches below. We'll prioritize dogs matching your profile!</p>
+        </div>
+        <div class="modal-content" style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 24px; text-align: left;">
+          
+          <!-- Gender -->
+          <div>
+            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 8px;">Dog Gender</span>
+            <div class="pref-selector-group" id="prefGenderGroup">
+              <button class="pref-btn" data-value="any">Any Gender 🐾</button>
+              <button class="pref-btn" data-value="male">Male ♂️</button>
+              <button class="pref-btn" data-value="female">Female ♀️</button>
+            </div>
+          </div>
+
+          <!-- Age Group -->
+          <div>
+            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 8px;">Age Category</span>
+            <div class="pref-selector-group" id="prefAgeGroup">
+              <button class="pref-btn" data-value="any">Any Age</button>
+              <button class="pref-btn" data-value="puppy">Puppy (&lt;1yr)</button>
+              <button class="pref-btn" data-value="young">Young (1-3yrs)</button>
+              <button class="pref-btn" data-value="adult">Adult (3-8yrs)</button>
+              <button class="pref-btn" data-value="senior">Senior (8yrs+)</button>
+            </div>
+          </div>
+
+          <!-- Size -->
+          <div>
+            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 8px;">Weight Class</span>
+            <div class="pref-selector-group" id="prefSizeGroup">
+              <button class="pref-btn" data-value="any">Any Size</button>
+              <button class="pref-btn" data-value="small">Small (&lt;25 lbs)</button>
+              <button class="pref-btn" data-value="medium">Medium (25-60 lbs)</button>
+              <button class="pref-btn" data-value="large">Large (60+ lbs)</button>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="modal-start-btn" id="savePrefBtn">Save Selections ✨</button>
+        </div>
+      </div>
+      
     </div>
   </div>
 
@@ -717,8 +870,13 @@
       profilePanel.classList.add('loading');
 
       try {
-        const viewedParam = viewedIds.length > 0 ? '?viewed=' + viewedIds.join(',') : '';
-        const response = await fetch('/api/random_dog' + viewedParam);
+        let url = '/api/random_dog?';
+        const params = [];
+        if (viewedIds.length > 0) params.push('viewed=' + viewedIds.join(','));
+        if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+        url += params.join('&');
+        
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch a dog.');
         
         const dog = await response.json();
@@ -726,6 +884,19 @@
         currentAnimalId = dog.animal_id;
         if (currentAnimalId && !viewedIds.includes(currentAnimalId)) {
           viewedIds.push(currentAnimalId);
+        }
+
+        // Handle preference match badge
+        const badgeContainer = document.getElementById('prefMatchBadgeContainer');
+        if (badgeContainer) {
+          badgeContainer.innerHTML = '';
+          if (dog.user_has_preferences) {
+            if (dog.preferences_matched) {
+              badgeContainer.innerHTML = '<span class="pref-badge">✨ Match</span>';
+            } else {
+              badgeContainer.innerHTML = '<span class="pref-badge-fallback" title="No exact matching dogs currently available. Showing all active dogs!">All Pups</span>';
+            }
+          }
         }
 
         currentDogName = dog.name || 'this dog';
@@ -906,8 +1077,259 @@
       aboutBtn.addEventListener('click', openModal);
     }
 
-    // Initial fetch
-    fetchRandomDog();
+    // Preferences Modal Elements
+    const prefModal = document.getElementById('prefModal');
+    const prefBtn = document.getElementById('prefBtn');
+    const prefBtnText = document.getElementById('prefBtnText');
+    const prefCloseBtn = document.getElementById('prefCloseBtn');
+    const prefLoggedOutState = document.getElementById('prefLoggedOutState');
+    const prefLoggedInState = document.getElementById('prefLoggedInState');
+    
+    const loginEmailInput = document.getElementById('loginEmailInput');
+    const loginErrorMsg = document.getElementById('loginErrorMsg');
+    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+    
+    const loggedInEmailText = document.getElementById('loggedInEmailText');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const savePrefBtn = document.getElementById('savePrefBtn');
+    
+    let userEmail = localStorage.getItem('chattyhound_user_email') || null;
+    let currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+
+    function updateProfileButton() {
+      if (prefBtnText) {
+        prefBtnText.textContent = userEmail ? 'Preferences' : 'Sign In';
+      }
+    }
+
+    function openPrefModal() {
+      if (!prefModal) return;
+      prefModal.classList.add('active');
+      prefModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      
+      if (userEmail) {
+        prefLoggedOutState.style.display = 'none';
+        prefLoggedInState.style.display = 'block';
+        if (loggedInEmailText) loggedInEmailText.textContent = userEmail;
+        
+        // Setup initial button states from current preferences
+        setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
+        setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
+        setupSelectorButtons('prefSizeGroup', currentPrefs.size);
+      } else {
+        prefLoggedOutState.style.display = 'block';
+        prefLoggedInState.style.display = 'none';
+        if (loginEmailInput) {
+          loginEmailInput.value = '';
+          loginEmailInput.focus();
+        }
+        if (loginErrorMsg) loginErrorMsg.style.display = 'none';
+      }
+    }
+
+    function closePrefModal() {
+      if (prefModal) {
+        prefModal.classList.remove('active');
+        prefModal.setAttribute('aria-hidden', 'true');
+      }
+      document.body.style.overflow = '';
+    }
+
+    function setupSelectorButtons(groupId, activeValue) {
+      const container = document.getElementById(groupId);
+      if (!container) return;
+      const buttons = container.querySelectorAll('.pref-btn');
+      buttons.forEach(btn => {
+        if (btn.getAttribute('data-value') === activeValue) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Handle Selector Group Clicks
+    function handleSelectorClick(e) {
+      const btn = e.target.closest('.pref-btn');
+      if (!btn) return;
+      const container = btn.parentElement;
+      container.querySelectorAll('.pref-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    const prefGenderGroup = document.getElementById('prefGenderGroup');
+    const prefAgeGroup = document.getElementById('prefAgeGroup');
+    const prefSizeGroup = document.getElementById('prefSizeGroup');
+
+    if (prefGenderGroup) prefGenderGroup.addEventListener('click', handleSelectorClick);
+    if (prefAgeGroup) prefAgeGroup.addEventListener('click', handleSelectorClick);
+    if (prefSizeGroup) prefSizeGroup.addEventListener('click', handleSelectorClick);
+
+    // frictionless sign in API
+    async function handleLogin() {
+      const email = loginEmailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        loginErrorMsg.textContent = 'Please enter a valid email address.';
+        loginErrorMsg.style.display = 'block';
+        return;
+      }
+
+      loginSubmitBtn.disabled = true;
+      loginSubmitBtn.textContent = 'Signing in...';
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        if (!response.ok) throw new Error('Authentication failed');
+        
+        const profile = await response.json();
+        
+        userEmail = profile.email;
+        currentPrefs = {
+          gender: profile.gender || 'any',
+          age_group: profile.age_group || 'any',
+          size: profile.size || 'any'
+        };
+
+        localStorage.setItem('chattyhound_user_email', userEmail);
+        updateProfileButton();
+        
+        // Transition to logged in preferences form
+        prefLoggedOutState.style.display = 'none';
+        prefLoggedInState.style.display = 'block';
+        if (loggedInEmailText) loggedInEmailText.textContent = userEmail;
+        
+        setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
+        setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
+        setupSelectorButtons('prefSizeGroup', currentPrefs.size);
+
+        // Fetch random dog with the new email
+        fetchRandomDog();
+
+      } catch (err) {
+        console.error(err);
+        loginErrorMsg.textContent = 'Trouble signing in. Please check connection and try again.';
+        loginErrorMsg.style.display = 'block';
+      } finally {
+        loginSubmitBtn.disabled = false;
+        loginSubmitBtn.textContent = 'Continue';
+      }
+    }
+
+    // Save preferences API
+    async function handleSavePreferences() {
+      const genderActive = document.getElementById('prefGenderGroup').querySelector('.pref-btn.active');
+      const ageActive = document.getElementById('prefAgeGroup').querySelector('.pref-btn.active');
+      const sizeActive = document.getElementById('prefSizeGroup').querySelector('.pref-btn.active');
+
+      const gender = genderActive ? genderActive.getAttribute('data-value') : 'any';
+      const age_group = ageActive ? ageActive.getAttribute('data-value') : 'any';
+      const size = sizeActive ? sizeActive.getAttribute('data-value') : 'any';
+
+      savePrefBtn.disabled = true;
+      savePrefBtn.textContent = 'Saving...';
+
+      try {
+        const response = await fetch('/api/save_preferences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail, gender, age_group, size })
+        });
+
+        if (!response.ok) throw new Error('Failed to save preferences');
+        
+        const data = await response.json();
+        currentPrefs = {
+          gender: data.preferences.gender,
+          age_group: data.preferences.age_group,
+          size: data.preferences.size
+        };
+
+        closePrefModal();
+        // Fetch new random dog matching these preferences
+        fetchRandomDog();
+
+      } catch (err) {
+        console.error(err);
+        alert('Trouble saving preferences. Please try again.');
+      } finally {
+        savePrefBtn.disabled = false;
+        savePrefBtn.textContent = 'Save Selections ✨';
+      }
+    }
+
+    function handleSignOut() {
+      userEmail = null;
+      currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+      localStorage.removeItem('chattyhound_user_email');
+      updateProfileButton();
+      closePrefModal();
+      // Remove pref match badge
+      const badgeContainer = document.getElementById('prefMatchBadgeContainer');
+      if (badgeContainer) badgeContainer.innerHTML = '';
+      // Refetch random dog
+      fetchRandomDog();
+    }
+
+    // Event listeners
+    if (prefBtn) prefBtn.addEventListener('click', openPrefModal);
+    if (prefCloseBtn) prefCloseBtn.addEventListener('click', closePrefModal);
+    
+    if (prefModal) {
+      prefModal.addEventListener('click', (e) => {
+        if (e.target === prefModal) closePrefModal();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && prefModal && prefModal.classList.contains('active')) {
+        closePrefModal();
+      }
+    });
+
+    if (loginSubmitBtn) loginSubmitBtn.addEventListener('click', handleLogin);
+    if (loginEmailInput) {
+      loginEmailInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleLogin();
+      });
+    }
+    if (savePrefBtn) savePrefBtn.addEventListener('click', handleSavePreferences);
+    if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
+
+    // Initial Login Setup check and auto-fetch
+    if (userEmail) {
+      (async function fetchPreferencesOnLoad() {
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail })
+          });
+          if (response.ok) {
+            const profile = await response.json();
+            currentPrefs = {
+              gender: profile.gender || 'any',
+              age_group: profile.age_group || 'any',
+              size: profile.size || 'any'
+            };
+          }
+        } catch (err) {
+          console.error('Error restoring preferences:', err);
+        }
+        updateProfileButton();
+        // Initial fetch inside the onload block to make sure userEmail exists or doesn't
+        fetchRandomDog();
+      })();
+    } else {
+      updateProfileButton();
+      // Initial fetch
+      fetchRandomDog();
+    }
 
     // Auto popup for first-time visitors
     const hasVisited = localStorage.getItem('chattyhound_visited');
