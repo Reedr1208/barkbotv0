@@ -13,7 +13,7 @@ from http.server import BaseHTTPRequestHandler
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 # For parsing structured outputs, use a model that supports it
-PROMPT_GENERATION_MODEL = "gpt-4o-mini"
+PROMPT_GENERATION_MODEL = "gpt-5.4-mini"
 
 class DogPromptPackage(BaseModel):
     system_prompt: str = Field(
