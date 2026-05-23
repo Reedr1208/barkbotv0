@@ -13,6 +13,48 @@ def get_supabase_client():
         raise RuntimeError("Missing Supabase environment variables.")
     return create_client(supabase_url, supabase_key)
 
+def parse_weight_lbs(weight_str):
+    if not weight_str:
+        return 0.0
+    digits = "".join([c for c in weight_str if c.isdigit() or c == "."])
+    try:
+        val = float(digits)
+        if "kg" in weight_str.lower():
+            val = val * 2.20462
+        return val
+    except ValueError:
+        return 0.0
+
+def classify_age_group(age_str):
+    if not age_str:
+        return "any"
+    age_str = age_str.lower()
+    if "month" in age_str or "week" in age_str or "day" in age_str:
+        return "puppy"
+    words = age_str.split()
+    years = 0
+    for i, w in enumerate(words):
+        if w.isdigit():
+            val = int(w)
+            if i + 1 < len(words) and "year" in words[i + 1]:
+                years = val
+                break
+    if years == 0:
+        return "puppy"
+    elif years <= 3:
+        return "young"
+    elif years < 8:
+        return "adult"
+    else:
+        return "senior"
+
+def matches_gender(dog_gender, pref_gender):
+    if not pref_gender or pref_gender == "any":
+        return True
+    if not dog_gender:
+        return False
+    return pref_gender.lower() in dog_gender.lower()
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
@@ -20,15 +62,16 @@ class handler(BaseHTTPRequestHandler):
             query_params = parse_qs(parsed_url.query)
             viewed_str = query_params.get("viewed", [""])[0]
             viewed_ids = set(filter(None, viewed_str.split(",")))
+            email = query_params.get("email", [""])[0].strip().lower()
 
             client = get_supabase_client()
             
-            # Fetch all dog IDs and names from current pima_all_dogs
-            pima_res = client.table("pima_all_dogs").select("animal_id, name").execute()
+            # Fetch all dog IDs, names, and filterable fields from pima_all_dogs
+            pima_res = client.table("pima_all_dogs").select("animal_id, name, gender, age, weight").execute()
             if not pima_res.data:
                 self._send_response(404, {"error": "No dogs found in pima_all_dogs."})
                 return
-            pima_dogs = {row["animal_id"]: row["name"] for row in pima_res.data}
+            pima_dogs = {row["animal_id"]: row for row in pima_res.data}
             
             # Fetch from system_prompts
             prompts_res = client.table("system_prompts").select("animal_id, updated_at, important_facts").execute()
@@ -39,7 +82,59 @@ class handler(BaseHTTPRequestHandler):
             if not valid_ids:
                 self._send_response(404, {"error": "No dogs with generated prompts found."})
                 return
+
+            # Fetch user preferences if logged in
+            preferences = None
+            if email:
+                pref_res = client.table("user_preferences").select("*").eq("email", email).limit(1).execute()
+                if pref_res.data:
+                    preferences = pref_res.data[0]
+
+            # Apply preferences filtering if preferences are configured
+            filtered_ids = []
+            preferences_matched = False
+            
+            if preferences:
+                pref_gender = preferences.get("gender", "any")
+                pref_age = preferences.get("age_group", "any")
+                pref_size = preferences.get("size", "any")
                 
+                # Check if they have set any actual preference filters
+                has_active_prefs = (pref_gender != "any" or pref_age != "any" or pref_size != "any")
+                
+                if has_active_prefs:
+                    for aid in valid_ids:
+                        dog = pima_dogs[aid]
+                        
+                        # 1. Gender Filter
+                        if not matches_gender(dog.get("gender"), pref_gender):
+                            continue
+                            
+                        # 2. Age Filter
+                        if pref_age != "any":
+                            dog_age_group = classify_age_group(dog.get("age"))
+                            if dog_age_group != pref_age:
+                                continue
+                                
+                        # 3. Size Filter
+                        if pref_size != "any":
+                            dog_weight = parse_weight_lbs(dog.get("weight"))
+                            is_match = False
+                            if pref_size == "small":
+                                is_match = dog_weight > 0 and dog_weight < 25
+                            elif pref_size == "medium":
+                                is_match = dog_weight >= 25 and dog_weight < 60
+                            elif pref_size == "large":
+                                is_match = dog_weight >= 60
+                            if not is_match:
+                                continue
+                                
+                        filtered_ids.append(aid)
+                    
+                    if filtered_ids:
+                        valid_ids = filtered_ids
+                        preferences_matched = True
+
             # Categorize into fresh and stale
             three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
             fresh_ids = []
@@ -80,10 +175,11 @@ class handler(BaseHTTPRequestHandler):
                 
             profile = profile_res.data[0]
             
-            # Add the name from pima_all_dogs
-            profile["name"] = pima_dogs[random_id]
-            # Add important_facts from system_prompts
+            # Add the name and facts
+            profile["name"] = pima_dogs[random_id].get("name") or "Unknown"
             profile["important_facts"] = prompts_data[random_id].get("important_facts", [])
+            profile["preferences_matched"] = preferences_matched
+            profile["user_has_preferences"] = (preferences is not None)
             
             # Clean up internal fields before sending to frontend
             internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id", "data_updated"]

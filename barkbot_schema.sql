@@ -74,3 +74,12 @@ create table if not exists pima_all_dogs (
   image_url text,
   scraped_at timestamptz default now()
 );
+
+create table if not exists user_preferences (
+  email text primary key,
+  gender text default 'any',
+  age_group text default 'any',
+  size text default 'any',
+  updated_at timestamptz not null default now()
+);
+
