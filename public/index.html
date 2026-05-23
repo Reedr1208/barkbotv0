@@ -281,6 +281,238 @@
     @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .loading .profile-content { opacity: 0.3; pointer-events: none; }
     .loading .loader { display: block; }
+
+    /* About Button styling */
+    .about-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: transparent;
+      color: var(--text-main);
+      border: 1.5px solid rgba(128, 128, 128, 0.3);
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .about-btn:hover {
+      background: rgba(128, 128, 128, 0.08);
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+    @media (prefers-color-scheme: dark) {
+      .about-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    /* Modal Overlay Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    /* Modal Card Styles */
+    .modal-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      position: relative;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 32px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .modal-card {
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+    }
+    .modal-overlay.active .modal-card {
+      transform: scale(1) translateY(0);
+    }
+    
+    /* Modal Close Button */
+    .modal-close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: rgba(0, 0, 0, 0.05);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+    @media (prefers-color-scheme: dark) {
+      .modal-close-btn {
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+    .modal-close-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      transform: rotate(90deg);
+    }
+    @media (prefers-color-scheme: dark) {
+      .modal-close-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+    
+    .modal-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .modal-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background: rgba(79, 70, 229, 0.1);
+      color: var(--accent);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    
+    .modal-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    
+    .modal-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (min-width: 550px) {
+      .pillar-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    .pillar-card {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.03);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      gap: 14px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    @media (prefers-color-scheme: dark) {
+      .pillar-card {
+        background: rgba(255, 255, 255, 0.02);
+        border-color: rgba(255, 255, 255, 0.04);
+      }
+    }
+    .pillar-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03);
+      background: rgba(0, 0, 0, 0.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      .pillar-card:hover {
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      }
+    }
+    
+    .pillar-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    
+    .pillar-info h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .pillar-info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    
+    .modal-start-btn {
+      padding: 14px 36px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+    }
+    .modal-start-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(79, 70, 229, 0.35);
+    }
+    .modal-start-btn:active {
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -321,7 +553,13 @@
     <div class="panel chat-panel">
       <div class="chat-header">
         <span>Chat with <span id="chatTitleName">...</span></span>
-        <button class="shuffle-btn" id="nextBtn">Shuffle Dog</button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="about-btn" id="aboutBtn" title="About ChattyHound">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>About</span>
+          </button>
+          <button class="shuffle-btn" id="nextBtn">Shuffle Dog</button>
+        </div>
       </div>
       <div class="chat-history" id="chatHistory">
         <!-- Messages go here -->
@@ -331,6 +569,55 @@
         <button class="send-btn" id="sendBtn" disabled>
           <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal-overlay" id="aboutModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <div class="modal-header">
+        <div class="modal-badge">🐾 Inside ChattyHound</div>
+        <h2 class="modal-title" id="modalTitle">About ChattyHound</h2>
+        <p class="modal-subtitle">Meet and chat with real adoptable dogs looking for a forever home.</p>
+      </div>
+      <div class="modal-content">
+        <div class="pillar-grid">
+          <div class="pillar-card">
+            <div class="pillar-icon" style="background: rgba(79, 70, 229, 0.1); color: var(--accent);">💬</div>
+            <div class="pillar-info">
+              <h4>Text with Real Dogs</h4>
+              <p>Every dog has their own playful, goofy, lovable texting style. Ask them about their favorite toys, routines, or ideal weekends!</p>
+            </div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">📊</div>
+            <div class="pillar-info">
+              <h4>100% Real Shelter Info</h4>
+              <p>Dog responses and facts are fully grounded in actual intake, behavior, and medical records from the animal shelter.</p>
+            </div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">🏡</div>
+            <div class="pillar-info">
+              <h4>Explore True Fit</h4>
+              <p>Go way beyond cute pictures! Learn about a dog's compatibility with cats, kids, or other dogs directly from them.</p>
+            </div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">❤️</div>
+            <div class="pillar-info">
+              <h4>Save a Life</h4>
+              <p>All dogs are real adoptable pets at <strong>Pima Animal Care Center (PACC)</strong>. If you build a connection, click their PACC link to adopt or foster!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-start-btn" id="modalStartBtn">Start Sniffing 🐶</button>
       </div>
     </div>
   </div>
@@ -572,8 +859,61 @@
       if (e.key === 'Enter') sendMessage();
     });
 
+    // About Modal Controllers
+    const aboutModal = document.getElementById('aboutModal');
+    const aboutBtn = document.getElementById('aboutBtn');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const modalStartBtn = document.getElementById('modalStartBtn');
+
+    function openModal() {
+      if (aboutModal) {
+        aboutModal.classList.add('active');
+        aboutModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+      if (modalStartBtn) {
+        modalStartBtn.focus();
+      }
+    }
+
+    function closeModal() {
+      if (aboutModal) {
+        aboutModal.classList.remove('active');
+        aboutModal.setAttribute('aria-hidden', 'true');
+      }
+      document.body.style.overflow = '';
+      localStorage.setItem('chattyhound_visited', 'true');
+    }
+
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+    if (modalStartBtn) modalStartBtn.addEventListener('click', closeModal);
+    
+    if (aboutModal) {
+      aboutModal.addEventListener('click', (e) => {
+        if (e.target === aboutModal) {
+          closeModal();
+        }
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && aboutModal && aboutModal.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    if (aboutBtn) {
+      aboutBtn.addEventListener('click', openModal);
+    }
+
     // Initial fetch
     fetchRandomDog();
+
+    // Auto popup for first-time visitors
+    const hasVisited = localStorage.getItem('chattyhound_visited');
+    if (!hasVisited) {
+      setTimeout(openModal, 800);
+    }
   </script>
 </body>
 </html>
