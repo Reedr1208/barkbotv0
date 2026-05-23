@@ -1,6 +1,7 @@
 import json
 import os
 import random
+import re
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timezone, timedelta
@@ -16,9 +17,11 @@ def get_supabase_client():
 def parse_weight_lbs(weight_str):
     if not weight_str:
         return 0.0
-    digits = "".join([c for c in weight_str if c.isdigit() or c == "."])
+    match = re.search(r'(\d+(?:\.\d+)?)', weight_str)
+    if not match:
+        return 0.0
     try:
-        val = float(digits)
+        val = float(match.group(1))
         if "kg" in weight_str.lower():
             val = val * 2.20462
         return val
@@ -29,17 +32,23 @@ def classify_age_group(age_str):
     if not age_str:
         return "any"
     age_str = age_str.lower()
-    if "month" in age_str or "week" in age_str or "day" in age_str:
-        return "puppy"
-    words = age_str.split()
+    
     years = 0
-    for i, w in enumerate(words):
-        if w.isdigit():
-            val = int(w)
-            if i + 1 < len(words) and "year" in words[i + 1]:
-                years = val
-                break
-    if years == 0:
+    months = 0
+    
+    matches = re.findall(r'(\d+)\s*(year|month|week|day)', age_str)
+    for val_str, unit in matches:
+        val = int(val_str)
+        if "year" in unit:
+            years = val
+        elif "month" in unit:
+            months = val
+            
+    if years == 0 and months > 0:
+        return "puppy"
+    elif years == 0:
+        return "puppy"
+    elif years < 1:
         return "puppy"
     elif years <= 3:
         return "young"
@@ -53,7 +62,12 @@ def matches_gender(dog_gender, pref_gender):
         return True
     if not dog_gender:
         return False
-    return pref_gender.lower() in dog_gender.lower()
+    dog_gender = dog_gender.lower().strip()
+    pref_gender = pref_gender.lower().strip()
+    
+    if pref_gender == "male":
+        return "female" not in dog_gender and "male" in dog_gender
+    return pref_gender in dog_gender
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
