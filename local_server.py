@@ -39,6 +39,24 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(body).encode('utf-8'))
 
+    def _send_html(self, body):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "public, max-age=300")
+        self.end_headers()
+        self.wfile.write(body.encode("utf-8"))
+
+    def _send_text(self, code, message):
+        self.send_response(code)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(message.encode("utf-8"))
+
+    def _redirect_home(self):
+        self.send_response(302)
+        self.send_header("Location", "/")
+        self.end_headers()
+
     def do_GET(self):
         parsed_url = urlparse(self.path)
         if parsed_url.path.startswith("/dogs/"):

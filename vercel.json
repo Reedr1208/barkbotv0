@@ -7,11 +7,8 @@
     }
   ],
   "functions": {
-    "api/dog_meta.py": {
-      "includeFiles": "public/index.html",
-      "maxDuration": 300
-    },
     "api/*.py": {
+      "includeFiles": "public/index.html",
       "maxDuration": 300
     }
   },

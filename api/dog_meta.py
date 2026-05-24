@@ -253,11 +253,31 @@ def _load_index_html():
                 _INDEX_HTML_CACHE = f.read()
                 return _INDEX_HTML_CACHE
 
+    debug_info = []
+    try:
+        debug_info.append(f"cwd={os.getcwd()}")
+        debug_info.append(f"__file__={__file__}")
+        debug_info.append(f"candidates={list(_index_html_candidates())}")
+        for folder in ["/var/task", os.getcwd(), os.path.dirname(os.path.abspath(__file__))]:
+            if os.path.isdir(folder):
+                files = []
+                for r, d, fs in os.walk(folder):
+                    for file in fs:
+                        files.append(os.path.relpath(os.path.join(r, file), folder))
+                    if len(files) > 50:
+                        files.append("...")
+                        break
+                debug_info.append(f"Files in {folder}: {files}")
+            else:
+                debug_info.append(f"{folder} is not a directory")
+    except Exception as dbg_err:
+        debug_info.append(f"failed to gather debug info: {dbg_err}")
+
     try:
         _INDEX_HTML_CACHE = _fetch_index_html_from_origin()
         return _INDEX_HTML_CACHE
     except (urllib.error.URLError, TimeoutError, OSError) as err:
-        raise RuntimeError(f"index.html not found: {err}") from err
+        raise RuntimeError(f"index.html not found: {err}. Debug: {'; '.join(debug_info)}") from err
 
 
 class handler(BaseHTTPRequestHandler):
