@@ -214,8 +214,9 @@ class handler(BaseHTTPRequestHandler):
                 
             profile = profile_res.data[0]
             
-            # Add the name and facts
+            # Add the name, gender and facts
             profile["name"] = pima_dogs[random_id].get("name") or "Unknown"
+            profile["gender"] = pima_dogs[random_id].get("gender") or "Unknown"
             profile["important_facts"] = prompts_data[random_id].get("important_facts", [])
             profile["preferences_matched"] = preferences_matched
             profile["user_has_preferences"] = (preferences is not None)
