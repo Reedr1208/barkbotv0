@@ -77,9 +77,36 @@ class handler(BaseHTTPRequestHandler):
             viewed_str = query_params.get("viewed", [""])[0]
             viewed_ids = set(filter(None, viewed_str.split(",")))
             email = query_params.get("email", [""])[0].strip().lower()
+            # animal_id override: fetch a specific dog directly (for Saved/chat resume)
+            animal_id_override = query_params.get("animal_id", [""])[0].strip() or None
 
             client = get_supabase_client()
             
+            # ── Direct lookup by animal_id (for Saved Dogs / Resume Chat) ──
+            if animal_id_override:
+                pima_res = client.table("pima_all_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
+                prompts_res = client.table("system_prompts").select("animal_id, important_facts").eq("animal_id", animal_id_override).limit(1).execute()
+                profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
+                if not pima_res.data or not profile_res.data:
+                    self._send_response(404, {"error": "Dog not found."})
+                    return
+                pima_dog = pima_res.data[0]
+                profile = profile_res.data[0]
+                profile["name"] = pima_dog.get("name") or "Unknown"
+                profile["gender"] = pima_dog.get("gender") or "Unknown"
+                profile["important_facts"] = prompts_res.data[0].get("important_facts", []) if prompts_res.data else []
+                profile["preferences_matched"] = False
+                profile["user_has_preferences"] = False
+                profile["match_details"] = {}
+                internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id", "data_updated"]
+                for key in internal_keys:
+                    profile.pop(key, None)
+                supabase_url_val = os.environ.get("storage_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
+                bucket = os.environ.get("SUPABASE_BUCKET", "animal-images")
+                profile["image_base_url"] = f"{supabase_url_val}/storage/v1/object/public/{bucket}/"
+                self._send_response(200, profile)
+                return
+
             # Fetch all dog IDs, names, and filterable fields from pima_all_dogs
             pima_res = client.table("pima_all_dogs").select("animal_id, name, gender, age, weight").execute()
             if not pima_res.data:

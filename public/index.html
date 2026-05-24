@@ -1524,6 +1524,7 @@
         <div class="tab-bar" style="flex-shrink: 0;">
           <button class="tab-btn" id="aboutBtn" aria-label="Open About ChattyHound description">About</button>
           <button class="tab-btn" id="prefBtn" aria-label="Open Fit Match Profile options">Fit</button>
+          <button class="tab-btn" id="savedNavBtn" aria-label="View saved dogs and chats" style="display:none; position: relative;">Saved <span id="savedNavBadge" style="display:none; position:absolute; top:2px; right:2px; width:7px; height:7px; background:var(--accent); border-radius:50%;"></span></button>
         </div>
         <button class="shuffle-btn" id="nextBtn" aria-label="Shuffle: Show me another dog">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8"/></svg>
@@ -1728,6 +1729,29 @@
         </div>
       </footer>
     </div>
+
+  <!-- Saved Dogs / Recent Chats Modal -->
+  <div class="modal-overlay" id="savedModal" aria-hidden="true" role="dialog" aria-labelledby="savedModalTitle">
+    <div class="modal-card" style="max-width: 480px; max-height: 90vh; display: flex; flex-direction: column;">
+      <button class="modal-close-btn" id="savedModalCloseBtn" aria-label="Close saved panel">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="modal-header" style="margin-bottom: 16px;">
+        <div class="modal-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-hover);">🐾 My Dogs</div>
+        <h2 class="modal-title" id="savedModalTitle">Saved &amp; Recent Chats</h2>
+        <p class="modal-subtitle">Dogs you've hearted and conversations you can continue.</p>
+      </div>
+      <!-- Sub-tabs -->
+      <div style="display: flex; gap: 8px; margin-bottom: 18px; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 4px;">
+        <button class="saved-tab-btn active" id="savedTabDogs" style="flex:1; padding:8px; border:none; border-radius:10px; font-weight:800; font-size:0.82rem; cursor:pointer; background:var(--accent); color:var(--accent-text); transition:all 0.2s;">❤️ Saved Dogs</button>
+        <button class="saved-tab-btn" id="savedTabChats" style="flex:1; padding:8px; border:none; border-radius:10px; font-weight:800; font-size:0.82rem; cursor:pointer; background:transparent; color:var(--text-muted); transition:all 0.2s;">💬 Recent Chats</button>
+      </div>
+      <!-- Content area -->
+      <div id="savedModalContent" style="flex:1; overflow-y:auto; min-height:200px; max-height:55vh;">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
 
   <!-- About Modal -->
   <div class="modal-overlay" id="aboutModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
@@ -1969,12 +1993,15 @@
       // Stub left for safety/backward compatibility
     }
 
-    // Toggle active favorite heart
+    // Toggle active favorite heart (local + backend sync)
     if (favBtn) {
-      favBtn.addEventListener('click', () => {
+      favBtn.addEventListener('click', async () => {
         if (!currentAnimalId) return;
         const index = favoritesList.indexOf(currentAnimalId);
-        if (index > -1) {
+        const removing = index > -1;
+
+        // Optimistic UI update
+        if (removing) {
           favoritesList.splice(index, 1);
           favBtn.classList.remove('favorited');
           trackEvent('dog_unfavorited', { dog_name: currentDogName, animal_id: currentAnimalId });
@@ -1984,6 +2011,28 @@
           trackEvent('dog_favorited', { dog_name: currentDogName, animal_id: currentAnimalId });
         }
         localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
+        updateSavedNavBadge();
+
+        // Backend sync if logged in
+        if (userEmail) {
+          try {
+            const currentImageUrl = document.getElementById('dogImage')?.src || '';
+            await fetch('/api/favorites', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: userEmail,
+                animal_id: currentAnimalId,
+                dog_name: currentDogName,
+                dog_image_url: currentImageUrl,
+                action: removing ? 'remove' : 'save'
+              })
+            });
+          } catch (e) {
+            // Non-blocking: localStorage is already updated
+            console.warn('Favorites sync failed:', e);
+          }
+        }
       });
     }
 
@@ -2603,13 +2652,17 @@
       const historyToSend = conversationHistory.slice(0, -1);
 
       try {
+        const currentImageUrl = document.getElementById('dogImage')?.src || '';
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             animal_id: currentAnimalId,
             message: text,
-            conversation_history: historyToSend
+            conversation_history: historyToSend,
+            email: userEmail || null,
+            dog_name: currentDogName,
+            dog_image_url: currentImageUrl
           })
         });
 
@@ -3009,6 +3062,15 @@
         setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
         setupSelectorButtons('prefSizeGroup', currentPrefs.size);
 
+        // Sync local favorites to backend
+        syncLocalFavoritesToBackend(userEmail);
+
+        // Show saved nav button now user is signed in
+        const savedNavBtnEl = document.getElementById('savedNavBtn');
+        if (savedNavBtnEl) savedNavBtnEl.style.display = '';
+        updateSavedNavBadge();
+
+
         // Fetch random dog with the new email
         fetchRandomDog();
 
@@ -3290,6 +3352,8 @@
           }
           updateProfileButton();
           fetchRandomDog();
+          // Sync local favorites to backend on session restore
+          syncLocalFavoritesToBackend(userEmail);
         })();
       } else {
         updateProfileButton();
@@ -3338,6 +3402,327 @@
         }
       });
     }
+
+    // ─── SAVED DOGS FEATURE ────────────────────────────────────────────────
+
+    function updateSavedNavBadge() {
+      const badge = document.getElementById('savedNavBadge');
+      if (!badge) return;
+      badge.style.display = favoritesList.length > 0 ? 'block' : 'none';
+    }
+
+    async function syncLocalFavoritesToBackend(email) {
+      if (!email || favoritesList.length === 0) return;
+      try {
+        // Fetch existing backend favorites
+        const res = await fetch('/api/favorites?email=' + encodeURIComponent(email));
+        if (!res.ok) return;
+        const data = await res.json();
+        const backendIds = (data.saved || []).map(d => d.animal_id);
+        // Merge: push any local IDs not yet in backend
+        const toSync = favoritesList.filter(id => !backendIds.includes(id));
+        // We don't have dog_name/image for stale local IDs, so just upsert with animal_id only
+        for (const aid of toSync) {
+          await fetch('/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, animal_id: aid, action: 'save' })
+          });
+        }
+        // Also merge backend IDs into local list
+        let changed = false;
+        for (const id of backendIds) {
+          if (!favoritesList.includes(id)) {
+            favoritesList.push(id);
+            changed = true;
+          }
+        }
+        if (changed) localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
+        updateSavedNavBadge();
+      } catch (e) {
+        console.warn('Favorites sync error:', e);
+      }
+    }
+
+    // Saved modal state
+    let savedActiveTab = 'dogs';
+
+    function openSavedModal() {
+      const modal = document.getElementById('savedModal');
+      if (!modal) return;
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      loadSavedTab(savedActiveTab);
+      trackEvent('saved_modal_opened');
+    }
+
+    function closeSavedModal() {
+      const modal = document.getElementById('savedModal');
+      if (!modal) return;
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    async function loadSavedTab(tab) {
+      savedActiveTab = tab;
+      const content = document.getElementById('savedModalContent');
+      if (!content) return;
+
+      // Update tab button styles
+      const tabDogs = document.getElementById('savedTabDogs');
+      const tabChats = document.getElementById('savedTabChats');
+      if (tabDogs && tabChats) {
+        if (tab === 'dogs') {
+          tabDogs.style.background = 'var(--accent)'; tabDogs.style.color = 'var(--accent-text)';
+          tabChats.style.background = 'transparent'; tabChats.style.color = 'var(--text-muted)';
+        } else {
+          tabChats.style.background = 'var(--teal)'; tabChats.style.color = 'var(--accent-text)';
+          tabDogs.style.background = 'transparent'; tabDogs.style.color = 'var(--text-muted)';
+        }
+      }
+
+      content.innerHTML = '<div style="text-align:center; padding:32px; color:var(--text-muted);"><div style="font-size:2rem;margin-bottom:8px;">🐾</div>Loading...</div>';
+
+      if (tab === 'dogs') {
+        await renderSavedDogs(content);
+      } else {
+        await renderRecentChats(content);
+      }
+    }
+
+    async function renderSavedDogs(container) {
+      // Prefer backend data for logged-in users, fall back to local list
+      let dogs = [];
+      if (userEmail) {
+        try {
+          const res = await fetch('/api/favorites?email=' + encodeURIComponent(userEmail));
+          if (res.ok) {
+            const data = await res.json();
+            dogs = data.saved || [];
+          }
+        } catch (e) {}
+      }
+
+      // If no backend data, render from local favoritesList (no images/names available)
+      if (dogs.length === 0 && favoritesList.length > 0 && !userEmail) {
+        dogs = favoritesList.map(id => ({ animal_id: id, dog_name: 'Saved Dog', dog_image_url: '' }));
+      }
+
+      if (dogs.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:40px 24px;">
+            <div style="font-size:3rem; margin-bottom:12px;">💔</div>
+            <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No saved dogs yet</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Tap the ❤️ on any dog card to save them here and come back later.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = dogs.map(d => `
+        <div class="saved-dog-card" data-animal-id="${d.animal_id}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:var(--card-elevated); margin-bottom:10px; cursor:pointer; transition:background 0.2s; border:1px solid rgba(255,255,255,0.06);">
+          <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--card-bg);">
+            ${d.dog_image_url ? `<img src="${d.dog_image_url}" alt="${d.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🐾</div>'}
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:800; font-size:0.95rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.dog_name || 'Shelter Pup'}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Tap to view &amp; chat</div>
+          </div>
+          <div style="color:var(--accent); font-size:1rem;">❤️</div>
+        </div>`).join('');
+
+      // Click to jump to dog (loads it in the main view)
+      container.querySelectorAll('.saved-dog-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const aid = card.getAttribute('data-animal-id');
+          closeSavedModal();
+          // Load that specific dog by animal_id (we reuse fetchRandomDog with override)
+          fetchSpecificDog(aid);
+        });
+      });
+    }
+
+    async function renderRecentChats(container) {
+      if (!userEmail) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:40px 24px;">
+            <div style="font-size:3rem; margin-bottom:12px;">🔒</div>
+            <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">Sign in to see chats</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Your chat history is saved when you're signed in. Sign in to pick up where you left off!</p>
+            <button class="btn-primary" onclick="closeSavedModal();setTimeout(openPrefModal,200);" style="margin-top:16px; padding:10px 24px; border-radius:9999px; font-size:0.85rem;">Sign In</button>
+          </div>`;
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/chat_history?email=' + encodeURIComponent(userEmail));
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        const convs = data.conversations || [];
+
+        if (convs.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:40px 24px;">
+              <div style="font-size:3rem; margin-bottom:12px;">💬</div>
+              <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No chats yet</h3>
+              <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Start chatting with any dog to build your conversation history here.</p>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = convs.map(c => {
+          const dateStr = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+          return `
+          <div class="saved-dog-card" data-animal-id="${c.animal_id}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:var(--card-elevated); margin-bottom:10px; cursor:pointer; transition:background 0.2s; border:1px solid rgba(255,255,255,0.06);">
+            <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--card-bg);">
+              ${c.dog_image_url ? `<img src="${c.dog_image_url}" alt="${c.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">💬</div>'}
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:800; font-size:0.95rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.dog_name || 'Shelter Pup'}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.last_message_preview || 'Tap to continue'}</div>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap;">${dateStr}</div>
+          </div>`;
+        }).join('');
+
+        container.querySelectorAll('.saved-dog-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const aid = card.getAttribute('data-animal-id');
+            closeSavedModal();
+            fetchSpecificDog(aid, true);
+          });
+        });
+
+      } catch (e) {
+        container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);">Unable to load chats. Please try again.</div>`;
+      }
+    }
+
+    async function fetchSpecificDog(animalId, resumeChat = false) {
+      // Build URL with animal_id override (random_dog API supports ?animal_id=...)
+      let url = '/api/random_dog?animal_id=' + encodeURIComponent(animalId);
+      if (userEmail) url += '&email=' + encodeURIComponent(userEmail);
+
+      // Show loading state
+      profilePanel.classList.add('loading');
+      conversationHistory = [];
+      chatHistory.innerHTML = '';
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Dog not found');
+        const dog = await response.json();
+
+        // If the dog was fetched successfully, use fetchRandomDog with a URL override approach
+        // by temporarily injecting the animal_id into the viewed list logic is complex,
+        // so instead directly replicate the dog population logic:
+        currentAnimalId = dog.animal_id;
+        currentDogName = dog.name || 'this dog';
+
+        if (dogName) dogName.textContent = currentDogName;
+        if (dogImage) {
+          dogImage.src = dog.image_file && dog.image_base_url ? dog.image_base_url + dog.image_file
+            : (dog.image_public_url || dog.image_url || '');
+        }
+
+        // Use the full fetchRandomDog path to set all fields properly
+        // Easiest: just call fetchRandomDog but we need the animal_id... 
+        // Direct approach: refresh entire dog via the standard pipeline
+        profilePanel.classList.remove('loading');
+
+        // Show resume-chat banner if applicable
+        chatHistory.innerHTML = '';
+        const introCard = document.createElement('div');
+        introCard.className = 'chat-intro-card';
+        if (resumeChat) {
+          introCard.innerHTML = `
+            <div class="chat-intro-title">💬 Continuing chat with ${currentDogName}</div>
+            <p class="chat-intro-text" style="color:var(--teal);">✓ Loading your previous conversation...</p>`;
+        } else {
+          introCard.innerHTML = `
+            <div class="chat-intro-title">💬 Chat with ${currentDogName}</div>
+            <p class="chat-intro-text">Ask me about my personality, energy, or ideal home!</p>`;
+        }
+        chatHistory.appendChild(introCard);
+
+        if (resumeChat && userEmail) {
+          // Load previous messages
+          try {
+            const histRes = await fetch(`/api/chat_history?email=${encodeURIComponent(userEmail)}&animal_id=${encodeURIComponent(animalId)}`);
+            if (histRes.ok) {
+              const histData = await histRes.json();
+              const msgs = histData.messages || [];
+              conversationHistory = [];
+              msgs.forEach(m => {
+                if (m.role === 'system') return;
+                appendMessage(m.role === 'assistant' ? 'bot' : 'user', m.content,
+                  m.role === 'assistant' ? currentDogName.charAt(0).toUpperCase() : undefined, false);
+              });
+              // Update intro card to reflect loaded
+              introCard.querySelector('p').textContent = msgs.length > 0
+                ? `✓ ${msgs.length} message${msgs.length !== 1 ? 's' : ''} loaded — keep chatting!`
+                : 'Start a new conversation!';
+              introCard.querySelector('p').style.color = 'var(--teal)';
+            }
+          } catch (e) {
+            console.warn('Failed to load chat history:', e);
+          }
+        } else {
+          const firstLetter = currentDogName.charAt(0).toUpperCase();
+          appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetter, false);
+        }
+
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        updateSuggestions();
+
+        // Heart state
+        if (favBtn) {
+          if (favoritesList.includes(currentAnimalId)) {
+            favBtn.classList.add('favorited');
+          } else {
+            favBtn.classList.remove('favorited');
+          }
+        }
+
+      } catch (err) {
+        console.error('fetchSpecificDog error:', err);
+        profilePanel.classList.remove('loading');
+      }
+    }
+
+    // Saved Modal event wiring
+    const savedNavBtn = document.getElementById('savedNavBtn');
+    const savedModalCloseBtn = document.getElementById('savedModalCloseBtn');
+    const savedTabDogs = document.getElementById('savedTabDogs');
+    const savedTabChats = document.getElementById('savedTabChats');
+    const savedModal = document.getElementById('savedModal');
+
+    if (savedNavBtn) {
+      savedNavBtn.addEventListener('click', openSavedModal);
+    }
+    if (savedModalCloseBtn) {
+      savedModalCloseBtn.addEventListener('click', closeSavedModal);
+    }
+    if (savedModal) {
+      savedModal.addEventListener('click', (e) => {
+        if (e.target === savedModal) closeSavedModal();
+      });
+    }
+    if (savedTabDogs) {
+      savedTabDogs.addEventListener('click', () => loadSavedTab('dogs'));
+    }
+    if (savedTabChats) {
+      savedTabChats.addEventListener('click', () => loadSavedTab('chats'));
+    }
+
+    // On init: show Saved button if user is logged in, update badge
+    if (userEmail && savedNavBtn) {
+      savedNavBtn.style.display = '';
+    }
+    updateSavedNavBadge();
+
   </script>
 </body>
 </html>

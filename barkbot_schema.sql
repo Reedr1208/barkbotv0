@@ -83,3 +83,36 @@ create table if not exists user_preferences (
   updated_at timestamptz not null default now()
 );
 
+-- 1. saved_dogs table
+create table if not exists saved_dogs (
+  id bigint generated always as identity primary key,
+  email text not null references user_preferences(email) on delete cascade,
+  animal_id text not null references animals(animal_id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (email, animal_id)
+);
+create index if not exists idx_saved_dogs_email on saved_dogs(email);
+
+-- 2. chat_conversations table
+create table if not exists chat_conversations (
+  id bigint generated always as identity primary key,
+  email text not null references user_preferences(email) on delete cascade,
+  animal_id text not null references animals(animal_id) on delete cascade,
+  last_message_preview text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (email, animal_id)
+);
+create index if not exists idx_chat_conv_email on chat_conversations(email);
+create index if not exists idx_chat_conv_updated_at on chat_conversations(updated_at desc);
+
+-- 3. chat_messages table
+create table if not exists chat_messages (
+  id bigint generated always as identity primary key,
+  conversation_id bigint not null references chat_conversations(id) on delete cascade,
+  role text not null check (role in ('user', 'assistant', 'system')),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_chat_msg_conversation_id on chat_messages(conversation_id, created_at asc);
+
