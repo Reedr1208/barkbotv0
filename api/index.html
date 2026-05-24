@@ -1,0 +1,4728 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChattyHound – Chat With Adoptable Shelter Dogs 🐾</title>
+  <meta name="description"
+    content="🐶 Chat with adoptable shelter dogs! Discover their quirks, personality, and needs in real-time, build your match profile, and find your new best friend who fits your life.">
+  <link rel="canonical" href="https://chattyhound.com/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://chattyhound.com/">
+  <meta property="og:title" content="ChattyHound – Chat With Adoptable Shelter Dogs 🐾">
+  <meta property="og:description"
+    content="🐶 Chat with adoptable shelter dogs! Discover their quirks, personality, and needs in real-time, build your match profile, and find your new best friend who fits your life.">
+  <meta property="og:image" content="https://chattyhound.com/og-image.jpg">
+  <meta property="og:image:secure_url" content="https://chattyhound.com/og-image.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1024">
+  <meta property="og:image:height" content="1024">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://chattyhound.com/">
+  <meta property="twitter:title" content="ChattyHound – Chat With Adoptable Shelter Dogs 🐾">
+  <meta property="twitter:description"
+    content="🐶 Chat with adoptable shelter dogs! Discover their quirks, personality, and needs in real-time, build your match profile, and find your new best friend who fits your life.">
+  <meta property="twitter:image" content="https://chattyhound.com/og-image.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4GRL2M87SZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-4GRL2M87SZ');
+  </script>
+
+  <style>
+    :root {
+      --bg-slate-950: #0f172a;
+      --bg-slate-900: #182235;
+      --bg-slate-800: #202c44;
+      --bg-slate-700: #334155;
+      --accent: #f59e0b;
+      --accent-hover: #fbbf24;
+      --accent-shadow: rgba(245, 158, 11, 0.25);
+      --accent-text: #111827;
+      --teal: #14b8a6;
+      --teal-bg: rgba(20, 184, 166, 0.08);
+      --teal-border: rgba(20, 184, 166, 0.2);
+      --emerald: #14b8a6;
+      --emerald-bg: rgba(20, 184, 166, 0.08);
+      --emerald-border: rgba(20, 184, 166, 0.2);
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.06);
+      --amber-border: rgba(245, 158, 11, 0.2);
+      --cream-highlight: #fff7ed;
+      --cream-bg: rgba(254, 243, 199, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --border-soft: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 0;
+        height: 100dvh;
+        align-items: flex-start;
+        overflow: hidden;
+      }
+    }
+
+    /* Primary Phone Mockup Container */
+    .app-container {
+      position: relative;
+      max-width: 460px;
+      width: 100%;
+      height: calc(100vh - 40px);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-slate-900);
+      border-radius: 32px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border-soft);
+    }
+
+    @media (max-width: 480px) {
+      .app-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
+      }
+    }
+
+    /* Sticky Header */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    /* Sticky Condensed Dog Card */
+    .sticky-dog-bar {
+      position: absolute;
+      top: 73px;
+      /* below header */
+      left: 0;
+      right: 0;
+      z-index: 19;
+      background: rgba(2, 6, 23, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateY(-110%);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+      pointer-events: none;
+    }
+
+    .sticky-dog-bar.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sticky-dog-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--teal);
+      box-shadow: 0 2px 6px rgba(20, 184, 166, 0.2);
+      flex-shrink: 0;
+      background: var(--bg-slate-800);
+    }
+
+    .sticky-dog-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sticky-dog-name {
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sticky-dog-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sticky-chat-btn {
+      padding: 7px 14px;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    .sticky-chat-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .brand-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 2px;
+      flex-shrink: 0;
+    }
+
+    .brand-tagline {
+      font-size: 1rem;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .shuffle-btn {
+      padding: 8px 14px;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 4px 12px var(--accent-shadow);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .shuffle-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .shuffle-btn:active {
+      transform: translateY(0);
+    }
+
+    .shuffle-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Main Scrollable Area */
+    .scroll-content {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 110px;
+      /* space for float footer */
+      scroll-behavior: smooth;
+    }
+
+    /* Hero Image Stack */
+    .hero-section {
+      position: relative;
+      width: 100%;
+      height: 288px;
+      background-color: var(--bg-slate-800);
+      overflow: hidden;
+    }
+
+    .profile-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, var(--bg-slate-900) 0%, rgba(15, 23, 42, 0.7) 40%, transparent 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+    }
+
+    .hero-info-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      width: 100%;
+      gap: 12px;
+    }
+
+    .match-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      margin-bottom: 6px;
+    }
+
+    .match-badge.fallback {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.2);
+    }
+
+    .dog-name {
+      font-size: 2.5rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .dog-id {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .fav-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--cream-highlight);
+      color: var(--bg-slate-950);
+      border: 1px solid rgba(245, 158, 11, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+    }
+
+    .fav-btn:hover {
+      transform: scale(1.08);
+    }
+
+    .fav-btn:active {
+      transform: scale(0.95);
+    }
+
+    .fav-btn.favorited {
+      color: #ef4444;
+    }
+
+    .fav-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .share-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.55);
+      color: var(--cream-highlight);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+    }
+
+    .share-btn:hover {
+      transform: scale(1.08);
+      background: rgba(15, 23, 42, 0.72);
+    }
+
+    .share-btn:active {
+      transform: scale(0.95);
+    }
+
+    .share-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .share-btn.compact {
+      width: 36px;
+      height: 36px;
+    }
+
+    .share-btn.compact svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .chat-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .chat-section-header .chat-section-title {
+      margin-bottom: 0;
+    }
+
+    .share-fallback-menu {
+      position: fixed;
+      z-index: 12000;
+      min-width: 200px;
+      background: var(--bg-slate-800);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      padding: 6px;
+      display: none;
+    }
+
+    .share-fallback-menu.open {
+      display: block;
+    }
+
+    .share-fallback-menu button {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      color: var(--text-main);
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .share-fallback-menu button:hover,
+    .share-fallback-menu button:focus-visible {
+      background: rgba(255, 255, 255, 0.06);
+      outline: none;
+    }
+
+    .share-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 88px;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--bg-slate-800);
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+      border-radius: 9999px;
+      padding: 10px 18px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 13000;
+      max-width: calc(100% - 32px);
+      text-align: center;
+    }
+
+    .share-toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .dog-unavailable-card {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 32px 24px;
+      gap: 12px;
+    }
+
+  /* Must beat .details-box { display: flex } — card uses both classes */
+    .details-box.dog-unavailable-card:not(.visible) {
+      display: none !important;
+    }
+
+    .details-box.dog-unavailable-card.visible {
+      display: flex !important;
+    }
+
+    .dog-unavailable-card.visible {
+      display: flex;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Content Styling */
+    .profile-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Unified Condensed Details Box Styling */
+    .details-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .details-stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .detail-chip {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text-main);
+      text-align: center;
+      min-height: 38px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .detail-chip.matched {
+      background: var(--emerald-bg);
+      border-color: var(--emerald-border);
+    }
+
+    .detail-chip.mismatched {
+      background: var(--amber-bg);
+      border-color: var(--amber-border);
+    }
+
+    .details-fit-container {
+      background: rgba(20, 184, 166, 0.04);
+      border-left: 3.5px solid var(--teal);
+      border-radius: 0 12px 12px 0;
+      padding: 8px 12px;
+    }
+
+    .details-fit-container.warning {
+      background: rgba(245, 158, 11, 0.04);
+      border-left-color: var(--amber);
+    }
+
+    .details-fit-text {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .details-bio-section {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+
+    .details-bio-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 900;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .details-bio-text {
+      font-size: 0.84rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+      margin: 0;
+      white-space: pre-line;
+    }
+
+    .details-bio-text.collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: normal;
+      /* Fix browser-specific rendering issue combining pre-line with line-clamp */
+    }
+
+    .trait-chips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .trait-chip {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-soft);
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    /* Primary CTA Buttons */
+    .cta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .cta-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: 12px 14px;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cta-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--teal);
+    }
+
+    .cta-icon-box {
+      margin-bottom: 8px;
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+    }
+
+    .cta-card.primary-cta {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      box-shadow: 0 4px 14px var(--accent-shadow);
+    }
+
+    .cta-card.primary-cta:hover {
+      background: var(--accent-hover);
+    }
+
+    .cta-card.primary-cta .cta-icon-box {
+      color: var(--accent-text);
+    }
+
+    .cta-title {
+      font-size: 0.85rem;
+      font-weight: 900;
+      margin-bottom: 2px;
+    }
+
+    .cta-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .cta-card.primary-cta .cta-sub {
+      color: rgba(17, 24, 39, 0.75);
+    }
+
+    /* Chat Section styling */
+    .chat-section {
+      border-top: 1px solid var(--border-soft);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chat-section-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+
+    /* Custom tabs selector */
+    .tab-bar {
+      display: flex;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--cream-highlight);
+      color: var(--bg-slate-950);
+    }
+
+    .tab-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Chat History and bubbles */
+    .chat-history {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .msg-row.user {
+      justify-content: flex-end;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%);
+      color: var(--bg-slate-950);
+      font-weight: 900;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .bubble.bot {
+      background: var(--bg-slate-800);
+      color: #f1f5f9;
+      border-top-left-radius: 4px;
+      border: 1px solid var(--border-soft);
+      text-align: left;
+    }
+
+    .bubble.bot p {
+      margin-bottom: 8px;
+    }
+
+    .bubble.bot p:last-child {
+      margin-bottom: 0;
+    }
+
+    .bubble.bot strong {
+      font-weight: 800;
+    }
+
+    .bubble.user {
+      background: var(--accent);
+      color: var(--accent-text);
+      font-weight: 600;
+      border-top-right-radius: 4px;
+      box-shadow: 0 4px 10px var(--accent-shadow);
+      text-align: left;
+    }
+
+    /* Suggestions Prompt Container */
+    .prompt-shortcuts-area {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .prompt-shortcut-btn {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border-soft);
+      padding: 10px 14px;
+      border-radius: 14px;
+      text-align: left;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .prompt-shortcut-btn:hover {
+      background: rgba(15, 23, 42, 0.7);
+      border-color: var(--teal);
+    }
+
+    /* Floating Translucent Sticky Footer */
+    .footer-input-bar {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      z-index: 30;
+      background: rgba(2, 6, 23, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 9999px;
+      padding: 6px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-slate-800);
+      border: none;
+      outline: none;
+      padding: 12px 18px;
+      border-radius: 9999px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .chat-input::placeholder {
+      color: #64748b;
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px var(--accent-shadow);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .send-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* Dynamic Typing Indicator bubble */
+    .typing-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .typing-bubble {
+      background: var(--bg-slate-800);
+      padding: 10px 14px;
+      border-radius: 20px;
+      border-top-left-radius: 4px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      height: 36px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .dot:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .dot:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(0);
+      }
+
+      40% {
+        transform: scale(1);
+      }
+    }
+
+    /* Modal Overlay styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      background: rgba(2, 6, 23, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--bg-slate-900);
+      border: 1px solid var(--border-soft);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      max-height: 80dvh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: rotate(90deg);
+    }
+
+    .modal-header {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .modal-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--accent-hover);
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .modal-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-subtitle {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
+    .modal-content p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .modal-start-btn {
+      padding: 12px 32px;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px var(--accent-shadow);
+    }
+
+    .modal-start-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Loader */
+    .loader {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.05);
+      border-bottom-color: var(--accent);
+      border-radius: 50%;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
+      position: absolute;
+      top: calc(50% - 20px);
+      left: calc(50% - 20px);
+      z-index: 40;
+    }
+
+    @keyframes rotation {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading .scroll-content {
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .loading .loader {
+      display: block;
+    }
+
+    /* Indicator dots inside rows */
+    .compat-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .compat-dot.green {
+      background: var(--teal);
+      box-shadow: 0 0 6px rgba(20, 184, 166, 0.6);
+    }
+
+    .compat-dot.yellow {
+      background: var(--amber);
+      box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+    }
+
+    .why-fit-desc.collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .see-more-toggle {
+      background: transparent;
+      border: none;
+      color: var(--accent-hover);
+      font-weight: 800;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+
+    .see-more-toggle:hover {
+      color: var(--accent);
+    }
+
+    /* Preferences Selector Buttons styling */
+    .pref-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      outline: none;
+    }
+
+    .pref-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .pref-btn.active {
+      background: var(--accent) !important;
+      border-color: var(--accent-hover) !important;
+      color: var(--accent-text) !important;
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px var(--accent-shadow);
+    }
+
+    /* ── Mobile header: hide tagline to free space for tabs + shuffle ── */
+    @media (max-width: 480px) {
+      .header {
+        padding: 12px 14px;
+        gap: 8px;
+      }
+
+      .brand-tagline {
+        display: none;
+      }
+
+      .brand-title {
+        font-size: 0.65rem;
+        margin-bottom: 0;
+      }
+
+      .tab-btn {
+        padding: 5px 10px;
+        font-size: 0.72rem;
+        gap: 3px;
+      }
+
+      .tab-btn svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .shuffle-btn {
+        padding: 7px 12px;
+        font-size: 0.78rem;
+        gap: 4px;
+      }
+    }
+
+    /* ────────────────────────────────────────────────────────
+       NEW TELEMETRY, SKELETONS, LANDING & ACCESSIBILITY STYLES
+       ──────────────────────────────────────────────────────── */
+
+    /* Accessible outline rings on keyboard focus */
+    :focus-visible {
+      outline: 3px solid var(--accent) !important;
+      outline-offset: 2px !important;
+    }
+
+    /* Screen Views */
+    .view-screen {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      opacity: 1;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .view-screen.hidden {
+      display: none !important;
+      opacity: 0;
+    }
+
+    /* Premium Landing Page */
+    .landing-hero {
+      padding: 32px 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      background: radial-gradient(circle at bottom, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+    }
+
+    .landing-logo {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: var(--accent-hover);
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .landing-title {
+      font-size: 2.25rem;
+      font-weight: 950;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--cream-highlight) 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .landing-sub {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-weight: 500;
+      max-width: 380px;
+    }
+
+    .landing-cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 280px;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      padding: 14px 28px;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 6px 20px var(--accent-shadow);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--accent-shadow);
+    }
+
+    .btn-secondary {
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Landing explanation grid */
+    .landing-explanation {
+      padding: 24px;
+      border-top: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .explanation-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .steps-vertical {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: 14px 16px;
+      text-align: left;
+      transition: transform 0.2s ease;
+    }
+
+    .step-item:hover {
+      transform: translateX(4px);
+      border-color: rgba(20, 184, 166, 0.2);
+    }
+
+    .step-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(20, 184, 166, 0.15);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .step-body h4 {
+      font-size: 0.9rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .step-body p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Landing bottom footer disclaimers */
+    .landing-footer {
+      padding: 24px;
+      border-top: 1px solid var(--border-soft);
+      text-align: center;
+    }
+
+    .disclaimer-card {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1.5px dashed rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    /* Skeleton loaders pulse animation */
+    @keyframes skeleton-pulse {
+
+      0%,
+      100% {
+        opacity: 0.07;
+      }
+
+      50% {
+        opacity: 0.16;
+      }
+    }
+
+    .skeleton-pulse {
+      background: var(--text-main);
+      animation: skeleton-pulse 1.4s infinite ease-in-out;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* Skeleton structures */
+    .skeleton-image {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+    }
+
+    .skeleton-badge {
+      width: 90px;
+      height: 20px;
+      border-radius: 9999px;
+    }
+
+    .skeleton-title {
+      width: 160px;
+      height: 32px;
+      border-radius: 6px;
+    }
+
+    .skeleton-meta {
+      width: 90px;
+      height: 14px;
+      border-radius: 4px;
+      margin-top: 6px;
+    }
+
+    .skeleton-chip {
+      width: 100%;
+      height: 38px;
+      border-radius: 12px;
+    }
+
+    .skeleton-fit-pill {
+      width: 100%;
+      height: 50px;
+      border-radius: 12px;
+    }
+
+    .skeleton-text {
+      width: 100%;
+      height: 14px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    /* Telemetry View Toggles */
+    .app-container.loading-skeleton .skeleton-el {
+      display: inline-block !important;
+    }
+
+    .app-container.loading-skeleton .real-el {
+      display: none !important;
+    }
+
+    .app-container:not(.loading-skeleton) .skeleton-el {
+      display: none !important;
+    }
+
+    /* Multi-step Preference modal styles */
+    .modal-tab-indicator {
+      display: flex;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-soft);
+      border-radius: 9999px;
+      padding: 2px;
+      margin-bottom: 16px;
+    }
+
+    .modal-tab-btn {
+      flex: 1;
+      padding: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      border-radius: 9999px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .modal-tab-btn.active {
+      background: white;
+      color: var(--bg-slate-950);
+    }
+
+    .pref-wizard-step {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pref-wizard-step.active {
+      display: flex;
+    }
+
+    /* Dynamic Match Fit Badge styles */
+    .fit-badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      margin-bottom: 8px;
+    }
+
+    .fit-badge-tag.apartment {
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
+      border-color: rgba(20, 184, 166, 0.3);
+    }
+
+    .fit-badge-tag.adventure {
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
+      border-color: rgba(20, 184, 166, 0.3);
+    }
+
+    .fit-badge-tag.family {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .fit-badge-tag.cats {
+      background: rgba(236, 72, 153, 0.15);
+      color: #f472b6;
+      border-color: rgba(244, 114, 182, 0.3);
+    }
+
+    .fit-badge-tag.cuddle {
+      background: rgba(6, 182, 212, 0.15);
+      color: #22d3ee;
+      border-color: rgba(34, 211, 238, 0.3);
+    }
+
+    /* Empty state card */
+    .empty-state-card {
+      padding: 36px 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      height: 100%;
+      justify-content: center;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      animation: skeleton-pulse 2s infinite ease-in-out;
+    }
+
+    .empty-state-title {
+      font-size: 1.35rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .empty-state-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 320px;
+    }
+
+    /* Chat Intro welcome bubble inside chat */
+    .chat-intro-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      padding: 16px;
+      text-align: left;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .chat-intro-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent-hover);
+      margin-bottom: 6px;
+    }
+
+    .chat-intro-text {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .chat-intro-disclaimer {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 8px;
+      font-style: italic;
+    }
+
+    /* Privacy text near email inputs */
+    .email-privacy-note {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+      margin-top: 6px;
+      font-style: italic;
+      text-align: center;
+    }
+
+    /* Mobile Sticky thumb bar controls overlay */
+    .mobile-action-bar {
+      display: flex;
+      position: absolute;
+      bottom: 74px;
+      /* sits right above the text input bar */
+      left: 12px;
+      right: 12px;
+      z-index: 29;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 4px;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .mobile-action-btn {
+      flex: 1;
+      padding: 8px 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      border-radius: 9999px;
+      transition: background 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .mobile-action-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-action-btn.primary {
+      background: var(--accent);
+      color: var(--accent-text);
+      box-shadow: 0 4px 10px var(--accent-shadow);
+    }
+
+    .mobile-action-btn.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .mobile-action-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-container" id="profilePanel">
+    <span class="loader" id="loader"></span>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 1. LANDING SCREEN VIEW (Conversion Funnel) -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="landingView" class="view-screen">
+      <div class="scroll-content" style="padding-bottom: 24px; padding-top: 24px;">
+        <!-- High-Impact Hero Landing Section -->
+        <section class="landing-hero">
+          <div class="landing-logo">🐾 ChattyHound</div>
+          <h1 class="landing-title">Meet adoptable dogs in a whole new way.</h1>
+          <p class="landing-sub">Chat with shelter dogs, discover their personality, and find the pup who fits your
+            life.</p>
+          <div class="landing-cta-group">
+            <button class="btn-primary" id="landingStartBtn"
+              aria-label="Start Sniffing: Build your dog match profile">Start Sniffing 🐶</button>
+            <button class="btn-secondary" id="landingHowBtn" aria-label="Learn how ChattyHound works">How It
+              Works</button>
+          </div>
+        </section>
+
+        <!-- "How It Works" Glassmorphic Steps -->
+        <section class="landing-explanation" id="howItWorksSec">
+          <h3 class="explanation-title">How It Works</h3>
+          <div class="steps-vertical">
+            <div class="step-item">
+              <div class="step-badge">1</div>
+              <div class="step-body">
+                <h4>Tell us what you're looking for</h4>
+                <p>Answer a few quick lifestyle questions to build your dog match profile.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-badge">2</div>
+              <div class="step-body">
+                <h4>Meet matched adoptable dogs</h4>
+                <p>We prioritize shelter dogs who fit your home, energy levels, and lifestyle preferences.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-badge">3</div>
+              <div class="step-body">
+                <h4>Chat to understand personality</h4>
+                <p>Have an AI-powered conversation directly with the pup to learn their quirks, behavior, and needs.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-badge">4</div>
+              <div class="step-body">
+                <h4>Adopt from the shelter</h4>
+                <p>Continue to the official shelter page to schedule a meet-and-greet and finalize the adoption.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Shelter Credibility Disclaimers -->
+        <section class="landing-footer">
+          <div class="disclaimer-card"
+            style="background: rgba(20, 184, 166, 0.08); border: 1.5px solid rgba(20, 184, 166, 0.2); text-align: left; display: flex; gap: 12px; align-items: flex-start; color: var(--text-main); font-size: 0.78rem;">
+            <div style="color: var(--teal); flex-shrink: 0; margin-top: 2px;">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <div>
+              <strong
+                style="color: white; font-weight: 800; font-size: 0.85rem; display: block; margin-bottom: 3px;">Shelter
+                info comes first 🛡️</strong>
+              ChattyHound is a playful AI companion to help you discover dogs. The official shelter page remains the
+              absolute authority for all medical details, behavioral history, and adoption eligibility.
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 2. DOG MATCH / CHAT VIEW (Active Interface) -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="appView" class="view-screen hidden">
+      <!-- Sticky Top Header -->
+      <header class="header">
+        <div>
+          <p class="brand-title">Chattyhound</p>
+          <h2 class="brand-tagline">Find your match</h2>
+        </div>
+        <div class="tab-bar" style="flex-shrink: 0;">
+          <button class="tab-btn" id="aboutBtn" aria-label="Open About ChattyHound description">About</button>
+          <button class="tab-btn" id="prefBtn" aria-label="Open Fit Match Profile options">Fit</button>
+          <button class="tab-btn" id="savedNavBtn" aria-label="View saved dogs and chats"
+            style="display:none; position: relative;">Saved <span id="savedNavBadge"
+              style="display:none; position:absolute; top:2px; right:2px; width:7px; height:7px; background:var(--accent); border-radius:50%;"></span></button>
+        </div>
+        <button class="shuffle-btn" id="nextBtn" aria-label="Shuffle: Show me another dog">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8" />
+          </svg>
+          Next Dog 🐶
+        </button>
+      </header>
+
+      <!-- Sticky Condensed Dog Bar (appears on scroll, absolute overlay) -->
+      <div class="sticky-dog-bar" id="stickyDogBar">
+        <img class="sticky-dog-avatar" id="stickyDogAvatar" src="" alt="">
+        <div class="sticky-dog-info">
+          <div class="sticky-dog-name" id="stickyDogName">Loading...</div>
+          <div class="sticky-dog-meta" id="stickyDogMeta">—</div>
+        </div>
+        <button class="sticky-chat-btn" id="stickyChatBtn" aria-label="Scroll to chat panel">Chat 💬</button>
+      </div>
+
+      <!-- Sticky Mobile Thumb Action Bar Overlay (Visible only <= 480px) -->
+      <div class="mobile-action-bar" id="mobileActionBar">
+        <button class="mobile-action-btn" id="mobileShuffleBtn" aria-label="Shuffle: Show another adoptable dog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8" />
+          </svg>
+          <span>Next</span>
+        </button>
+        <button class="mobile-action-btn primary" id="mobileChatBtn" aria-label="Chat with current pup">
+          <span>Chat</span>
+        </button>
+        <a href="#" target="_blank" class="mobile-action-btn" id="mobileAdoptBtn"
+          aria-label="View official PACC shelter page">
+          <span>Shelter 🛡️</span>
+        </a>
+      </div>
+
+      <!-- Scrollable content area -->
+      <div class="scroll-content" id="scrollContent">
+
+        <!-- Hero Image Stack -->
+        <section class="hero-section">
+          <!-- Skeleton Image Overlay -->
+          <div class="skeleton-el skeleton-pulse skeleton-image" style="position: absolute; inset: 0;"></div>
+          <img id="dogImage" class="profile-image real-el" src="" alt="Rescue shelter pup">
+          <div class="hero-overlay">
+            <div class="hero-info-row">
+              <div>
+                <!-- SKELETON PLACEHOLDER -->
+                <div class="skeleton-el">
+                  <span class="skeleton-pulse skeleton-badge"></span>
+                  <div class="skeleton-pulse skeleton-title" style="margin-top: 6px;"></div>
+                  <div class="skeleton-pulse skeleton-meta"></div>
+                </div>
+                <!-- REAL CONTENT -->
+                <div class="real-el">
+                  <div id="prefMatchBadgeContainer" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                  <h2 class="dog-name" id="dogName"></h2>
+                  <div class="dog-meta-header"
+                    style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+                    <p class="dog-breed"
+                      style="font-size: 0.85rem; font-weight: 700; color: var(--accent-hover); display: flex; align-items: center; gap: 4px; margin: 0;">
+                      <span>Rescue Mix 🐾</span>
+                    </p>
+                    <p class="dog-location" id="dogLocation"
+                      style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin: 0;">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      <span id="dogLocationText">-</span>
+                    </p>
+                    <p class="dog-id" id="dogId" style="margin: 0; font-size: 0.72rem; opacity: 0.8;"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="hero-actions real-el">
+                <button class="share-btn" id="heroShareBtn" type="button" aria-label="Share this dog"
+                  title="Share">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                    <polyline points="16 6 12 2 8 6" />
+                    <line x1="12" y1="2" x2="12" y2="15" />
+                  </svg>
+                </button>
+                <button class="fav-btn" id="favBtn" aria-label="Save to Favorites" title="Save to Favorites">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Main Profile Body -->
+        <main class="profile-body">
+
+          <!-- DOG UNAVAILABLE (shared link / missing dog) -->
+          <section class="details-box dog-unavailable-card" id="dogUnavailableCard">
+            <div style="font-size: 3rem; margin-bottom: 8px;">🐾</div>
+            <h3 style="font-size: 1.35rem; font-weight: 900; color: white; margin-bottom: 8px;">This dog may no longer
+              be available.</h3>
+            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; max-width: 320px;">
+              Shelters update listings often. You can meet other adoptable dogs on ChattyHound right now.
+            </p>
+            <button class="btn-primary" id="dogUnavailableCtaBtn" type="button"
+              style="margin-top: 12px; padding: 12px 24px; border-radius: 9999px; font-weight: 800;">Meet other
+              dogs</button>
+          </section>
+
+          <!-- EMPTY STATE CARD -->
+          <section class="details-box empty-state-card" id="emptyStateCard"
+            style="display: none; padding: 32px 24px; text-align: center;">
+            <div class="empty-state-icon"
+              style="font-size: 3rem; margin-bottom: 12px; filter: drop-shadow(0 4px 8px rgba(99,102,241,0.25));">🐾
+            </div>
+            <h3 class="empty-state-title"
+              style="font-size: 1.35rem; font-weight: 900; color: white; margin-bottom: 8px;">No perfect matches yet
+            </h3>
+            <p class="empty-state-desc"
+              style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; max-width: 320px; margin-left: auto; margin-right: auto;">
+              Every rescue pup has unique charm! While we don't have a dog matching your exact preferences today, we
+              update our shelter profiles constantly. Try adjusting your preferences or exploring all available dogs!
+            </p>
+            <div
+              style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 280px; margin: 0 auto;">
+              <button class="btn-primary" id="emptyStateResetBtn"
+                style="padding: 12px 20px; font-size: 0.85rem; border-radius: 9999px; font-weight: 800; width: 100%;">Adjust
+                Preferences 🛠️</button>
+              <button class="btn-secondary" id="emptyStateAllBtn"
+                style="padding: 12px 20px; font-size: 0.85rem; border-radius: 9999px; font-weight: 800; width: 100%; border: 1.5px solid rgba(255,255,255,0.15);">Show
+                me all dogs</button>
+            </div>
+          </section>
+
+          <!-- Unified Condensed Details Box -->
+          <section class="details-box" id="detailsBox">
+
+            <!-- SKELETON PLACEHOLDER -->
+            <div class="skeleton-el" style="width: 100%; flex-direction: column; gap: 12px; display: flex;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <div class="skeleton-pulse skeleton-chip"></div>
+                <div class="skeleton-pulse skeleton-chip"></div>
+                <div class="skeleton-pulse skeleton-chip"></div>
+              </div>
+              <div class="skeleton-pulse skeleton-fit-pill"></div>
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                <div class="skeleton-pulse skeleton-text"></div>
+                <div class="skeleton-pulse skeleton-text"></div>
+                <div class="skeleton-pulse skeleton-text short"></div>
+              </div>
+            </div>
+
+            <!-- REAL CONTENT -->
+            <div class="real-el" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Row 1: Flat Stats Chips -->
+              <div class="details-stats-row">
+                <span class="detail-chip" id="chipGender">
+                  <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
+                  <span>Sex: </span><span class="chip-val" id="dogGender">-</span>
+                </span>
+                <span class="detail-chip" id="chipAge">
+                  <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
+                  <span>Age: </span><span class="chip-val" id="dogAge">-</span>
+                </span>
+                <span class="detail-chip" id="chipWeight">
+                  <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
+                  <span>Weight: </span><span class="chip-val" id="dogWeight">-</span>
+                </span>
+              </div>
+
+              <!-- Row 2: Fit Info -->
+              <div class="details-fit-container" id="whyFitCard" style="display: none;">
+                <p class="details-fit-text" id="whyFitDesc">-</p>
+              </div>
+
+              <!-- Row 3: Trait Chips -->
+              <div class="trait-chips-grid" id="traitChipsContainer"></div>
+
+              <!-- Row 4: Collapsible Shelter Story Biography -->
+              <div class="details-bio-section" id="aboutDogCard" style="display: none;">
+                <div class="details-bio-title">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                  </svg>
+                  Meet <span id="aboutDogName">me</span>
+                </div>
+                <p class="details-bio-text collapsed" id="aboutDogText"></p>
+                <button class="see-more-toggle" id="aboutDogToggle" style="display: none;">
+                  See more
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+          </section>
+
+          <!-- CTA Grid Buttons -->
+          <section class="cta-grid real-el">
+            <a href="#" target="_blank" class="cta-card" id="paccLink"
+              aria-label="View official PACC shelter page for details">
+              <div class="cta-icon-box">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </div>
+              <p class="cta-title">View shelter page</p>
+              <p class="cta-sub">Official shelter page 🛡️</p>
+            </a>
+            <button class="cta-card primary-cta" id="askBtn" aria-label="Scroll to chat input to chat with this dog">
+              <div class="cta-icon-box">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <p class="cta-title" id="askBtnTitle">Chat with me</p>
+              <p class="cta-sub">Start with prompts</p>
+            </button>
+          </section>
+
+          <!-- Skeleton Chat Placeholder (visible during loading) -->
+          <section class="chat-section skeleton-el" style="display: none; flex-direction: column; gap: 12px;">
+            <div class="skeleton-pulse" style="width: 140px; height: 20px; border-radius: 4px; margin-bottom: 8px;">
+            </div>
+            <div class="skeleton-pulse" style="width: 100%; height: 80px; border-radius: 12px; margin-bottom: 8px;">
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <div class="skeleton-pulse" style="width: 120px; height: 32px; border-radius: 20px;"></div>
+              <div class="skeleton-pulse" style="width: 150px; height: 32px; border-radius: 20px;"></div>
+              <div class="skeleton-pulse" style="width: 90px; height: 32px; border-radius: 20px;"></div>
+            </div>
+          </section>
+
+          <!-- Chat Section -->
+          <section class="chat-section real-el" id="chatSection">
+            <div class="chat-section-header">
+              <h3 class="chat-section-title">Chat with <span id="chatTitleName">...</span></h3>
+              <button class="share-btn compact" id="chatShareBtn" type="button" aria-label="Share this dog"
+                title="Share">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                  <polyline points="16 6 12 2 8 6" />
+                  <line x1="12" y1="2" x2="12" y2="15" />
+                </svg>
+                <span class="sr-only">Share</span>
+              </button>
+            </div>
+
+            <!-- Chat History -->
+            <div class="chat-history" id="chatHistory">
+              <!-- Messages go here -->
+            </div>
+
+            <!-- Suggested quick prompts area -->
+            <div class="prompt-shortcuts-area" id="quickPromptsContainer">
+              <!-- Prompts will populate dynamically -->
+            </div>
+          </section>
+
+        </main>
+      </div>
+
+      <!-- Sticky Translucent Bottom Input Footer -->
+      <footer class="footer-input-bar">
+        <div class="input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Ask about me..." disabled
+            aria-label="Type your question to the dog here">
+          <button class="send-btn" id="sendBtn" disabled aria-label="Send message">
+            <svg viewBox="0 0 24 24">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Saved Dogs / Recent Chats Modal -->
+    <div class="modal-overlay" id="savedModal" aria-hidden="true" role="dialog" aria-labelledby="savedModalTitle">
+      <div class="modal-card" style="max-width: 480px; max-height: 90vh; display: flex; flex-direction: column;">
+        <button class="modal-close-btn" id="savedModalCloseBtn" aria-label="Close saved panel">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div class="modal-header" style="margin-bottom: 16px;">
+          <div class="modal-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-hover);">🐾 My Dogs
+          </div>
+          <h2 class="modal-title" id="savedModalTitle">Saved &amp; Recent Chats</h2>
+          <p class="modal-subtitle">Dogs you've hearted and conversations you can continue.</p>
+        </div>
+        <!-- Sub-tabs -->
+        <div
+          style="display: flex; gap: 8px; margin-bottom: 18px; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 4px;">
+          <button class="saved-tab-btn active" id="savedTabDogs"
+            style="flex:1; padding:8px; border:none; border-radius:10px; font-weight:800; font-size:0.82rem; cursor:pointer; background:var(--accent); color:var(--accent-text); transition:all 0.2s;">❤️
+            Saved Dogs</button>
+          <button class="saved-tab-btn" id="savedTabChats"
+            style="flex:1; padding:8px; border:none; border-radius:10px; font-weight:800; font-size:0.82rem; cursor:pointer; background:transparent; color:var(--text-muted); transition:all 0.2s;">💬
+            Recent Chats</button>
+        </div>
+        <!-- Content area -->
+        <div id="savedModalContent" style="flex:1; overflow-y:auto; min-height:200px; max-height:55vh;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal-overlay" id="aboutModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+      <div class="modal-card">
+        <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close modal">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div class="modal-header">
+          <div class="modal-badge">🐾 Meet Adoptable Dogs</div>
+          <h2 class="modal-title" id="modalTitle">Welcome to ChattyHound</h2>
+        </div>
+        <div class="modal-content">
+          <p style="font-weight: 700; color: var(--accent-hover); font-size: 1.05rem;">
+            Meet adoptable shelter dogs in a whole new way.
+          </p>
+          <p>
+            Instead of just reading a generic profile, you can chat with each dog to get a feel for their personality,
+            quirks, needs, and what makes them special. Ask about their favorite things, their ideal home, or what kind
+            of human they’re hoping to find.
+          </p>
+          <p
+            style="background: var(--cream-bg); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 12px 12px 0; font-style: italic;">
+            Every chat is designed to help you move beyond facts and stats — and maybe meet your new best friend.
+          </p>
+
+          <!-- Logged Out Sign In Promotion Card -->
+          <div id="aboutLoginCallout"
+            style="margin-top: 12px; padding: 14px; border-radius: 16px; background: rgba(20, 184, 166, 0.04); border: 1px solid rgba(20, 184, 166, 0.15); display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div>
+              <h5 style="font-size: 0.8rem; font-weight: 900; color: var(--teal); margin-bottom: 2px;">🐾 Personalized
+                Matches</h5>
+              <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.35;">Sign in to save preferences
+                and find matching dogs!</p>
+            </div>
+            <button id="aboutLoginBtn"
+              style="padding: 6px 14px; background: var(--teal); color: var(--accent-text); border: none; border-radius: 20px; font-weight: 900; font-size: 0.75rem; cursor: pointer; box-shadow: 0 4px 8px rgba(20, 184, 166, 0.25); white-space: nowrap; flex-shrink: 0;">Sign
+              In</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-start-btn" id="modalStartBtn">Start Sniffing 🐶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preferences Modal -->
+    <div class="modal-overlay" id="prefModal" aria-hidden="true" role="dialog" aria-labelledby="prefTitle">
+      <div class="modal-card" style="max-width: 440px;">
+        <button class="modal-close-btn" id="prefCloseBtn" aria-label="Close modal">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        <!-- LOGGED OUT STATE (Email Form) -->
+        <div id="prefLoggedOutState">
+          <div class="modal-header">
+            <div class="modal-badge" style="background: rgba(20, 184, 166, 0.1); color: var(--teal);">🐾 Build Your Dog
+              Match Profile</div>
+            <h2 class="modal-title" id="prefTitle">Preferences Profile</h2>
+            <p class="modal-subtitle">Save your preferences so we can prioritize dogs who fit your lifestyle. Enter your
+              email to begin instantly!</p>
+          </div>
+          <div class="modal-content" style="margin-bottom: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label for="loginEmailInput"
+                style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; tracking-wider: 0.05em;">EMAIL
+                ADDRESS</label>
+              <input type="email" id="loginEmailInput" class="chat-input" placeholder="e.g. barker@gmail.com"
+                style="width: 100%; border-radius: 12px; padding: 12px 16px; border: 1.5px solid rgba(255,255,255,0.15);" />
+              <div id="loginErrorMsg"
+                style="color: #ef4444; font-size: 0.8rem; font-weight: 700; display: none; margin-top: 4px;"></div>
+              <p class="email-privacy-note">🔒 We value your privacy. Your email is only used to save your preferences.
+                We never share your data.</p>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center; width: 100%;">
+            <button class="btn-secondary" id="loginSkipBtn" style="flex: 1; border-radius: 9999px; padding: 12px;">Skip
+              & Browse 🐾</button>
+            <button class="modal-start-btn" id="loginSubmitBtn"
+              style="flex: 1; background: var(--teal); color: var(--accent-text); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25); margin-top: 0; padding: 12px 24px;">Continue</button>
+          </div>
+        </div>
+
+        <!-- LOGGED IN STATE (Preferences Form) -->
+        <div id="prefLoggedInState" style="display: none;">
+          <div class="modal-header" style="margin-bottom: 12px;">
+            <div class="modal-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-hover);">💖 Build
+              Your Dog Match Profile</div>
+            <h2 class="modal-title"
+              style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 1.35rem;">
+              <span>Welcome, <span id="loggedInEmailText"
+                  style="color: var(--accent-hover); word-break: break-all; font-size: 1.15rem;">user</span></span>
+              <button id="signOutBtn"
+                style="background: transparent; border: none; color: #ef4444; font-weight: 800; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0; display: inline-block;">(Sign
+                Out)</button>
+            </h2>
+            <p class="modal-subtitle" style="margin-bottom: 6px;">Save your preferences so we can prioritize dogs who
+              fit your lifestyle.</p>
+            <p
+              style="font-size: 0.75rem; color: var(--accent-hover); margin: 0 0 10px 0; font-style: italic; display: flex; align-items: center; gap: 4px;">
+              <span>💡 Not sure? Leave anything as 'Any' and we’ll keep your matches broad.</span>
+            </p>
+          </div>
+
+          <!-- Wizard Tabs Indicator -->
+          <div class="modal-tab-indicator">
+            <button class="modal-tab-btn active" id="tabCoreBtn">1. Core Basics</button>
+            <button class="modal-tab-btn" id="tabLifeBtn">2. Lifestyle Fit</button>
+          </div>
+
+          <div class="modal-content" style="margin-bottom: 16px;">
+
+            <!-- STEP 1: CORE BASICS -->
+            <div class="pref-wizard-step active" id="stepCore">
+              <!-- Gender Row -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">🐕</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Dog
+                    Gender</span>
+                </div>
+                <div class="pref-selector-group" id="prefGenderGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <button class="pref-btn" data-value="any">Any Gender 🐾</button>
+                  <button class="pref-btn" data-value="male">Male ♂️</button>
+                  <button class="pref-btn" data-value="female">Female ♀️</button>
+                </div>
+              </div>
+
+              <!-- Age Row -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">🍼</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Age
+                    Category</span>
+                </div>
+                <div class="pref-selector-group" id="prefAgeGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <button class="pref-btn" data-value="any">Any Age</button>
+                  <button class="pref-btn" data-value="puppy">Puppy (&lt;1yr)</button>
+                  <button class="pref-btn" data-value="young">Young (1-3yrs)</button>
+                  <button class="pref-btn" data-value="adult">Adult (3-8yrs)</button>
+                  <button class="pref-btn" data-value="senior">Senior (8yrs+)</button>
+                </div>
+              </div>
+
+              <!-- Size Row -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">⚖️</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Weight
+                    Class</span>
+                </div>
+                <div class="pref-selector-group" id="prefSizeGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <button class="pref-btn" data-value="any">Any Size</button>
+                  <button class="pref-btn" data-value="small">Small (&lt;25 lbs)</button>
+                  <button class="pref-btn" data-value="medium">Medium (25-60 lbs)</button>
+                  <button class="pref-btn" data-value="large">Large (60+ lbs)</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2: LIFESTYLE FIT (Advanced) -->
+            <div class="pref-wizard-step" id="stepLife">
+              <!-- Energy level -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">⚡</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Energy
+                    Level</span>
+                </div>
+                <div class="pref-selector-group" id="prefEnergyGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <button class="pref-btn" data-value="any">Any Energy</button>
+                  <button class="pref-btn" data-value="calm">Calm 🛋️</button>
+                  <button class="pref-btn" data-value="moderate">Moderate 🐕</button>
+                  <button class="pref-btn" data-value="high">High Energy ⚡</button>
+                </div>
+              </div>
+
+              <!-- Home Style -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">🏠</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Home
+                    Style</span>
+                </div>
+                <div class="pref-selector-group" id="prefHomeGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <button class="pref-btn" data-value="any">Any Home</button>
+                  <button class="pref-btn" data-value="apartment">Apartment Friendly 🏢</button>
+                  <button class="pref-btn" data-value="yard">Needs Fenced Yard 🌲</button>
+                </div>
+              </div>
+
+              <!-- Lifestyle Toggles -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">💖</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Household
+                    Compatibility</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <button class="pref-btn" id="prefOptKids" data-active="false">Good with kids 👼</button>
+                  <button class="pref-btn" id="prefOptDogs" data-active="false">Good with dogs 🐕</button>
+                  <button class="pref-btn" id="prefOptCats" data-active="false">Good with cats 🐱</button>
+                  <button class="pref-btn" id="prefOptShed" data-active="false">Low Shedding 🧼</button>
+                  <button class="pref-btn" id="prefOptAlone" data-active="false">Can be alone 🕰️</button>
+                  <button class="pref-btn" id="prefOptLearn" data-active="false">Quick Learner 🎓</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 8px; width: 100%;">
+            <button class="btn-secondary" id="prefBackBtn"
+              style="display: none; border-radius: 9999px; flex: 1; padding: 12px;">Back</button>
+            <button class="modal-start-btn" id="savePrefBtn" style="margin-top: 0; flex: 1; padding: 12px 24px;">Save
+              Selections ✨</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="shareFallbackMenu" class="share-fallback-menu" role="menu" aria-label="Share options" hidden></div>
+    <div id="shareToast" class="share-toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+      // Helper to send Google Analytics events safely and log them for debugging
+      function trackEvent(eventName, eventParams = {}) {
+        try {
+          if (typeof gtag === 'function') {
+            gtag('event', eventName, eventParams);
+            console.log(`[GA Event] ${eventName}:`, eventParams);
+          } else {
+            console.warn(`[GA Event WARNING] gtag not defined. Tried to track ${eventName}:`, eventParams);
+          }
+        } catch (err) {
+          console.error(`[GA Event ERROR] Failed to track ${eventName}:`, err);
+        }
+      }
+
+      let viewedIds = [];
+      let currentAnimalId = null;
+      let conversationHistory = [];
+      let factInterval = null;
+      let currentDogName = 'this dog';
+      let currentDogData = null;
+      let activeDogFetchId = 0;
+
+      const CH_CANONICAL_ORIGIN = 'https://chattyhound.com';
+      const CH_DEFAULT_OG_IMAGE = CH_CANONICAL_ORIGIN + '/og-image.jpg';
+
+      function getDogIdFromPath(pathname) {
+        const match = (pathname || window.location.pathname).match(/^\/dogs\/([^/?#]+)\/?$/);
+        return match ? decodeURIComponent(match[1]) : null;
+      }
+
+      function getCanonicalDogUrl(animalId) {
+        if (!animalId) return CH_CANONICAL_ORIGIN + '/';
+        return `${CH_CANONICAL_ORIGIN}/dogs/${encodeURIComponent(animalId)}`;
+      }
+
+      function updateDogShareUrl(animalId, replace) {
+        if (!animalId) return;
+        const target = `/dogs/${encodeURIComponent(animalId)}`;
+        const state = { dogId: animalId };
+        if (replace) {
+          history.replaceState(state, '', target);
+        } else {
+          history.pushState(state, '', target);
+        }
+      }
+
+      function pronounForGender(genderStr) {
+        const g = (genderStr || '').toLowerCase();
+        if (g.includes('female')) return 'her';
+        if (g.includes('male')) return 'him';
+        return 'them';
+      }
+
+      function getDogImageUrl(dog) {
+        const d = dog || currentDogData;
+        if (d?.image_file && d?.image_base_url) {
+          return d.image_base_url + d.image_file;
+        }
+        if (d?.image_public_url) return d.image_public_url;
+        if (d?.image_url) return d.image_url;
+        const imgEl = document.getElementById('dogImage');
+        if (imgEl?.src) return imgEl.src;
+        return CH_DEFAULT_OG_IMAGE;
+      }
+
+      async function buildDogShareImageFile(dog) {
+        const imageUrl = getDogImageUrl(dog);
+        if (!imageUrl || imageUrl === CH_DEFAULT_OG_IMAGE) return null;
+        try {
+          const res = await fetch(imageUrl);
+          if (!res.ok) return null;
+          const blob = await res.blob();
+          const type = blob.type && blob.type.startsWith('image/') ? blob.type : 'image/jpeg';
+          const ext = type.includes('png') ? 'png' : 'jpg';
+          const safeName = (dog?.name || currentDogName || 'dog').replace(/[^\w.-]+/g, '-').slice(0, 40);
+          return new File([blob], `${safeName}.${ext}`, { type });
+        } catch (e) {
+          console.warn('Could not load dog image for share:', e);
+          return null;
+        }
+      }
+
+      function buildDogSharePayload(dog) {
+        const name = dog?.name || currentDogName || 'this dog';
+        const age = cleanAgeText(dog?.age || '');
+        const shelter = dog?.located_at || 'Pima Animal Care Center';
+        const pron = pronounForGender(dog?.gender);
+        const animalId = dog?.animal_id || currentAnimalId;
+        const url = getCanonicalDogUrl(animalId);
+
+        let summary = '';
+        const facts = dog?.important_facts || [];
+        if (facts.length > 0) {
+          summary = facts[0];
+        } else if (dog?.description || dog?.bio) {
+          const snippet = (dog.description || dog.bio).trim().slice(0, 120);
+          summary = snippet + ((dog.description || dog.bio).length > 120 ? '…' : '');
+        }
+
+        const agePart = age && age !== '-' ? `${age} ` : '';
+        let text = `${name} is a sweet ${agePart}rescue mix at ${shelter}. Chat with ${pron} and learn more.`;
+        if (summary) {
+          text = `${name} is a ${agePart}rescue at ${shelter}. ${summary} Chat with ${pron} on ChattyHound.`;
+        }
+
+        return {
+          title: `Meet ${name} on ChattyHound`,
+          text,
+          url,
+          animal_id: animalId,
+          dog_name: name
+        };
+      }
+
+      function updateDocumentMetaForDog(dog) {
+        if (!dog || !dog.animal_id) return;
+        const name = dog.name || 'this dog';
+        const shelter = dog.located_at || 'Pima Animal Care Center';
+        const pron = pronounForGender(dog.gender);
+        const title = `Meet ${name} | ChattyHound`;
+        const description = `${name} is an adoptable rescue dog at ${shelter}. Chat with ${pron} on ChattyHound and continue to the official shelter page.`;
+        const canonical = getCanonicalDogUrl(dog.animal_id);
+        const image = getDogImageUrl(dog);
+
+        document.title = title;
+        const descMeta = document.querySelector('meta[name="description"]');
+        if (descMeta) descMeta.setAttribute('content', description);
+        const canonicalLink = document.querySelector('link[rel="canonical"]');
+        if (canonicalLink) canonicalLink.setAttribute('href', canonical);
+        const ogPairs = [
+          ['og:url', canonical],
+          ['og:title', `Meet ${name} on ChattyHound`],
+          ['og:description', description],
+          ['og:image', image],
+          ['og:image:secure_url', image],
+          ['twitter:url', canonical],
+          ['twitter:title', `Meet ${name} on ChattyHound`],
+          ['twitter:description', description],
+          ['twitter:image', image]
+        ];
+        ogPairs.forEach(([prop, content]) => {
+          let el = document.querySelector(`meta[property="${prop}"]`);
+          if (!el) {
+            el = document.createElement('meta');
+            el.setAttribute('property', prop);
+            document.head.appendChild(el);
+          }
+          el.setAttribute('content', content);
+        });
+        let ogAlt = document.querySelector('meta[property="og:image:alt"]');
+        if (!ogAlt) {
+          ogAlt = document.createElement('meta');
+          ogAlt.setAttribute('property', 'og:image:alt');
+          document.head.appendChild(ogAlt);
+        }
+        ogAlt.setAttribute('content', `Meet ${name} on ChattyHound`);
+      }
+
+      function updateShareButtonLabels() {
+        const label = currentDogName && currentDogName !== 'this dog'
+          ? `Share ${currentDogName}`
+          : 'Share this dog';
+        ['heroShareBtn', 'chatShareBtn'].forEach(id => {
+          const btn = document.getElementById(id);
+          if (btn) btn.setAttribute('aria-label', label);
+        });
+      }
+
+      const shareToast = document.getElementById('shareToast');
+      let shareToastTimer = null;
+
+      function showShareToast(message) {
+        if (!shareToast) return;
+        shareToast.textContent = message;
+        shareToast.classList.add('visible');
+        if (shareToastTimer) clearTimeout(shareToastTimer);
+        shareToastTimer = setTimeout(() => {
+          shareToast.classList.remove('visible');
+        }, 2600);
+      }
+
+      const shareFallbackMenu = document.getElementById('shareFallbackMenu');
+      let shareFallbackAnchor = null;
+
+      function closeShareFallbackMenu() {
+        if (!shareFallbackMenu) return;
+        shareFallbackMenu.classList.remove('open');
+        shareFallbackMenu.hidden = true;
+        shareFallbackMenu.innerHTML = '';
+        shareFallbackAnchor = null;
+      }
+
+      function openShareFallbackMenu(anchorEl, payload) {
+        if (!shareFallbackMenu || !anchorEl) return;
+        closeShareFallbackMenu();
+        shareFallbackAnchor = anchorEl;
+
+        const items = [
+          { id: 'copy', label: 'Copy link', action: () => copyDogShareLink(payload) },
+          { id: 'email', label: 'Email', action: () => shareDogByEmail(payload) },
+          { id: 'sms', label: 'Text message', action: () => shareDogBySms(payload) }
+        ];
+
+        shareFallbackMenu.innerHTML = items.map(item =>
+          `<button type="button" role="menuitem" data-share-action="${item.id}">${item.label}</button>`
+        ).join('');
+
+        shareFallbackMenu.querySelectorAll('button').forEach((btn, idx) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            items[idx].action();
+            closeShareFallbackMenu();
+          });
+        });
+
+        const rect = anchorEl.getBoundingClientRect();
+        shareFallbackMenu.style.top = `${Math.min(rect.bottom + 8, window.innerHeight - 160)}px`;
+        shareFallbackMenu.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - 220))}px`;
+        shareFallbackMenu.hidden = false;
+        shareFallbackMenu.classList.add('open');
+        const firstBtn = shareFallbackMenu.querySelector('button');
+        if (firstBtn) firstBtn.focus();
+      }
+
+      async function copyDogShareLink(payload) {
+        const url = payload.url;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(url);
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+          showShareToast('Dog link copied!');
+          trackEvent('dog_share_copied_link', {
+            animal_id: payload.animal_id,
+            share_method: 'copy_link'
+          });
+          trackEvent('dog_share_completed', {
+            animal_id: payload.animal_id,
+            share_method: 'copy_link'
+          });
+        } catch (err) {
+          console.error('Copy failed:', err);
+          trackEvent('dog_share_failed', {
+            animal_id: payload.animal_id,
+            share_method: 'copy_link',
+            error: 'clipboard'
+          });
+          showShareToast('Could not copy link. Please try again.');
+        }
+      }
+
+      function shareDogByEmail(payload) {
+        const subject = encodeURIComponent(payload.title);
+        const body = encodeURIComponent(`${payload.text}\n\n${payload.url}`);
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        trackEvent('dog_share_completed', {
+          animal_id: payload.animal_id,
+          share_method: 'email'
+        });
+      }
+
+      function shareDogBySms(payload) {
+        const body = encodeURIComponent(`${payload.text} ${payload.url}`);
+        const sep = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? '&' : '?';
+        window.location.href = `sms:${sep}body=${body}`;
+        trackEvent('dog_share_completed', {
+          animal_id: payload.animal_id,
+          share_method: 'sms'
+        });
+      }
+
+      async function shareCurrentDog(anchorEl, dogOverride) {
+        const dog = dogOverride || currentDogData;
+        if (!dog && !currentAnimalId) return;
+        const payload = buildDogSharePayload(dog || { animal_id: currentAnimalId, name: currentDogName });
+        trackEvent('dog_share_clicked', {
+          animal_id: payload.animal_id,
+          share_method: navigator.share ? 'native' : 'fallback'
+        });
+
+        if (navigator.share) {
+          try {
+            const shareData = {
+              title: payload.title,
+              text: payload.text,
+              url: payload.url
+            };
+            const imageFile = await buildDogShareImageFile(dog);
+            let shareMethod = 'native';
+            if (imageFile) {
+              const withImage = { ...shareData, files: [imageFile] };
+              if (navigator.canShare && navigator.canShare(withImage)) {
+                await navigator.share(withImage);
+                shareMethod = 'native_with_image';
+              } else {
+                await navigator.share(shareData);
+              }
+            } else {
+              await navigator.share(shareData);
+            }
+            trackEvent('dog_share_completed', {
+              animal_id: payload.animal_id,
+              share_method: shareMethod
+            });
+          } catch (err) {
+            if (err && err.name === 'AbortError') return;
+            console.warn('Native share failed, using fallback:', err);
+            openShareFallbackMenu(anchorEl, payload);
+          }
+        } else {
+          openShareFallbackMenu(anchorEl, payload);
+        }
+      }
+
+      function wireShareButtons() {
+        const heroShareBtn = document.getElementById('heroShareBtn');
+        const chatShareBtn = document.getElementById('chatShareBtn');
+        if (heroShareBtn) {
+          heroShareBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            shareCurrentDog(heroShareBtn);
+          });
+        }
+        if (chatShareBtn) {
+          chatShareBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            shareCurrentDog(chatShareBtn);
+          });
+        }
+      }
+
+      document.addEventListener('click', (e) => {
+        if (shareFallbackMenu && !shareFallbackMenu.hidden && !shareFallbackMenu.contains(e.target) && e.target !== shareFallbackAnchor) {
+          closeShareFallbackMenu();
+        }
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeShareFallbackMenu();
+      });
+      wireShareButtons();
+
+      function hideDogUnavailableState() {
+        const card = document.getElementById('dogUnavailableCard');
+        const detailsBox = document.getElementById('detailsBox');
+        const ctaGrid = document.querySelector('.cta-grid');
+        const chatSection = document.getElementById('chatSection');
+        const heroSection = document.querySelector('.hero-section');
+        const mobileActionBar = document.getElementById('mobileActionBar');
+        if (card) {
+          card.classList.remove('visible');
+          card.style.display = 'none';
+        }
+        if (detailsBox) detailsBox.style.display = 'flex';
+        if (ctaGrid) ctaGrid.style.display = 'grid';
+        if (chatSection) chatSection.style.display = 'flex';
+        if (heroSection) heroSection.style.display = 'block';
+        if (mobileActionBar) mobileActionBar.style.display = '';
+      }
+
+      function showDogUnavailableState(fetchId) {
+        if (fetchId != null && fetchId !== activeDogFetchId) return;
+
+        const card = document.getElementById('dogUnavailableCard');
+        const detailsBox = document.getElementById('detailsBox');
+        const ctaGrid = document.querySelector('.cta-grid');
+        const chatSection = document.getElementById('chatSection');
+        const heroSection = document.querySelector('.hero-section');
+        const mobileActionBar = document.getElementById('mobileActionBar');
+        const stickyDogBar = document.getElementById('stickyDogBar');
+        const emptyStateCard = document.getElementById('emptyStateCard');
+        if (emptyStateCard) emptyStateCard.style.display = 'none';
+        if (card) {
+          card.classList.add('visible');
+          card.style.display = 'flex';
+        }
+        if (detailsBox) detailsBox.style.display = 'none';
+        if (ctaGrid) ctaGrid.style.display = 'none';
+        if (chatSection) chatSection.style.display = 'none';
+        if (heroSection) heroSection.style.display = 'none';
+        if (mobileActionBar) mobileActionBar.style.display = 'none';
+        if (stickyDogBar) {
+          stickyDogBar.style.display = 'none';
+          stickyDogBar.classList.remove('visible');
+        }
+        profilePanel.classList.remove('loading-skeleton');
+        profilePanel.classList.remove('loading');
+      }
+
+      // Setup simple Favorites storage array
+      let favoritesList = JSON.parse(localStorage.getItem('chattyhound_favorites') || '[]');
+
+      // Configure marked options to be safe
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+        headerIds: false
+      });
+
+      const profilePanel = document.getElementById('profilePanel');
+      const loader = document.getElementById('loader');
+      const dogImage = document.getElementById('dogImage');
+      const dogName = document.getElementById('dogName');
+      const dogId = document.getElementById('dogId');
+      const dogAge = document.getElementById('dogAge');
+      const dogWeight = document.getElementById('dogWeight');
+      const paccLink = document.getElementById('paccLink');
+      const nextBtn = document.getElementById('nextBtn');
+
+      const chatTitleName = document.getElementById('chatTitleName');
+      const chatHistory = document.getElementById('chatHistory');
+      const chatInput = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendBtn');
+
+      const favBtn = document.getElementById('favBtn');
+      const scrollContent = document.getElementById('scrollContent');
+
+      function stopFactsAnimation() {
+        // Stub left for safety/backward compatibility
+      }
+
+      // Toggle active favorite heart (local + backend sync)
+      if (favBtn) {
+        favBtn.addEventListener('click', async () => {
+          if (!currentAnimalId) return;
+          const index = favoritesList.indexOf(currentAnimalId);
+          const removing = index > -1;
+
+          // Optimistic UI update
+          if (removing) {
+            favoritesList.splice(index, 1);
+            favBtn.classList.remove('favorited');
+            trackEvent('dog_unfavorited', { dog_name: currentDogName, animal_id: currentAnimalId });
+          } else {
+            favoritesList.push(currentAnimalId);
+            favBtn.classList.add('favorited');
+            trackEvent('dog_favorited', { dog_name: currentDogName, animal_id: currentAnimalId });
+          }
+          localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
+          updateSavedNavBadge();
+
+          // Backend sync if logged in
+          if (userEmail) {
+            try {
+              const currentImageUrl = document.getElementById('dogImage')?.src || '';
+              await fetch('/api/favorites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  email: userEmail,
+                  animal_id: currentAnimalId,
+                  dog_name: currentDogName,
+                  dog_image_url: currentImageUrl,
+                  action: removing ? 'remove' : 'save'
+                })
+              });
+            } catch (e) {
+              // Non-blocking: localStorage is already updated
+              console.warn('Favorites sync failed:', e);
+            }
+          }
+        });
+      }
+
+      function cleanAgeText(ageStr) {
+        if (!ageStr) return '-';
+        let clean = ageStr.replace(/The shelter staff think I am/i, '').replace(/old/i, '').trim();
+        clean = clean.replace(/^(?:about|around)\s+/i, '');
+        clean = clean.replace(/\byears?\b/gi, 'yr').replace(/\bmonths?\b/gi, 'mo');
+        return clean || ageStr;
+      }
+
+      function cleanWeightText(weightStr) {
+        if (!weightStr) return '-';
+        let clean = weightStr.replace(/I weigh approximately/i, '').trim();
+        clean = clean.replace(/\bpounds\b/gi, 'lbs');
+        return clean || weightStr;
+      }
+
+      function cleanGenderText(genderStr) {
+        if (!genderStr) return '-';
+        return genderStr.replace(/unaltered/i, 'Unalt.').trim();
+      }
+
+      async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
+        const fetchId = ++activeDogFetchId;
+        const isStaleFetch = () => fetchId !== activeDogFetchId;
+
+        hideDogUnavailableState();
+        // Toggle skeleton loaders active
+        profilePanel.classList.add('loading-skeleton');
+
+        // Hide any active empty state cards & restore normal details view display blocks
+        const emptyStateCard = document.getElementById('emptyStateCard');
+        const detailsBox = document.getElementById('detailsBox');
+        const ctaGrid = document.querySelector('.cta-grid');
+        const chatSection = document.getElementById('chatSection');
+        const heroSection = document.querySelector('.hero-section');
+        const mobileActionBar = document.getElementById('mobileActionBar');
+        const stickyDogBar = document.getElementById('stickyDogBar');
+
+        if (emptyStateCard) emptyStateCard.style.display = 'none';
+        if (detailsBox) detailsBox.style.display = 'flex';
+        if (ctaGrid) ctaGrid.style.display = 'grid';
+        if (chatSection) chatSection.style.display = 'flex';
+        if (heroSection) heroSection.style.display = 'block';
+
+        // Hide sticky and mobile overlays during loading to avoid displacement
+        if (mobileActionBar) mobileActionBar.style.display = 'none';
+        if (stickyDogBar) {
+          stickyDogBar.style.display = 'none';
+          stickyDogBar.classList.remove('visible');
+        }
+
+        // Clear current state instantly to prevent lagging info
+        dogImage.src = '';
+        dogName.textContent = '';
+        dogId.textContent = '';
+        const locationTextEl = document.getElementById('dogLocationText');
+        if (locationTextEl) locationTextEl.textContent = '-';
+        dogAge.textContent = '-';
+        dogWeight.textContent = '-';
+        paccLink.style.display = 'none';
+        chatTitleName.textContent = '...';
+        currentDogName = 'this dog';
+        chatHistory.innerHTML = '';
+        conversationHistory = [];
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+
+        // Hide custom whyFitCard
+        const whyFitCard = document.getElementById('whyFitCard');
+        if (whyFitCard) whyFitCard.style.display = 'none';
+
+        // Reset combined preference metadata rows
+        const statBoxes = ['chipGender', 'chipAge', 'chipWeight'];
+        statBoxes.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.className = 'detail-chip';
+          }
+        });
+        const compatDots = ['dotGender', 'dotAge', 'dotWeight'];
+        compatDots.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.display = 'none';
+            el.className = 'compat-dot';
+          }
+        });
+        const prefNotes = ['noteGender', 'noteAge', 'noteWeight'];
+        prefNotes.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.display = 'none';
+            el.innerHTML = '';
+          }
+        });
+        const dogGender = document.getElementById('dogGender');
+        if (dogGender) dogGender.textContent = '-';
+
+        profilePanel.classList.add('loading');
+
+        try {
+          let url = '/api/random_dog?';
+          const params = [];
+          if (forcedAnimalId) {
+            params.push('animal_id=' + encodeURIComponent(forcedAnimalId));
+          } else if (viewedIds.length > 0) {
+            params.push('viewed=' + viewedIds.join(','));
+          }
+          if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+          url += params.join('&');
+
+          const response = await fetch(url);
+          if (isStaleFetch()) return;
+
+          if (!response.ok) {
+            if (forcedAnimalId) {
+              if (!isStaleFetch()) showDogUnavailableState(fetchId);
+              return;
+            }
+            throw new Error('Failed to fetch a dog.');
+          }
+
+          const dog = await response.json();
+          if (isStaleFetch()) return;
+
+          currentDogData = dog;
+          updateDocumentMetaForDog(dog);
+          if (dog.animal_id) {
+            updateDogShareUrl(dog.animal_id, true);
+          }
+
+          currentAnimalId = dog.animal_id;
+          if (currentAnimalId && !viewedIds.includes(currentAnimalId)) {
+            viewedIds.push(currentAnimalId);
+          }
+
+          // Toggle Favorite heart state on load
+          if (favBtn) {
+            if (favoritesList.includes(currentAnimalId)) {
+              favBtn.classList.add('favorited');
+            } else {
+              favBtn.classList.remove('favorited');
+            }
+          }
+
+          // Handle preference match badge
+          const badgeContainer = document.getElementById('prefMatchBadgeContainer');
+          if (badgeContainer) {
+            badgeContainer.innerHTML = '';
+            if (dog.user_has_preferences) {
+              if (dog.preferences_matched) {
+                badgeContainer.innerHTML = '<span class="match-badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Strong Match</span>';
+              } else {
+                badgeContainer.innerHTML = '<span class="match-badge fallback" title="Showing all pups as no exact fits match your preferences currently.">All Pups</span>';
+              }
+            }
+          }
+
+          currentDogName = dog.name || 'this dog';
+          dogName.textContent = dog.name || 'Unknown';
+          chatTitleName.textContent = currentDogName;
+          dogId.textContent = dog.animal_id ? `${dog.animal_id} • PACC` : '';
+          if (locationTextEl) {
+            locationTextEl.textContent = dog.located_at || 'Pima Animal Care Center';
+          }
+
+          // Dynamically update dog name in buttons, labels, and placeholders
+          const askBtnTitle = document.getElementById('askBtnTitle');
+          if (askBtnTitle) askBtnTitle.textContent = "Ask " + currentDogName;
+          if (favBtn) favBtn.setAttribute('aria-label', "Favorite " + currentDogName);
+          updateShareButtonLabels();
+          if (chatInput) chatInput.placeholder = "Ask about " + currentDogName + "...";
+
+          // Update sticky dog bar
+          const stickyDogName = document.getElementById('stickyDogName');
+          const stickyDogMeta = document.getElementById('stickyDogMeta');
+          if (stickyDogName) stickyDogName.textContent = currentDogName;
+          if (stickyDogMeta) {
+            const agePart = cleanAgeText(dog.age || '');
+            const weightPart = cleanWeightText(dog.weight || '');
+            const parts = [agePart, weightPart].filter(p => p && p !== '-');
+            stickyDogMeta.textContent = parts.join(' · ') || 'PACC Shelter Dog';
+          }
+
+          // Fill actual values in the stats panel (using compact cleaning functions)
+          const genderEl = document.getElementById('dogGender');
+          if (genderEl) genderEl.textContent = cleanGenderText(dog.gender || 'Unknown');
+          dogAge.textContent = cleanAgeText(dog.age || 'Unknown');
+          dogWeight.textContent = cleanWeightText(dog.weight || 'Unknown');
+
+          // Restore action overlays on successful load
+          if (mobileActionBar) mobileActionBar.style.display = 'flex';
+          if (stickyDogBar) stickyDogBar.style.display = 'flex';
+
+          // ──── CLIENT-SIDE LIFESTYLE COMPATIBILITY ENGINE & MATCH SENTENCE GENERATOR ────
+          let lifestyleSummary = '';
+          const dogWeightNum = parseFloat(cleanWeightText(dog.weight || ''));
+          const factsLower = (dog.important_facts || []).map(f => f.toLowerCase().trim());
+          const descLower = (dog.description || dog.bio || '').toLowerCase();
+
+          if (dogWeightNum && dogWeightNum < 25) {
+            if (descLower.includes('calm') || descLower.includes('couch') || descLower.includes('gentle')) {
+              lifestyleSummary = `A perfect gentle lapdog ideal for a cozy apartment environment.`;
+            } else {
+              lifestyleSummary = `A lively, compact companion ready for fun walks and small spaces.`;
+            }
+          } else if (descLower.includes('active') || descLower.includes('hike') || descLower.includes('run') || descLower.includes('energy') || factsLower.some(f => f.includes('energy') || f.includes('active'))) {
+            lifestyleSummary = `A magnificent high-energy adventure partner perfect for active hikers and yard playtime.`;
+          } else if (descLower.includes('kid') || descLower.includes('child') || descLower.includes('family') || factsLower.some(f => f.includes('kid') || f.includes('family'))) {
+            lifestyleSummary = `A sweet-natured family sweetheart who loves playtime and gentle social environments.`;
+          } else {
+            lifestyleSummary = `A loyal and loving companion with a wonderful personality ready to bond deeply with you.`;
+          }
+
+          // Update stat row backgrounds and dots based on preferences
+          if (dog.user_has_preferences && dog.match_details) {
+            const hasConfiguredPrefs = Object.values(dog.match_details).some(cat => cat.active);
+
+            if (hasConfiguredPrefs) {
+              const categories = [
+                { key: 'gender', boxId: 'chipGender', dotId: 'dotGender' },
+                { key: 'age', boxId: 'chipAge', dotId: 'dotAge' },
+                { key: 'size', boxId: 'chipWeight', dotId: 'dotWeight' }
+              ];
+
+              categories.forEach(cat => {
+                const details = dog.match_details[cat.key];
+                const box = document.getElementById(cat.boxId);
+                const dot = document.getElementById(cat.dotId);
+
+                if (!details || !box || !dot) return;
+
+                dot.style.display = 'inline-block';
+
+                if (details.active) {
+                  if (details.matched) {
+                    box.classList.add('matched');
+                    dot.className = 'compat-dot green';
+                  } else {
+                    box.classList.add('mismatched');
+                    dot.className = 'compat-dot yellow';
+                  }
+                } else {
+                  dot.className = 'compat-dot gray';
+                }
+              });
+
+              const whyFitDesc = document.getElementById('whyFitDesc');
+              if (whyFitCard && whyFitDesc) {
+                whyFitCard.style.display = 'block';
+
+                let matchCount = 0;
+                let totalPrefs = 0;
+                const matchesList = [];
+                const mismatchesList = [];
+
+                Object.keys(dog.match_details).forEach(key => {
+                  const details = dog.match_details[key];
+                  if (details.active) {
+                    totalPrefs++;
+                    const formattedKey = key === 'size' ? 'weight' : key;
+                    if (details.matched) {
+                      matchCount++;
+                      matchesList.push(formattedKey);
+                    } else {
+                      mismatchesList.push(formattedKey);
+                    }
+                  }
+                });
+
+                if (matchCount === totalPrefs) {
+                  whyFitDesc.textContent = `🎯 Match Fit: ${lifestyleSummary} ${currentDogName} matches all of your preferences!`;
+                  whyFitCard.className = 'details-fit-container';
+                } else if (matchCount > 0) {
+                  whyFitDesc.textContent = `🐾 Good Fit: ${lifestyleSummary} Meets criteria for ${matchesList.join(' & ')}.`;
+                  whyFitCard.className = 'details-fit-container warning';
+                } else {
+                  whyFitDesc.textContent = `💝 Special Fit: ${lifestyleSummary} Ready to surprise you with love.`;
+                  whyFitCard.className = 'details-fit-container warning';
+                }
+              }
+            }
+          }
+
+          // Render Trait Chips from dog.important_facts
+          const traitChipsContainer = document.getElementById('traitChipsContainer');
+          if (traitChipsContainer) {
+            traitChipsContainer.innerHTML = '';
+            const facts = dog.important_facts || [];
+            if (facts.length > 0) {
+              facts.forEach(fact => {
+                const chip = document.createElement('span');
+                chip.className = 'trait-chip';
+                chip.textContent = fact;
+                traitChipsContainer.appendChild(chip);
+              });
+            } else {
+              // Default friendly trait chips if no specific scraper facts
+              const defaultTraits = ["Active & Playful", "Friendly Companion", "Sweet Personality", "Shelter Hero"];
+              defaultTraits.forEach(t => {
+                const chip = document.createElement('span');
+                chip.className = 'trait-chip';
+                chip.textContent = t;
+                traitChipsContainer.appendChild(chip);
+              });
+            }
+          }
+
+          // Render Shelter Biography Story
+          const bioText = (dog.description || dog.bio || '').trim();
+          const aboutDogCard = document.getElementById('aboutDogCard');
+          const aboutDogName = document.getElementById('aboutDogName');
+          const aboutDogText = document.getElementById('aboutDogText');
+          const aboutDogToggle = document.getElementById('aboutDogToggle');
+
+          if (aboutDogCard && aboutDogText && aboutDogToggle && aboutDogName) {
+            if (bioText) {
+              aboutDogCard.style.display = 'block';
+              aboutDogName.textContent = currentDogName;
+              aboutDogText.textContent = bioText;
+
+              // Set default collapsed state
+              aboutDogText.classList.add('collapsed');
+              aboutDogToggle.style.display = 'none';
+
+              // Verify if description length warrants a "See more" toggle
+              if (bioText.length > 180) {
+                aboutDogToggle.style.display = 'inline-flex';
+                aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
+              } else {
+                aboutDogText.classList.remove('collapsed');
+              }
+            } else {
+              aboutDogCard.style.display = 'none';
+            }
+          }
+
+          if (dog.url) {
+            paccLink.href = dog.url;
+            paccLink.style.display = 'inline-flex';
+          }
+
+          // Update sticky avatar image
+          const stickyDogAvatar = document.getElementById('stickyDogAvatar');
+          if (stickyDogAvatar) {
+            if (dog.image_file && dog.image_base_url) {
+              stickyDogAvatar.src = dog.image_base_url + dog.image_file;
+            } else if (dog.image_public_url) {
+              stickyDogAvatar.src = dog.image_public_url;
+            } else if (dog.image_url) {
+              stickyDogAvatar.src = dog.image_url;
+            } else {
+              stickyDogAvatar.src = '';
+            }
+          }
+
+          // Handle Image
+          if (dog.image_file && dog.image_base_url) {
+            dogImage.src = dog.image_base_url + dog.image_file;
+          } else if (dog.image_public_url) {
+            dogImage.src = dog.image_public_url;
+          } else if (dog.image_url) {
+            dogImage.src = dog.image_url;
+          }
+
+          const mobileAdoptBtn = document.getElementById('mobileAdoptBtn');
+          if (mobileAdoptBtn && dog.url) {
+            mobileAdoptBtn.href = dog.url;
+          }
+
+          chatInput.disabled = false;
+          sendBtn.disabled = false;
+
+          // ──── CLIENT-SIDE LIFESTYLE COMPATIBILITY ENGINE ────
+          let fitBadgeType = 'cuddle';
+          let fitBadgeLabel = 'Sweet cuddle companion 💖';
+          const parsedWeight = parseFloat(cleanWeightText(dog.weight || ''));
+
+          if (parsedWeight && parsedWeight < 25 && !descLower.includes('high energy') && !descLower.includes('active home')) {
+            fitBadgeType = 'apartment';
+            fitBadgeLabel = 'Great apartment fit 🏠';
+          } else if (descLower.includes('active') || descLower.includes('hike') || descLower.includes('run') || descLower.includes('high energy') || factsLower.some(f => f.includes('energy') || f.includes('active'))) {
+            fitBadgeType = 'adventure';
+            fitBadgeLabel = 'High-energy adventure buddy ⛰️';
+          } else if (descLower.includes('kid') || descLower.includes('child') || descLower.includes('family') || factsLower.some(f => f.includes('kid') || f.includes('family'))) {
+            fitBadgeType = 'family';
+            fitBadgeLabel = 'Kid & family friendly 👼';
+          } else if (descLower.includes('cat') || factsLower.some(f => f.includes('cat'))) {
+            fitBadgeType = 'cats';
+            fitBadgeLabel = 'Cat-friendly companion 🐱';
+          } else if (descLower.includes('calm') || descLower.includes('sweet') || descLower.includes('gentle') || descLower.includes('couch')) {
+            fitBadgeType = 'cuddle';
+            fitBadgeLabel = 'Gentle couch snuggler 🛌';
+          }
+
+          const matchBadgeContainer = document.getElementById('prefMatchBadgeContainer');
+          if (matchBadgeContainer) {
+            matchBadgeContainer.innerHTML = `<span class="fit-badge-tag ${fitBadgeType}">${fitBadgeLabel}</span>`;
+          }
+
+          // Initialize dynamic, context-aware prompt suggestions
+          updateSuggestions();
+
+          // Build the Chat Intro Welcome Card
+          chatHistory.innerHTML = '';
+
+          const introCard = document.createElement('div');
+          introCard.className = 'chat-intro-card';
+          if (loadOptions.resumeChat) {
+            introCard.innerHTML = `
+            <div class="chat-intro-title">💬 Continuing chat with ${currentDogName}</div>
+            <p class="chat-intro-text" style="color:var(--teal);">✓ Loading your previous conversation...</p>`;
+          } else {
+            introCard.innerHTML = `
+            <div class="chat-intro-title">💬 Chat with ${currentDogName}</div>
+            <p class="chat-intro-text">Ask me about my personality, energy level, training, ideal home, or what makes me special! I'll do my best to answer as myself.</p>
+            <div class="chat-intro-disclaimer">
+              🔒 ChattyHound uses available shelter profile details to help you get to know each dog. Always confirm medical, behavioral, and adoption details directly with PACC shelter staff.
+            </div>`;
+          }
+          chatHistory.appendChild(introCard);
+
+          let resumeMsgsLoaded = 0;
+          if (loadOptions.resumeChat && userEmail && currentAnimalId) {
+            try {
+              const histRes = await fetch(
+                `/api/chat_history?email=${encodeURIComponent(userEmail)}&animal_id=${encodeURIComponent(currentAnimalId)}`
+              );
+              if (isStaleFetch()) return;
+              if (histRes.ok) {
+                const histData = await histRes.json();
+                if (isStaleFetch()) return;
+                const msgs = (histData.messages || []).filter(m => m.role !== 'system');
+                resumeMsgsLoaded = msgs.length;
+                conversationHistory = [];
+                msgs.forEach(m => {
+                  appendMessage(
+                    m.role === 'assistant' ? 'bot' : 'user',
+                    m.content,
+                    m.role === 'assistant' ? currentDogName.charAt(0).toUpperCase() : undefined,
+                    false
+                  );
+                });
+                const introP = introCard.querySelector('p');
+                if (introP) {
+                  introP.textContent = msgs.length > 0
+                    ? `✓ ${msgs.length} message${msgs.length !== 1 ? 's' : ''} loaded — keep chatting!`
+                    : 'Start a new conversation!';
+                  introP.style.color = 'var(--teal)';
+                }
+                trackEvent('resume_chat_loaded', { dog_name: currentDogName, animal_id: currentAnimalId, msg_count: msgs.length });
+              }
+            } catch (e) {
+              console.warn('Failed to load chat history:', e);
+            }
+          }
+
+          if (isStaleFetch()) return;
+
+          if (!loadOptions.resumeChat) {
+            const firstLetter = currentDogName.charAt(0).toUpperCase();
+            appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetter, false);
+          } else if (resumeMsgsLoaded === 0) {
+            const firstLetterResume = currentDogName.charAt(0).toUpperCase();
+            appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetterResume, false);
+          }
+
+          // Check if user has a previous chat with this dog — show resume banner if so
+          if (!loadOptions.resumeChat && userEmail && currentAnimalId) {
+            const resumeBannerFetchId = fetchId;
+            (async () => {
+              try {
+                const histCheck = await fetch(
+                  `/api/chat_history?email=${encodeURIComponent(userEmail)}&animal_id=${encodeURIComponent(currentAnimalId)}`
+                );
+                if (resumeBannerFetchId !== activeDogFetchId) return;
+                if (!histCheck.ok) return;
+                const histData = await histCheck.json();
+                if (resumeBannerFetchId !== activeDogFetchId) return;
+                const prevMsgs = (histData.messages || []).filter(m => m.role !== 'system');
+                if (prevMsgs.length > 0) {
+                  // Inject a resume banner before the greeting message
+                  const resumeBanner = document.createElement('div');
+                  resumeBanner.id = 'resumeChatBanner';
+                  resumeBanner.style.cssText = `
+                  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+                  background: rgba(20, 184, 166, 0.08); border: 1.5px solid rgba(20, 184, 166, 0.25);
+                  border-radius: 14px; padding: 12px 14px; margin: 8px 0;
+                  font-size: 0.82rem; color: var(--text-muted); animation: fadeIn 0.3s ease;
+                `;
+                  resumeBanner.innerHTML = `
+                  <div style="display:flex; align-items:center; gap: 8px;">
+                    <span style="font-size:1.1rem;">💬</span>
+                    <div>
+                      <div style="font-weight:800; color: var(--teal); font-size:0.83rem;">Previous chat found</div>
+                      <div style="font-size:0.76rem; margin-top:1px;">${prevMsgs.length} message${prevMsgs.length !== 1 ? 's' : ''} from your last visit</div>
+                    </div>
+                  </div>
+                  <button id="loadPrevChatBtn" style="
+                    padding: 7px 14px; background: var(--teal); color: var(--accent-text);
+                    border: none; border-radius: 20px; font-weight: 800; font-size: 0.76rem;
+                    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+                    box-shadow: 0 4px 10px rgba(20,184,166,0.25);
+                  ">Load Chat ↩</button>
+                `;
+                  // Insert after introCard
+                  chatHistory.insertBefore(resumeBanner, chatHistory.children[1] || null);
+
+                  document.getElementById('loadPrevChatBtn').addEventListener('click', async () => {
+                    resumeBanner.innerHTML = `<div style="padding:6px 0; color:var(--teal); font-size:0.82rem; font-weight:700;">⏳ Loading your previous conversation...</div>`;
+                    // Clear current greeting and load history
+                    // Remove the greeting bubble (last child before we add history)
+                    const lastChild = chatHistory.lastElementChild;
+                    if (lastChild && lastChild !== resumeBanner && lastChild !== introCard) {
+                      lastChild.remove();
+                    }
+                    conversationHistory = [];
+                    prevMsgs.forEach(m => {
+                      appendMessage(
+                        m.role === 'assistant' ? 'bot' : 'user',
+                        m.content,
+                        m.role === 'assistant' ? currentDogName.charAt(0).toUpperCase() : undefined,
+                        false
+                      );
+                    });
+                    resumeBanner.remove();
+                    // Scroll to latest message
+                    if (scrollContent) scrollContent.scrollTop = scrollContent.scrollHeight;
+                    trackEvent('resume_chat_loaded', { dog_name: currentDogName, animal_id: currentAnimalId, msg_count: prevMsgs.length });
+                  });
+                }
+              } catch (e) {
+                // Non-blocking — ignore errors silently
+              }
+            })();
+          }
+
+          if (!isStaleFetch()) {
+            hideDogUnavailableState();
+            trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId });
+          }
+
+        } catch (err) {
+          if (isStaleFetch()) return;
+          console.error(err);
+
+          // Display the warm empty state card if load fails or filters return empty sets
+          if (emptyStateCard) emptyStateCard.style.display = 'flex';
+          if (detailsBox) detailsBox.style.display = 'none';
+          if (ctaGrid) ctaGrid.style.display = 'none';
+          if (chatSection) chatSection.style.display = 'none';
+          if (heroSection) heroSection.style.display = 'none';
+
+          // Explicitly hide overlays on empty matches to prevent ghost displays
+          if (mobileActionBar) mobileActionBar.style.display = 'none';
+          if (stickyDogBar) {
+            stickyDogBar.style.display = 'none';
+            stickyDogBar.classList.remove('visible');
+          }
+
+          dogName.textContent = 'Oops!';
+        } finally {
+          if (fetchId === activeDogFetchId) {
+            profilePanel.classList.remove('loading-skeleton');
+            profilePanel.classList.remove('loading');
+          }
+        }
+      }
+
+      function updateSuggestions(botReplyText) {
+        const quickPromptsContainer = document.getElementById('quickPromptsContainer');
+        if (!quickPromptsContainer) return;
+
+        const text = (botReplyText || '').toLowerCase();
+        const genderEl = document.getElementById('dogGender');
+        const dogGender = genderEl ? genderEl.textContent : 'male';
+        const pron = (dogGender && dogGender.toLowerCase().includes('female')) ? 'her' : 'him';
+        const possessive = pron === 'her' ? 'her' : 'his';
+
+        // 1. If no bot reply text is passed, show the initial prompts
+        if (!botReplyText) {
+          const prompts = [
+            `What kind of home would you love?`,
+            `Are you good with other dogs?`,
+            `What’s your energy level?`,
+            `What should my human know about me?`,
+            `What’s your perfect day?`
+          ];
+
+          quickPromptsContainer.innerHTML = '';
+          prompts.forEach(p => {
+            const btn = document.createElement('button');
+            btn.className = 'prompt-shortcut-btn';
+            btn.setAttribute('data-prompt', p);
+            btn.textContent = p;
+            quickPromptsContainer.appendChild(btn);
+          });
+          return;
+        }
+
+        // 2. Pool of candidate suggestions based on keyword categories
+        const categoryPools = [];
+
+        if (text.includes('walk') || text.includes('leash') || text.includes('run') || text.includes('heel') || text.includes('energy') || text.includes('active') || text.includes('play')) {
+          categoryPools.push(
+            `How does ${currentDogName} behave on a leash?`,
+            `What is ${possessive} favorite game to play?`,
+            `Do you think ${currentDogName} would like hiking?`
+          );
+        }
+        if (text.includes('kid') || text.includes('child') || text.includes('family') || text.includes('people') || text.includes('hooman') || text.includes('person') || text.includes('human')) {
+          categoryPools.push(
+            `Is ${currentDogName} calm or high energy at home?`,
+            `How does ${currentDogName} act when meeting strangers?`,
+            `What is the best way to introduce ${pron} to a new family?`
+          );
+        }
+        if (text.includes('dog') || text.includes('cat') || text.includes('fren') || text.includes('animal') || text.includes('pet') || text.includes('pack')) {
+          categoryPools.push(
+            `Has ${currentDogName} lived with cats or other dogs before?`,
+            `What is ${possessive} play style with other dogs?`
+          );
+        }
+        if (text.includes('shy') || text.includes('scared') || text.includes('nervous') || text.includes('go-slow') || text.includes('go slow') || text.includes('patient') || text.includes('soft heart')) {
+          categoryPools.push(
+            `How can I make ${currentDogName} feel safe and cozy?`,
+            `What treats does ${currentDogName} love most?`,
+            `How long does it take for ${pron} to warm up to new friends?`
+          );
+        }
+        if (text.includes('treat') || text.includes('food') || text.includes('toy') || text.includes('snack') || text.includes('bone') || text.includes('kong') || text.includes('chew')) {
+          categoryPools.push(
+            `What is ${possessive} absolute favorite treat or toy?`,
+            `Is ${currentDogName} easy to train with treats?`
+          );
+        }
+        if (text.includes('home') || text.includes('house') || text.includes('crate') || text.includes('sleep') || text.includes('bed') || text.includes('cozy') || text.includes('couch')) {
+          categoryPools.push(
+            `Does ${currentDogName} prefer sleeping in a crate or on the bed?`,
+            `What is ${possessive} favorite cozy spot in the house?`
+          );
+        }
+
+        // General fallbacks if no keyword matching or to fill up slots
+        const generalPool = [
+          `What are some of ${currentDogName}'s favorite things?`,
+          `Tell me more about ${possessive} story before coming here.`,
+          `What is the absolute best way to spend the day with ${pron}?`,
+          `Does ${currentDogName} know any fun tricks?`,
+          `What should I know before adopting ${pron}?`,
+          `What does ${possessive} perfect day look like?`
+        ];
+
+        // Combine category suggestions first, then general pool
+        const allCandidates = [...categoryPools, ...generalPool];
+
+        // Get user messages already sent to filter out
+        const sentMessages = conversationHistory
+          .filter(msg => msg.role === 'user')
+          .map(msg => msg.content.toLowerCase().trim());
+
+        // Filter out duplicates and clean
+        const uniqueFiltered = [];
+        const seen = new Set();
+
+        for (const candidate of allCandidates) {
+          const cleanCand = candidate.toLowerCase().trim();
+          if (!seen.has(cleanCand) && !sentMessages.includes(cleanCand)) {
+            seen.add(cleanCand);
+            uniqueFiltered.push(candidate);
+          }
+        }
+
+        // Render top 3 suggestions
+        quickPromptsContainer.innerHTML = '';
+        const finalSuggestions = uniqueFiltered.slice(0, 3);
+
+        if (finalSuggestions.length > 0) {
+          finalSuggestions.forEach(p => {
+            const btn = document.createElement('button');
+            btn.className = 'prompt-shortcut-btn';
+            btn.setAttribute('data-prompt', p);
+            btn.textContent = p;
+            quickPromptsContainer.appendChild(btn);
+          });
+        }
+      }
+
+      function appendMessage(role, content, avatarLetter = '🐾', shouldScroll = true) {
+        const msgRow = document.createElement('div');
+        msgRow.className = `msg-row ${role === 'bot' ? 'bot' : 'user'}`;
+
+        if (role === 'bot') {
+          const av = document.createElement('div');
+          av.className = 'avatar';
+          av.textContent = avatarLetter;
+          msgRow.appendChild(av);
+
+          const bubble = document.createElement('div');
+          bubble.className = 'bubble bot';
+          bubble.innerHTML = marked.parse(content);
+          msgRow.appendChild(bubble);
+        } else {
+          const bubble = document.createElement('div');
+          bubble.className = 'bubble user';
+          bubble.textContent = content;
+          msgRow.appendChild(bubble);
+        }
+
+        chatHistory.appendChild(msgRow);
+
+        // Smoothly scroll the main layout down as chat history grows
+        if (shouldScroll && scrollContent) {
+          scrollContent.scrollTop = scrollContent.scrollHeight;
+        }
+
+        // Add to internal history state
+        conversationHistory.push({ role: role === 'bot' ? 'assistant' : 'user', content });
+      }
+
+      function showTypingIndicator() {
+        const container = document.createElement('div');
+        container.className = 'msg-row typing-row';
+        container.id = 'typingIndicator';
+
+        const av = document.createElement('div');
+        av.className = 'avatar';
+        av.textContent = currentDogName.charAt(0).toUpperCase();
+        container.appendChild(av);
+
+        const bubble = document.createElement('div');
+        bubble.className = 'typing-bubble';
+        bubble.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+        container.appendChild(bubble);
+
+        chatHistory.appendChild(container);
+        if (scrollContent) {
+          scrollContent.scrollTop = scrollContent.scrollHeight;
+        }
+      }
+
+      function removeTypingIndicator() {
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) {
+          indicator.remove();
+        }
+      }
+
+      async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text || !currentAnimalId) return;
+
+        appendMessage('user', text);
+        trackEvent('chat_message_sent', { dog_name: currentDogName, message_text: text });
+        chatInput.value = '';
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+
+        showTypingIndicator();
+
+        const historyToSend = conversationHistory.slice(0, -1);
+
+        try {
+          const currentImageUrl = document.getElementById('dogImage')?.src || '';
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              animal_id: currentAnimalId,
+              message: text,
+              conversation_history: historyToSend,
+              email: userEmail || null,
+              dog_name: currentDogName,
+              dog_image_url: currentImageUrl
+            })
+          });
+
+          removeTypingIndicator();
+
+          if (!response.ok) throw new Error('Chat failed');
+
+          const data = await response.json();
+          const firstLetter = currentDogName.charAt(0).toUpperCase();
+          if (data.reply) {
+            appendMessage('bot', data.reply, firstLetter);
+            updateSuggestions(data.reply);
+          } else {
+            appendMessage('bot', '[Error: No reply received]', firstLetter);
+          }
+        } catch (err) {
+          removeTypingIndicator();
+          console.error(err);
+          appendMessage('bot', '[Sorry, I had trouble responding to that.]', '!');
+        } finally {
+          chatInput.disabled = false;
+          sendBtn.disabled = false;
+          chatInput.focus();
+        }
+      }
+
+      nextBtn.addEventListener('click', () => {
+        trackEvent('dog_shuffled');
+        fetchRandomDog();
+      });
+      sendBtn.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+      // Force viewport scroll reset to fix iOS keyboard layout displacement bug
+      chatInput.addEventListener('blur', () => {
+        window.scrollTo(0, 0);
+      });
+      chatInput.addEventListener('focus', () => {
+        window.scrollTo(0, 0);
+      });
+
+      // Anchor smooth-scrolling ask CTA
+      const askBtn = document.getElementById('askBtn');
+      if (askBtn) {
+        askBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          trackEvent('ask_cta_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
+          const chatSec = document.getElementById('chatSection');
+          if (chatSec) {
+            chatSec.scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+              if (chatInput) chatInput.focus();
+            }, 400);
+          }
+        });
+      }
+
+      if (paccLink) {
+        paccLink.addEventListener('click', () => {
+          trackEvent('view_profile_clicked', { dog_name: currentDogName, animal_id: currentAnimalId, url: paccLink.href });
+        });
+      }
+
+      // Suggested Prompts trigger
+      document.addEventListener('click', (e) => {
+        const promptBtn = e.target.closest('.prompt-shortcut-btn');
+        if (promptBtn) {
+          const promptText = promptBtn.getAttribute('data-prompt');
+          if (promptText && chatInput && !chatInput.disabled) {
+            trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
+            chatInput.value = promptText;
+            sendMessage();
+          }
+        }
+      });
+
+      // About Modal Controllers
+      const aboutModal = document.getElementById('aboutModal');
+      const aboutBtn = document.getElementById('aboutBtn');
+      const modalCloseBtn = document.getElementById('modalCloseBtn');
+      const modalStartBtn = document.getElementById('modalStartBtn');
+
+      function openModal() {
+        if (aboutModal) {
+          aboutModal.classList.add('active');
+          aboutModal.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+        }
+
+        const loginCallout = document.getElementById('aboutLoginCallout');
+        if (loginCallout) {
+          loginCallout.style.display = userEmail ? 'none' : 'flex';
+        }
+
+        if (modalStartBtn) {
+          modalStartBtn.focus();
+        }
+        trackEvent('about_modal_opened');
+      }
+
+      function closeModal() {
+        if (document.activeElement && aboutModal && aboutModal.contains(document.activeElement)) {
+          document.activeElement.blur();
+        }
+        if (aboutModal) {
+          aboutModal.classList.remove('active');
+          aboutModal.setAttribute('aria-hidden', 'true');
+        }
+        document.body.style.overflow = '';
+        localStorage.setItem('chattyhound_visited', 'true');
+        if (aboutBtn) {
+          aboutBtn.focus();
+        }
+        trackEvent('about_modal_closed');
+      }
+
+      if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+      if (modalStartBtn) modalStartBtn.addEventListener('click', closeModal);
+
+      if (aboutModal) {
+        aboutModal.addEventListener('click', (e) => {
+          if (e.target === aboutModal) {
+            closeModal();
+          }
+        });
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && aboutModal && aboutModal.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      if (aboutBtn) {
+        aboutBtn.addEventListener('click', openModal);
+      }
+
+      const aboutLoginBtn = document.getElementById('aboutLoginBtn');
+      if (aboutLoginBtn) {
+        aboutLoginBtn.addEventListener('click', () => {
+          closeModal();
+          setTimeout(openPrefModal, 300);
+        });
+      }
+
+      // Preferences Modal Elements
+      const prefModal = document.getElementById('prefModal');
+      const prefBtn = document.getElementById('prefBtn');
+      const prefBtnText = document.getElementById('prefBtnText');
+      const prefCloseBtn = document.getElementById('prefCloseBtn');
+      const prefLoggedOutState = document.getElementById('prefLoggedOutState');
+      const prefLoggedInState = document.getElementById('prefLoggedInState');
+
+      const loginEmailInput = document.getElementById('loginEmailInput');
+      const loginErrorMsg = document.getElementById('loginErrorMsg');
+      const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
+      const loggedInEmailText = document.getElementById('loggedInEmailText');
+      const signOutBtn = document.getElementById('signOutBtn');
+      const savePrefBtn = document.getElementById('savePrefBtn');
+
+      let userEmail = localStorage.getItem('chattyhound_user_email') || null;
+      let currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+
+      // Expanded lifestyle preferences stored locally
+      let lifestylePrefs = JSON.parse(localStorage.getItem('chattyhound_lifestyle_prefs') || JSON.stringify({
+        energy: 'any',
+        home: 'any',
+        kids: false,
+        dogs: false,
+        cats: false,
+        shedding: false,
+        aloneTime: false,
+        training: false
+      }));
+
+      // View Switching Utility
+      function switchView(viewName) {
+        const landingView = document.getElementById('landingView');
+        const appView = document.getElementById('appView');
+        const footerInputBar = document.querySelector('.footer-input-bar');
+
+        if (viewName === 'app') {
+          landingView.classList.add('hidden');
+          appView.classList.remove('hidden');
+          if (footerInputBar) footerInputBar.style.display = 'block';
+          localStorage.setItem('chattyhound_visited', 'true');
+        } else {
+          landingView.classList.remove('hidden');
+          appView.classList.add('hidden');
+          if (footerInputBar) footerInputBar.style.display = 'none';
+        }
+      }
+
+      // Step-by-Step wizard controller
+      const tabCoreBtn = document.getElementById('tabCoreBtn');
+      const tabLifeBtn = document.getElementById('tabLifeBtn');
+      const stepCore = document.getElementById('stepCore');
+      const stepLife = document.getElementById('stepLife');
+      const prefBackBtn = document.getElementById('prefBackBtn');
+      let activeWizardStep = 1;
+
+      function showWizardStep(stepNum) {
+        activeWizardStep = stepNum;
+        if (stepNum === 1) {
+          if (tabCoreBtn) tabCoreBtn.classList.add('active');
+          if (tabLifeBtn) tabLifeBtn.classList.remove('active');
+          if (stepCore) stepCore.classList.add('active');
+          if (stepLife) stepLife.classList.remove('active');
+          if (prefBackBtn) prefBackBtn.style.display = 'none';
+          if (savePrefBtn) savePrefBtn.textContent = 'Continue ➔';
+        } else {
+          if (tabCoreBtn) tabCoreBtn.classList.remove('active');
+          if (tabLifeBtn) tabLifeBtn.classList.add('active');
+          if (stepCore) stepCore.classList.remove('active');
+          if (stepLife) stepLife.classList.add('active');
+          if (prefBackBtn) prefBackBtn.style.display = 'block';
+          if (savePrefBtn) savePrefBtn.textContent = 'Save Selections ✨';
+        }
+      }
+
+      if (tabCoreBtn) tabCoreBtn.addEventListener('click', () => showWizardStep(1));
+      if (tabLifeBtn) tabLifeBtn.addEventListener('click', () => showWizardStep(2));
+      if (prefBackBtn) prefBackBtn.addEventListener('click', () => showWizardStep(1));
+
+      function updateProfileButton() {
+        if (prefBtnText) {
+          prefBtnText.textContent = userEmail ? 'Fit' : 'Fit';
+        }
+      }
+
+      function openPrefModal() {
+        if (!prefModal) return;
+        prefModal.classList.add('active');
+        prefModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        showWizardStep(1); // Default to Step 1 basics on open
+
+        if (userEmail) {
+          prefLoggedOutState.style.display = 'none';
+          prefLoggedInState.style.display = 'block';
+          if (loggedInEmailText) loggedInEmailText.textContent = userEmail;
+
+          // Setup initial button states from current preferences
+          setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
+          setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
+          setupSelectorButtons('prefSizeGroup', currentPrefs.size);
+          setupSelectorButtons('prefEnergyGroup', lifestylePrefs.energy || 'any');
+          setupSelectorButtons('prefHomeGroup', lifestylePrefs.home || 'any');
+
+          // Setup toggle badge states
+          setupToggleBadge('prefOptKids', lifestylePrefs.kids);
+          setupToggleBadge('prefOptDogs', lifestylePrefs.dogs);
+          setupToggleBadge('prefOptCats', lifestylePrefs.cats);
+          setupToggleBadge('prefOptShed', lifestylePrefs.shedding);
+          setupToggleBadge('prefOptAlone', lifestylePrefs.aloneTime);
+          setupToggleBadge('prefOptLearn', lifestylePrefs.training);
+        } else {
+          prefLoggedOutState.style.display = 'block';
+          prefLoggedInState.style.display = 'none';
+          if (loginEmailInput) {
+            loginEmailInput.value = '';
+            loginEmailInput.focus();
+          }
+          if (loginErrorMsg) loginErrorMsg.style.display = 'none';
+        }
+        trackEvent('preferences_modal_opened');
+      }
+
+      function closePrefModal() {
+        if (document.activeElement && prefModal && prefModal.contains(document.activeElement)) {
+          document.activeElement.blur();
+        }
+        if (prefModal) {
+          prefModal.classList.remove('active');
+          prefModal.setAttribute('aria-hidden', 'true');
+        }
+        document.body.style.overflow = '';
+        if (prefBtn) {
+          prefBtn.focus();
+        }
+        trackEvent('preferences_modal_closed');
+      }
+
+      function setupSelectorButtons(groupId, activeValue) {
+        const container = document.getElementById(groupId);
+        if (!container) return;
+        const buttons = container.querySelectorAll('.pref-btn');
+        buttons.forEach(btn => {
+          if (btn.getAttribute('data-value') === activeValue) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      function setupToggleBadge(elementId, isActive) {
+        const btn = document.getElementById(elementId);
+        if (btn) {
+          btn.setAttribute('data-active', isActive ? 'true' : 'false');
+          btn.classList.toggle('active', isActive);
+        }
+      }
+
+      // Handle Selector Group Clicks
+      function handleSelectorClick(e) {
+        const btn = e.target.closest('.pref-btn');
+        if (!btn) return;
+
+        // Skip advanced multi-toggle badges
+        if (btn.id && btn.id.startsWith('prefOpt')) return;
+
+        const container = btn.parentElement;
+        if (!container) return;
+        container.querySelectorAll('.pref-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+
+      const prefGenderGroup = document.getElementById('prefGenderGroup');
+      const prefAgeGroup = document.getElementById('prefAgeGroup');
+      const prefSizeGroup = document.getElementById('prefSizeGroup');
+      const prefEnergyGroup = document.getElementById('prefEnergyGroup');
+      const prefHomeGroup = document.getElementById('prefHomeGroup');
+
+      if (prefGenderGroup) prefGenderGroup.addEventListener('click', handleSelectorClick);
+      if (prefAgeGroup) prefAgeGroup.addEventListener('click', handleSelectorClick);
+      if (prefSizeGroup) prefSizeGroup.addEventListener('click', handleSelectorClick);
+      if (prefEnergyGroup) prefEnergyGroup.addEventListener('click', handleSelectorClick);
+      if (prefHomeGroup) prefHomeGroup.addEventListener('click', handleSelectorClick);
+
+      // Bind custom toggle badges inside Lifestyle Step 2
+      const lifestyleButtons = [
+        { id: 'prefOptKids', key: 'kids' },
+        { id: 'prefOptDogs', key: 'dogs' },
+        { id: 'prefOptCats', key: 'cats' },
+        { id: 'prefOptShed', key: 'shedding' },
+        { id: 'prefOptAlone', key: 'aloneTime' },
+        { id: 'prefOptLearn', key: 'training' }
+      ];
+
+      lifestyleButtons.forEach(item => {
+        const btn = document.getElementById(item.id);
+        if (btn) {
+          btn.addEventListener('click', () => {
+            const isActive = btn.getAttribute('data-active') === 'true';
+            btn.setAttribute('data-active', !isActive);
+            btn.classList.toggle('active', !isActive);
+            lifestylePrefs[item.key] = !isActive;
+            localStorage.setItem('chattyhound_lifestyle_prefs', JSON.stringify(lifestylePrefs));
+          });
+        }
+      });
+
+      // frictionless sign in API
+      async function handleLogin() {
+        const email = loginEmailInput.value.trim();
+        if (!email || !email.includes('@')) {
+          loginErrorMsg.textContent = 'Please enter a valid email address.';
+          loginErrorMsg.style.display = 'block';
+          return;
+        }
+
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.textContent = 'Signing in...';
+
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+
+          if (!response.ok) throw new Error('Authentication failed');
+
+          const profile = await response.json();
+
+          userEmail = profile.email;
+          currentPrefs = {
+            gender: profile.gender || 'any',
+            age_group: profile.age_group || 'any',
+            size: profile.size || 'any'
+          };
+
+          localStorage.setItem('chattyhound_user_email', userEmail);
+          trackEvent('user_signed_in');
+          updateProfileButton();
+
+          // Transition to logged in preferences form
+          prefLoggedOutState.style.display = 'none';
+          prefLoggedInState.style.display = 'block';
+          if (loggedInEmailText) loggedInEmailText.textContent = userEmail;
+
+          setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
+          setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
+          setupSelectorButtons('prefSizeGroup', currentPrefs.size);
+
+          // Sync local favorites to backend
+          syncLocalFavoritesToBackend(userEmail);
+
+          // Show saved nav button now user is signed in
+          const savedNavBtnEl = document.getElementById('savedNavBtn');
+          if (savedNavBtnEl) savedNavBtnEl.style.display = '';
+          updateSavedNavBadge();
+
+
+          // Fetch random dog with the new email
+          fetchRandomDog();
+
+        } catch (err) {
+          console.error(err);
+          loginErrorMsg.textContent = 'Trouble signing in. Please check connection and try again.';
+          loginErrorMsg.style.display = 'block';
+        } finally {
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.textContent = 'Continue';
+        }
+      }
+
+      // Save preferences API
+      async function handleSavePreferences() {
+        // If we are on Step 1, transition to Step 2
+        if (activeWizardStep === 1) {
+          showWizardStep(2);
+          return;
+        }
+
+        const genderActive = document.getElementById('prefGenderGroup').querySelector('.pref-btn.active');
+        const ageActive = document.getElementById('prefAgeGroup').querySelector('.pref-btn.active');
+        const sizeActive = document.getElementById('prefSizeGroup').querySelector('.pref-btn.active');
+
+        const gender = genderActive ? genderActive.getAttribute('data-value') : 'any';
+        const age_group = ageActive ? ageActive.getAttribute('data-value') : 'any';
+        const size = sizeActive ? sizeActive.getAttribute('data-value') : 'any';
+
+        // Save advanced lifestyle preferences
+        const energyActive = document.getElementById('prefEnergyGroup').querySelector('.pref-btn.active');
+        const homeActive = document.getElementById('prefHomeGroup').querySelector('.pref-btn.active');
+        lifestylePrefs.energy = energyActive ? energyActive.getAttribute('data-value') : 'any';
+        lifestylePrefs.home = homeActive ? homeActive.getAttribute('data-value') : 'any';
+        localStorage.setItem('chattyhound_lifestyle_prefs', JSON.stringify(lifestylePrefs));
+
+        savePrefBtn.disabled = true;
+        savePrefBtn.textContent = 'Saving...';
+
+        // If user is not logged in / email-less, save locally and transition directly!
+        if (!userEmail) {
+          closePrefModal();
+          trackEvent('preferences_saved', { gender, age_group, size, ...lifestylePrefs });
+          switchView('app'); // Transition to active dog matching cards!
+          fetchRandomDog();
+          savePrefBtn.disabled = false;
+          savePrefBtn.textContent = 'Save Selections ✨';
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/save_preferences', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail, gender, age_group, size })
+          });
+
+          if (!response.ok) throw new Error('Failed to save preferences');
+
+          const data = await response.json();
+          currentPrefs = {
+            gender: data.preferences.gender,
+            age_group: data.preferences.age_group,
+            size: data.preferences.size
+          };
+
+          closePrefModal();
+          trackEvent('preferences_saved', { gender, age_group, size, ...lifestylePrefs });
+          switchView('app'); // Transition to active dog matching cards!
+          // Fetch new random dog matching these preferences
+          fetchRandomDog();
+
+        } catch (err) {
+          console.error(err);
+          alert('Trouble saving preferences. Please try again.');
+        } finally {
+          savePrefBtn.disabled = false;
+          savePrefBtn.textContent = 'Save Selections ✨';
+        }
+      }
+
+      async function resetPreferences() {
+        // 1. Clear local state
+        currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+        lifestylePrefs = {
+          energy: 'any',
+          home: 'any',
+          kids: false,
+          dogs: false,
+          cats: false,
+          shedding: false,
+          aloneTime: false,
+          training: false
+        };
+
+        // 2. Write to localStorage
+        localStorage.setItem('chattyhound_lifestyle_prefs', JSON.stringify(lifestylePrefs));
+
+        // 3. Update the selectors visually so that if user opens preferences again, it is correctly reset
+        setupSelectorButtons('prefGenderGroup', 'any');
+        setupSelectorButtons('prefAgeGroup', 'any');
+        setupSelectorButtons('prefSizeGroup', 'any');
+        setupSelectorButtons('prefEnergyGroup', 'any');
+        setupSelectorButtons('prefHomeGroup', 'any');
+        lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
+
+        // 4. Save to backend if user is logged in
+        if (userEmail) {
+          try {
+            await fetch('/api/save_preferences', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: userEmail, gender: 'any', age_group: 'any', size: 'any' })
+            });
+          } catch (err) {
+            console.error("Failed to reset backend preferences:", err);
+          }
+        }
+
+        trackEvent('preferences_reset_all');
+
+        // 5. Trigger a fresh match load
+        await fetchRandomDog();
+      }
+
+      function handleSignOut() {
+        userEmail = null;
+        currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+        lifestylePrefs = {
+          energy: 'any',
+          home: 'any',
+          kids: false,
+          dogs: false,
+          cats: false,
+          shedding: false,
+          aloneTime: false,
+          training: false
+        };
+        localStorage.removeItem('chattyhound_user_email');
+        localStorage.removeItem('chattyhound_lifestyle_prefs');
+
+        // Update badge selectors visual classes
+        lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
+
+        updateProfileButton();
+        closePrefModal();
+        // Remove match badge
+        const badgeContainer = document.getElementById('prefMatchBadgeContainer');
+        if (badgeContainer) badgeContainer.innerHTML = '';
+        trackEvent('user_signed_out');
+        // Transition back to Landing page mode on Sign Out!
+        switchView('landing');
+        fetchRandomDog();
+      }
+
+      // Event listeners
+      const emptyStateResetBtn = document.getElementById('emptyStateResetBtn');
+      if (emptyStateResetBtn) {
+        emptyStateResetBtn.addEventListener('click', openPrefModal);
+      }
+      const emptyStateAllBtn = document.getElementById('emptyStateAllBtn');
+      if (emptyStateAllBtn) {
+        emptyStateAllBtn.addEventListener('click', resetPreferences);
+      }
+      if (prefBtn) prefBtn.addEventListener('click', openPrefModal);
+      if (prefCloseBtn) prefCloseBtn.addEventListener('click', closePrefModal);
+
+      if (prefModal) {
+        prefModal.addEventListener('click', (e) => {
+          if (e.target === prefModal) closePrefModal();
+        });
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && prefModal && prefModal.classList.contains('active')) {
+          closePrefModal();
+        }
+      });
+
+      if (loginSubmitBtn) loginSubmitBtn.addEventListener('click', handleLogin);
+      if (loginEmailInput) {
+        loginEmailInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') handleLogin();
+        });
+      }
+      if (savePrefBtn) savePrefBtn.addEventListener('click', handleSavePreferences);
+      if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
+      // Collapsible biography click trigger
+      const aboutDogToggle = document.getElementById('aboutDogToggle');
+      const aboutDogText = document.getElementById('aboutDogText');
+      if (aboutDogToggle && aboutDogText) {
+        aboutDogToggle.addEventListener('click', () => {
+          const isCollapsed = aboutDogText.classList.toggle('collapsed');
+          if (isCollapsed) {
+            aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
+            trackEvent('bio_collapsed', { dog_name: currentDogName });
+          } else {
+            aboutDogToggle.innerHTML = `See less <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="18 15 12 9 6 15"/></svg>`;
+            trackEvent('bio_expanded', { dog_name: currentDogName });
+          }
+        });
+      }
+
+      // Landing and Empty state triggers
+      const landingStartBtn = document.getElementById('landingStartBtn');
+      const landingHowBtn = document.getElementById('landingHowBtn');
+      const loginSkipBtn = document.getElementById('loginSkipBtn');
+
+      if (landingStartBtn) {
+        landingStartBtn.addEventListener('click', () => {
+          openPrefModal();
+        });
+      }
+
+      if (landingHowBtn) {
+        landingHowBtn.addEventListener('click', () => {
+          const howItWorksSec = document.getElementById('howItWorksSec');
+          if (howItWorksSec) {
+            howItWorksSec.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      }
+
+      if (loginSkipBtn) {
+        loginSkipBtn.addEventListener('click', () => {
+          closePrefModal();
+          switchView('app');
+          fetchRandomDog();
+        });
+      }
+
+      // Sticky mobile action bar overlays
+      const mobileShuffleBtn = document.getElementById('mobileShuffleBtn');
+      const mobileChatBtn = document.getElementById('mobileChatBtn');
+
+      if (mobileShuffleBtn) {
+        mobileShuffleBtn.addEventListener('click', () => {
+          trackEvent('dog_shuffled');
+          fetchRandomDog();
+        });
+      }
+
+      if (mobileChatBtn) {
+        mobileChatBtn.addEventListener('click', () => {
+          trackEvent('sticky_chat_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
+          const chatSec = document.getElementById('chatSection');
+          if (chatSec && scrollContent) {
+            chatSec.scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+              if (chatInput) chatInput.focus();
+            }, 400);
+          }
+        });
+      }
+
+      const dogUnavailableCtaBtn = document.getElementById('dogUnavailableCtaBtn');
+      if (dogUnavailableCtaBtn) {
+        dogUnavailableCtaBtn.addEventListener('click', () => {
+          hideDogUnavailableState();
+          history.replaceState({}, '', '/');
+          fetchRandomDog();
+        });
+      }
+
+      window.addEventListener('popstate', () => {
+        const routeDogId = getDogIdFromPath();
+        if (routeDogId) {
+          openSharedDogFromRoute(routeDogId);
+        } else if (localStorage.getItem('chattyhound_visited') === 'true') {
+          fetchRandomDog();
+        }
+      });
+
+      function startAppAfterPreferences(loaderFn) {
+        if (userEmail) {
+          (async function fetchPreferencesOnLoad() {
+            try {
+              const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: userEmail })
+              });
+              if (response.ok) {
+                const profile = await response.json();
+                currentPrefs = {
+                  gender: profile.gender || 'any',
+                  age_group: profile.age_group || 'any',
+                  size: profile.size || 'any'
+                };
+              }
+            } catch (err) {
+              console.error('Error restoring preferences:', err);
+            }
+            updateProfileButton();
+            await loaderFn();
+            syncLocalFavoritesToBackend(userEmail);
+          })();
+        } else {
+          updateProfileButton();
+          loaderFn();
+        }
+      }
+
+      // Initial Login Setup check, shared dog routes, and auto-fetch
+      const hasVisited = localStorage.getItem('chattyhound_visited');
+      const routeDogId = window.__CH_INITIAL_DOG_ID__ || getDogIdFromPath();
+
+      if (routeDogId) {
+        startAppAfterPreferences(() => openSharedDogFromRoute(routeDogId));
+      } else if (hasVisited === 'true') {
+        switchView('app');
+        startAppAfterPreferences(() => fetchRandomDog());
+      } else {
+        switchView('landing');
+        updateProfileButton();
+      }
+
+      // Sticky Dog Bar — show when hero scrolls out of view
+      const stickyDogBar = document.getElementById('stickyDogBar');
+      const heroSection = document.querySelector('.hero-section');
+
+      if (stickyDogBar && heroSection && scrollContent) {
+        const heroObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              if (!entry.isIntersecting) {
+                stickyDogBar.classList.add('visible');
+              } else {
+                stickyDogBar.classList.remove('visible');
+              }
+            });
+          },
+          {
+            root: scrollContent,
+            threshold: 0
+          }
+        );
+        heroObserver.observe(heroSection);
+      }
+
+      // Sticky Chat button scrolls to chat input
+      const stickyChatBtn = document.getElementById('stickyChatBtn');
+      if (stickyChatBtn) {
+        stickyChatBtn.addEventListener('click', () => {
+          trackEvent('sticky_chat_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
+          const chatSec = document.getElementById('chatSection');
+          if (chatSec && scrollContent) {
+            chatSec.scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+              if (chatInput) chatInput.focus();
+            }, 400);
+          }
+        });
+      }
+
+      // ─── SAVED DOGS FEATURE ────────────────────────────────────────────────
+
+      function updateSavedNavBadge() {
+        const badge = document.getElementById('savedNavBadge');
+        if (!badge) return;
+        badge.style.display = favoritesList.length > 0 ? 'block' : 'none';
+      }
+
+      async function syncLocalFavoritesToBackend(email) {
+        if (!email || favoritesList.length === 0) return;
+        try {
+          // Fetch existing backend favorites
+          const res = await fetch('/api/favorites?email=' + encodeURIComponent(email));
+          if (!res.ok) return;
+          const data = await res.json();
+          const backendIds = (data.saved || []).map(d => d.animal_id);
+          // Merge: push any local IDs not yet in backend
+          const toSync = favoritesList.filter(id => !backendIds.includes(id));
+          // We don't have dog_name/image for stale local IDs, so just upsert with animal_id only
+          for (const aid of toSync) {
+            await fetch('/api/favorites', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, animal_id: aid, action: 'save' })
+            });
+          }
+          // Also merge backend IDs into local list
+          let changed = false;
+          for (const id of backendIds) {
+            if (!favoritesList.includes(id)) {
+              favoritesList.push(id);
+              changed = true;
+            }
+          }
+          if (changed) localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
+          updateSavedNavBadge();
+        } catch (e) {
+          console.warn('Favorites sync error:', e);
+        }
+      }
+
+      // Saved modal state
+      let savedActiveTab = 'dogs';
+
+      function openSavedModal() {
+        const modal = document.getElementById('savedModal');
+        if (!modal) return;
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        loadSavedTab(savedActiveTab);
+        trackEvent('saved_modal_opened');
+      }
+
+      function closeSavedModal() {
+        const modal = document.getElementById('savedModal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+
+      async function loadSavedTab(tab) {
+        savedActiveTab = tab;
+        const content = document.getElementById('savedModalContent');
+        if (!content) return;
+
+        // Update tab button styles
+        const tabDogs = document.getElementById('savedTabDogs');
+        const tabChats = document.getElementById('savedTabChats');
+        if (tabDogs && tabChats) {
+          if (tab === 'dogs') {
+            tabDogs.style.background = 'var(--accent)'; tabDogs.style.color = 'var(--accent-text)';
+            tabChats.style.background = 'transparent'; tabChats.style.color = 'var(--text-muted)';
+          } else {
+            tabChats.style.background = 'var(--teal)'; tabChats.style.color = 'var(--accent-text)';
+            tabDogs.style.background = 'transparent'; tabDogs.style.color = 'var(--text-muted)';
+          }
+        }
+
+        content.innerHTML = '<div style="text-align:center; padding:32px; color:var(--text-muted);"><div style="font-size:2rem;margin-bottom:8px;">🐾</div>Loading...</div>';
+
+        if (tab === 'dogs') {
+          await renderSavedDogs(content);
+        } else {
+          await renderRecentChats(content);
+        }
+      }
+
+      async function renderSavedDogs(container) {
+        // Prefer backend data for logged-in users, fall back to local list
+        let dogs = [];
+        if (userEmail) {
+          try {
+            const res = await fetch('/api/favorites?email=' + encodeURIComponent(userEmail));
+            if (res.ok) {
+              const data = await res.json();
+              dogs = data.saved || [];
+            }
+          } catch (e) { }
+        }
+
+        // If no backend data, render from local favoritesList (no images/names available)
+        if (dogs.length === 0 && favoritesList.length > 0 && !userEmail) {
+          dogs = favoritesList.map(id => ({ animal_id: id, dog_name: 'Saved Dog', dog_image_url: '' }));
+        }
+
+        if (dogs.length === 0) {
+          container.innerHTML = `
+          <div style="text-align:center; padding:40px 24px;">
+            <div style="font-size:3rem; margin-bottom:12px;">💔</div>
+            <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No saved dogs yet</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Tap the ❤️ on any dog card to save them here and come back later.</p>
+          </div>`;
+          return;
+        }
+
+        container.innerHTML = dogs.map(d => `
+        <div class="saved-dog-card" data-animal-id="${d.animal_id}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:var(--card-elevated); margin-bottom:10px; cursor:pointer; transition:background 0.2s; border:1px solid rgba(255,255,255,0.06);">
+          <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--card-bg);">
+            ${d.dog_image_url ? `<img src="${d.dog_image_url}" alt="${d.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🐾</div>'}
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:800; font-size:0.95rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.dog_name || 'Shelter Pup'}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Tap to view &amp; chat</div>
+          </div>
+          <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${d.animal_id}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(d.dog_name || 'this dog').replace(/"/g, '')}" title="Share">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
+          <div style="color:var(--accent); font-size:1rem;">❤️</div>
+        </div>`).join('');
+
+        container.querySelectorAll('.saved-card-share-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const aid = btn.getAttribute('data-animal-id');
+            const name = btn.getAttribute('data-dog-name');
+            shareCurrentDog(btn, { animal_id: aid, name, located_at: 'Pima Animal Care Center' });
+          });
+        });
+
+        // Click to jump to dog (loads it in the main view)
+        container.querySelectorAll('.saved-dog-card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            if (e.target.closest('.saved-card-share-btn')) return;
+            const aid = card.getAttribute('data-animal-id');
+            closeSavedModal();
+            fetchSpecificDog(aid);
+          });
+        });
+      }
+
+      async function renderRecentChats(container) {
+        if (!userEmail) {
+          container.innerHTML = `
+          <div style="text-align:center; padding:40px 24px;">
+            <div style="font-size:3rem; margin-bottom:12px;">🔒</div>
+            <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">Sign in to see chats</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Your chat history is saved when you're signed in. Sign in to pick up where you left off!</p>
+            <button class="btn-primary" onclick="closeSavedModal();setTimeout(openPrefModal,200);" style="margin-top:16px; padding:10px 24px; border-radius:9999px; font-size:0.85rem;">Sign In</button>
+          </div>`;
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/chat_history?email=' + encodeURIComponent(userEmail));
+          if (!res.ok) throw new Error('Failed');
+          const data = await res.json();
+          const convs = data.conversations || [];
+
+          if (convs.length === 0) {
+            container.innerHTML = `
+            <div style="text-align:center; padding:40px 24px;">
+              <div style="font-size:3rem; margin-bottom:12px;">💬</div>
+              <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No chats yet</h3>
+              <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Start chatting with any dog to build your conversation history here.</p>
+            </div>`;
+            return;
+          }
+
+          container.innerHTML = convs.map(c => {
+            const dateStr = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+            return `
+          <div class="saved-dog-card" data-animal-id="${c.animal_id}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:var(--card-elevated); margin-bottom:10px; cursor:pointer; transition:background 0.2s; border:1px solid rgba(255,255,255,0.06);">
+            <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--card-bg);">
+              ${c.dog_image_url ? `<img src="${c.dog_image_url}" alt="${c.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">💬</div>'}
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:800; font-size:0.95rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.dog_name || 'Shelter Pup'}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.last_message_preview || 'Tap to continue'}</div>
+            </div>
+            <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Share">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </button>
+            <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap;">${dateStr}</div>
+          </div>`;
+          }).join('');
+
+          container.querySelectorAll('.saved-dog-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+              if (e.target.closest('.saved-card-share-btn')) return;
+              const aid = card.getAttribute('data-animal-id');
+              closeSavedModal();
+              fetchSpecificDog(aid, true);
+            });
+          });
+
+          container.querySelectorAll('.saved-card-share-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const aid = btn.getAttribute('data-animal-id');
+              const name = btn.getAttribute('data-dog-name');
+              shareCurrentDog(btn, { animal_id: aid, name, located_at: 'Pima Animal Care Center' });
+            });
+          });
+
+        } catch (e) {
+          container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);">Unable to load chats. Please try again.</div>`;
+        }
+      }
+
+      async function fetchSpecificDog(animalId, resumeChat = false) {
+        switchView('app');
+        localStorage.setItem('chattyhound_visited', 'true');
+        if (scrollContent) scrollContent.scrollTop = 0;
+        await fetchRandomDog(animalId, { resumeChat });
+      }
+
+      async function openSharedDogFromRoute(animalId) {
+        switchView('app');
+        localStorage.setItem('chattyhound_visited', 'true');
+        await fetchRandomDog(animalId, { replaceUrl: true });
+      }
+
+      // Saved Modal event wiring
+      const savedNavBtn = document.getElementById('savedNavBtn');
+      const savedModalCloseBtn = document.getElementById('savedModalCloseBtn');
+      const savedTabDogs = document.getElementById('savedTabDogs');
+      const savedTabChats = document.getElementById('savedTabChats');
+      const savedModal = document.getElementById('savedModal');
+
+      if (savedNavBtn) {
+        savedNavBtn.addEventListener('click', openSavedModal);
+      }
+      if (savedModalCloseBtn) {
+        savedModalCloseBtn.addEventListener('click', closeSavedModal);
+      }
+      if (savedModal) {
+        savedModal.addEventListener('click', (e) => {
+          if (e.target === savedModal) closeSavedModal();
+        });
+      }
+      if (savedTabDogs) {
+        savedTabDogs.addEventListener('click', () => loadSavedTab('dogs'));
+      }
+      if (savedTabChats) {
+        savedTabChats.addEventListener('click', () => loadSavedTab('chats'));
+      }
+
+      // On init: show Saved button if user is logged in, update badge
+      if (userEmail && savedNavBtn) {
+        savedNavBtn.style.display = '';
+      }
+      updateSavedNavBadge();
+
+    </script>
+</body>
+
+</html>
