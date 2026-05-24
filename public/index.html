@@ -2261,9 +2261,9 @@
         
         const factsLower = (dog.important_facts || []).map(f => f.toLowerCase().trim());
         const descLower = (dog.description || dog.bio || '').toLowerCase();
-        const dogWeight = parseFloat(cleanWeightText(dog.weight || ''));
+        const parsedWeight = parseFloat(cleanWeightText(dog.weight || ''));
 
-        if (dogWeight && dogWeight < 25 && !descLower.includes('high energy') && !descLower.includes('active home')) {
+        if (parsedWeight && parsedWeight < 25 && !descLower.includes('high energy') && !descLower.includes('active home')) {
           fitBadgeType = 'apartment';
           fitBadgeLabel = 'Great apartment fit 🏠';
         } else if (descLower.includes('active') || descLower.includes('hike') || descLower.includes('run') || descLower.includes('high energy') || factsLower.some(f => f.includes('energy') || f.includes('active'))) {
