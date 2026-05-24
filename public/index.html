@@ -1368,62 +1368,56 @@
 
     /* Mobile Sticky thumb bar controls overlay */
     .mobile-action-bar {
-      display: none;
+      display: flex;
+      position: absolute;
+      bottom: 74px; /* sits right above the text input bar */
+      left: 12px;
+      right: 12px;
+      z-index: 29;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 9999px;
+      padding: 4px;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
     }
-
-    @media (max-width: 480px) {
-      .mobile-action-bar {
-        display: flex;
-        position: absolute;
-        bottom: 74px; /* sits right above the text input bar */
-        left: 12px;
-        right: 12px;
-        z-index: 29;
-        background: rgba(2, 6, 23, 0.85);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 9999px;
-        padding: 4px;
-        justify-content: space-between;
-        align-items: center;
-        gap: 4px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-      }
-      .mobile-action-btn {
-        flex: 1;
-        padding: 8px 6px;
-        border: none;
-        background: transparent;
-        color: var(--text-main);
-        font-weight: 800;
-        font-size: 0.72rem;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        border-radius: 9999px;
-        transition: background 0.2s;
-        text-decoration: none;
-        white-space: nowrap;
-      }
-      .mobile-action-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-      }
-      .mobile-action-btn.primary {
-        background: var(--accent);
-        color: white;
-        box-shadow: 0 4px 10px var(--accent-shadow);
-      }
-      .mobile-action-btn.primary:hover {
-        background: var(--accent-hover);
-      }
-      .mobile-action-btn svg {
-        width: 14px;
-        height: 14px;
-      }
+    .mobile-action-btn {
+      flex: 1;
+      padding: 8px 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      border-radius: 9999px;
+      transition: background 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .mobile-action-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .mobile-action-btn.primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 10px var(--accent-shadow);
+    }
+    .mobile-action-btn.primary:hover {
+      background: var(--accent-hover);
+    }
+    .mobile-action-btn svg {
+      width: 14px;
+      height: 14px;
     }
   </style>
 </head>
@@ -2302,25 +2296,7 @@
         `;
         chatHistory.appendChild(introCard);
 
-        // Build 5 Starter Prompt action buttons
-        const starterContainer = document.createElement('div');
-        starterContainer.className = 'prompt-shortcuts-area';
-        starterContainer.style.marginBottom = '16px';
-        const starters = [
-          `What kind of home would you love?`,
-          `Are you good with other dogs?`,
-          `What’s your energy level?`,
-          `What should my human know about me?`,
-          `What’s your perfect day?`
-        ];
-        starters.forEach(p => {
-          const btn = document.createElement('button');
-          btn.className = 'prompt-shortcut-btn';
-          btn.setAttribute('data-prompt', p);
-          btn.textContent = p;
-          starterContainer.appendChild(btn);
-        });
-        chatHistory.appendChild(starterContainer);
+
 
         // Initialize Avatar letter icon
         const firstLetter = currentDogName.charAt(0).toUpperCase();
@@ -2362,9 +2338,11 @@
       // 1. If no bot reply text is passed, show the initial prompts
       if (!botReplyText) {
         const prompts = [
-          `What home fits ${currentDogName} best?`,
-          `Is ${currentDogName} good with kids?`,
-          `What should I know before meeting ${pron}?`
+          `What kind of home would you love?`,
+          `Are you good with other dogs?`,
+          `What’s your energy level?`,
+          `What should my human know about me?`,
+          `What’s your perfect day?`
         ];
         
         quickPromptsContainer.innerHTML = '';
