@@ -95,6 +95,10 @@
     
     @media (max-width: 480px) {
       .app-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
         height: 100dvh;
         border-radius: 0;
         border: none;
@@ -777,6 +781,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       background: rgba(2, 6, 23, 0.6);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -800,7 +805,8 @@
       border-radius: 28px;
       width: 100%;
       max-width: 420px;
-      max-height: 85vh;
+      max-height: 80vh;
+      max-height: 80dvh;
       overflow-y: auto;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       position: relative;
@@ -2559,6 +2565,13 @@
     sendBtn.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') sendMessage();
+    });
+    // Force viewport scroll reset to fix iOS keyboard layout displacement bug
+    chatInput.addEventListener('blur', () => {
+      window.scrollTo(0, 0);
+    });
+    chatInput.addEventListener('focus', () => {
+      window.scrollTo(0, 0);
     });
 
     // Anchor smooth-scrolling ask CTA
