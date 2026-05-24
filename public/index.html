@@ -2428,6 +2428,73 @@
         `;
         chatHistory.appendChild(introCard);
 
+        // Check if user has a previous chat with this dog — show resume banner if so
+        if (userEmail && currentAnimalId) {
+          (async () => {
+            try {
+              const histCheck = await fetch(
+                `/api/chat_history?email=${encodeURIComponent(userEmail)}&animal_id=${encodeURIComponent(currentAnimalId)}`
+              );
+              if (!histCheck.ok) return;
+              const histData = await histCheck.json();
+              const prevMsgs = (histData.messages || []).filter(m => m.role !== 'system');
+              if (prevMsgs.length > 0) {
+                // Inject a resume banner before the greeting message
+                const resumeBanner = document.createElement('div');
+                resumeBanner.id = 'resumeChatBanner';
+                resumeBanner.style.cssText = `
+                  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+                  background: rgba(20, 184, 166, 0.08); border: 1.5px solid rgba(20, 184, 166, 0.25);
+                  border-radius: 14px; padding: 12px 14px; margin: 8px 0;
+                  font-size: 0.82rem; color: var(--text-muted); animation: fadeIn 0.3s ease;
+                `;
+                resumeBanner.innerHTML = `
+                  <div style="display:flex; align-items:center; gap: 8px;">
+                    <span style="font-size:1.1rem;">💬</span>
+                    <div>
+                      <div style="font-weight:800; color: var(--teal); font-size:0.83rem;">Previous chat found</div>
+                      <div style="font-size:0.76rem; margin-top:1px;">${prevMsgs.length} message${prevMsgs.length !== 1 ? 's' : ''} from your last visit</div>
+                    </div>
+                  </div>
+                  <button id="loadPrevChatBtn" style="
+                    padding: 7px 14px; background: var(--teal); color: var(--accent-text);
+                    border: none; border-radius: 20px; font-weight: 800; font-size: 0.76rem;
+                    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+                    box-shadow: 0 4px 10px rgba(20,184,166,0.25);
+                  ">Load Chat ↩</button>
+                `;
+                // Insert after introCard
+                chatHistory.insertBefore(resumeBanner, chatHistory.children[1] || null);
+
+                document.getElementById('loadPrevChatBtn').addEventListener('click', async () => {
+                  resumeBanner.innerHTML = `<div style="padding:6px 0; color:var(--teal); font-size:0.82rem; font-weight:700;">⏳ Loading your previous conversation...</div>`;
+                  // Clear current greeting and load history
+                  // Remove the greeting bubble (last child before we add history)
+                  const lastChild = chatHistory.lastElementChild;
+                  if (lastChild && lastChild !== resumeBanner && lastChild !== introCard) {
+                    lastChild.remove();
+                  }
+                  conversationHistory = [];
+                  prevMsgs.forEach(m => {
+                    appendMessage(
+                      m.role === 'assistant' ? 'bot' : 'user',
+                      m.content,
+                      m.role === 'assistant' ? currentDogName.charAt(0).toUpperCase() : undefined,
+                      false
+                    );
+                  });
+                  resumeBanner.remove();
+                  // Scroll to latest message
+                  if (scrollContent) scrollContent.scrollTop = scrollContent.scrollHeight;
+                  trackEvent('resume_chat_loaded', { dog_name: currentDogName, animal_id: currentAnimalId, msg_count: prevMsgs.length });
+                });
+              }
+            } catch (e) {
+              // Non-blocking — ignore errors silently
+            }
+          })();
+        }
+
         // Initialize Avatar letter icon
         const firstLetter = currentDogName.charAt(0).toUpperCase();
         appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetter, false);
