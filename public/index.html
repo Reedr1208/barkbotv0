@@ -840,6 +840,33 @@
     .see-more-toggle:hover {
       color: var(--accent);
     }
+    
+    /* Preferences Selector Buttons styling */
+    .pref-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      outline: none;
+    }
+    .pref-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .pref-btn.active {
+      background: var(--accent) !important;
+      border-color: var(--accent-hover) !important;
+      color: white !important;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -1437,7 +1464,7 @@
 
         // Initialize Avatar letter icon
         const firstLetter = currentDogName.charAt(0).toUpperCase();
-        appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything about my ideal home or my favorite things!`, firstLetter);
+        appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything about my ideal home or my favorite things!`, firstLetter, false);
 
       } catch (err) {
         console.error(err);
@@ -1565,7 +1592,7 @@
       }
     }
 
-    function appendMessage(role, content, avatarLetter = '🐾') {
+    function appendMessage(role, content, avatarLetter = '🐾', shouldScroll = true) {
       const msgRow = document.createElement('div');
       msgRow.className = `msg-row ${role === 'bot' ? 'bot' : 'user'}`;
       
@@ -1589,7 +1616,7 @@
       chatHistory.appendChild(msgRow);
       
       // Smoothly scroll the main layout down as chat history grows
-      if (scrollContent) {
+      if (shouldScroll && scrollContent) {
         scrollContent.scrollTop = scrollContent.scrollHeight;
       }
       
