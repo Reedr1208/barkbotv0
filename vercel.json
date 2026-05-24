@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/dogs/:dogId",
+      "destination": "/api/dog_meta?dogId=:dogId"
+    }
+  ],
   "functions": {
     "api/*.py": {
       "maxDuration": 300

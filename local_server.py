@@ -41,9 +41,20 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed_url = urlparse(self.path)
+        if parsed_url.path.startswith("/dogs/"):
+            try:
+                import importlib
+                module = importlib.import_module("api.dog_meta")
+                module.handler.do_GET(self)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                self.send_error(500, str(e))
+            return
         if parsed_url.path.startswith("/api/"):
             api_routes = {
                 "random_dog": "api.random_dog",
+                "dog_meta": "api.dog_meta",
                 "save_preferences": "api.save_preferences",
                 "login": "api.login",
                 "chat": "api.chat",
