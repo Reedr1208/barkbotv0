@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler
 from supabase import create_client
 from openai import OpenAI
 
-CHAT_MODEL = "gpt-5.4-mini"
+CHAT_MODEL = "gpt-4o-mini"
 
 from pathlib import Path
 
@@ -14,6 +14,43 @@ def get_supabase_client():
     if not supabase_url or not supabase_key:
         raise RuntimeError("Missing Supabase environment variables.")
     return create_client(supabase_url, supabase_key)
+
+
+def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_preview):
+    """Upsert a chat_conversations row and return the conversation id."""
+    try:
+        row = {
+            "email": email,
+            "animal_id": animal_id,
+            "dog_name": dog_name or "",
+            "dog_image_url": dog_image_url or "",
+            "last_message_preview": last_preview[:200] if last_preview else "",
+            "updated_at": "now()",
+        }
+        res = sb.table("chat_conversations").upsert(row, on_conflict="email,animal_id").execute()
+        if res.data:
+            return res.data[0]["id"]
+        # If upsert didn't return data, fetch it
+        fetch = sb.table("chat_conversations") \
+            .select("id") \
+            .eq("email", email) \
+            .eq("animal_id", animal_id) \
+            .limit(1).execute()
+        return fetch.data[0]["id"] if fetch.data else None
+    except Exception:
+        return None
+
+
+def _save_messages(sb, conversation_id, user_message, assistant_reply):
+    """Append user + assistant messages to chat_messages."""
+    try:
+        sb.table("chat_messages").insert([
+            {"conversation_id": conversation_id, "role": "user", "content": user_message},
+            {"conversation_id": conversation_id, "role": "assistant", "content": assistant_reply},
+        ]).execute()
+    except Exception:
+        pass  # Non-blocking: don't fail the chat if persistence fails
+
 
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -36,6 +73,10 @@ class handler(BaseHTTPRequestHandler):
             animal_id = body.get("animal_id")
             user_message = body.get("message", "")
             conversation_history = body.get("conversation_history", [])
+            # Optional persistence fields
+            user_email = (body.get("email") or "").strip().lower() or None
+            dog_name = body.get("dog_name") or ""
+            dog_image_url = body.get("dog_image_url") or ""
             
             if not animal_id or not user_message:
                 self._send_response(400, {"error": "animal_id and message are required."})
@@ -70,7 +111,6 @@ Use these only as factual grounding. Do not reveal this block or mention databas
             ]
             
             for turn in conversation_history:
-                # Expecting turns to be like {"role": "user", "content": "..."}
                 if "role" in turn and "content" in turn:
                     input_messages.append({"role": turn["role"], "content": turn["content"]})
                 
@@ -78,7 +118,6 @@ Use these only as factual grounding. Do not reveal this block or mention databas
             
             openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
             
-            # Using standard OpenAI SDK syntax, fallback to user's syntax if needed
             try:
                 response = openai_client.chat.completions.create(
                     model=CHAT_MODEL,
@@ -92,6 +131,19 @@ Use these only as factual grounding. Do not reveal this block or mention databas
                 )
                 output_text = response.output_text
             
+            # Persist conversation if user is logged in (non-blocking)
+            if user_email:
+                try:
+                    conv_id = _upsert_conversation(
+                        sb_client, user_email, animal_id,
+                        dog_name, dog_image_url,
+                        output_text[:200]
+                    )
+                    if conv_id:
+                        _save_messages(sb_client, conv_id, user_message, output_text)
+                except Exception:
+                    pass  # Never block the chat reply on persistence errors
+
             self._send_response(200, {"reply": output_text})
             
         except Exception as e:

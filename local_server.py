@@ -46,13 +46,16 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 "random_dog": "api.random_dog",
                 "save_preferences": "api.save_preferences",
                 "login": "api.login",
-                "chat": "api.chat"
+                "chat": "api.chat",
+                "favorites": "api.favorites",
+                "chat_history": "api.chat_history",
             }
             api_name = parsed_url.path.split("/")[-1]
             if api_name in api_routes:
                 module_name = api_routes[api_name]
                 try:
-                    module = __import__(module_name, fromlist=["handler"])
+                    import importlib
+                    module = importlib.import_module(module_name)
                     # Delegate directly to Vercel handler
                     module.handler.do_GET(self)
                 except Exception as e:
@@ -77,13 +80,16 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 "random_dog": "api.random_dog",
                 "save_preferences": "api.save_preferences",
                 "login": "api.login",
-                "chat": "api.chat"
+                "chat": "api.chat",
+                "favorites": "api.favorites",
+                "chat_history": "api.chat_history",
             }
             api_name = parsed_url.path.split("/")[-1]
             if api_name in api_routes:
                 module_name = api_routes[api_name]
                 try:
-                    module = __import__(module_name, fromlist=["handler"])
+                    import importlib
+                    module = importlib.import_module(module_name)
                     # Delegate directly to Vercel handler
                     module.handler.do_POST(self)
                 except Exception as e:
