@@ -213,6 +213,8 @@ def _index_html_candidates():
     lambda_root = os.environ.get("LAMBDA_TASK_ROOT", "")
     cwd = os.getcwd()
     paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html"),
+        "/var/task/api/index.html",
         os.path.join(root, "public", "index.html"),
         os.path.join(cwd, "public", "index.html"),
         os.path.join(lambda_root, "public", "index.html") if lambda_root else "",
