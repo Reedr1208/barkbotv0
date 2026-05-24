@@ -149,9 +149,22 @@ def _inject_head(html_text, meta, dog_id, image_url):
         out,
         count=1,
     )
+    og_image_block = (
+        f'<meta property="og:image" content="{img}">\n'
+        f'  <meta property="og:image:secure_url" content="{img}">\n'
+        f'  <meta property="og:image:alt" content="{esc(meta["og_title"])}">\n'
+        f'  <meta property="og:image:type" content="image/jpeg">'
+    )
     out = re.sub(
-        r'<meta property="og:image" content="[^"]*">',
-        f'<meta property="og:image" content="{img}">',
+        r'<meta property="og:image" content="[^"]*">\s*'
+        r'(?:<meta property="og:image:secure_url" content="[^"]*">\s*)?'
+        r'(?:<meta property="og:image:alt" content="[^"]*">\s*)?'
+        r'<meta property="og:image:type" content="[^"]*">\s*'
+        r'<meta property="og:image:width" content="[^"]*">\s*'
+        r'<meta property="og:image:height" content="[^"]*">',
+        og_image_block
+        + '\n  <meta property="og:image:width" content="1024">'
+        + '\n  <meta property="og:image:height" content="1024">',
         out,
         count=1,
     )
