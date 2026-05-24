@@ -9,6 +9,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4GRL2M87SZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-4GRL2M87SZ');
+  </script>
+
   <style>
     :root {
       --bg-slate-950: #020617;
@@ -1253,6 +1264,20 @@
   </div>
 
   <script>
+    // Helper to send Google Analytics events safely and log them for debugging
+    function trackEvent(eventName, eventParams = {}) {
+      try {
+        if (typeof gtag === 'function') {
+          gtag('event', eventName, eventParams);
+          console.log(`[GA Event] ${eventName}:`, eventParams);
+        } else {
+          console.warn(`[GA Event WARNING] gtag not defined. Tried to track ${eventName}:`, eventParams);
+        }
+      } catch (err) {
+        console.error(`[GA Event ERROR] Failed to track ${eventName}:`, err);
+      }
+    }
+
     let viewedIds = [];
     let currentAnimalId = null;
     let conversationHistory = [];
@@ -1299,9 +1324,11 @@
         if (index > -1) {
           favoritesList.splice(index, 1);
           favBtn.classList.remove('favorited');
+          trackEvent('dog_unfavorited', { dog_name: currentDogName, animal_id: currentAnimalId });
         } else {
           favoritesList.push(currentAnimalId);
           favBtn.classList.add('favorited');
+          trackEvent('dog_favorited', { dog_name: currentDogName, animal_id: currentAnimalId });
         }
         localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
       });
@@ -1604,6 +1631,8 @@
         const firstLetter = currentDogName.charAt(0).toUpperCase();
         appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything about my ideal home or my favorite things!`, firstLetter, false);
 
+        trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId });
+
       } catch (err) {
         console.error(err);
         dogName.textContent = 'Oops!';
@@ -1795,6 +1824,7 @@
       if (!text || !currentAnimalId) return;
 
       appendMessage('user', text);
+      trackEvent('chat_message_sent', { dog_name: currentDogName, message_text: text });
       chatInput.value = '';
       chatInput.disabled = true;
       sendBtn.disabled = true;
@@ -1837,7 +1867,10 @@
       }
     }
 
-    nextBtn.addEventListener('click', fetchRandomDog);
+    nextBtn.addEventListener('click', () => {
+      trackEvent('dog_shuffled');
+      fetchRandomDog();
+    });
     sendBtn.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') sendMessage();
@@ -1848,6 +1881,7 @@
     if (askBtn) {
       askBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        trackEvent('ask_cta_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
         const chatSec = document.getElementById('chatSection');
         if (chatSec) {
           chatSec.scrollIntoView({ behavior: 'smooth' });
@@ -1858,12 +1892,19 @@
       });
     }
 
+    if (paccLink) {
+      paccLink.addEventListener('click', () => {
+        trackEvent('view_profile_clicked', { dog_name: currentDogName, animal_id: currentAnimalId, url: paccLink.href });
+      });
+    }
+
     // Suggested Prompts trigger
     document.addEventListener('click', (e) => {
       const promptBtn = e.target.closest('.prompt-shortcut-btn');
       if (promptBtn) {
         const promptText = promptBtn.getAttribute('data-prompt');
         if (promptText && chatInput && !chatInput.disabled) {
+          trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
           chatInput.value = promptText;
           sendMessage();
         }
@@ -1891,6 +1932,7 @@
       if (modalStartBtn) {
         modalStartBtn.focus();
       }
+      trackEvent('about_modal_opened');
     }
 
     function closeModal() {
@@ -1906,6 +1948,7 @@
       if (aboutBtn) {
         aboutBtn.focus();
       }
+      trackEvent('about_modal_closed');
     }
 
     if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
@@ -1986,6 +2029,7 @@
         }
         if (loginErrorMsg) loginErrorMsg.style.display = 'none';
       }
+      trackEvent('preferences_modal_opened');
     }
 
     function closePrefModal() {
@@ -2000,6 +2044,7 @@
       if (prefBtn) {
         prefBtn.focus();
       }
+      trackEvent('preferences_modal_closed');
     }
 
     function setupSelectorButtons(groupId, activeValue) {
@@ -2063,6 +2108,7 @@
         };
 
         localStorage.setItem('chattyhound_user_email', userEmail);
+        trackEvent('user_signed_in');
         updateProfileButton();
         
         // Transition to logged in preferences form
@@ -2117,6 +2163,7 @@
         };
 
         closePrefModal();
+        trackEvent('preferences_saved', { gender, age_group, size });
         // Fetch new random dog matching these preferences
         fetchRandomDog();
 
@@ -2138,6 +2185,7 @@
       // Remove match badge
       const badgeContainer = document.getElementById('prefMatchBadgeContainer');
       if (badgeContainer) badgeContainer.innerHTML = '';
+      trackEvent('user_signed_out');
       // Refetch random dog
       fetchRandomDog();
     }
@@ -2174,8 +2222,10 @@
         const isCollapsed = aboutDogText.classList.toggle('collapsed');
         if (isCollapsed) {
           aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
+          trackEvent('bio_collapsed', { dog_name: currentDogName });
         } else {
           aboutDogToggle.innerHTML = `See less <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="18 15 12 9 6 15"/></svg>`;
+          trackEvent('bio_expanded', { dog_name: currentDogName });
         }
       });
     }
@@ -2235,6 +2285,7 @@
     const stickyChatBtn = document.getElementById('stickyChatBtn');
     if (stickyChatBtn) {
       stickyChatBtn.addEventListener('click', () => {
+        trackEvent('sticky_chat_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
         const chatSec = document.getElementById('chatSection');
         if (chatSec && scrollContent) {
           chatSec.scrollIntoView({ behavior: 'smooth' });
@@ -2248,7 +2299,10 @@
     // Auto popup for first-time visitors
     const hasVisited = localStorage.getItem('chattyhound_visited');
     if (!hasVisited) {
-      setTimeout(openModal, 800);
+      setTimeout(() => {
+        trackEvent('first_visit');
+        openModal();
+      }, 800);
     }
   </script>
 </body>
