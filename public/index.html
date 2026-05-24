@@ -46,6 +46,9 @@
     @media (max-width: 480px) {
       body {
         padding: 0;
+        height: 100dvh;
+        align-items: flex-start;
+        overflow: hidden;
       }
     }
 
@@ -945,27 +948,32 @@
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
-    /* ── Mobile header: icon-only tabs so Shuffle fits ── */
+    /* ── Mobile header: hide tagline to free space for tabs + shuffle ── */
     @media (max-width: 480px) {
       .header {
         padding: 12px 14px;
         gap: 8px;
       }
+      .brand-tagline {
+        display: none;
+      }
+      .brand-title {
+        font-size: 0.65rem;
+        margin-bottom: 0;
+      }
       .tab-btn {
-        padding: 6px 10px;
-        font-size: 0;       /* hide text label */
-        gap: 0;
+        padding: 5px 10px;
+        font-size: 0.72rem;
+        gap: 3px;
       }
       .tab-btn svg {
-        width: 16px;
-        height: 16px;
+        width: 13px;
+        height: 13px;
       }
       .shuffle-btn {
         padding: 7px 12px;
         font-size: 0.78rem;
-      }
-      .brand-tagline {
-        font-size: 0.92rem;
+        gap: 4px;
       }
     }
   </style>
