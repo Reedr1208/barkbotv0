@@ -94,12 +94,72 @@
     .id-tag { color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
     
     .stats {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0 16px 0;
     }
-    .stat-box { background: rgba(0,0,0,0.04); padding: 12px; border-radius: 12px; }
-    @media (prefers-color-scheme: dark) { .stat-box { background: rgba(255,255,255,0.05); } }
-    .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;}
-    .stat-value { font-weight: 600; }
+    .stat-box {
+      background: rgba(0,0,0,0.03);
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(128, 128, 128, 0.12);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      position: relative;
+    }
+    @media (prefers-color-scheme: dark) {
+      .stat-box {
+        background: rgba(255,255,255,0.03);
+        border-color: rgba(255, 255, 255, 0.06);
+      }
+    }
+    
+    .stat-box.matched {
+      background: rgba(16, 185, 129, 0.06);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .stat-box.mismatched {
+      background: rgba(245, 158, 11, 0.06);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    @media (prefers-color-scheme: dark) {
+      .stat-box.matched {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.3);
+      }
+      .stat-box.mismatched {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+    }
+    
+    .stat-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+    .stat-value {
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .stat-pref-note {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 400;
+    }
     
     /* Facts Animation Box */
     .facts-title { font-weight: 800; margin-top: 16px; margin-bottom: 8px; font-size: 1.1rem; }
@@ -610,56 +670,6 @@
       margin-left: 8px;
     }
 
-    /* Compatibility Widget Styles (Thinner & Space-Efficient) */
-    .compat-title {
-      font-weight: 800;
-      margin-top: 10px;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-      color: var(--text-main);
-    }
-    
-    .compat-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    
-    .compat-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(128, 128, 128, 0.15);
-      background: rgba(128, 128, 128, 0.02);
-      transition: all 0.2s ease;
-    }
-    
-    .compat-item.matched {
-      background: rgba(16, 185, 129, 0.06);
-      border-color: rgba(16, 185, 129, 0.2);
-    }
-    .compat-item.mismatched {
-      background: rgba(245, 158, 11, 0.06);
-      border-color: rgba(245, 158, 11, 0.2);
-    }
-    .compat-item.neutral {
-      background: rgba(128, 128, 128, 0.04);
-      border-color: rgba(128, 128, 128, 0.15);
-    }
-    
-    @media (prefers-color-scheme: dark) {
-      .compat-item.matched {
-        background: rgba(16, 185, 129, 0.1);
-        border-color: rgba(16, 185, 129, 0.3);
-      }
-      .compat-item.mismatched {
-        background: rgba(245, 158, 11, 0.1);
-        border-color: rgba(245, 158, 11, 0.3);
-      }
-    }
-    
     .compat-dot {
       width: 8px;
       height: 8px;
@@ -679,44 +689,6 @@
     .compat-dot.gray {
       background: #9ca3af;
       box-shadow: 0 0 8px rgba(156, 163, 175, 0.4);
-    }
-    
-    .compat-icon {
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-    }
-    
-    .compat-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      text-align: left;
-    }
-    
-    .compat-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-    }
-    
-    .compat-desc {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-main);
-    }
-    
-    .compat-desc .mismatch-detail {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 400;
     }
   </style>
 </head>
@@ -738,20 +710,32 @@
         </div>
         
         <div class="stats">
-          <div class="stat-box">
-            <div class="stat-label">Age</div>
+          <div class="stat-box" id="statBoxGender">
+            <div class="stat-header-row">
+              <span class="stat-label">Gender</span>
+              <span class="compat-dot gray" id="dotGender" style="display: none;"></span>
+            </div>
+            <div class="stat-value" id="dogGender">-</div>
+            <div class="stat-pref-note" id="noteGender" style="display: none;"></div>
+          </div>
+          
+          <div class="stat-box" id="statBoxAge">
+            <div class="stat-header-row">
+              <span class="stat-label">Age</span>
+              <span class="compat-dot gray" id="dotAge" style="display: none;"></span>
+            </div>
             <div class="stat-value" id="dogAge">-</div>
+            <div class="stat-pref-note" id="noteAge" style="display: none;"></div>
           </div>
-          <div class="stat-box">
-            <div class="stat-label">Weight</div>
+          
+          <div class="stat-box" id="statBoxWeight">
+            <div class="stat-header-row">
+              <span class="stat-label">Weight</span>
+              <span class="compat-dot gray" id="dotWeight" style="display: none;"></span>
+            </div>
             <div class="stat-value" id="dogWeight">-</div>
+            <div class="stat-pref-note" id="noteWeight" style="display: none;"></div>
           </div>
-        </div>
-
-        <!-- Compatibility Widget -->
-        <div id="compatWidget" style="display: none; margin: 10px 0 12px 0;">
-          <h3 class="compat-title">🧩 Preference Match Analysis</h3>
-          <div id="compatGrid" class="compat-grid"></div>
         </div>
 
         <h3 class="facts-title">Important Facts</h3>
@@ -1008,8 +992,32 @@
       chatInput.disabled = true;
       sendBtn.disabled = true;
 
-      const compatWidget = document.getElementById('compatWidget');
-      if (compatWidget) compatWidget.style.display = 'none';
+      // Reset combined preference metadata rows
+      const statBoxes = ['statBoxGender', 'statBoxAge', 'statBoxWeight'];
+      statBoxes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.className = 'stat-box';
+        }
+      });
+      const compatDots = ['dotGender', 'dotAge', 'dotWeight'];
+      compatDots.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = 'none';
+          el.className = 'compat-dot';
+        }
+      });
+      const prefNotes = ['noteGender', 'noteAge', 'noteWeight'];
+      prefNotes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = 'none';
+          el.innerHTML = '';
+        }
+      });
+      const dogGender = document.getElementById('dogGender');
+      if (dogGender) dogGender.textContent = '-';
 
       profilePanel.classList.add('loading');
 
@@ -1043,73 +1051,58 @@
           }
         }
 
-        // Render Compatibility Widget
-        const compatGrid = document.getElementById('compatGrid');
-        if (compatWidget && compatGrid) {
-          compatGrid.innerHTML = '';
-          const hasConfiguredPrefs = dog.user_has_preferences && dog.match_details && Object.values(dog.match_details).some(cat => cat.active);
-          
-          if (hasConfiguredPrefs) {
-            compatWidget.style.display = 'block';
-            
-            const categories = [
-              { key: 'gender', name: 'Gender', icon: '🐕' },
-              { key: 'age', name: 'Age', icon: '🍼' },
-              { key: 'size', name: 'Size', icon: '⚖️' }
-            ];
-            
-            categories.forEach(cat => {
-              const details = dog.match_details[cat.key];
-              if (!details) return;
-              
-              const itemDiv = document.createElement('div');
-              itemDiv.className = 'compat-item';
-              
-              let dotColor = 'gray';
-              let statusLabel = 'No Preference';
-              let descText = '';
-              
-              if (details.active) {
-                if (details.matched) {
-                  itemDiv.classList.add('matched');
-                  dotColor = 'green';
-                  statusLabel = 'Match';
-                  descText = details.actual;
-                } else {
-                  itemDiv.classList.add('mismatched');
-                  dotColor = 'yellow';
-                  statusLabel = 'Mismatch';
-                  const preferredCapitalized = details.preferred ? (details.preferred.charAt(0).toUpperCase() + details.preferred.slice(1)) : 'Any';
-                  descText = `<span class="mismatch-detail">Preferred: ${preferredCapitalized} • Actual: ${details.actual}</span>`;
-                }
-              } else {
-                itemDiv.classList.add('neutral');
-                dotColor = 'gray';
-                statusLabel = 'No Preference';
-                descText = `Any ${cat.name} (Actual: ${details.actual})`;
-              }
-              
-              itemDiv.innerHTML = `
-                <span class="compat-icon">${cat.icon}</span>
-                <div class="compat-info">
-                  <span class="compat-label">${cat.name} • ${statusLabel}</span>
-                  <span class="compat-desc">${descText}</span>
-                </div>
-                <span class="compat-dot ${dotColor}"></span>
-              `;
-              compatGrid.appendChild(itemDiv);
-            });
-          } else {
-            compatWidget.style.display = 'none';
-          }
-        }
-
         currentDogName = dog.name || 'this dog';
         dogName.textContent = dog.name || 'Unknown';
         chatTitleName.textContent = currentDogName;
         dogId.textContent = dog.animal_id || '';
+
+        // Fill actual values in the stats panel
+        const genderEl = document.getElementById('dogGender');
+        if (genderEl) genderEl.textContent = dog.gender || 'Unknown';
         dogAge.textContent = dog.age || 'Unknown';
         dogWeight.textContent = dog.weight || 'Unknown';
+
+        // Update stat row backgrounds and dots based on preferences
+        if (dog.user_has_preferences && dog.match_details) {
+          const hasConfiguredPrefs = Object.values(dog.match_details).some(cat => cat.active);
+          
+          if (hasConfiguredPrefs) {
+            const categories = [
+              { key: 'gender', boxId: 'statBoxGender', dotId: 'dotGender', noteId: 'noteGender' },
+              { key: 'age', boxId: 'statBoxAge', dotId: 'dotAge', noteId: 'noteAge' },
+              { key: 'size', boxId: 'statBoxWeight', dotId: 'dotWeight', noteId: 'noteWeight' }
+            ];
+            
+            categories.forEach(cat => {
+              const details = dog.match_details[cat.key];
+              const box = document.getElementById(cat.boxId);
+              const dot = document.getElementById(cat.dotId);
+              const note = document.getElementById(cat.noteId);
+              
+              if (!details || !box || !dot || !note) return;
+              
+              dot.style.display = 'inline-block';
+              
+              if (details.active) {
+                if (details.matched) {
+                  box.classList.add('matched');
+                  dot.className = 'compat-dot green';
+                  note.style.display = 'none';
+                } else {
+                  box.classList.add('mismatched');
+                  dot.className = 'compat-dot yellow';
+                  const preferredCapitalized = details.preferred ? (details.preferred.charAt(0).toUpperCase() + details.preferred.slice(1)) : 'Any';
+                  note.textContent = `Preferred: ${preferredCapitalized}`;
+                  note.style.display = 'block';
+                }
+              } else {
+                dot.className = 'compat-dot gray';
+                note.textContent = `No Preference`;
+                note.style.display = 'block';
+              }
+            });
+          }
+        }
 
         startFactsAnimation(dog.important_facts || []);
 
