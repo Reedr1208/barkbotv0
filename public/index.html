@@ -3206,7 +3206,6 @@
     const landingStartBtn = document.getElementById('landingStartBtn');
     const landingHowBtn = document.getElementById('landingHowBtn');
     const loginSkipBtn = document.getElementById('loginSkipBtn');
-    const emptyStateResetBtn = document.getElementById('emptyStateResetBtn');
 
     if (landingStartBtn) {
       landingStartBtn.addEventListener('click', () => {
@@ -3228,12 +3227,6 @@
         closePrefModal();
         switchView('app');
         fetchRandomDog();
-      });
-    }
-
-    if (emptyStateResetBtn) {
-      emptyStateResetBtn.addEventListener('click', () => {
-        openPrefModal();
       });
     }
 
