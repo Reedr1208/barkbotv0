@@ -2459,6 +2459,7 @@
       let factInterval = null;
       let currentDogName = 'this dog';
       let currentDogData = null;
+      let activeDogFetchId = 0;
 
       const CH_CANONICAL_ORIGIN = 'https://chattyhound.com';
       const CH_DEFAULT_OG_IMAGE = CH_CANONICAL_ORIGIN + '/og-image.jpg';
@@ -2755,7 +2756,9 @@
         if (mobileActionBar) mobileActionBar.style.display = '';
       }
 
-      function showDogUnavailableState() {
+      function showDogUnavailableState(fetchId) {
+        if (fetchId != null && fetchId !== activeDogFetchId) return;
+
         const card = document.getElementById('dogUnavailableCard');
         const detailsBox = document.getElementById('detailsBox');
         const ctaGrid = document.querySelector('.cta-grid');
@@ -2875,6 +2878,9 @@
       }
 
       async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
+        const fetchId = ++activeDogFetchId;
+        const isStaleFetch = () => fetchId !== activeDogFetchId;
+
         hideDogUnavailableState();
         // Toggle skeleton loaders active
         profilePanel.classList.add('loading-skeleton');
@@ -2962,15 +2968,19 @@
           url += params.join('&');
 
           const response = await fetch(url);
+          if (isStaleFetch()) return;
+
           if (!response.ok) {
             if (forcedAnimalId) {
-              showDogUnavailableState();
+              if (!isStaleFetch()) showDogUnavailableState(fetchId);
               return;
             }
             throw new Error('Failed to fetch a dog.');
           }
 
           const dog = await response.json();
+          if (isStaleFetch()) return;
+
           currentDogData = dog;
           updateDocumentMetaForDog(dog);
           if (dog.animal_id) {
@@ -3274,8 +3284,10 @@
               const histRes = await fetch(
                 `/api/chat_history?email=${encodeURIComponent(userEmail)}&animal_id=${encodeURIComponent(currentAnimalId)}`
               );
+              if (isStaleFetch()) return;
               if (histRes.ok) {
                 const histData = await histRes.json();
+                if (isStaleFetch()) return;
                 const msgs = (histData.messages || []).filter(m => m.role !== 'system');
                 resumeMsgsLoaded = msgs.length;
                 conversationHistory = [];
@@ -3301,6 +3313,8 @@
             }
           }
 
+          if (isStaleFetch()) return;
+
           if (!loadOptions.resumeChat) {
             const firstLetter = currentDogName.charAt(0).toUpperCase();
             appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetter, false);
@@ -3311,13 +3325,16 @@
 
           // Check if user has a previous chat with this dog — show resume banner if so
           if (!loadOptions.resumeChat && userEmail && currentAnimalId) {
+            const resumeBannerFetchId = fetchId;
             (async () => {
               try {
                 const histCheck = await fetch(
                   `/api/chat_history?email=${encodeURIComponent(userEmail)}&animal_id=${encodeURIComponent(currentAnimalId)}`
                 );
+                if (resumeBannerFetchId !== activeDogFetchId) return;
                 if (!histCheck.ok) return;
                 const histData = await histCheck.json();
+                if (resumeBannerFetchId !== activeDogFetchId) return;
                 const prevMsgs = (histData.messages || []).filter(m => m.role !== 'system');
                 if (prevMsgs.length > 0) {
                   // Inject a resume banner before the greeting message
@@ -3376,9 +3393,13 @@
             })();
           }
 
-          trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId });
+          if (!isStaleFetch()) {
+            hideDogUnavailableState();
+            trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId });
+          }
 
         } catch (err) {
+          if (isStaleFetch()) return;
           console.error(err);
 
           // Display the warm empty state card if load fails or filters return empty sets
@@ -3397,8 +3418,10 @@
 
           dogName.textContent = 'Oops!';
         } finally {
-          profilePanel.classList.remove('loading-skeleton');
-          profilePanel.classList.remove('loading');
+          if (fetchId === activeDogFetchId) {
+            profilePanel.classList.remove('loading-skeleton');
+            profilePanel.classList.remove('loading');
+          }
         }
       }
 
@@ -4594,16 +4617,13 @@
       async function fetchSpecificDog(animalId, resumeChat = false) {
         switchView('app');
         localStorage.setItem('chattyhound_visited', 'true');
+        if (scrollContent) scrollContent.scrollTop = 0;
         await fetchRandomDog(animalId, { resumeChat });
       }
 
       async function openSharedDogFromRoute(animalId) {
         switchView('app');
         localStorage.setItem('chattyhound_visited', 'true');
-        if (window.__CH_DOG_UNAVAILABLE__) {
-          showDogUnavailableState();
-          return;
-        }
         await fetchRandomDog(animalId, { replaceUrl: true });
       }
 
