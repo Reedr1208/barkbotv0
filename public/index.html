@@ -16,6 +16,7 @@
   <meta property="og:description"
     content="🐶 Chat with adoptable shelter dogs! Discover their quirks, personality, and needs in real-time, build your match profile, and find your new best friend who fits your life.">
   <meta property="og:image" content="https://chattyhound.com/og-image.jpg">
+  <meta property="og:image:secure_url" content="https://chattyhound.com/og-image.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1024">
   <meta property="og:image:height" content="1024">
@@ -2501,6 +2502,35 @@
         return 'them';
       }
 
+      function getDogImageUrl(dog) {
+        const d = dog || currentDogData;
+        if (d?.image_file && d?.image_base_url) {
+          return d.image_base_url + d.image_file;
+        }
+        if (d?.image_public_url) return d.image_public_url;
+        if (d?.image_url) return d.image_url;
+        const imgEl = document.getElementById('dogImage');
+        if (imgEl?.src) return imgEl.src;
+        return CH_DEFAULT_OG_IMAGE;
+      }
+
+      async function buildDogShareImageFile(dog) {
+        const imageUrl = getDogImageUrl(dog);
+        if (!imageUrl || imageUrl === CH_DEFAULT_OG_IMAGE) return null;
+        try {
+          const res = await fetch(imageUrl);
+          if (!res.ok) return null;
+          const blob = await res.blob();
+          const type = blob.type && blob.type.startsWith('image/') ? blob.type : 'image/jpeg';
+          const ext = type.includes('png') ? 'png' : 'jpg';
+          const safeName = (dog?.name || currentDogName || 'dog').replace(/[^\w.-]+/g, '-').slice(0, 40);
+          return new File([blob], `${safeName}.${ext}`, { type });
+        } catch (e) {
+          console.warn('Could not load dog image for share:', e);
+          return null;
+        }
+      }
+
       function buildDogSharePayload(dog) {
         const name = dog?.name || currentDogName || 'this dog';
         const age = cleanAgeText(dog?.age || '');
@@ -2541,14 +2571,7 @@
         const title = `Meet ${name} | ChattyHound`;
         const description = `${name} is an adoptable rescue dog at ${shelter}. Chat with ${pron} on ChattyHound and continue to the official shelter page.`;
         const canonical = getCanonicalDogUrl(dog.animal_id);
-        let image = CH_DEFAULT_OG_IMAGE;
-        if (dog.image_file && dog.image_base_url) {
-          image = dog.image_base_url + dog.image_file;
-        } else if (dog.image_public_url) {
-          image = dog.image_public_url;
-        } else if (dog.image_url) {
-          image = dog.image_url;
-        }
+        const image = getDogImageUrl(dog);
 
         document.title = title;
         const descMeta = document.querySelector('meta[name="description"]');
@@ -2560,15 +2583,28 @@
           ['og:title', `Meet ${name} on ChattyHound`],
           ['og:description', description],
           ['og:image', image],
+          ['og:image:secure_url', image],
           ['twitter:url', canonical],
           ['twitter:title', `Meet ${name} on ChattyHound`],
           ['twitter:description', description],
           ['twitter:image', image]
         ];
         ogPairs.forEach(([prop, content]) => {
-          const el = document.querySelector(`meta[property="${prop}"]`);
-          if (el) el.setAttribute('content', content);
+          let el = document.querySelector(`meta[property="${prop}"]`);
+          if (!el) {
+            el = document.createElement('meta');
+            el.setAttribute('property', prop);
+            document.head.appendChild(el);
+          }
+          el.setAttribute('content', content);
         });
+        let ogAlt = document.querySelector('meta[property="og:image:alt"]');
+        if (!ogAlt) {
+          ogAlt = document.createElement('meta');
+          ogAlt.setAttribute('property', 'og:image:alt');
+          document.head.appendChild(ogAlt);
+        }
+        ogAlt.setAttribute('content', `Meet ${name} on ChattyHound`);
       }
 
       function updateShareButtonLabels() {
@@ -2704,14 +2740,27 @@
 
         if (navigator.share) {
           try {
-            await navigator.share({
+            const shareData = {
               title: payload.title,
               text: payload.text,
               url: payload.url
-            });
+            };
+            const imageFile = await buildDogShareImageFile(dog);
+            let shareMethod = 'native';
+            if (imageFile) {
+              const withImage = { ...shareData, files: [imageFile] };
+              if (navigator.canShare && navigator.canShare(withImage)) {
+                await navigator.share(withImage);
+                shareMethod = 'native_with_image';
+              } else {
+                await navigator.share(shareData);
+              }
+            } else {
+              await navigator.share(shareData);
+            }
             trackEvent('dog_share_completed', {
               animal_id: payload.animal_id,
-              share_method: 'native'
+              share_method: shareMethod
             });
           } catch (err) {
             if (err && err.name === 'AbortError') return;
