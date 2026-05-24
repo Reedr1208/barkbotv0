@@ -347,6 +347,7 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: normal; /* Fix browser-specific rendering issue combining pre-line with line-clamp */
     }
     
     .trait-chips-grid {
@@ -1758,12 +1759,18 @@
     }
 
     function closeModal() {
+      if (document.activeElement && aboutModal && aboutModal.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
       if (aboutModal) {
         aboutModal.classList.remove('active');
         aboutModal.setAttribute('aria-hidden', 'true');
       }
       document.body.style.overflow = '';
       localStorage.setItem('chattyhound_visited', 'true');
+      if (aboutBtn) {
+        aboutBtn.focus();
+      }
     }
 
     if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
@@ -1847,11 +1854,17 @@
     }
 
     function closePrefModal() {
+      if (document.activeElement && prefModal && prefModal.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
       if (prefModal) {
         prefModal.classList.remove('active');
         prefModal.setAttribute('aria-hidden', 'true');
       }
       document.body.style.overflow = '';
+      if (prefBtn) {
+        prefBtn.focus();
+      }
     }
 
     function setupSelectorButtons(groupId, activeValue) {
