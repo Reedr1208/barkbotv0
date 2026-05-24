@@ -107,6 +107,8 @@ class handler(BaseHTTPRequestHandler):
             # Apply preferences filtering if preferences are configured
             preferences_matched = False
             best_match_details = {}
+            scored_dogs = {aid: 0 for aid in valid_ids}
+            preferences_configured = False
             
             if preferences:
                 pref_gender = preferences.get("gender", "any")
@@ -121,8 +123,7 @@ class handler(BaseHTTPRequestHandler):
                 total_pref_count = sum([has_gender, has_age, has_size])
                 
                 if total_pref_count > 0:
-                    scored_dogs = {}
-                    
+                    preferences_configured = True
                     for aid in valid_ids:
                         dog = pima_dogs[aid]
                         score = 0
@@ -165,46 +166,56 @@ class handler(BaseHTTPRequestHandler):
                             
                         scored_dogs[aid] = score
                         best_match_details[aid] = details
-                        
-                    # Find candidates achieving the maximum score (closest matches)
-                    max_score = max(scored_dogs.values()) if scored_dogs else 0
-                    best_candidates = [aid for aid, score in scored_dogs.items() if score == max_score]
-                    
-                    if best_candidates:
-                        valid_ids = best_candidates
-                        preferences_matched = (max_score > 0)
 
-            # Categorize into fresh and stale
+            # Categorize all valid dogs by freshness
             three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
-            fresh_ids = []
-            stale_ids = []
-            
+            fresh_status = {}
             for aid in valid_ids:
                 dt_str = prompts_data[aid].get("updated_at", "")
                 if dt_str.endswith("Z"):
                     dt_str = dt_str[:-1] + "+00:00"
                 try:
                     updated_at = datetime.fromisoformat(dt_str)
-                    if updated_at >= three_days_ago:
-                        fresh_ids.append(aid)
-                    else:
-                        stale_ids.append(aid)
+                    fresh_status[aid] = (updated_at >= three_days_ago)
                 except Exception:
-                    fresh_ids.append(aid) # default to fresh
-                    
-            unviewed_fresh = [aid for aid in fresh_ids if aid not in viewed_ids]
-            unviewed_stale = [aid for aid in stale_ids if aid not in viewed_ids]
+                    fresh_status[aid] = True # default to fresh
+
+            # Separate candidates into unviewed and viewed
+            unviewed_ids = [aid for aid in valid_ids if aid not in viewed_ids]
             
-            if unviewed_fresh:
-                random_id = random.choice(unviewed_fresh)
-            elif unviewed_stale:
-                random_id = random.choice(unviewed_stale)
-            else:
-                # All viewed. Reset pool, prioritize fresh.
-                if fresh_ids:
-                    random_id = random.choice(fresh_ids)
+            random_id = None
+
+            if unviewed_ids:
+                # Find maximum score among remaining unviewed dogs
+                max_unviewed_score = max(scored_dogs[aid] for aid in unviewed_ids)
+                best_unviewed_candidates = [aid for aid in unviewed_ids if scored_dogs[aid] == max_unviewed_score]
+                
+                # Prioritize fresh among these top unviewed candidates
+                unviewed_fresh = [aid for aid in best_unviewed_candidates if fresh_status[aid]]
+                unviewed_stale = [aid for aid in best_unviewed_candidates if not fresh_status[aid]]
+                
+                if unviewed_fresh:
+                    random_id = random.choice(unviewed_fresh)
                 else:
-                    random_id = random.choice(stale_ids)
+                    random_id = random.choice(unviewed_stale)
+            else:
+                # All dogs viewed. Reset viewed list and select from all top-scoring dogs in the system
+                max_score = max(scored_dogs.values()) if scored_dogs else 0
+                best_candidates = [aid for aid, score in scored_dogs.items() if score == max_score]
+                
+                all_fresh = [aid for aid in best_candidates if fresh_status[aid]]
+                all_stale = [aid for aid in best_candidates if not fresh_status[aid]]
+                
+                if all_fresh:
+                    random_id = random.choice(all_fresh)
+                else:
+                    random_id = random.choice(all_stale)
+
+            # Determine whether preferences are matched for the selected dog
+            if preferences_configured and random_id:
+                # A match is strong if it scores at least 1, or is the maximum possible score
+                max_overall_score = max(scored_dogs.values()) if scored_dogs else 0
+                preferences_matched = (scored_dogs[random_id] > 0 and (scored_dogs[random_id] == max_overall_score or scored_dogs[random_id] >= 1))
             
             # Fetch the full profile
             profile_res = client.table("animals").select("*").eq("animal_id", random_id).limit(1).execute()
