@@ -817,9 +817,28 @@
       background: var(--amber);
       box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
     }
-    .compat-dot.gray {
-      background: #64748b;
-      box-shadow: 0 0 6px rgba(100, 116, 139, 0.4);
+    .why-fit-desc.collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .see-more-toggle {
+      background: transparent;
+      border: none;
+      color: var(--accent-hover);
+      font-weight: 800;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+    .see-more-toggle:hover {
+      color: var(--accent);
     }
   </style>
 </head>
@@ -904,7 +923,23 @@
               <p class="mt-1 why-fit-desc" id="whyFitDesc">-</p>
             </div>
           </div>
-          <div class="trait-chips-grid" id="traitChipsContainer"></div>
+        </section>
+
+        <!-- Shelter Story Biography Card -->
+        <section class="why-fit-card" id="aboutDogCard" style="display: none; margin-top: 16px;">
+          <div class="why-fit-header">
+            <div class="why-fit-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--accent-hover);">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div>
+              <h3 class="why-fit-title">Meet <span id="aboutDogName">me</span></h3>
+              <p class="mt-1 why-fit-desc collapsed" id="aboutDogText" style="margin-bottom: 0; white-space: pre-line;"></p>
+              <button class="see-more-toggle" id="aboutDogToggle" style="display: none;">
+                See more
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+          </div>
         </section>
 
         <!-- CTA Grid Buttons -->
@@ -920,7 +955,7 @@
             <div class="cta-icon-box">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <p class="cta-title">Ask Jaxon</p>
+            <p class="cta-title" id="askBtnTitle">Ask Jaxon</p>
             <p class="cta-sub">Start with prompts</p>
           </button>
         </section>
@@ -1238,6 +1273,12 @@
         chatTitleName.textContent = currentDogName;
         dogId.textContent = dog.animal_id ? `${dog.animal_id} • PACC` : '';
 
+        // Dynamically update dog name in buttons, labels, and placeholders
+        const askBtnTitle = document.getElementById('askBtnTitle');
+        if (askBtnTitle) askBtnTitle.textContent = "Ask " + currentDogName;
+        if (favBtn) favBtn.setAttribute('aria-label', "Favorite " + currentDogName);
+        if (chatInput) chatInput.placeholder = "Ask about " + currentDogName + "...";
+
         // Fill actual values in the stats panel
         const genderEl = document.getElementById('dogGender');
         if (genderEl) genderEl.textContent = dog.gender || 'Unknown';
@@ -1343,6 +1384,33 @@
               traitChipsContainer.appendChild(chip);
             });
           }
+        // Render Shelter Biography Story
+        const bioText = (dog.description || dog.bio || '').trim();
+        const aboutDogCard = document.getElementById('aboutDogCard');
+        const aboutDogName = document.getElementById('aboutDogName');
+        const aboutDogText = document.getElementById('aboutDogText');
+        const aboutDogToggle = document.getElementById('aboutDogToggle');
+
+        if (aboutDogCard && aboutDogText && aboutDogToggle && aboutDogName) {
+          if (bioText) {
+            aboutDogCard.style.display = 'block';
+            aboutDogName.textContent = currentDogName;
+            aboutDogText.textContent = bioText;
+            
+            // Set default collapsed state
+            aboutDogText.classList.add('collapsed');
+            aboutDogToggle.style.display = 'none';
+            
+            // Verify if description length warrants a "See more" toggle
+            if (bioText.length > 180) {
+              aboutDogToggle.style.display = 'inline-flex';
+              aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
+            } else {
+              aboutDogText.classList.remove('collapsed');
+            }
+          } else {
+            aboutDogCard.style.display = 'none';
+          }
         }
 
         if (dog.url) {
@@ -1362,25 +1430,8 @@
         chatInput.disabled = false;
         sendBtn.disabled = false;
         
-        // Dynamize Quick suggested prompt shortcuts with pronouns
-        const quickPromptsContainer = document.getElementById('quickPromptsContainer');
-        if (quickPromptsContainer) {
-          quickPromptsContainer.innerHTML = '';
-          const pron = (dog.gender && dog.gender.toLowerCase().includes('female')) ? 'her' : 'him';
-          const prompts = [
-            `What home fits ${currentDogName} best?`,
-            `Is ${currentDogName} good with kids?`,
-            `What should I know before meeting ${pron}?`
-          ];
-          
-          prompts.forEach(p => {
-            const btn = document.createElement('button');
-            btn.className = 'prompt-shortcut-btn';
-            btn.setAttribute('data-prompt', p);
-            btn.textContent = p;
-            quickPromptsContainer.appendChild(btn);
-          });
-        }
+        // Initialize dynamic, context-aware prompt suggestions
+        updateSuggestions();
 
         // Initialize Avatar letter icon
         const firstLetter = currentDogName.charAt(0).toUpperCase();
@@ -1392,6 +1443,123 @@
         appendMessage('bot', 'Could not load a random dog. Please check your connection and shuffle again.', '!');
       } finally {
         profilePanel.classList.remove('loading');
+      }
+    }
+
+    function updateSuggestions(botReplyText) {
+      const quickPromptsContainer = document.getElementById('quickPromptsContainer');
+      if (!quickPromptsContainer) return;
+
+      const text = (botReplyText || '').toLowerCase();
+      const genderEl = document.getElementById('dogGender');
+      const dogGender = genderEl ? genderEl.textContent : 'male';
+      const pron = (dogGender && dogGender.toLowerCase().includes('female')) ? 'her' : 'him';
+      const possessive = pron === 'her' ? 'her' : 'his';
+
+      // 1. If no bot reply text is passed, show the initial prompts
+      if (!botReplyText) {
+        const prompts = [
+          `What home fits ${currentDogName} best?`,
+          `Is ${currentDogName} good with kids?`,
+          `What should I know before meeting ${pron}?`
+        ];
+        
+        quickPromptsContainer.innerHTML = '';
+        prompts.forEach(p => {
+          const btn = document.createElement('button');
+          btn.className = 'prompt-shortcut-btn';
+          btn.setAttribute('data-prompt', p);
+          btn.textContent = p;
+          quickPromptsContainer.appendChild(btn);
+        });
+        return;
+      }
+
+      // 2. Pool of candidate suggestions based on keyword categories
+      const categoryPools = [];
+
+      if (text.includes('walk') || text.includes('leash') || text.includes('run') || text.includes('heel') || text.includes('energy') || text.includes('active') || text.includes('play')) {
+        categoryPools.push(
+          `How does ${currentDogName} behave on a leash?`,
+          `What is ${possessive} favorite game to play?`,
+          `Do you think ${currentDogName} would like hiking?`
+        );
+      }
+      if (text.includes('kid') || text.includes('child') || text.includes('family') || text.includes('people') || text.includes('hooman') || text.includes('person') || text.includes('human')) {
+        categoryPools.push(
+          `Is ${currentDogName} calm or high energy at home?`,
+          `How does ${currentDogName} act when meeting strangers?`,
+          `What is the best way to introduce ${pron} to a new family?`
+        );
+      }
+      if (text.includes('dog') || text.includes('cat') || text.includes('fren') || text.includes('animal') || text.includes('pet') || text.includes('pack')) {
+        categoryPools.push(
+          `Has ${currentDogName} lived with cats or other dogs before?`,
+          `What is ${possessive} play style with other dogs?`
+        );
+      }
+      if (text.includes('shy') || text.includes('scared') || text.includes('nervous') || text.includes('go-slow') || text.includes('go slow') || text.includes('patient') || text.includes('soft heart')) {
+        categoryPools.push(
+          `How can I make ${currentDogName} feel safe and cozy?`,
+          `What treats does ${currentDogName} love most?`,
+          `How long does it take for ${pron} to warm up to new friends?`
+        );
+      }
+      if (text.includes('treat') || text.includes('food') || text.includes('toy') || text.includes('snack') || text.includes('bone') || text.includes('kong') || text.includes('chew')) {
+        categoryPools.push(
+          `What is ${possessive} absolute favorite treat or toy?`,
+          `Is ${currentDogName} easy to train with treats?`
+        );
+      }
+      if (text.includes('home') || text.includes('house') || text.includes('crate') || text.includes('sleep') || text.includes('bed') || text.includes('cozy') || text.includes('couch')) {
+        categoryPools.push(
+          `Does ${currentDogName} prefer sleeping in a crate or on the bed?`,
+          `What is ${possessive} favorite cozy spot in the house?`
+        );
+      }
+
+      // General fallbacks if no keyword matching or to fill up slots
+      const generalPool = [
+        `What are some of ${currentDogName}'s favorite things?`,
+        `Tell me more about ${possessive} story before coming here.`,
+        `What is the absolute best way to spend the day with ${pron}?`,
+        `Does ${currentDogName} know any fun tricks?`,
+        `What should I know before adopting ${pron}?`,
+        `What does ${possessive} perfect day look like?`
+      ];
+
+      // Combine category suggestions first, then general pool
+      const allCandidates = [...categoryPools, ...generalPool];
+
+      // Get user messages already sent to filter out
+      const sentMessages = conversationHistory
+        .filter(msg => msg.role === 'user')
+        .map(msg => msg.content.toLowerCase().trim());
+
+      // Filter out duplicates and clean
+      const uniqueFiltered = [];
+      const seen = new Set();
+      
+      for (const candidate of allCandidates) {
+        const cleanCand = candidate.toLowerCase().trim();
+        if (!seen.has(cleanCand) && !sentMessages.includes(cleanCand)) {
+          seen.add(cleanCand);
+          uniqueFiltered.push(candidate);
+        }
+      }
+
+      // Render top 3 suggestions
+      quickPromptsContainer.innerHTML = '';
+      const finalSuggestions = uniqueFiltered.slice(0, 3);
+      
+      if (finalSuggestions.length > 0) {
+        finalSuggestions.forEach(p => {
+          const btn = document.createElement('button');
+          btn.className = 'prompt-shortcut-btn';
+          btn.setAttribute('data-prompt', p);
+          btn.textContent = p;
+          quickPromptsContainer.appendChild(btn);
+        });
       }
     }
 
@@ -1487,6 +1655,7 @@
         const firstLetter = currentDogName.charAt(0).toUpperCase();
         if (data.reply) {
           appendMessage('bot', data.reply, firstLetter);
+          updateSuggestions(data.reply);
         } else {
           appendMessage('bot', '[Error: No reply received]', firstLetter);
         }
@@ -1818,6 +1987,19 @@
     }
     if (savePrefBtn) savePrefBtn.addEventListener('click', handleSavePreferences);
     if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
+    // Collapsible biography click trigger
+    const aboutDogToggle = document.getElementById('aboutDogToggle');
+    const aboutDogText = document.getElementById('aboutDogText');
+    if (aboutDogToggle && aboutDogText) {
+      aboutDogToggle.addEventListener('click', () => {
+        const isCollapsed = aboutDogText.classList.toggle('collapsed');
+        if (isCollapsed) {
+          aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
+        } else {
+          aboutDogToggle.innerHTML = `See less <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="18 15 12 9 6 15"/></svg>`;
+        }
+      });
+    }
 
     // Initial Login Setup check and auto-fetch
     if (userEmail) {
