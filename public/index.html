@@ -74,7 +74,6 @@
 
     /* Sticky Header */
     .header {
-      sticky: top-0;
       position: sticky;
       top: 0;
       z-index: 20;
@@ -87,6 +86,80 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+    }
+
+    /* Sticky Condensed Dog Card */
+    .sticky-dog-bar {
+      position: absolute;
+      top: 73px; /* below header */
+      left: 0;
+      right: 0;
+      z-index: 19;
+      background: rgba(2, 6, 23, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateY(-110%);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+      pointer-events: none;
+    }
+    .sticky-dog-bar.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sticky-dog-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      flex-shrink: 0;
+      background: var(--bg-slate-800);
+    }
+    .sticky-dog-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .sticky-dog-name {
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sticky-dog-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sticky-chat-btn {
+      padding: 7px 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+    .sticky-chat-btn:hover {
+      background: var(--accent-hover);
     }
     
     .brand-title {
@@ -893,6 +966,16 @@
       </button>
     </header>
 
+    <!-- Sticky Condensed Dog Bar (appears on scroll, absolute overlay) -->
+    <div class="sticky-dog-bar" id="stickyDogBar">
+      <img class="sticky-dog-avatar" id="stickyDogAvatar" src="" alt="">
+      <div class="sticky-dog-info">
+        <div class="sticky-dog-name" id="stickyDogName">Loading...</div>
+        <div class="sticky-dog-meta" id="stickyDogMeta">—</div>
+      </div>
+      <button class="sticky-chat-btn" id="stickyChatBtn">Chat 💬</button>
+    </div>
+
     <!-- Scrollable content area -->
     <div class="scroll-content" id="scrollContent">
       
@@ -971,7 +1054,7 @@
             <div class="cta-icon-box">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <p class="cta-title" id="askBtnTitle">Ask Jaxon</p>
+            <p class="cta-title" id="askBtnTitle">Ask...</p>
             <p class="cta-sub">Start with prompts</p>
           </button>
         </section>
@@ -1315,6 +1398,17 @@
         if (favBtn) favBtn.setAttribute('aria-label', "Favorite " + currentDogName);
         if (chatInput) chatInput.placeholder = "Ask about " + currentDogName + "...";
 
+        // Update sticky dog bar
+        const stickyDogName = document.getElementById('stickyDogName');
+        const stickyDogMeta = document.getElementById('stickyDogMeta');
+        if (stickyDogName) stickyDogName.textContent = currentDogName;
+        if (stickyDogMeta) {
+          const agePart = cleanAgeText(dog.age || '');
+          const weightPart = cleanWeightText(dog.weight || '');
+          const parts = [agePart, weightPart].filter(p => p && p !== '-');
+          stickyDogMeta.textContent = parts.join(' · ') || 'PACC Shelter Dog';
+        }
+
         // Fill actual values in the stats panel (using compact cleaning functions)
         const genderEl = document.getElementById('dogGender');
         if (genderEl) genderEl.textContent = cleanGenderText(dog.gender || 'Unknown');
@@ -1448,6 +1542,20 @@
         if (dog.url) {
           paccLink.href = dog.url;
           paccLink.style.display = 'inline-flex';
+        }
+
+        // Update sticky avatar image
+        const stickyDogAvatar = document.getElementById('stickyDogAvatar');
+        if (stickyDogAvatar) {
+          if (dog.image_file && dog.image_base_url) {
+            stickyDogAvatar.src = dog.image_base_url + dog.image_file;
+          } else if (dog.image_public_url) {
+            stickyDogAvatar.src = dog.image_public_url;
+          } else if (dog.image_url) {
+            stickyDogAvatar.src = dog.image_url;
+          } else {
+            stickyDogAvatar.src = '';
+          }
         }
 
         // Handle Image
@@ -2071,6 +2179,43 @@
     } else {
       updateProfileButton();
       fetchRandomDog();
+    }
+
+    // Sticky Dog Bar — show when hero scrolls out of view
+    const stickyDogBar = document.getElementById('stickyDogBar');
+    const heroSection = document.querySelector('.hero-section');
+
+    if (stickyDogBar && heroSection && scrollContent) {
+      const heroObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+              stickyDogBar.classList.add('visible');
+            } else {
+              stickyDogBar.classList.remove('visible');
+            }
+          });
+        },
+        {
+          root: scrollContent,
+          threshold: 0
+        }
+      );
+      heroObserver.observe(heroSection);
+    }
+
+    // Sticky Chat button scrolls to chat input
+    const stickyChatBtn = document.getElementById('stickyChatBtn');
+    if (stickyChatBtn) {
+      stickyChatBtn.addEventListener('click', () => {
+        const chatSec = document.getElementById('chatSection');
+        if (chatSec && scrollContent) {
+          chatSec.scrollIntoView({ behavior: 'smooth' });
+          setTimeout(() => {
+            if (chatInput) chatInput.focus();
+          }, 400);
+        }
+      });
     }
 
     // Auto popup for first-time visitors
