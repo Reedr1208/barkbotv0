@@ -609,6 +609,115 @@
       font-weight: 700;
       margin-left: 8px;
     }
+
+    /* Compatibility Widget Styles */
+    .compat-title {
+      font-weight: 800;
+      margin-top: 16px;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      color: var(--text-main);
+    }
+    
+    .compat-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .compat-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(128, 128, 128, 0.15);
+      background: rgba(128, 128, 128, 0.02);
+      transition: all 0.2s ease;
+    }
+    
+    .compat-item.matched {
+      background: rgba(16, 185, 129, 0.06);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .compat-item.mismatched {
+      background: rgba(245, 158, 11, 0.06);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .compat-item.neutral {
+      background: rgba(128, 128, 128, 0.04);
+      border-color: rgba(128, 128, 128, 0.15);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      .compat-item.matched {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.3);
+      }
+      .compat-item.mismatched {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+    }
+    
+    .compat-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      position: relative;
+    }
+    
+    .compat-dot.green {
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+    .compat-dot.yellow {
+      background: #f59e0b;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+    }
+    .compat-dot.gray {
+      background: #9ca3af;
+      box-shadow: 0 0 8px rgba(156, 163, 175, 0.4);
+    }
+    
+    .compat-icon {
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    
+    .compat-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+    
+    .compat-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    
+    .compat-desc {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    
+    .compat-desc .mismatch-detail {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
   </style>
 </head>
 <body>
@@ -637,6 +746,12 @@
             <div class="stat-label">Weight</div>
             <div class="stat-value" id="dogWeight">-</div>
           </div>
+        </div>
+
+        <!-- Compatibility Widget -->
+        <div id="compatWidget" style="display: none; margin: 16px 0 20px 0;">
+          <h3 class="compat-title">🧩 Preference Match Analysis</h3>
+          <div id="compatGrid" class="compat-grid"></div>
         </div>
 
         <h3 class="facts-title">Important Facts</h3>
@@ -893,6 +1008,9 @@
       chatInput.disabled = true;
       sendBtn.disabled = true;
 
+      const compatWidget = document.getElementById('compatWidget');
+      if (compatWidget) compatWidget.style.display = 'none';
+
       profilePanel.classList.add('loading');
 
       try {
@@ -922,6 +1040,67 @@
             } else {
               badgeContainer.innerHTML = '<span class="pref-badge-fallback" title="No exact matching dogs currently available. Showing all active dogs!">All Pups</span>';
             }
+          }
+        }
+
+        // Render Compatibility Widget
+        const compatGrid = document.getElementById('compatGrid');
+        if (compatWidget && compatGrid) {
+          compatGrid.innerHTML = '';
+          const hasConfiguredPrefs = dog.user_has_preferences && dog.match_details && Object.values(dog.match_details).some(cat => cat.active);
+          
+          if (hasConfiguredPrefs) {
+            compatWidget.style.display = 'block';
+            
+            const categories = [
+              { key: 'gender', name: 'Gender', icon: '🐕' },
+              { key: 'age', name: 'Age Group', icon: '🍼' },
+              { key: 'size', name: 'Size', icon: '⚖️' }
+            ];
+            
+            categories.forEach(cat => {
+              const details = dog.match_details[cat.key];
+              if (!details) return;
+              
+              const itemDiv = document.createElement('div');
+              itemDiv.className = 'compat-item';
+              
+              let dotColor = 'gray';
+              let statusLabel = 'No Preference';
+              let descText = '';
+              
+              if (details.active) {
+                if (details.matched) {
+                  itemDiv.classList.add('matched');
+                  dotColor = 'green';
+                  statusLabel = 'Match!';
+                  descText = details.actual;
+                } else {
+                  itemDiv.classList.add('mismatched');
+                  dotColor = 'yellow';
+                  statusLabel = 'Mismatch';
+                  const preferredCapitalized = details.preferred ? (details.preferred.charAt(0).toUpperCase() + details.preferred.slice(1)) : 'Any';
+                  descText = `<span class="mismatch-detail">Preferred: ${preferredCapitalized} • Actual: ${details.actual}</span>`;
+                }
+              } else {
+                itemDiv.classList.add('neutral');
+                dotColor = 'gray';
+                statusLabel = 'No Preference';
+                descText = `Any ${cat.name} (Actual: ${details.actual})`;
+              }
+              
+              itemDiv.innerHTML = `
+                <span class="compat-icon">${cat.icon}</span>
+                <div class="compat-info">
+                  <span class="compat-label">${cat.name} • ${statusLabel}</span>
+                  <span class="compat-desc">${descText}</span>
+                </div>
+                <span class="compat-dot ${dotColor}"></span>
+              `;
+              compatGrid.appendChild(itemDiv);
+            });
+          } else {
+            compatWidget.style.display = 'none';
           }
         }
 

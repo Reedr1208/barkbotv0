@@ -105,49 +105,74 @@ class handler(BaseHTTPRequestHandler):
                     preferences = pref_res.data[0]
 
             # Apply preferences filtering if preferences are configured
-            filtered_ids = []
             preferences_matched = False
+            best_match_details = {}
             
             if preferences:
                 pref_gender = preferences.get("gender", "any")
                 pref_age = preferences.get("age_group", "any")
                 pref_size = preferences.get("size", "any")
                 
-                # Check if they have set any actual preference filters
-                has_active_prefs = (pref_gender != "any" or pref_age != "any" or pref_size != "any")
+                # Triggers for active categories
+                has_gender = (pref_gender != "any")
+                has_age = (pref_age != "any")
+                has_size = (pref_size != "any")
                 
-                if has_active_prefs:
+                total_pref_count = sum([has_gender, has_age, has_size])
+                
+                if total_pref_count > 0:
+                    scored_dogs = {}
+                    
                     for aid in valid_ids:
                         dog = pima_dogs[aid]
+                        score = 0
+                        details = {
+                            "gender": {"active": has_gender, "preferred": pref_gender, "actual": dog.get("gender") or "Unknown", "matched": False},
+                            "age": {"active": has_age, "preferred": pref_age, "actual": dog.get("age") or "Unknown", "matched": False},
+                            "size": {"active": has_size, "preferred": pref_size, "actual": dog.get("weight") or "Unknown", "matched": False}
+                        }
                         
                         # 1. Gender Filter
-                        if not matches_gender(dog.get("gender"), pref_gender):
-                            continue
-                            
+                        if has_gender:
+                            if matches_gender(dog.get("gender"), pref_gender):
+                                score += 1
+                                details["gender"]["matched"] = True
+                                
                         # 2. Age Filter
-                        if pref_age != "any":
+                        if has_age:
                             dog_age_group = classify_age_group(dog.get("age"))
-                            if dog_age_group != pref_age:
-                                continue
+                            if dog_age_group == pref_age:
+                                score += 1
+                                details["age"]["matched"] = True
+                            details["age"]["actual"] = f"{dog.get('age') or 'Unknown'} ({dog_age_group.capitalize()})"
                                 
                         # 3. Size Filter
-                        if pref_size != "any":
+                        if has_size:
                             dog_weight = parse_weight_lbs(dog.get("weight"))
-                            is_match = False
-                            if pref_size == "small":
-                                is_match = dog_weight > 0 and dog_weight < 25
-                            elif pref_size == "medium":
-                                is_match = dog_weight >= 25 and dog_weight < 60
-                            elif pref_size == "large":
-                                is_match = dog_weight >= 60
-                            if not is_match:
-                                continue
-                                
-                        filtered_ids.append(aid)
+                            dog_size_class = "Unknown"
+                            if dog_weight > 0:
+                                if dog_weight < 25:
+                                    dog_size_class = "small"
+                                elif dog_weight < 60:
+                                    dog_size_class = "medium"
+                                else:
+                                    dog_size_class = "large"
+                                    
+                            if dog_size_class == pref_size:
+                                score += 1
+                                details["size"]["matched"] = True
+                            details["size"]["actual"] = f"{dog.get('weight') or 'Unknown'} ({dog_size_class.capitalize()})"
+                            
+                        scored_dogs[aid] = score
+                        best_match_details[aid] = details
+                        
+                    # Find candidates achieving the maximum score (closest matches)
+                    max_score = max(scored_dogs.values()) if scored_dogs else 0
+                    best_candidates = [aid for aid, score in scored_dogs.items() if score == max_score]
                     
-                    if filtered_ids:
-                        valid_ids = filtered_ids
-                        preferences_matched = True
+                    if best_candidates:
+                        valid_ids = best_candidates
+                        preferences_matched = (max_score > 0)
 
             # Categorize into fresh and stale
             three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
@@ -194,6 +219,7 @@ class handler(BaseHTTPRequestHandler):
             profile["important_facts"] = prompts_data[random_id].get("important_facts", [])
             profile["preferences_matched"] = preferences_matched
             profile["user_has_preferences"] = (preferences is not None)
+            profile["match_details"] = best_match_details.get(random_id, {})
             
             # Clean up internal fields before sending to frontend
             internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id", "data_updated"]
