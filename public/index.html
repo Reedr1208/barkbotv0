@@ -248,99 +248,105 @@
       gap: 16px;
     }
 
-    /* Stats Grid */
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-    }
-    
-    .stat-box {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 10px 12px;
-      border-radius: 16px;
+    /* Unified Condensed Details Box Styling */
+    .details-box {
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 2px;
-      transition: all 0.2s ease;
+      gap: 12px;
       text-align: left;
     }
-    
-    .stat-box.matched {
-      background: var(--emerald-bg);
-      border-color: var(--emerald-border);
-    }
-    
-    .stat-box.mismatched {
-      background: var(--amber-bg);
-      border-color: var(--amber-border);
-    }
-    
-    .stat-header-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-    
-    .stat-label {
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 800;
-    }
-    
-    .stat-value {
-      font-size: 0.95rem;
-      font-weight: 900;
-      line-height: 1.2;
-      color: var(--text-main);
-    }
-    
-    .stat-pref-note {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      font-weight: 600;
+
+    .details-stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
     }
 
-    /* Compatibility Summary Card */
-    .why-fit-card {
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.02);
-      padding: 16px;
+    .detail-chip {
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-soft);
-    }
-    
-    .why-fit-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    
-    .why-fit-icon {
       border-radius: 12px;
-      background: rgba(16, 185, 129, 0.1);
-      padding: 8px;
-      color: var(--emerald);
+      padding: 8px 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-    }
-    
-    .why-fit-title {
-      font-size: 1rem;
-      font-weight: 900;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
       color: var(--text-main);
+      text-align: center;
+      min-height: 38px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    
-    .why-fit-desc {
-      font-size: 0.85rem;
-      color: #cbd5e1;
+
+    .detail-chip.matched {
+      background: var(--emerald-bg);
+      border-color: var(--emerald-border);
+    }
+
+    .detail-chip.mismatched {
+      background: var(--amber-bg);
+      border-color: var(--amber-border);
+    }
+
+    .details-fit-container {
+      background: rgba(16, 185, 129, 0.04);
+      border-left: 3.5px solid var(--emerald);
+      border-radius: 0 12px 12px 0;
+      padding: 8px 12px;
+    }
+
+    .details-fit-container.warning {
+      background: rgba(245, 158, 11, 0.04);
+      border-left-color: var(--amber);
+    }
+
+    .details-fit-text {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .details-bio-section {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+
+    .details-bio-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 900;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .details-bio-text {
+      font-size: 0.84rem;
       line-height: 1.5;
+      color: var(--text-muted);
+      margin: 0;
+      white-space: pre-line;
+    }
+
+    .details-bio-text.collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .trait-chips-grid {
@@ -909,64 +915,46 @@
       <!-- Main Profile Body -->
       <main class="profile-body">
         
-        <!-- 3-Column Stats Grid -->
-        <section class="stats">
-          <div class="stat-box" id="statBoxGender">
-            <div class="stat-header-row">
-              <span class="stat-label">Sex</span>
-              <span class="compat-dot gray" id="dotGender" style="display: none;"></span>
-            </div>
-            <div class="stat-value" id="dogGender">-</div>
-            <div class="stat-pref-note" id="noteGender" style="display: none;"></div>
+        <!-- Unified Condensed Details Box -->
+        <section class="details-box" id="detailsBox">
+          
+          <!-- Row 1: Flat Stats Chips -->
+          <div class="details-stats-row">
+            <span class="detail-chip" id="chipGender">
+              <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
+              <span class="chip-val" id="dogGender">-</span>
+            </span>
+            <span class="detail-chip" id="chipAge">
+              <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
+              <span class="chip-val" id="dogAge">-</span>
+            </span>
+            <span class="detail-chip" id="chipWeight">
+              <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
+              <span class="chip-val" id="dogWeight">-</span>
+            </span>
+          </div>
+
+          <!-- Row 2: Fit Info -->
+          <div class="details-fit-container" id="whyFitCard" style="display: none;">
+            <p class="details-fit-text" id="whyFitDesc">-</p>
           </div>
           
-          <div class="stat-box" id="statBoxAge">
-            <div class="stat-header-row">
-              <span class="stat-label">Age</span>
-              <span class="compat-dot gray" id="dotAge" style="display: none;"></span>
-            </div>
-            <div class="stat-value" id="dogAge">-</div>
-            <div class="stat-pref-note" id="noteAge" style="display: none;"></div>
-          </div>
-          
-          <div class="stat-box" id="statBoxWeight">
-            <div class="stat-header-row">
-              <span class="stat-label">Weight</span>
-              <span class="compat-dot gray" id="dotWeight" style="display: none;"></span>
-            </div>
-            <div class="stat-value" id="dogWeight">-</div>
-            <div class="stat-pref-note" id="noteWeight" style="display: none;"></div>
-          </div>
-        </section>
+          <!-- Row 3: Trait Chips -->
+          <div class="trait-chips-grid" id="traitChipsContainer"></div>
 
-        <!-- Dynamic Why Fit card + Trait Chips -->
-        <section class="why-fit-card" id="whyFitCard" style="display: none;">
-          <div class="why-fit-header">
-            <div class="why-fit-icon">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <!-- Row 4: Collapsible Shelter Story Biography -->
+          <div class="details-bio-section" id="aboutDogCard" style="display: none;">
+            <div class="details-bio-title">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              Meet <span id="aboutDogName">me</span>
             </div>
-            <div>
-              <h3 class="why-fit-title">Why <span id="whyFitName">Jaxon</span> may fit you</h3>
-              <p class="mt-1 why-fit-desc" id="whyFitDesc">-</p>
-            </div>
+            <p class="details-bio-text collapsed" id="aboutDogText"></p>
+            <button class="see-more-toggle" id="aboutDogToggle" style="display: none;">
+              See more
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
           </div>
-        </section>
 
-        <!-- Shelter Story Biography Card -->
-        <section class="why-fit-card" id="aboutDogCard" style="display: none; margin-top: 16px;">
-          <div class="why-fit-header">
-            <div class="why-fit-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--accent-hover);">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            </div>
-            <div>
-              <h3 class="why-fit-title">Meet <span id="aboutDogName">me</span></h3>
-              <p class="mt-1 why-fit-desc collapsed" id="aboutDogText" style="margin-bottom: 0; white-space: pre-line;"></p>
-              <button class="see-more-toggle" id="aboutDogToggle" style="display: none;">
-                See more
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
-            </div>
-          </div>
         </section>
 
         <!-- CTA Grid Buttons -->
@@ -1206,6 +1194,24 @@
         }
         localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
       });
+    function cleanAgeText(ageStr) {
+      if (!ageStr) return '-';
+      let clean = ageStr.replace(/The shelter staff think I am/i, '').replace(/old/i, '').trim();
+      clean = clean.replace(/^(?:about|around)\s+/i, '');
+      clean = clean.replace(/\byears?\b/gi, 'yr').replace(/\bmonths?\b/gi, 'mo');
+      return clean || ageStr;
+    }
+
+    function cleanWeightText(weightStr) {
+      if (!weightStr) return '-';
+      let clean = weightStr.replace(/I weigh approximately/i, '').trim();
+      clean = clean.replace(/\bpounds\b/gi, 'lbs');
+      return clean || weightStr;
+    }
+
+    function cleanGenderText(genderStr) {
+      if (!genderStr) return '-';
+      return genderStr.replace(/unaltered/i, 'Unalt.').trim();
     }
 
     async function fetchRandomDog() {
@@ -1228,11 +1234,11 @@
       if (whyFitCard) whyFitCard.style.display = 'none';
 
       // Reset combined preference metadata rows
-      const statBoxes = ['statBoxGender', 'statBoxAge', 'statBoxWeight'];
+      const statBoxes = ['chipGender', 'chipAge', 'chipWeight'];
       statBoxes.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          el.className = 'stat-box';
+          el.className = 'detail-chip';
         }
       });
       const compatDots = ['dotGender', 'dotAge', 'dotWeight'];
@@ -1306,11 +1312,11 @@
         if (favBtn) favBtn.setAttribute('aria-label', "Favorite " + currentDogName);
         if (chatInput) chatInput.placeholder = "Ask about " + currentDogName + "...";
 
-        // Fill actual values in the stats panel
+        // Fill actual values in the stats panel (using compact cleaning functions)
         const genderEl = document.getElementById('dogGender');
-        if (genderEl) genderEl.textContent = dog.gender || 'Unknown';
-        dogAge.textContent = dog.age || 'Unknown';
-        dogWeight.textContent = dog.weight || 'Unknown';
+        if (genderEl) genderEl.textContent = cleanGenderText(dog.gender || 'Unknown');
+        dogAge.textContent = cleanAgeText(dog.age || 'Unknown');
+        dogWeight.textContent = cleanWeightText(dog.weight || 'Unknown');
 
         // Update stat row backgrounds and dots based on preferences
         if (dog.user_has_preferences && dog.match_details) {
@@ -1318,18 +1324,17 @@
           
           if (hasConfiguredPrefs) {
             const categories = [
-              { key: 'gender', boxId: 'statBoxGender', dotId: 'dotGender', noteId: 'noteGender' },
-              { key: 'age', boxId: 'statBoxAge', dotId: 'dotAge', noteId: 'noteAge' },
-              { key: 'size', boxId: 'statBoxWeight', dotId: 'dotWeight', noteId: 'noteWeight' }
+              { key: 'gender', boxId: 'chipGender', dotId: 'dotGender' },
+              { key: 'age', boxId: 'chipAge', dotId: 'dotAge' },
+              { key: 'size', boxId: 'chipWeight', dotId: 'dotWeight' }
             ];
             
             categories.forEach(cat => {
               const details = dog.match_details[cat.key];
               const box = document.getElementById(cat.boxId);
               const dot = document.getElementById(cat.dotId);
-              const note = document.getElementById(cat.noteId);
               
-              if (!details || !box || !dot || !note) return;
+              if (!details || !box || !dot) return;
               
               dot.style.display = 'inline-block';
               
@@ -1337,27 +1342,19 @@
                 if (details.matched) {
                   box.classList.add('matched');
                   dot.className = 'compat-dot green';
-                  note.style.display = 'none';
                 } else {
                   box.classList.add('mismatched');
                   dot.className = 'compat-dot yellow';
-                  const preferredCapitalized = details.preferred ? (details.preferred.charAt(0).toUpperCase() + details.preferred.slice(1)) : 'Any';
-                  note.textContent = `Pref: ${preferredCapitalized}`;
-                  note.style.display = 'block';
                 }
               } else {
                 dot.className = 'compat-dot gray';
-                note.textContent = `No Preference`;
-                note.style.display = 'block';
               }
             });
 
-            // Rebuild custom Match Summary Explainer Card
-            const whyFitName = document.getElementById('whyFitName');
+            // Rebuild custom Match Summary Explainer Card inside the Condensed Details Box
             const whyFitDesc = document.getElementById('whyFitDesc');
-            if (whyFitCard && whyFitName && whyFitDesc) {
+            if (whyFitCard && whyFitDesc) {
               whyFitCard.style.display = 'block';
-              whyFitName.textContent = currentDogName;
               
               let matchCount = 0;
               let totalPrefs = 0;
@@ -1380,10 +1377,13 @@
               
               if (matchCount === totalPrefs) {
                 whyFitDesc.textContent = `${currentDogName} matches all of your active preferences perfectly! They will make a wonderful, aligned addition to your home.`;
+                whyFitCard.className = 'details-fit-container';
               } else if (matchCount > 0) {
                 whyFitDesc.textContent = `${currentDogName} is an incredibly close fit! They match your criteria for ${matchesList.join(' and ')}, but differ slightly on your preferred ${mismatchesList.join(' and ')}.`;
+                whyFitCard.className = 'details-fit-container warning';
               } else {
                 whyFitDesc.textContent = `${currentDogName} is an active shelter pup who doesn't fit your primary matching filters, but they possess a loving personality that is highly worth meeting!`;
+                whyFitCard.className = 'details-fit-container warning';
               }
             }
           }
