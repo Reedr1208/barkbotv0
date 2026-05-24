@@ -1194,6 +1194,8 @@
         }
         localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
       });
+    }
+
     function cleanAgeText(ageStr) {
       if (!ageStr) return '-';
       let clean = ageStr.replace(/The shelter staff think I am/i, '').replace(/old/i, '').trim();
