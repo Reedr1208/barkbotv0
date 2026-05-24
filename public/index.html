@@ -66,7 +66,7 @@
     
     @media (max-width: 480px) {
       .app-container {
-        height: 100vh;
+        height: 100dvh;
         border-radius: 0;
         border: none;
       }
@@ -170,6 +170,7 @@
       font-weight: 800;
       line-height: 1;
       margin-bottom: 2px;
+      flex-shrink: 0;
     }
     
     .brand-tagline {
@@ -943,6 +944,30 @@
       color: white !important;
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
+
+    /* ── Mobile header: icon-only tabs so Shuffle fits ── */
+    @media (max-width: 480px) {
+      .header {
+        padding: 12px 14px;
+        gap: 8px;
+      }
+      .tab-btn {
+        padding: 6px 10px;
+        font-size: 0;       /* hide text label */
+        gap: 0;
+      }
+      .tab-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+      .shuffle-btn {
+        padding: 7px 12px;
+        font-size: 0.78rem;
+      }
+      .brand-tagline {
+        font-size: 0.92rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -956,7 +981,7 @@
         <p class="brand-title">Chattyhound</p>
         <h1 class="brand-tagline">Find your match</h1>
       </div>
-      <div class="tab-bar" style="margin-left: auto;">
+      <div class="tab-bar" style="flex-shrink: 0;">
         <button class="tab-btn" id="aboutBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           About
