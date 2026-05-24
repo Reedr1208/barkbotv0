@@ -3,10 +3,25 @@
   "rewrites": [
     {
       "source": "/dogs/:dogId",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|WhatsApp|TelegramBot|Discordbot|Pinterestbot|Googlebot|bingbot|Applebot).*"
+        }
+      ],
       "destination": "/api/dog_meta?dogId=:dogId"
+    },
+    {
+      "source": "/dogs/:dogId",
+      "destination": "/index.html"
     }
   ],
   "functions": {
+    "api/dog_meta.py": {
+      "includeFiles": "public/index.html",
+      "maxDuration": 300
+    },
     "api/*.py": {
       "maxDuration": 300
     }
