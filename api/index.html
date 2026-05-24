@@ -3208,14 +3208,50 @@
           const traitChipsContainer = document.getElementById('traitChipsContainer');
           if (traitChipsContainer) {
             traitChipsContainer.innerHTML = '';
+            
+            // Clean up any existing facts toggle button
+            const existingToggle = traitChipsContainer.parentNode.querySelector('.facts-toggle-btn');
+            if (existingToggle) {
+              existingToggle.remove();
+            }
+
             const facts = dog.important_facts || [];
             if (facts.length > 0) {
-              facts.forEach(fact => {
+              const MAX_VISIBLE_FACTS = 3;
+              facts.forEach((fact, index) => {
                 const chip = document.createElement('span');
                 chip.className = 'trait-chip';
+                if (index >= MAX_VISIBLE_FACTS) {
+                  chip.classList.add('fact-hidden');
+                  chip.style.display = 'none';
+                }
                 chip.textContent = fact;
                 traitChipsContainer.appendChild(chip);
               });
+
+              if (facts.length > MAX_VISIBLE_FACTS) {
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'see-more-toggle facts-toggle-btn';
+                toggleBtn.style.width = '100%';
+                toggleBtn.style.justifyContent = 'center';
+                toggleBtn.style.marginTop = '8px';
+                toggleBtn.innerHTML = `See more notes (${facts.length - MAX_VISIBLE_FACTS} more) <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
+                
+                let factsExpanded = false;
+                toggleBtn.addEventListener('click', () => {
+                  factsExpanded = !factsExpanded;
+                  const hiddenChips = traitChipsContainer.querySelectorAll('.trait-chip.fact-hidden');
+                  hiddenChips.forEach(chip => {
+                    chip.style.display = factsExpanded ? 'inline-flex' : 'none';
+                  });
+                  if (factsExpanded) {
+                    toggleBtn.innerHTML = `See less notes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="18 15 12 9 6 15"/></svg>`;
+                  } else {
+                    toggleBtn.innerHTML = `See more notes (${facts.length - MAX_VISIBLE_FACTS} more) <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
+                  }
+                });
+                traitChipsContainer.after(toggleBtn);
+              }
             } else {
               // Default friendly trait chips if no specific scraper facts
               const defaultTraits = ["Active & Playful", "Friendly Companion", "Sweet Personality", "Shelter Hero"];
@@ -3239,17 +3275,19 @@
             if (bioText) {
               aboutDogCard.style.display = 'block';
               aboutDogName.textContent = currentDogName;
-              aboutDogText.textContent = bioText;
+              
+              // Save full text in dataset for robust JS toggle
+              aboutDogText.dataset.fullBio = bioText;
 
-              // Set default collapsed state
-              aboutDogText.classList.add('collapsed');
-              aboutDogToggle.style.display = 'none';
-
-              // Verify if description length warrants a "See more" toggle
+              // Check if description warrants a "See more" toggle using JS-based truncation
               if (bioText.length > 180) {
+                aboutDogText.textContent = bioText.slice(0, 180) + '...';
                 aboutDogToggle.style.display = 'inline-flex';
                 aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
+                aboutDogText.classList.add('collapsed');
               } else {
+                aboutDogText.textContent = bioText;
+                aboutDogToggle.style.display = 'none';
                 aboutDogText.classList.remove('collapsed');
               }
             } else {
@@ -4294,11 +4332,14 @@
       const aboutDogText = document.getElementById('aboutDogText');
       if (aboutDogToggle && aboutDogText) {
         aboutDogToggle.addEventListener('click', () => {
+          const fullBio = aboutDogText.dataset.fullBio || '';
           const isCollapsed = aboutDogText.classList.toggle('collapsed');
           if (isCollapsed) {
+            aboutDogText.textContent = fullBio.slice(0, 180) + '...';
             aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
             trackEvent('bio_collapsed', { dog_name: currentDogName });
           } else {
+            aboutDogText.textContent = fullBio;
             aboutDogToggle.innerHTML = `See less <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="18 15 12 9 6 15"/></svg>`;
             trackEvent('bio_expanded', { dog_name: currentDogName });
           }
