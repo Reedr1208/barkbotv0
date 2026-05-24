@@ -5,6 +5,7 @@ node_modules/
 dist/
 build/
 venv/
+.venv/
 .vercel/
 __pycache__/
 *.pyc
