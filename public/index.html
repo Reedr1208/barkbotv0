@@ -980,7 +980,8 @@
       background: var(--accent) !important;
       border-color: var(--accent-hover) !important;
       color: white !important;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
     }
 
     /* ── Mobile header: hide tagline to free space for tabs + shuffle ── */
@@ -1439,16 +1440,11 @@
     <!-- 1. LANDING SCREEN VIEW (Conversion Funnel) -->
     <!-- ────────────────────────────────────────── -->
     <div id="landingView" class="view-screen">
-      <!-- Minimalist Brand Header -->
-      <header class="header" style="justify-content: center; border-bottom: none; background: transparent; padding: 20px 24px 8px 24px;">
-        <p class="brand-title" style="font-size: 0.95rem; font-weight: 900; letter-spacing: 0.25em; color: var(--accent-hover); margin-bottom: 0;">Chattyhound</p>
-      </header>
-
-      <div class="scroll-content" style="padding-bottom: 24px;">
+      <div class="scroll-content" style="padding-bottom: 24px; padding-top: 24px;">
         <!-- High-Impact Hero Landing Section -->
         <section class="landing-hero">
           <div class="landing-logo">🐾 ChattyHound</div>
-          <h2 class="landing-title">Meet adoptable dogs in a whole new way.</h2>
+          <h1 class="landing-title">Meet adoptable dogs in a whole new way.</h1>
           <p class="landing-sub">Chat with shelter dogs, discover their personality, and find the pup who fits your life.</p>
           <div class="landing-cta-group">
             <button class="btn-primary" id="landingStartBtn" aria-label="Start Sniffing: Build your dog match profile">Start Sniffing 🐶</button>
@@ -1493,9 +1489,14 @@
 
         <!-- Shelter Credibility Disclaimers -->
         <section class="landing-footer">
-          <div class="disclaimer-card">
-            <strong>⚠️ Crucial Shelter Notice</strong><br>
-            ChattyHound is an AI-powered discovery tool. We do not replace the official shelter adoption process. The official shelter page remains the ultimate source of truth for all medical, behavioral, and adoption eligibility details.
+          <div class="disclaimer-card" style="background: rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); text-align: left; display: flex; gap: 12px; align-items: flex-start; color: var(--text-main); font-size: 0.78rem;">
+            <div style="color: var(--accent); flex-shrink: 0; margin-top: 2px;">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <strong style="color: white; font-weight: 800; font-size: 0.85rem; display: block; margin-bottom: 3px;">Shelter info comes first 🛡️</strong>
+              ChattyHound is a playful AI companion to help you discover dogs. The official shelter page remains the absolute authority for all medical details, behavioral history, and adoption eligibility.
+            </div>
           </div>
         </section>
       </div>
@@ -1509,7 +1510,7 @@
       <header class="header">
         <div>
           <p class="brand-title">Chattyhound</p>
-          <h1 class="brand-tagline">Find your match</h1>
+          <h2 class="brand-tagline">Find your match</h2>
         </div>
         <div class="tab-bar" style="flex-shrink: 0;">
           <button class="tab-btn" id="aboutBtn" aria-label="Open About ChattyHound description">About</button>
@@ -1517,7 +1518,7 @@
         </div>
         <button class="shuffle-btn" id="nextBtn" aria-label="Shuffle: Show me another dog">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8"/></svg>
-          Shuffle
+          Next Dog 🐶
         </button>
       </header>
 
@@ -1535,13 +1536,13 @@
       <div class="mobile-action-bar" id="mobileActionBar">
         <button class="mobile-action-btn" id="mobileShuffleBtn" aria-label="Shuffle: Show another adoptable dog">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8"/></svg>
-          <span>Shuffle</span>
+          <span>Next</span>
         </button>
         <button class="mobile-action-btn primary" id="mobileChatBtn" aria-label="Chat with current pup">
-          <span>Chat 💬</span>
+          <span>Chat</span>
         </button>
         <a href="#" target="_blank" class="mobile-action-btn" id="mobileAdoptBtn" aria-label="View official PACC shelter page">
-          <span>Adopt 🛡️</span>
+          <span>Shelter 🛡️</span>
         </a>
       </div>
 
@@ -1564,9 +1565,18 @@
                 </div>
                 <!-- REAL CONTENT -->
                 <div class="real-el">
-                  <div id="prefMatchBadgeContainer"></div>
+                  <div id="prefMatchBadgeContainer" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                   <h2 class="dog-name" id="dogName"></h2>
-                  <p class="dog-id" id="dogId"></p>
+                  <div class="dog-meta-header" style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+                    <p class="dog-breed" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-hover); display: flex; align-items: center; gap: 4px; margin: 0;">
+                      <span>Rescue Mix 🐾</span>
+                    </p>
+                    <p class="dog-location" id="dogLocation" style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin: 0;">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      <span id="dogLocationText">-</span>
+                    </p>
+                    <p class="dog-id" id="dogId" style="margin: 0; font-size: 0.72rem; opacity: 0.8;"></p>
+                  </div>
                 </div>
               </div>
               <button class="fav-btn real-el" id="favBtn" aria-label="Save to Favorites" title="Save to Favorites">
@@ -1580,11 +1590,16 @@
         <main class="profile-body">
 
           <!-- EMPTY STATE CARD -->
-          <section class="details-box empty-state-card" id="emptyStateCard" style="display: none;">
-            <div class="empty-state-icon">🐾</div>
-            <h3 class="empty-state-title">No matching pups found!</h3>
-            <p class="empty-state-desc">We couldn't find a shelter dog matching your exact matching filters right now. Our counts refresh constantly! Try broadening your preferences to meet more wonderful companions.</p>
-            <button class="btn-primary" id="emptyStateResetBtn" style="padding: 10px 24px; font-size: 0.82rem;">Adjust Profile Fit</button>
+          <section class="details-box empty-state-card" id="emptyStateCard" style="display: none; padding: 32px 24px; text-align: center;">
+            <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 12px; filter: drop-shadow(0 4px 8px rgba(99,102,241,0.25));">🐾</div>
+            <h3 class="empty-state-title" style="font-size: 1.35rem; font-weight: 900; color: white; margin-bottom: 8px;">No perfect matches yet</h3>
+            <p class="empty-state-desc" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; max-width: 320px; margin-left: auto; margin-right: auto;">
+              Every rescue pup has unique charm! While we don't have a dog matching your exact preferences today, we update our shelter profiles constantly. Try adjusting your preferences or exploring all available dogs!
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 280px; margin: 0 auto;">
+              <button class="btn-primary" id="emptyStateResetBtn" style="padding: 12px 20px; font-size: 0.85rem; border-radius: 9999px; font-weight: 800; width: 100%;">Adjust Preferences 🛠️</button>
+              <button class="btn-secondary" id="emptyStateAllBtn" style="padding: 12px 20px; font-size: 0.85rem; border-radius: 9999px; font-weight: 800; width: 100%; border: 1.5px solid rgba(255,255,255,0.15);">Show me all dogs</button>
+            </div>
           </section>
           
           <!-- Unified Condensed Details Box -->
@@ -1611,15 +1626,15 @@
               <div class="details-stats-row">
                 <span class="detail-chip" id="chipGender">
                   <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
-                  <span class="chip-val" id="dogGender">-</span>
+                  <span>Sex: </span><span class="chip-val" id="dogGender">-</span>
                 </span>
                 <span class="detail-chip" id="chipAge">
                   <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
-                  <span class="chip-val" id="dogAge">-</span>
+                  <span>Age: </span><span class="chip-val" id="dogAge">-</span>
                 </span>
                 <span class="detail-chip" id="chipWeight">
                   <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
-                  <span class="chip-val" id="dogWeight">-</span>
+                  <span>Weight: </span><span class="chip-val" id="dogWeight">-</span>
                 </span>
               </div>
 
@@ -1653,7 +1668,7 @@
               <div class="cta-icon-box">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
               </div>
-              <p class="cta-title">View this dog</p>
+              <p class="cta-title">View shelter page</p>
               <p class="cta-sub">Official shelter page 🛡️</p>
             </a>
             <button class="cta-card primary-cta" id="askBtn" aria-label="Scroll to chat input to chat with this dog">
@@ -1663,6 +1678,17 @@
               <p class="cta-title" id="askBtnTitle">Chat with me</p>
               <p class="cta-sub">Start with prompts</p>
             </button>
+          </section>
+
+          <!-- Skeleton Chat Placeholder (visible during loading) -->
+          <section class="chat-section skeleton-el" style="display: none; flex-direction: column; gap: 12px;">
+            <div class="skeleton-pulse" style="width: 140px; height: 20px; border-radius: 4px; margin-bottom: 8px;"></div>
+            <div class="skeleton-pulse" style="width: 100%; height: 80px; border-radius: 12px; margin-bottom: 8px;"></div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <div class="skeleton-pulse" style="width: 120px; height: 32px; border-radius: 20px;"></div>
+              <div class="skeleton-pulse" style="width: 150px; height: 32px; border-radius: 20px;"></div>
+              <div class="skeleton-pulse" style="width: 90px; height: 32px; border-radius: 20px;"></div>
+            </div>
           </section>
 
           <!-- Chat Section -->
@@ -1766,7 +1792,10 @@
             <span>Welcome, <span id="loggedInEmailText" style="color: var(--accent-hover); word-break: break-all; font-size: 1.15rem;">user</span></span>
             <button id="signOutBtn" style="background: transparent; border: none; color: #ef4444; font-weight: 800; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0; display: inline-block;">(Sign Out)</button>
           </h2>
-          <p class="modal-subtitle">Save your preferences so we can prioritize dogs who fit your lifestyle.</p>
+          <p class="modal-subtitle" style="margin-bottom: 6px;">Save your preferences so we can prioritize dogs who fit your lifestyle.</p>
+          <p style="font-size: 0.75rem; color: var(--accent-hover); margin: 0 0 10px 0; font-style: italic; display: flex; align-items: center; gap: 4px;">
+            <span>💡 Not sure? Leave anything as 'Any' and we’ll keep your matches broad.</span>
+          </p>
         </div>
 
         <!-- Wizard Tabs Indicator -->
@@ -1973,21 +2002,34 @@
       // Toggle skeleton loaders active
       profilePanel.classList.add('loading-skeleton');
 
-      // Hide any active empty state cards
+      // Hide any active empty state cards & restore normal details view display blocks
       const emptyStateCard = document.getElementById('emptyStateCard');
       const detailsBox = document.getElementById('detailsBox');
       const ctaGrid = document.querySelector('.cta-grid');
       const chatSection = document.getElementById('chatSection');
+      const heroSection = document.querySelector('.hero-section');
+      const mobileActionBar = document.getElementById('mobileActionBar');
+      const stickyDogBar = document.getElementById('stickyDogBar');
       
       if (emptyStateCard) emptyStateCard.style.display = 'none';
       if (detailsBox) detailsBox.style.display = 'flex';
       if (ctaGrid) ctaGrid.style.display = 'grid';
       if (chatSection) chatSection.style.display = 'flex';
+      if (heroSection) heroSection.style.display = 'block';
+      
+      // Hide sticky and mobile overlays during loading to avoid displacement
+      if (mobileActionBar) mobileActionBar.style.display = 'none';
+      if (stickyDogBar) {
+        stickyDogBar.style.display = 'none';
+        stickyDogBar.classList.remove('visible');
+      }
 
       // Clear current state instantly to prevent lagging info
       dogImage.src = '';
       dogName.textContent = '';
       dogId.textContent = '';
+      const locationTextEl = document.getElementById('dogLocationText');
+      if (locationTextEl) locationTextEl.textContent = '-';
       dogAge.textContent = '-';
       dogWeight.textContent = '-';
       paccLink.style.display = 'none';
@@ -2074,6 +2116,9 @@
         dogName.textContent = dog.name || 'Unknown';
         chatTitleName.textContent = currentDogName;
         dogId.textContent = dog.animal_id ? `${dog.animal_id} • PACC` : '';
+        if (locationTextEl) {
+          locationTextEl.textContent = dog.located_at || 'Pima Animal Care Center';
+        }
 
         // Dynamically update dog name in buttons, labels, and placeholders
         const askBtnTitle = document.getElementById('askBtnTitle');
@@ -2097,6 +2142,30 @@
         if (genderEl) genderEl.textContent = cleanGenderText(dog.gender || 'Unknown');
         dogAge.textContent = cleanAgeText(dog.age || 'Unknown');
         dogWeight.textContent = cleanWeightText(dog.weight || 'Unknown');
+
+        // Restore action overlays on successful load
+        if (mobileActionBar) mobileActionBar.style.display = 'flex';
+        if (stickyDogBar) stickyDogBar.style.display = 'flex';
+
+        // ──── CLIENT-SIDE LIFESTYLE COMPATIBILITY ENGINE & MATCH SENTENCE GENERATOR ────
+        let lifestyleSummary = '';
+        const dogWeightNum = parseFloat(cleanWeightText(dog.weight || ''));
+        const factsLower = (dog.important_facts || []).map(f => f.toLowerCase().trim());
+        const descLower = (dog.description || dog.bio || '').toLowerCase();
+        
+        if (dogWeightNum && dogWeightNum < 25) {
+          if (descLower.includes('calm') || descLower.includes('couch') || descLower.includes('gentle')) {
+            lifestyleSummary = `A perfect gentle lapdog ideal for a cozy apartment environment.`;
+          } else {
+            lifestyleSummary = `A lively, compact companion ready for fun walks and small spaces.`;
+          }
+        } else if (descLower.includes('active') || descLower.includes('hike') || descLower.includes('run') || descLower.includes('energy') || factsLower.some(f => f.includes('energy') || f.includes('active'))) {
+          lifestyleSummary = `A magnificent high-energy adventure partner perfect for active hikers and yard playtime.`;
+        } else if (descLower.includes('kid') || descLower.includes('child') || descLower.includes('family') || factsLower.some(f => f.includes('kid') || f.includes('family'))) {
+          lifestyleSummary = `A sweet-natured family sweetheart who loves playtime and gentle social environments.`;
+        } else {
+          lifestyleSummary = `A loyal and loving companion with a wonderful personality ready to bond deeply with you.`;
+        }
 
         // Update stat row backgrounds and dots based on preferences
         if (dog.user_has_preferences && dog.match_details) {
@@ -2131,7 +2200,6 @@
               }
             });
 
-            // Rebuild custom Match Summary Explainer Card inside the Condensed Details Box
             const whyFitDesc = document.getElementById('whyFitDesc');
             if (whyFitCard && whyFitDesc) {
               whyFitCard.style.display = 'block';
@@ -2156,13 +2224,13 @@
               });
               
               if (matchCount === totalPrefs) {
-                whyFitDesc.textContent = `${currentDogName} matches all of your active preferences perfectly! They will make a wonderful, aligned addition to your home.`;
+                whyFitDesc.textContent = `🎯 Match Fit: ${lifestyleSummary} ${currentDogName} matches all of your preferences!`;
                 whyFitCard.className = 'details-fit-container';
               } else if (matchCount > 0) {
-                whyFitDesc.textContent = `${currentDogName} is an incredibly close fit! They match your criteria for ${matchesList.join(' and ')}, but differ slightly on your preferred ${mismatchesList.join(' and ')}.`;
+                whyFitDesc.textContent = `🐾 Good Fit: ${lifestyleSummary} Meets criteria for ${matchesList.join(' & ')}.`;
                 whyFitCard.className = 'details-fit-container warning';
               } else {
-                whyFitDesc.textContent = `${currentDogName} is an active shelter pup who doesn't fit your primary matching filters, but they possess a loving personality that is highly worth meeting!`;
+                whyFitDesc.textContent = `💝 Special Fit: ${lifestyleSummary} Ready to surprise you with love.`;
                 whyFitCard.className = 'details-fit-container warning';
               }
             }
@@ -2262,10 +2330,6 @@
         let fitBadgeType = 'cuddle';
         let fitBadgeLabel = 'Sweet cuddle companion 💖';
         
-        const factsLower = (dog.important_facts || []).map(f => f.toLowerCase().trim());
-        const descLower = (dog.description || dog.bio || '').toLowerCase();
-        const parsedWeight = parseFloat(cleanWeightText(dog.weight || ''));
-
         if (parsedWeight && parsedWeight < 25 && !descLower.includes('high energy') && !descLower.includes('active home')) {
           fitBadgeType = 'apartment';
           fitBadgeLabel = 'Great apartment fit 🏠';
@@ -2305,8 +2369,6 @@
         `;
         chatHistory.appendChild(introCard);
 
-
-
         // Initialize Avatar letter icon
         const firstLetter = currentDogName.charAt(0).toUpperCase();
         appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetter, false);
@@ -2317,15 +2379,18 @@
         console.error(err);
         
         // Display the warm empty state card if load fails or filters return empty sets
-        const emptyStateCard = document.getElementById('emptyStateCard');
-        const detailsBox = document.getElementById('detailsBox');
-        const ctaGrid = document.querySelector('.cta-grid');
-        const chatSection = document.getElementById('chatSection');
-        
         if (emptyStateCard) emptyStateCard.style.display = 'flex';
         if (detailsBox) detailsBox.style.display = 'none';
         if (ctaGrid) ctaGrid.style.display = 'none';
         if (chatSection) chatSection.style.display = 'none';
+        if (heroSection) heroSection.style.display = 'none';
+        
+        // Explicitly hide overlays on empty matches to prevent ghost displays
+        if (mobileActionBar) mobileActionBar.style.display = 'none';
+        if (stickyDogBar) {
+          stickyDogBar.style.display = 'none';
+          stickyDogBar.classList.remove('visible');
+        }
         
         dogName.textContent = 'Oops!';
       } finally {
@@ -3015,6 +3080,50 @@
       }
     }
 
+    async function resetPreferences() {
+      // 1. Clear local state
+      currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+      lifestylePrefs = {
+        energy: 'any',
+        home: 'any',
+        kids: false,
+        dogs: false,
+        cats: false,
+        shedding: false,
+        aloneTime: false,
+        training: false
+      };
+      
+      // 2. Write to localStorage
+      localStorage.setItem('chattyhound_lifestyle_prefs', JSON.stringify(lifestylePrefs));
+      
+      // 3. Update the selectors visually so that if user opens preferences again, it is correctly reset
+      setupSelectorButtons('prefGenderGroup', 'any');
+      setupSelectorButtons('prefAgeGroup', 'any');
+      setupSelectorButtons('prefSizeGroup', 'any');
+      setupSelectorButtons('prefEnergyGroup', 'any');
+      setupSelectorButtons('prefHomeGroup', 'any');
+      lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
+
+      // 4. Save to backend if user is logged in
+      if (userEmail) {
+        try {
+          await fetch('/api/save_preferences', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail, gender: 'any', age_group: 'any', size: 'any' })
+          });
+        } catch (err) {
+          console.error("Failed to reset backend preferences:", err);
+        }
+      }
+      
+      trackEvent('preferences_reset_all');
+      
+      // 5. Trigger a fresh match load
+      await fetchRandomDog();
+    }
+
     function handleSignOut() {
       userEmail = null;
       currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
@@ -3046,6 +3155,14 @@
     }
 
     // Event listeners
+    const emptyStateResetBtn = document.getElementById('emptyStateResetBtn');
+    if (emptyStateResetBtn) {
+      emptyStateResetBtn.addEventListener('click', openPrefModal);
+    }
+    const emptyStateAllBtn = document.getElementById('emptyStateAllBtn');
+    if (emptyStateAllBtn) {
+      emptyStateAllBtn.addEventListener('click', resetPreferences);
+    }
     if (prefBtn) prefBtn.addEventListener('click', openPrefModal);
     if (prefCloseBtn) prefCloseBtn.addEventListener('click', closePrefModal);
     

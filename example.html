@@ -1073,7 +1073,8 @@
             background: var(--accent) !important;
             border-color: var(--accent-hover) !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
         }
     </style>
     <style id="NotiflixNotifyInternalCSS">
@@ -1758,7 +1759,7 @@
                     stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8"></path>
                 </svg>
-                Shuffle
+                Next Dog 🐶
             </button>
         </header>
 
@@ -1781,7 +1782,16 @@
                                         </path>
                                     </svg> Strong Match</span></div>
                             <h2 class="dog-name" id="dogName">Wonder*</h2>
-                            <p class="dog-id" id="dogId">A889321 • PACC</p>
+                            <div class="dog-meta-header" style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+                              <p class="dog-breed" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-hover); display: flex; align-items: center; gap: 4px; margin: 0;">
+                                <span>Rescue Mix 🐾</span>
+                              </p>
+                              <p class="dog-location" id="dogLocation" style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin: 0;">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <span id="dogLocationText">Pima Animal Care Center</span>
+                              </p>
+                              <p class="dog-id" id="dogId" style="margin: 0; font-size: 0.72rem; opacity: 0.8;">A889321 • PACC</p>
+                            </div>
                         </div>
                         <button class="fav-btn" id="favBtn" aria-label="Favorite Wonder*" title="Save to Favorites">
                             <svg viewBox="0 0 24 24">
@@ -1804,15 +1814,15 @@
                     <div class="details-stats-row">
                         <span class="detail-chip matched" id="chipGender">
                             <span class="compat-dot green" id="dotGender" style="display: inline-block;"></span>
-                            <span class="chip-val" id="dogGender">Neutered Male</span>
+                            <span>Sex: </span><span class="chip-val" id="dogGender">Neutered Male</span>
                         </span>
                         <span class="detail-chip matched" id="chipAge">
                             <span class="compat-dot green" id="dotAge" style="display: inline-block;"></span>
-                            <span class="chip-val" id="dogAge">2 yr and 5 mo .</span>
+                            <span>Age: </span><span class="chip-val" id="dogAge">2 yr and 5 mo .</span>
                         </span>
                         <span class="detail-chip matched" id="chipWeight">
                             <span class="compat-dot green" id="dotWeight" style="display: inline-block;"></span>
-                            <span class="chip-val" id="dogWeight">60.50 lbs.</span>
+                            <span>Weight: </span><span class="chip-val" id="dogWeight">60.50 lbs.</span>
                         </span>
                     </div>
 
@@ -1885,7 +1895,7 @@
                                 <line x1="10" y1="14" x2="21" y2="3"></line>
                             </svg>
                         </div>
-                        <p class="cta-title">View profile</p>
+                        <p class="cta-title">View shelter page</p>
                         <p class="cta-sub">Official shelter page</p>
                     </a>
                     <button class="cta-card primary-cta" id="askBtn" jf-ext-button-ct="ask wonder*
@@ -2220,10 +2230,28 @@ start with prompts">
         }
 
         async function fetchRandomDog() {
+            // Toggle skeleton loaders active
+            profilePanel.classList.add('loading-skeleton');
+
+            // Hide any active empty state cards & restore normal details view display blocks
+            const emptyStateCard = document.getElementById('emptyStateCard');
+            const detailsBox = document.getElementById('detailsBox');
+            const ctaGrid = document.querySelector('.cta-grid');
+            const chatSection = document.getElementById('chatSection');
+            const heroSection = document.querySelector('.hero-section');
+            
+            if (emptyStateCard) emptyStateCard.style.display = 'none';
+            if (detailsBox) detailsBox.style.display = 'flex';
+            if (ctaGrid) ctaGrid.style.display = 'grid';
+            if (chatSection) chatSection.style.display = 'flex';
+            if (heroSection) heroSection.style.display = 'block';
+
             // Clear current state instantly to prevent lagging info
             dogImage.src = '';
-            dogName.textContent = 'Loading...';
+            dogName.textContent = '';
             dogId.textContent = '';
+            const locationTextEl = document.getElementById('dogLocationText');
+            if (locationTextEl) locationTextEl.textContent = '-';
             dogAge.textContent = '-';
             dogWeight.textContent = '-';
             paccLink.style.display = 'none';
@@ -2310,6 +2338,9 @@ start with prompts">
                 dogName.textContent = dog.name || 'Unknown';
                 chatTitleName.textContent = currentDogName;
                 dogId.textContent = dog.animal_id ? `${dog.animal_id} • PACC` : '';
+                if (locationTextEl) {
+                    locationTextEl.textContent = dog.located_at || 'Pima Animal Care Center';
+                }
 
                 // Dynamically update dog name in buttons, labels, and placeholders
                 const askBtnTitle = document.getElementById('askBtnTitle');
@@ -2322,6 +2353,26 @@ start with prompts">
                 if (genderEl) genderEl.textContent = cleanGenderText(dog.gender || 'Unknown');
                 dogAge.textContent = cleanAgeText(dog.age || 'Unknown');
                 dogWeight.textContent = cleanWeightText(dog.weight || 'Unknown');
+
+                // ──── CLIENT-SIDE LIFESTYLE COMPATIBILITY ENGINE & MATCH SENTENCE GENERATOR ────
+                let lifestyleSummary = '';
+                const dogWeightNum = parseFloat(cleanWeightText(dog.weight || ''));
+                const factsLower = (dog.important_facts || []).map(f => f.toLowerCase().trim());
+                const descLower = (dog.description || dog.bio || '').toLowerCase();
+                
+                if (dogWeightNum && dogWeightNum < 25) {
+                    if (descLower.includes('calm') || descLower.includes('couch') || descLower.includes('gentle')) {
+                        lifestyleSummary = `A perfect gentle lapdog ideal for a cozy apartment environment.`;
+                    } else {
+                        lifestyleSummary = `A lively, compact companion ready for fun walks and small spaces.`;
+                    }
+                } else if (descLower.includes('active') || descLower.includes('hike') || descLower.includes('run') || descLower.includes('energy') || factsLower.some(f => f.includes('energy') || f.includes('active'))) {
+                    lifestyleSummary = `A magnificent high-energy adventure partner perfect for active hikers and yard playtime.`;
+                } else if (descLower.includes('kid') || descLower.includes('child') || descLower.includes('family') || factsLower.some(f => f.includes('kid') || f.includes('family'))) {
+                    lifestyleSummary = `A sweet-natured family sweetheart who loves playtime and gentle social environments.`;
+                } else {
+                    lifestyleSummary = `A loyal and loving companion with a wonderful personality ready to bond deeply wif you.`;
+                }
 
                 // Update stat row backgrounds and dots based on preferences
                 if (dog.user_has_preferences && dog.match_details) {
@@ -2356,16 +2407,15 @@ start with prompts">
                             }
                         });
 
-                        // Rebuild custom Match Summary Explainer Card inside the Condensed Details Box
                         const whyFitDesc = document.getElementById('whyFitDesc');
                         if (whyFitCard && whyFitDesc) {
                             whyFitCard.style.display = 'block';
-
+                            
                             let matchCount = 0;
                             let totalPrefs = 0;
                             const matchesList = [];
                             const mismatchesList = [];
-
+                            
                             Object.keys(dog.match_details).forEach(key => {
                                 const details = dog.match_details[key];
                                 if (details.active) {
@@ -2379,15 +2429,15 @@ start with prompts">
                                     }
                                 }
                             });
-
+                            
                             if (matchCount === totalPrefs) {
-                                whyFitDesc.textContent = `${currentDogName} matches all of your active preferences perfectly! They will make a wonderful, aligned addition to your home.`;
+                                whyFitDesc.textContent = `🎯 Match Fit: ${lifestyleSummary} ${currentDogName} matches all of your preferences!`;
                                 whyFitCard.className = 'details-fit-container';
                             } else if (matchCount > 0) {
-                                whyFitDesc.textContent = `${currentDogName} is an incredibly close fit! They match your criteria for ${matchesList.join(' and ')}, but differ slightly on your preferred ${mismatchesList.join(' and ')}.`;
+                                whyFitDesc.textContent = `🐾 Good Fit: ${lifestyleSummary} Meets criteria for ${matchesList.join(' & ')}.`;
                                 whyFitCard.className = 'details-fit-container warning';
                             } else {
-                                whyFitDesc.textContent = `${currentDogName} is an active shelter pup who doesn't fit your primary matching filters, but they possess a loving personality that is highly worth meeting!`;
+                                whyFitDesc.textContent = `💝 Special Fit: ${lifestyleSummary} Ready to surprise you wif love.`;
                                 whyFitCard.className = 'details-fit-container warning';
                             }
                         }
@@ -2469,13 +2519,21 @@ start with prompts">
 
                 // Initialize Avatar letter icon
                 const firstLetter = currentDogName.charAt(0).toUpperCase();
-                appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything about my ideal home or my favorite things!`, firstLetter, false);
+                appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetter, false);
 
             } catch (err) {
                 console.error(err);
+                
+                // Display the warm empty state card if load fails or filters return empty sets
+                if (emptyStateCard) emptyStateCard.style.display = 'flex';
+                if (detailsBox) detailsBox.style.display = 'none';
+                if (ctaGrid) ctaGrid.style.display = 'none';
+                if (chatSection) chatSection.style.display = 'none';
+                if (heroSection) heroSection.style.display = 'none';
+                
                 dogName.textContent = 'Oops!';
-                appendMessage('bot', 'Could not load a random dog. Please check your connection and shuffle again.', '!');
             } finally {
+                profilePanel.classList.remove('loading-skeleton');
                 profilePanel.classList.remove('loading');
             }
         }
