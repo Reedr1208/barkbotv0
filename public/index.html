@@ -521,6 +521,15 @@
       gap: 12px;
     }
 
+  /* Must beat .details-box { display: flex } — card uses both classes */
+    .details-box.dog-unavailable-card:not(.visible) {
+      display: none !important;
+    }
+
+    .details-box.dog-unavailable-card.visible {
+      display: flex !important;
+    }
+
     .dog-unavailable-card.visible {
       display: flex;
     }
@@ -2748,7 +2757,10 @@
         const chatSection = document.getElementById('chatSection');
         const heroSection = document.querySelector('.hero-section');
         const mobileActionBar = document.getElementById('mobileActionBar');
-        if (card) card.classList.remove('visible');
+        if (card) {
+          card.classList.remove('visible');
+          card.style.display = 'none';
+        }
         if (detailsBox) detailsBox.style.display = 'flex';
         if (ctaGrid) ctaGrid.style.display = 'grid';
         if (chatSection) chatSection.style.display = 'flex';
@@ -2768,7 +2780,10 @@
         const stickyDogBar = document.getElementById('stickyDogBar');
         const emptyStateCard = document.getElementById('emptyStateCard');
         if (emptyStateCard) emptyStateCard.style.display = 'none';
-        if (card) card.classList.add('visible');
+        if (card) {
+          card.classList.add('visible');
+          card.style.display = 'flex';
+        }
         if (detailsBox) detailsBox.style.display = 'none';
         if (ctaGrid) ctaGrid.style.display = 'none';
         if (chatSection) chatSection.style.display = 'none';
