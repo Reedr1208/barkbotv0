@@ -12,3 +12,5 @@ __pycache__/
 *.log
 html_debug/
 WorkingFiles/
+.vercel
+.env*
