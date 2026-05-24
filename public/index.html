@@ -40,21 +40,27 @@
 
   <style>
     :root {
-      --bg-slate-950: #020617;
-      --bg-slate-900: #0f172a;
-      --bg-slate-800: #1e293b;
+      --bg-slate-950: #0f172a;
+      --bg-slate-900: #182235;
+      --bg-slate-800: #202c44;
       --bg-slate-700: #334155;
-      --accent: #6366f1;
-      --accent-hover: #818cf8;
-      --accent-shadow: rgba(99, 102, 241, 0.25);
-      --emerald: #10b981;
-      --emerald-bg: rgba(16, 185, 129, 0.06);
-      --emerald-border: rgba(16, 185, 129, 0.2);
+      --accent: #f59e0b;
+      --accent-hover: #fbbf24;
+      --accent-shadow: rgba(245, 158, 11, 0.25);
+      --accent-text: #111827;
+      --teal: #14b8a6;
+      --teal-bg: rgba(20, 184, 166, 0.08);
+      --teal-border: rgba(20, 184, 166, 0.2);
+      --emerald: #14b8a6;
+      --emerald-bg: rgba(20, 184, 166, 0.08);
+      --emerald-border: rgba(20, 184, 166, 0.2);
       --amber: #f59e0b;
       --amber-bg: rgba(245, 158, 11, 0.06);
       --amber-border: rgba(245, 158, 11, 0.2);
+      --cream-highlight: #fff7ed;
+      --cream-bg: rgba(254, 243, 199, 0.08);
       --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --text-muted: #cbd5e1;
       --border-soft: rgba(255, 255, 255, 0.08);
     }
 
@@ -154,7 +160,8 @@
       height: 38px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid var(--accent);
+      border: 2px solid var(--teal);
+      box-shadow: 0 2px 6px rgba(20, 184, 166, 0.2);
       flex-shrink: 0;
       background: var(--bg-slate-800);
     }
@@ -183,7 +190,7 @@
     .sticky-chat-btn {
       padding: 7px 14px;
       background: var(--accent);
-      color: white;
+      color: var(--accent-text);
       border: none;
       border-radius: 9999px;
       font-weight: 800;
@@ -220,7 +227,7 @@
     .shuffle-btn {
       padding: 8px 14px;
       background: var(--accent);
-      color: white;
+      color: var(--accent-text);
       border: none;
       border-radius: 9999px;
       font-weight: 800;
@@ -293,13 +300,13 @@
       align-items: center;
       gap: 4px;
       padding: 4px 10px;
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
       border-radius: 9999px;
       font-size: 0.75rem;
       font-weight: 900;
       letter-spacing: 0.02em;
-      border: 1px solid rgba(52, 211, 153, 0.2);
+      border: 1px solid rgba(20, 184, 166, 0.3);
       margin-bottom: 6px;
     }
     
@@ -327,14 +334,14 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: white;
+      background: var(--cream-highlight);
       color: var(--bg-slate-950);
-      border: none;
+      border: 1px solid rgba(245, 158, 11, 0.15);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.4);
       transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
       flex-shrink: 0;
     }
@@ -410,8 +417,8 @@
     }
 
     .details-fit-container {
-      background: rgba(16, 185, 129, 0.04);
-      border-left: 3.5px solid var(--emerald);
+      background: rgba(20, 184, 166, 0.04);
+      border-left: 3.5px solid var(--teal);
       border-radius: 0 12px 12px 0;
       padding: 8px 12px;
     }
@@ -502,12 +509,12 @@
     }
     .cta-card:hover {
       background: rgba(255, 255, 255, 0.05);
-      border-color: var(--accent);
+      border-color: var(--teal);
     }
     
     .cta-icon-box {
       margin-bottom: 8px;
-      color: var(--accent-hover);
+      color: var(--teal);
       display: flex;
       align-items: center;
     }
@@ -515,13 +522,14 @@
     .cta-card.primary-cta {
       background: var(--accent);
       border-color: var(--accent);
+      color: var(--accent-text);
       box-shadow: 0 4px 14px var(--accent-shadow);
     }
     .cta-card.primary-cta:hover {
       background: var(--accent-hover);
     }
     .cta-card.primary-cta .cta-icon-box {
-      color: white;
+      color: var(--accent-text);
     }
     
     .cta-title {
@@ -536,7 +544,7 @@
       font-weight: 600;
     }
     .cta-card.primary-cta .cta-sub {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(17, 24, 39, 0.75);
     }
 
     /* Chat Section styling */
@@ -578,7 +586,7 @@
       transition: all 0.2s ease;
     }
     .tab-btn.active {
-      background: white;
+      background: var(--cream-highlight);
       color: var(--bg-slate-950);
     }
     .tab-btn svg {
@@ -608,7 +616,7 @@
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #818cf8 0%, #34d399 100%);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%);
       color: var(--bg-slate-950);
       font-weight: 900;
       font-size: 0.85rem;
@@ -641,7 +649,8 @@
     
     .bubble.user {
       background: var(--accent);
-      color: white;
+      color: var(--accent-text);
+      font-weight: 600;
       border-top-right-radius: 4px;
       box-shadow: 0 4px 10px var(--accent-shadow);
       text-align: left;
@@ -670,7 +679,7 @@
     }
     .prompt-shortcut-btn:hover {
       background: rgba(15, 23, 42, 0.7);
-      border-color: var(--accent-hover);
+      border-color: var(--teal);
     }
 
     /* Floating Translucent Sticky Footer */
@@ -718,7 +727,7 @@
       height: 44px;
       border-radius: 50%;
       background: var(--accent);
-      color: white;
+      color: var(--accent-text);
       border: none;
       display: flex;
       align-items: center;
@@ -853,7 +862,7 @@
     .modal-badge {
       display: inline-block;
       padding: 4px 10px;
-      background: rgba(99, 102, 241, 0.1);
+      background: rgba(245, 158, 11, 0.1);
       color: var(--accent-hover);
       border-radius: 9999px;
       font-size: 0.7rem;
@@ -892,7 +901,7 @@
     .modal-start-btn {
       padding: 12px 32px;
       background: var(--accent);
-      color: white;
+      color: var(--accent-text);
       border: none;
       border-radius: 9999px;
       font-size: 0.95rem;
@@ -925,8 +934,8 @@
       display: inline-block;
     }
     .compat-dot.green {
-      background: var(--emerald);
-      box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+      background: var(--teal);
+      box-shadow: 0 0 6px rgba(20, 184, 166, 0.6);
     }
     .compat-dot.yellow {
       background: var(--amber);
@@ -979,9 +988,9 @@
     .pref-btn.active {
       background: var(--accent) !important;
       border-color: var(--accent-hover) !important;
-      color: white !important;
+      color: var(--accent-text) !important;
       transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
+      box-shadow: 0 6px 16px var(--accent-shadow);
     }
 
     /* ── Mobile header: hide tagline to free space for tabs + shuffle ── */
@@ -1045,7 +1054,7 @@
       flex-direction: column;
       align-items: center;
       gap: 16px;
-      background: radial-gradient(circle at bottom, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+      background: radial-gradient(circle at bottom, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
     }
     .landing-logo {
       font-size: 1rem;
@@ -1063,7 +1072,7 @@
       font-weight: 950;
       line-height: 1.1;
       letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #f8fafc 30%, #818cf8 100%);
+      background: linear-gradient(135deg, var(--cream-highlight) 30%, var(--accent) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -1085,7 +1094,7 @@
     .btn-primary {
       padding: 14px 28px;
       background: var(--accent);
-      color: white;
+      color: var(--accent-text);
       border: none;
       border-radius: 9999px;
       font-weight: 800;
@@ -1101,7 +1110,7 @@
     .btn-primary:hover {
       background: var(--accent-hover);
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 8px 24px var(--accent-shadow);
     }
     .btn-secondary {
       padding: 12px 24px;
@@ -1155,15 +1164,15 @@
     }
     .step-item:hover {
       transform: translateX(4px);
-      border-color: rgba(99, 102, 241, 0.2);
+      border-color: rgba(20, 184, 166, 0.2);
     }
     .step-badge {
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      color: var(--accent-hover);
+      background: rgba(20, 184, 166, 0.15);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      color: var(--teal);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1280,14 +1289,14 @@
       margin-bottom: 8px;
     }
     .fit-badge-tag.apartment {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border-color: rgba(52, 211, 153, 0.3);
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
+      border-color: rgba(20, 184, 166, 0.3);
     }
     .fit-badge-tag.adventure {
-      background: rgba(99, 102, 241, 0.15);
-      color: #818cf8;
-      border-color: rgba(129, 140, 248, 0.3);
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
+      border-color: rgba(20, 184, 166, 0.3);
     }
     .fit-badge-tag.family {
       background: rgba(245, 158, 11, 0.15);
@@ -1419,7 +1428,7 @@
     }
     .mobile-action-btn.primary {
       background: var(--accent);
-      color: white;
+      color: var(--accent-text);
       box-shadow: 0 4px 10px var(--accent-shadow);
     }
     .mobile-action-btn.primary:hover {
@@ -1489,8 +1498,8 @@
 
         <!-- Shelter Credibility Disclaimers -->
         <section class="landing-footer">
-          <div class="disclaimer-card" style="background: rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); text-align: left; display: flex; gap: 12px; align-items: flex-start; color: var(--text-main); font-size: 0.78rem;">
-            <div style="color: var(--accent); flex-shrink: 0; margin-top: 2px;">
+          <div class="disclaimer-card" style="background: rgba(20, 184, 166, 0.08); border: 1.5px solid rgba(20, 184, 166, 0.2); text-align: left; display: flex; gap: 12px; align-items: flex-start; color: var(--text-main); font-size: 0.78rem;">
+            <div style="color: var(--teal); flex-shrink: 0; margin-top: 2px;">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
             <div>
@@ -1737,17 +1746,17 @@
         <p>
           Instead of just reading a generic profile, you can chat with each dog to get a feel for their personality, quirks, needs, and what makes them special. Ask about their favorite things, their ideal home, or what kind of human they’re hoping to find.
         </p>
-        <p style="background: rgba(99, 102, 241, 0.04); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 12px 12px 0; font-style: italic;">
+        <p style="background: var(--cream-bg); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 12px 12px 0; font-style: italic;">
           Every chat is designed to help you move beyond facts and stats — and maybe meet your new best friend.
         </p>
 
         <!-- Logged Out Sign In Promotion Card -->
-        <div id="aboutLoginCallout" style="margin-top: 12px; padding: 14px; border-radius: 16px; background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div id="aboutLoginCallout" style="margin-top: 12px; padding: 14px; border-radius: 16px; background: rgba(20, 184, 166, 0.04); border: 1px solid rgba(20, 184, 166, 0.15); display: flex; align-items: center; justify-content: space-between; gap: 12px;">
           <div>
-            <h5 style="font-size: 0.8rem; font-weight: 900; color: var(--emerald); margin-bottom: 2px;">🐾 Personalized Matches</h5>
+            <h5 style="font-size: 0.8rem; font-weight: 900; color: var(--teal); margin-bottom: 2px;">🐾 Personalized Matches</h5>
             <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.35;">Sign in to save preferences and find matching dogs!</p>
           </div>
-          <button id="aboutLoginBtn" style="padding: 6px 14px; background: var(--emerald); color: white; border: none; border-radius: 20px; font-weight: 900; font-size: 0.75rem; cursor: pointer; box-shadow: 0 4px 8px rgba(16, 185, 129, 0.25); white-space: nowrap; flex-shrink: 0;">Sign In</button>
+          <button id="aboutLoginBtn" style="padding: 6px 14px; background: var(--teal); color: var(--accent-text); border: none; border-radius: 20px; font-weight: 900; font-size: 0.75rem; cursor: pointer; box-shadow: 0 4px 8px rgba(20, 184, 166, 0.25); white-space: nowrap; flex-shrink: 0;">Sign In</button>
         </div>
       </div>
       <div class="modal-footer">
@@ -1766,7 +1775,7 @@
       <!-- LOGGED OUT STATE (Email Form) -->
       <div id="prefLoggedOutState">
         <div class="modal-header">
-          <div class="modal-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--emerald);">🐾 Build Your Dog Match Profile</div>
+          <div class="modal-badge" style="background: rgba(20, 184, 166, 0.1); color: var(--teal);">🐾 Build Your Dog Match Profile</div>
           <h2 class="modal-title" id="prefTitle">Preferences Profile</h2>
           <p class="modal-subtitle">Save your preferences so we can prioritize dogs who fit your lifestyle. Enter your email to begin instantly!</p>
         </div>
@@ -1780,14 +1789,14 @@
         </div>
         <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center; width: 100%;">
           <button class="btn-secondary" id="loginSkipBtn" style="flex: 1; border-radius: 9999px; padding: 12px;">Skip & Browse 🐾</button>
-          <button class="modal-start-btn" id="loginSubmitBtn" style="flex: 1; background: var(--emerald); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); margin-top: 0; padding: 12px 24px;">Continue</button>
+          <button class="modal-start-btn" id="loginSubmitBtn" style="flex: 1; background: var(--teal); color: var(--accent-text); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25); margin-top: 0; padding: 12px 24px;">Continue</button>
         </div>
       </div>
 
       <!-- LOGGED IN STATE (Preferences Form) -->
       <div id="prefLoggedInState" style="display: none;">
         <div class="modal-header" style="margin-bottom: 12px;">
-          <div class="modal-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-hover);">💖 Build Your Dog Match Profile</div>
+          <div class="modal-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-hover);">💖 Build Your Dog Match Profile</div>
           <h2 class="modal-title" style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 1.35rem;">
             <span>Welcome, <span id="loggedInEmailText" style="color: var(--accent-hover); word-break: break-all; font-size: 1.15rem;">user</span></span>
             <button id="signOutBtn" style="background: transparent; border: none; color: #ef4444; font-weight: 800; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0; display: inline-block;">(Sign Out)</button>
