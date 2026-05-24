@@ -1,12 +1,15 @@
 import html
 import os
 import re
+import urllib.error
+import urllib.request
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 from supabase import create_client
 
 CANONICAL_ORIGIN = "https://chattyhound.com"
+_INDEX_HTML_CACHE = None
 
 
 def get_supabase_client():
@@ -192,6 +195,58 @@ def json_dumps(val):
     return json.dumps(val)
 
 
+def _index_html_candidates():
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    lambda_root = os.environ.get("LAMBDA_TASK_ROOT", "")
+    cwd = os.getcwd()
+    paths = [
+        os.path.join(root, "public", "index.html"),
+        os.path.join(cwd, "public", "index.html"),
+        os.path.join(lambda_root, "public", "index.html") if lambda_root else "",
+        "/var/task/public/index.html",
+    ]
+    seen = set()
+    for path in paths:
+        if path and path not in seen:
+            seen.add(path)
+            yield path
+
+
+def _fetch_index_html_from_origin():
+    base = (
+        os.environ.get("VERCEL_URL")
+        or os.environ.get("VERCEL_PROJECT_PRODUCTION_URL")
+        or CANONICAL_ORIGIN
+    )
+    if not base.startswith("http"):
+        base = "https://" + base
+    url = base.rstrip("/") + "/index.html"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "ChattyHound-dog-meta/1.0", "Accept": "text/html"},
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return resp.read().decode("utf-8")
+
+
+def _load_index_html():
+    global _INDEX_HTML_CACHE
+    if _INDEX_HTML_CACHE is not None:
+        return _INDEX_HTML_CACHE
+
+    for path in _index_html_candidates():
+        if os.path.isfile(path):
+            with open(path, "r", encoding="utf-8") as f:
+                _INDEX_HTML_CACHE = f.read()
+                return _INDEX_HTML_CACHE
+
+    try:
+        _INDEX_HTML_CACHE = _fetch_index_html_from_origin()
+        return _INDEX_HTML_CACHE
+    except (urllib.error.URLError, TimeoutError, OSError) as err:
+        raise RuntimeError(f"index.html not found: {err}") from err
+
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
@@ -207,14 +262,7 @@ class handler(BaseHTTPRequestHandler):
                 self._redirect_home()
                 return
 
-            public_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "public")
-            index_path = os.path.join(public_dir, "index.html")
-            if not os.path.isfile(index_path):
-                self._send_text(500, "index.html not found")
-                return
-
-            with open(index_path, "r", encoding="utf-8") as f:
-                html_text = f.read()
+            html_text = _load_index_html()
 
             profile = _fetch_dog_profile(dog_id)
             if not profile:
