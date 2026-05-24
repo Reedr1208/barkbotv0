@@ -2329,6 +2329,7 @@
         // ──── CLIENT-SIDE LIFESTYLE COMPATIBILITY ENGINE ────
         let fitBadgeType = 'cuddle';
         let fitBadgeLabel = 'Sweet cuddle companion 💖';
+        const parsedWeight = parseFloat(cleanWeightText(dog.weight || ''));
         
         if (parsedWeight && parsedWeight < 25 && !descLower.includes('high energy') && !descLower.includes('active home')) {
           fitBadgeType = 'apartment';
