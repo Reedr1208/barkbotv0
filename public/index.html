@@ -75,6 +75,12 @@
       padding: 0;
     }
 
+    html,
+    body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
       background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
@@ -919,7 +925,7 @@
       width: 100%;
       background: rgba(15, 23, 42, 0.4);
       border: 1px solid var(--border-soft);
-      padding: 10px 14px;
+      padding: 12px 16px;
       border-radius: 14px;
       text-align: left;
       font-size: 0.8rem;
@@ -934,6 +940,11 @@
       border-color: var(--teal);
     }
 
+    .prompt-shortcut-btn:focus-visible {
+      outline: 2px solid var(--teal);
+      outline-offset: 2px;
+    }
+
     /* Floating Translucent Sticky Footer */
     .footer-input-bar {
       position: absolute;
@@ -941,6 +952,7 @@
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 32px);
+      max-width: calc(100% - 32px);
       z-index: 30;
       background: rgba(2, 6, 23, 0.9);
       backdrop-filter: blur(12px);
@@ -949,12 +961,16 @@
       padding: 6px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.12);
+      box-sizing: border-box;
     }
 
     .input-row {
       display: flex;
       align-items: center;
       gap: 8px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .chat-input {
@@ -967,7 +983,7 @@
       border-radius: 9999px;
       color: white;
       font-family: inherit;
-      font-size: 0.9rem;
+      font-size: 16px;
       font-weight: 600;
     }
 
@@ -1934,7 +1950,19 @@
         </div>
         <div class="tab-bar" style="flex-shrink: 0;">
           <button class="tab-btn" id="aboutBtn" aria-label="Open About ChattyHound description">About</button>
-          <button class="tab-btn" id="prefBtn" aria-label="Open Fit Match Profile options">Fit</button>
+          <button class="tab-btn" id="prefBtn" aria-label="Open Fit Match Profile control panel" style="padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <line x1="4" y1="21" x2="4" y2="14" />
+              <line x1="4" y1="10" x2="4" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12" y2="3" />
+              <line x1="20" y1="21" x2="20" y2="16" />
+              <line x1="20" y1="12" x2="20" y2="3" />
+              <line x1="2" y1="14" x2="6" y2="14" />
+              <line x1="10" y1="8" x2="14" y2="8" />
+              <line x1="18" y1="16" x2="22" y2="16" />
+            </svg>
+          </button>
           <button class="tab-btn" id="savedNavBtn" aria-label="View saved dogs and chats"
             style="display:none; position: relative;">My Dogs <span id="savedNavBadge"
               style="display:none; position:absolute; top:2px; right:2px; width:7px; height:7px; background:var(--accent); border-radius:50%;"></span></button>
@@ -2259,7 +2287,7 @@
         <div class="input-row">
           <input type="text" class="chat-input" id="chatInput" placeholder="Ask about me..." disabled
             aria-label="Type your question to the dog here">
-          <button class="send-btn" id="sendBtn" disabled aria-label="Send message">
+          <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send message">
             <svg viewBox="0 0 24 24">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
             </svg>
@@ -3723,8 +3751,27 @@
           prompts.forEach(p => {
             const btn = document.createElement('button');
             btn.className = 'prompt-shortcut-btn';
+            btn.setAttribute('type', 'button');
             btn.setAttribute('data-prompt', p);
             btn.textContent = p;
+            
+            const handleImmediateSend = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (btn.disabled) return;
+              const promptText = btn.getAttribute('data-prompt');
+              if (promptText && chatInput && !chatInput.disabled) {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+                btn.style.background = 'var(--accent)';
+                btn.style.color = 'var(--accent-text)';
+                trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
+                sendMessage(promptText);
+              }
+            };
+            btn.addEventListener('click', handleImmediateSend);
+            btn.addEventListener('pointerdown', handleImmediateSend);
+            
             quickPromptsContainer.appendChild(btn);
           });
           return;
@@ -3811,8 +3858,27 @@
           finalSuggestions.forEach(p => {
             const btn = document.createElement('button');
             btn.className = 'prompt-shortcut-btn';
+            btn.setAttribute('type', 'button');
             btn.setAttribute('data-prompt', p);
             btn.textContent = p;
+            
+            const handleImmediateSend = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (btn.disabled) return;
+              const promptText = btn.getAttribute('data-prompt');
+              if (promptText && chatInput && !chatInput.disabled) {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+                btn.style.background = 'var(--accent)';
+                btn.style.color = 'var(--accent-text)';
+                trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
+                sendMessage(promptText);
+              }
+            };
+            btn.addEventListener('click', handleImmediateSend);
+            btn.addEventListener('pointerdown', handleImmediateSend);
+            
             quickPromptsContainer.appendChild(btn);
           });
         }
@@ -3878,8 +3944,10 @@
         }
       }
 
-      async function sendMessage() {
-        const text = chatInput.value.trim();
+      async function sendMessage(customText = null) {
+        if (chatInput.disabled) return; // double-submit safeguard
+
+        const text = (typeof customText === 'string' ? customText : chatInput.value).trim();
         if (!text || !currentAnimalId) return;
 
         const isFirstMessage = (conversationHistory.length === 0);
@@ -3944,10 +4012,14 @@
       });
       // Force viewport scroll reset to fix iOS keyboard layout displacement bug
       chatInput.addEventListener('blur', () => {
-        window.scrollTo(0, 0);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 150);
       });
       chatInput.addEventListener('focus', () => {
-        window.scrollTo(0, 0);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 150);
       });
 
       // Anchor smooth-scrolling ask CTA
@@ -3972,18 +4044,7 @@
         });
       }
 
-      // Suggested Prompts trigger
-      document.addEventListener('click', (e) => {
-        const promptBtn = e.target.closest('.prompt-shortcut-btn');
-        if (promptBtn) {
-          const promptText = promptBtn.getAttribute('data-prompt');
-          if (promptText && chatInput && !chatInput.disabled) {
-            trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
-            chatInput.value = promptText;
-            sendMessage();
-          }
-        }
-      });
+      // Suggested Prompts document-level click handler (Deprecated: listeners bound directly to buttons)
 
       // About Modal Controllers
       const aboutModal = document.getElementById('aboutModal');
