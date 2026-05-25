@@ -400,7 +400,9 @@
 
     @keyframes heartBeat {
       0% { transform: scale(1); }
-      50% { transform: scale(1.35); }
+      30% { transform: scale(1.45); }
+      60% { transform: scale(0.9); }
+      80% { transform: scale(1.1); }
       100% { transform: scale(1); }
     }
 
@@ -626,20 +628,16 @@
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 16px;
-      padding: 10px 14px;
+      padding: 8px 6px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      font-weight: 800;
+      gap: 3px;
       color: var(--text-main);
       text-align: center;
-      min-height: 44px;
+      min-height: 56px;
       transition: all 0.2s ease;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
     }
 
@@ -1889,7 +1887,7 @@
             <div class="step-item">
               <div class="step-badge">4</div>
               <div class="step-body">
-                <h4>Adopt from the shelter</h4>
+                <h4>Continue with the shelter</h4>
                 <p>Continue to the official shelter page to schedule a meet-and-greet and finalize the adoption.</p>
               </div>
             </div>
@@ -1932,7 +1930,7 @@
           <button class="tab-btn" id="aboutBtn" aria-label="Open About ChattyHound description">About</button>
           <button class="tab-btn" id="prefBtn" aria-label="Open Fit Match Profile options">Fit</button>
           <button class="tab-btn" id="savedNavBtn" aria-label="View saved dogs and chats"
-            style="display:none; position: relative;">Saved <span id="savedNavBadge"
+            style="display:none; position: relative;">My Dogs <span id="savedNavBadge"
               style="display:none; position:absolute; top:2px; right:2px; width:7px; height:7px; background:var(--accent); border-radius:50%;"></span></button>
         </div>
         <button class="shuffle-btn" id="nextBtn" aria-label="Shuffle: Show me another dog">
@@ -2102,15 +2100,18 @@
                 <div class="details-stats-row">
                   <span class="detail-chip" id="chipGender">
                     <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
-                    <span>Sex: </span><span class="chip-val" id="dogGender">-</span>
+                    <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Sex</span>
+                    <span class="chip-val" id="dogGender" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">-</span>
                   </span>
                   <span class="detail-chip" id="chipAge">
                     <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
-                    <span>Age: </span><span class="chip-val" id="dogAge">-</span>
+                    <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Age</span>
+                    <span class="chip-val" id="dogAge" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">-</span>
                   </span>
                   <span class="detail-chip" id="chipWeight">
                     <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
-                    <span>Weight: </span><span class="chip-val" id="dogWeight">-</span>
+                    <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Weight</span>
+                    <span class="chip-val" id="dogWeight" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">-</span>
                   </span>
                 </div>
               </div>
@@ -2250,7 +2251,7 @@
         <div class="modal-header" style="margin-bottom: 16px;">
           <div class="modal-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-hover);">🐾 My Dogs
           </div>
-          <h2 class="modal-title" id="savedModalTitle">Saved &amp; Recent Chats</h2>
+          <h2 class="modal-title" id="savedModalTitle">My Dogs</h2>
           <p class="modal-subtitle">Dogs you've hearted and conversations you can continue.</p>
         </div>
         <!-- Sub-tabs -->
@@ -2364,31 +2365,29 @@
           <div class="modal-header" style="margin-bottom: 12px;">
             <div class="modal-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-hover);">💖 Build
               Your Dog Match Profile</div>
-            <h2 class="modal-title"
-              style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 1.35rem;">
-              <span>Welcome, <span id="loggedInEmailText"
-                  style="color: var(--accent-hover); word-break: break-all; font-size: 1.15rem;">user</span></span>
+            <h2 class="modal-title" style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 1.35rem; gap: 8px;">
+              <span id="loggedInEmailText" style="color: var(--text-main); font-size: 1.1rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;">Your Match Profile</span>
               <button id="signOutBtn"
-                style="background: transparent; border: none; color: #ef4444; font-weight: 800; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0; display: inline-block;">(Sign
-                Out)</button>
+                style="background: transparent; border: none; color: #ef4444; font-weight: 800; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0; white-space: nowrap;">(Sign Out)</button>
             </h2>
             <p class="modal-subtitle" style="margin-bottom: 6px;">Save your preferences so we can prioritize dogs who
               fit your lifestyle.</p>
             <p
               style="font-size: 0.75rem; color: var(--accent-hover); margin: 0 0 10px 0; font-style: italic; display: flex; align-items: center; gap: 4px;">
-              <span>💡 Not sure? Leave anything as 'Any' and we’ll keep your matches broad.</span>
+              <span>💡 Not sure? Leave anything as Any and we’ll keep your matches broad.</span>
             </p>
           </div>
 
           <!-- Wizard Tabs Indicator -->
-          <div class="modal-tab-indicator">
-            <button class="modal-tab-btn active" id="tabCoreBtn">1. Core Basics</button>
-            <button class="modal-tab-btn" id="tabLifeBtn">2. Lifestyle Fit</button>
+          <div class="modal-tab-indicator" style="display: flex; gap: 4px; margin-bottom: 18px; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 4px;">
+            <button class="modal-tab-btn active" id="tabCoreBtn" style="flex: 1; padding: 8px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;">1. Basics</button>
+            <button class="modal-tab-btn" id="tabHomeBtn" style="flex: 1; padding: 8px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-muted);">2. Home</button>
+            <button class="modal-tab-btn" id="tabLifeBtn" style="flex: 1; padding: 8px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-muted);">3. Lifestyle</button>
           </div>
 
           <div class="modal-content" style="margin-bottom: 16px;">
 
-            <!-- STEP 1: CORE BASICS -->
+            <!-- STEP 1: YOUR BASICS -->
             <div class="pref-wizard-step active" id="stepCore">
               <!-- Gender Row -->
               <div class="pref-row"
@@ -2442,9 +2441,42 @@
               </div>
             </div>
 
-            <!-- STEP 2: LIFESTYLE FIT (Advanced) -->
-            <div class="pref-wizard-step" id="stepLife">
-              <!-- Energy level -->
+            <!-- STEP 2: YOUR HOME -->
+            <div class="pref-wizard-step" id="stepHome" style="display: none; flex-direction: column; gap: 12px;">
+              <!-- Home Style Row -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">🏠</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Home
+                    Style</span>
+                </div>
+                <div class="pref-selector-group" id="prefHomeGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <button class="pref-btn" data-value="any">Any Home</button>
+                  <button class="pref-btn" data-value="apartment">Apartment Friendly 🏢</button>
+                  <button class="pref-btn" data-value="yard">Needs Fenced Yard 🌲</button>
+                </div>
+              </div>
+
+              <!-- Home Compatibility Row -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">🔑</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Home Toggles</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <button class="pref-btn" id="prefOptAlone" data-active="false">Can be alone 🕰️</button>
+                  <button class="pref-btn" id="prefOptLearn" data-active="false">Quick Learner 🎓</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 3: YOUR LIFESTYLE -->
+            <div class="pref-wizard-step" id="stepLife" style="display: none; flex-direction: column; gap: 12px;">
+              <!-- Energy Level -->
               <div class="pref-row"
                 style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
@@ -2461,38 +2493,19 @@
                 </div>
               </div>
 
-              <!-- Home Style -->
+              <!-- Lifestyle Compatibility -->
               <div class="pref-row"
                 style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-size: 1rem;">🏠</span>
+                  <span style="font-size: 1rem;">👪</span>
                   <span
-                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Home
-                    Style</span>
-                </div>
-                <div class="pref-selector-group" id="prefHomeGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                  <button class="pref-btn" data-value="any">Any Home</button>
-                  <button class="pref-btn" data-value="apartment">Apartment Friendly 🏢</button>
-                  <button class="pref-btn" data-value="yard">Needs Fenced Yard 🌲</button>
-                </div>
-              </div>
-
-              <!-- Lifestyle Toggles -->
-              <div class="pref-row"
-                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-size: 1rem;">💖</span>
-                  <span
-                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Household
-                    Compatibility</span>
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Household Compatibility</span>
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                   <button class="pref-btn" id="prefOptKids" data-active="false">Good with kids 👼</button>
                   <button class="pref-btn" id="prefOptDogs" data-active="false">Good with dogs 🐕</button>
                   <button class="pref-btn" id="prefOptCats" data-active="false">Good with cats 🐱</button>
                   <button class="pref-btn" id="prefOptShed" data-active="false">Low Shedding 🧼</button>
-                  <button class="pref-btn" id="prefOptAlone" data-active="false">Can be alone 🕰️</button>
-                  <button class="pref-btn" id="prefOptLearn" data-active="false">Quick Learner 🎓</button>
                 </div>
               </div>
             </div>
@@ -2501,8 +2514,7 @@
           <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 8px; width: 100%;">
             <button class="btn-secondary" id="prefBackBtn"
               style="display: none; border-radius: 9999px; flex: 1; padding: 12px;">Back</button>
-            <button class="modal-start-btn" id="savePrefBtn" style="margin-top: 0; flex: 1; padding: 12px 24px;">Save
-              Selections ✨</button>
+            <button class="modal-start-btn" id="savePrefBtn" style="margin-top: 0; flex: 1; padding: 12px 24px;">Continue ➔</button>
           </div>
         </div>
 
@@ -2612,14 +2624,10 @@
           summary = snippet + ((dog.description || dog.bio).length > 120 ? '…' : '');
         }
 
-        const agePart = age && age !== '-' ? `${age} ` : '';
-        let text = `${name} is a sweet ${agePart}rescue mix at ${shelter}. Chat with ${pron} and learn more.`;
-        if (summary) {
-          text = `${name} is a ${agePart}rescue at ${shelter}. ${summary} Chat with ${pron} on ChattyHound.`;
-        }
+        const text = `${name} is an adoptable rescue dog at ${shelter}. Chat with ${pron} and learn more.`;
 
         return {
-          title: `Meet ${name} on ChattyHound`,
+          title: `Meet ${name} on ChattyHound 🐶`,
           text,
           url,
           animal_id: animalId,
@@ -2753,7 +2761,7 @@
             document.execCommand('copy');
             document.body.removeChild(ta);
           }
-          showShareToast('Dog link copied!');
+          showToast('Dog link copied.');
           trackEvent('dog_share_copied_link', {
             animal_id: payload.animal_id,
             share_method: 'copy_link'
@@ -2874,7 +2882,16 @@
         const mobileActionBar = document.getElementById('mobileActionBar');
         const stickyDogBar = document.getElementById('stickyDogBar');
 
-        const setDisplay = (el, val) => { if (el) el.style.display = val; };
+        const setDisplay = (el, val) => { 
+          if (el) {
+            el.style.display = val; 
+            if (val === 'none') {
+              el.setAttribute('aria-hidden', 'true');
+            } else {
+              el.removeAttribute('aria-hidden');
+            }
+          }
+        };
 
         if (profilePanel) {
           profilePanel.classList.remove('loading-skeleton');
@@ -2896,6 +2913,7 @@
           if (stickyDogBar) {
             stickyDogBar.style.display = 'none';
             stickyDogBar.classList.remove('visible');
+            stickyDogBar.setAttribute('aria-hidden', 'true');
           }
         } else if (state === 'dog_loaded') {
           setDisplay(dogUnavailableCard, 'none');
@@ -2905,11 +2923,6 @@
           setDisplay(chatSection, 'flex');
           setDisplay(heroSection, 'block');
           setDisplay(mobileActionBar, 'flex');
-          // Update aria hidden states for accessibility
-          if (dogUnavailableCard) dogUnavailableCard.setAttribute('aria-hidden', 'true');
-          if (emptyStateCard) emptyStateCard.setAttribute('aria-hidden', 'true');
-          if (detailsBox) detailsBox.removeAttribute('aria-hidden');
-          if (chatSection) chatSection.removeAttribute('aria-hidden');
         } else if (state === 'empty') {
           setDisplay(dogUnavailableCard, 'none');
           setDisplay(emptyStateCard, 'flex');
@@ -2921,10 +2934,8 @@
           if (stickyDogBar) {
             stickyDogBar.style.display = 'none';
             stickyDogBar.classList.remove('visible');
+            stickyDogBar.setAttribute('aria-hidden', 'true');
           }
-          if (emptyStateCard) emptyStateCard.removeAttribute('aria-hidden');
-          if (dogUnavailableCard) dogUnavailableCard.setAttribute('aria-hidden', 'true');
-          if (detailsBox) detailsBox.setAttribute('aria-hidden', 'true');
         } else if (state === 'unavailable') {
           setDisplay(dogUnavailableCard, 'flex');
           setDisplay(emptyStateCard, 'none');
@@ -2936,10 +2947,8 @@
           if (stickyDogBar) {
             stickyDogBar.style.display = 'none';
             stickyDogBar.classList.remove('visible');
+            stickyDogBar.setAttribute('aria-hidden', 'true');
           }
-          if (dogUnavailableCard) dogUnavailableCard.removeAttribute('aria-hidden');
-          if (emptyStateCard) emptyStateCard.setAttribute('aria-hidden', 'true');
-          if (detailsBox) detailsBox.setAttribute('aria-hidden', 'true');
         }
       }
 
@@ -3006,13 +3015,13 @@
             favBtn.classList.remove('favorited');
             favBtn.setAttribute('aria-label', `Save ${currentDogName} to My Dogs`);
             trackEvent('dog_unfavorited', { dog_name: currentDogName, animal_id: currentAnimalId });
-            showToast(`Removed ${currentDogName} from My Dogs.`);
+            showToast(`Removed from My Dogs.`);
           } else {
             favoritesList.push(currentAnimalId);
             favBtn.classList.add('favorited');
             favBtn.setAttribute('aria-label', `Remove ${currentDogName} from My Dogs`);
             trackEvent('dog_favorited', { dog_name: currentDogName, animal_id: currentAnimalId });
-            showToast(`🐾 ${currentDogName} saved to My Dogs.`);
+            showToast(`Saved to My Dogs.`);
           }
           localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
           updateSavedNavBadge();
@@ -3063,7 +3072,10 @@
 
       function cleanGenderText(genderStr) {
         if (!genderStr) return '-';
-        return genderStr.replace(/unaltered/i, 'Unalt.').trim();
+        let clean = genderStr.trim();
+        clean = clean.replace(/unaltered/i, 'Unalt.');
+        clean = clean.replace(/neutered/i, 'Neut.');
+        return clean;
       }
 
       async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
@@ -4016,34 +4028,61 @@
 
       // Step-by-Step wizard controller
       const tabCoreBtn = document.getElementById('tabCoreBtn');
+      const tabHomeBtn = document.getElementById('tabHomeBtn');
       const tabLifeBtn = document.getElementById('tabLifeBtn');
       const stepCore = document.getElementById('stepCore');
+      const stepHome = document.getElementById('stepHome');
       const stepLife = document.getElementById('stepLife');
       const prefBackBtn = document.getElementById('prefBackBtn');
       let activeWizardStep = 1;
 
       function showWizardStep(stepNum) {
         activeWizardStep = stepNum;
+        const tabs = [tabCoreBtn, tabHomeBtn, tabLifeBtn];
+        const steps = [stepCore, stepHome, stepLife];
+
+        tabs.forEach((tab, idx) => {
+          if (tab) {
+            if (idx + 1 === stepNum) {
+              tab.classList.add('active');
+              tab.style.background = 'var(--accent)';
+              tab.style.color = 'var(--accent-text)';
+            } else {
+              tab.classList.remove('active');
+              tab.style.background = 'transparent';
+              tab.style.color = 'var(--text-muted)';
+            }
+          }
+        });
+
+        steps.forEach((step, idx) => {
+          if (step) {
+            if (idx + 1 === stepNum) step.style.display = 'flex';
+            else step.style.display = 'none';
+          }
+        });
+
         if (stepNum === 1) {
-          if (tabCoreBtn) tabCoreBtn.classList.add('active');
-          if (tabLifeBtn) tabLifeBtn.classList.remove('active');
-          if (stepCore) stepCore.classList.add('active');
-          if (stepLife) stepLife.classList.remove('active');
           if (prefBackBtn) prefBackBtn.style.display = 'none';
           if (savePrefBtn) savePrefBtn.textContent = 'Continue ➔';
+        } else if (stepNum === 2) {
+          if (prefBackBtn) prefBackBtn.style.display = 'block';
+          if (savePrefBtn) savePrefBtn.textContent = 'Continue ➔';
         } else {
-          if (tabCoreBtn) tabCoreBtn.classList.remove('active');
-          if (tabLifeBtn) tabLifeBtn.classList.add('active');
-          if (stepCore) stepCore.classList.remove('active');
-          if (stepLife) stepLife.classList.add('active');
           if (prefBackBtn) prefBackBtn.style.display = 'block';
           if (savePrefBtn) savePrefBtn.textContent = 'Save Selections ✨';
         }
       }
 
       if (tabCoreBtn) tabCoreBtn.addEventListener('click', () => showWizardStep(1));
-      if (tabLifeBtn) tabLifeBtn.addEventListener('click', () => showWizardStep(2));
-      if (prefBackBtn) prefBackBtn.addEventListener('click', () => showWizardStep(1));
+      if (tabHomeBtn) tabHomeBtn.addEventListener('click', () => showWizardStep(2));
+      if (tabLifeBtn) tabLifeBtn.addEventListener('click', () => showWizardStep(3));
+      if (prefBackBtn) {
+        prefBackBtn.addEventListener('click', () => {
+          if (activeWizardStep === 2) showWizardStep(1);
+          else if (activeWizardStep === 3) showWizardStep(2);
+        });
+      }
 
       function updateProfileButton() {
         if (prefBtnText) {
@@ -4062,7 +4101,7 @@
         if (userEmail) {
           prefLoggedOutState.style.display = 'none';
           prefLoggedInState.style.display = 'block';
-          if (loggedInEmailText) loggedInEmailText.textContent = userEmail;
+          if (loggedInEmailText) loggedInEmailText.textContent = userEmail.split('@')[0] + "'s Profile";
 
           // Setup initial button states from current preferences
           setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
@@ -4212,7 +4251,7 @@
           // Transition to logged in preferences form
           prefLoggedOutState.style.display = 'none';
           prefLoggedInState.style.display = 'block';
-          if (loggedInEmailText) loggedInEmailText.textContent = userEmail;
+          if (loggedInEmailText) loggedInEmailText.textContent = userEmail.split('@')[0] + "'s Profile";
 
           setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
           setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
@@ -4412,7 +4451,13 @@
           if (e.key === 'Enter') handleLogin();
         });
       }
-      if (savePrefBtn) savePrefBtn.addEventListener('click', handleSavePreferences);
+      if (savePrefBtn) {
+        savePrefBtn.addEventListener('click', () => {
+          if (activeWizardStep === 1) showWizardStep(2);
+          else if (activeWizardStep === 2) showWizardStep(3);
+          else handleSavePreferences();
+        });
+      }
       if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
       // Collapsible biography click trigger
       const aboutDogToggle = document.getElementById('aboutDogToggle');
@@ -4721,7 +4766,7 @@
             <div style="font-size:3rem; margin-bottom:12px;">💔</div>
             <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No saved dogs yet</h3>
             <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">Tap the ❤️ on any dog card to save them here and come back later.</p>
-            <button class="btn-primary start-sniffing-btn" style="padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--accent); color:var(--accent-text); border:none; box-shadow:0 4px 12px var(--accent-shadow);">Start Sniffing 🐶</button>
+            <button class="btn-primary start-sniffing-btn" style="padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--accent); color:var(--accent-text); border:none; box-shadow:0 4px 12px var(--accent-shadow);">Start Sniffing</button>
           </div>`;
           
           container.querySelector('.start-sniffing-btn')?.addEventListener('click', () => {
@@ -4799,7 +4844,7 @@
               favBtn.setAttribute('aria-label', `Save ${currentDogName} to My Dogs`);
             }
 
-            showToast(`Removed ${name} from My Dogs.`);
+            showToast("Removed from My Dogs.");
 
             // Hot-reload list
             loadSavedTab('dogs');
@@ -4868,7 +4913,7 @@
               <div style="font-size:3rem; margin-bottom:12px;">💬</div>
               <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No chats yet</h3>
               <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">Start chatting with any dog to build your conversation history here.</p>
-              <button class="btn-primary meet-dogs-btn" style="padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--teal); color:var(--accent-text); border:none; box-shadow:0 4px 12px rgba(20,184,166,0.25);">Meet dogs 🐾</button>
+              <button class="btn-primary meet-dogs-btn" style="padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--teal); color:var(--accent-text); border:none; box-shadow:0 4px 12px rgba(20,184,166,0.25);">Meet dogs</button>
             </div>`;
             
             container.querySelector('.meet-dogs-btn')?.addEventListener('click', () => {
