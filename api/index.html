@@ -356,7 +356,7 @@
       height: 48px;
       border-radius: 50%;
       background: var(--cream-highlight);
-      color: var(--bg-slate-950);
+      color: #64748b; /* slate outline for unhearted */
       border: 1px solid rgba(245, 158, 11, 0.15);
       display: flex;
       align-items: center;
@@ -369,6 +369,7 @@
 
     .fav-btn:hover {
       transform: scale(1.08);
+      color: #334155;
     }
 
     .fav-btn:active {
@@ -376,13 +377,61 @@
     }
 
     .fav-btn.favorited {
-      color: #ef4444;
+      color: #f59e0b; /* warm amber fill */
+      background: var(--cream-highlight);
+      border-color: rgba(245, 158, 11, 0.45);
+      box-shadow: 0 6px 22px -3px rgba(245, 158, 11, 0.35);
     }
 
     .fav-btn svg {
       width: 22px;
       height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      transition: all 0.2s ease;
+    }
+
+    .fav-btn.favorited svg {
       fill: currentColor;
+      stroke: currentColor;
+      animation: heartBeat 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes heartBeat {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+
+    /* Toast Notification */
+    .toast-notification {
+      position: fixed;
+      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid var(--accent);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      z-index: 9999;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast-notification.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
 
     .hero-actions {
@@ -574,23 +623,24 @@
     }
 
     .detail-chip {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-soft);
-      border-radius: 12px;
-      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      font-size: 0.8rem;
+      gap: 8px;
+      font-size: 0.85rem;
       font-weight: 800;
       color: var(--text-main);
       text-align: center;
-      min-height: 38px;
+      min-height: 44px;
       transition: all 0.2s ease;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
     }
 
     .detail-chip.matched {
@@ -2030,8 +2080,8 @@
             <div class="skeleton-el" style="width: 100%; flex-direction: column; gap: 12px; display: flex;">
               <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                 <div class="skeleton-pulse skeleton-chip"></div>
-                <div class="skeleton-pulse skeleton-chip"></div>
-                <div class="skeleton-pulse skeleton-chip"></div>
+                <div class="skeleton-pulse skeleton-pulse skeleton-chip"></div>
+                <div class="skeleton-pulse skeleton-pulse skeleton-chip"></div>
               </div>
               <div class="skeleton-pulse skeleton-fit-pill"></div>
               <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
@@ -2042,50 +2092,64 @@
             </div>
 
             <!-- REAL CONTENT -->
-            <div class="real-el" style="display: flex; flex-direction: column; gap: 12px;">
-              <!-- Row 1: Flat Stats Chips -->
-              <div class="details-stats-row">
-                <span class="detail-chip" id="chipGender">
-                  <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
-                  <span>Sex: </span><span class="chip-val" id="dogGender">-</span>
-                </span>
-                <span class="detail-chip" id="chipAge">
-                  <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
-                  <span>Age: </span><span class="chip-val" id="dogAge">-</span>
-                </span>
-                <span class="detail-chip" id="chipWeight">
-                  <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
-                  <span>Weight: </span><span class="chip-val" id="dogWeight">-</span>
-                </span>
-              </div>
-
-              <!-- Row 2: Fit Info -->
-              <div class="details-fit-container" id="whyFitCard" style="display: none;">
-                <p class="details-fit-text" id="whyFitDesc">-</p>
-              </div>
-
-              <!-- Row 3: Trait Chips -->
-              <div class="trait-chips-grid" id="traitChipsContainer"></div>
-
-              <!-- Row 4: Collapsible Shelter Story Biography -->
-              <div class="details-bio-section" id="aboutDogCard" style="display: none;">
-                <div class="details-bio-title">
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                  </svg>
-                  Meet <span id="aboutDogName">me</span>
+            <div class="real-el" style="display: flex; flex-direction: column; gap: 16px;">
+              
+              <!-- SECTION 1: Quick Facts -->
+              <div class="details-section" id="secQuickFacts">
+                <div class="details-section-header" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 900; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+                  ⚡ Quick Facts
                 </div>
-                <p class="details-bio-text collapsed" id="aboutDogText"></p>
-                <button class="see-more-toggle" id="aboutDogToggle" style="display: none;">
-                  See more
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"
-                    stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
+                <div class="details-stats-row">
+                  <span class="detail-chip" id="chipGender">
+                    <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
+                    <span>Sex: </span><span class="chip-val" id="dogGender">-</span>
+                  </span>
+                  <span class="detail-chip" id="chipAge">
+                    <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
+                    <span>Age: </span><span class="chip-val" id="dogAge">-</span>
+                  </span>
+                  <span class="detail-chip" id="chipWeight">
+                    <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
+                    <span>Weight: </span><span class="chip-val" id="dogWeight">-</span>
+                  </span>
+                </div>
               </div>
+
+              <!-- SECTION 2: Personality & Observations -->
+              <div class="details-section" id="secPersonality">
+                <div class="details-section-header" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 900; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                  🧠 Personality &amp; Observations
+                </div>
+                <div class="trait-chips-grid" id="traitChipsContainer"></div>
+              </div>
+
+              <!-- SECTION 3: Ideal Home & Fit -->
+              <div class="details-section" id="secIdealHome" style="display: contents;">
+                <div class="details-fit-container" id="whyFitCard" style="display: none;">
+                  <div class="details-bio-title" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 900; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                    🏡 Ideal Home &amp; Fit
+                  </div>
+                  <p class="details-fit-text" id="whyFitDesc">-</p>
+                </div>
+              </div>
+
+              <!-- SECTION 4: Biography Story -->
+              <div class="details-section" id="secBiography" style="display: contents;">
+                <div class="details-bio-section" id="aboutDogCard" style="display: none;">
+                  <div class="details-bio-title" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 900; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                    📖 Meet <span id="aboutDogName">me</span>
+                  </div>
+                  <p class="details-bio-text collapsed" id="aboutDogText"></p>
+                  <button class="see-more-toggle" id="aboutDogToggle" style="display: none;">
+                    See more
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"
+                      stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
             </div>
 
           </section>
@@ -2102,7 +2166,7 @@
                   <line x1="10" y1="14" x2="21" y2="3"></line>
                 </svg>
               </div>
-              <p class="cta-title">View shelter page</p>
+              <p class="cta-title">Official Page 🔗</p>
               <p class="cta-sub">Official shelter page 🛡️</p>
             </a>
             <button class="cta-card primary-cta" id="askBtn" aria-label="Scroll to chat input to chat with this dog">
@@ -2799,51 +2863,102 @@
       });
       wireShareButtons();
 
-      function hideDogUnavailableState() {
-        const card = document.getElementById('dogUnavailableCard');
-        const detailsBox = document.getElementById('detailsBox');
-        const ctaGrid = document.querySelector('.cta-grid');
-        const chatSection = document.getElementById('chatSection');
-        const heroSection = document.querySelector('.hero-section');
-        const mobileActionBar = document.getElementById('mobileActionBar');
-        if (card) {
-          card.classList.remove('visible');
-          card.style.display = 'none';
-        }
-        if (detailsBox) detailsBox.style.display = 'flex';
-        if (ctaGrid) ctaGrid.style.display = 'grid';
-        if (chatSection) chatSection.style.display = 'flex';
-        if (heroSection) heroSection.style.display = 'block';
-        if (mobileActionBar) mobileActionBar.style.display = '';
-      }
-
-      function showDogUnavailableState(fetchId) {
-        if (fetchId != null && fetchId !== activeDogFetchId) return;
-
-        const card = document.getElementById('dogUnavailableCard');
+      function setAppState(state) {
+        const profilePanel = document.getElementById('profilePanel');
+        const dogUnavailableCard = document.getElementById('dogUnavailableCard');
+        const emptyStateCard = document.getElementById('emptyStateCard');
         const detailsBox = document.getElementById('detailsBox');
         const ctaGrid = document.querySelector('.cta-grid');
         const chatSection = document.getElementById('chatSection');
         const heroSection = document.querySelector('.hero-section');
         const mobileActionBar = document.getElementById('mobileActionBar');
         const stickyDogBar = document.getElementById('stickyDogBar');
-        const emptyStateCard = document.getElementById('emptyStateCard');
-        if (emptyStateCard) emptyStateCard.style.display = 'none';
-        if (card) {
-          card.classList.add('visible');
-          card.style.display = 'flex';
+
+        const setDisplay = (el, val) => { if (el) el.style.display = val; };
+
+        if (profilePanel) {
+          profilePanel.classList.remove('loading-skeleton');
+          profilePanel.classList.remove('loading');
         }
-        if (detailsBox) detailsBox.style.display = 'none';
-        if (ctaGrid) ctaGrid.style.display = 'none';
-        if (chatSection) chatSection.style.display = 'none';
-        if (heroSection) heroSection.style.display = 'none';
-        if (mobileActionBar) mobileActionBar.style.display = 'none';
-        if (stickyDogBar) {
-          stickyDogBar.style.display = 'none';
-          stickyDogBar.classList.remove('visible');
+
+        if (state === 'loading') {
+          if (profilePanel) {
+            profilePanel.classList.add('loading-skeleton');
+            profilePanel.classList.add('loading');
+          }
+          setDisplay(dogUnavailableCard, 'none');
+          setDisplay(emptyStateCard, 'none');
+          setDisplay(detailsBox, 'flex');
+          setDisplay(ctaGrid, 'none');
+          setDisplay(chatSection, 'none');
+          setDisplay(heroSection, 'block');
+          setDisplay(mobileActionBar, 'none');
+          if (stickyDogBar) {
+            stickyDogBar.style.display = 'none';
+            stickyDogBar.classList.remove('visible');
+          }
+        } else if (state === 'dog_loaded') {
+          setDisplay(dogUnavailableCard, 'none');
+          setDisplay(emptyStateCard, 'none');
+          setDisplay(detailsBox, 'flex');
+          setDisplay(ctaGrid, 'grid');
+          setDisplay(chatSection, 'flex');
+          setDisplay(heroSection, 'block');
+          setDisplay(mobileActionBar, 'flex');
+          // Update aria hidden states for accessibility
+          if (dogUnavailableCard) dogUnavailableCard.setAttribute('aria-hidden', 'true');
+          if (emptyStateCard) emptyStateCard.setAttribute('aria-hidden', 'true');
+          if (detailsBox) detailsBox.removeAttribute('aria-hidden');
+          if (chatSection) chatSection.removeAttribute('aria-hidden');
+        } else if (state === 'empty') {
+          setDisplay(dogUnavailableCard, 'none');
+          setDisplay(emptyStateCard, 'flex');
+          setDisplay(detailsBox, 'none');
+          setDisplay(ctaGrid, 'none');
+          setDisplay(chatSection, 'none');
+          setDisplay(heroSection, 'none');
+          setDisplay(mobileActionBar, 'none');
+          if (stickyDogBar) {
+            stickyDogBar.style.display = 'none';
+            stickyDogBar.classList.remove('visible');
+          }
+          if (emptyStateCard) emptyStateCard.removeAttribute('aria-hidden');
+          if (dogUnavailableCard) dogUnavailableCard.setAttribute('aria-hidden', 'true');
+          if (detailsBox) detailsBox.setAttribute('aria-hidden', 'true');
+        } else if (state === 'unavailable') {
+          setDisplay(dogUnavailableCard, 'flex');
+          setDisplay(emptyStateCard, 'none');
+          setDisplay(detailsBox, 'none');
+          setDisplay(ctaGrid, 'none');
+          setDisplay(chatSection, 'none');
+          setDisplay(heroSection, 'none');
+          setDisplay(mobileActionBar, 'none');
+          if (stickyDogBar) {
+            stickyDogBar.style.display = 'none';
+            stickyDogBar.classList.remove('visible');
+          }
+          if (dogUnavailableCard) dogUnavailableCard.removeAttribute('aria-hidden');
+          if (emptyStateCard) emptyStateCard.setAttribute('aria-hidden', 'true');
+          if (detailsBox) detailsBox.setAttribute('aria-hidden', 'true');
         }
-        profilePanel.classList.remove('loading-skeleton');
-        profilePanel.classList.remove('loading');
+      }
+
+      function showToast(message) {
+        let toast = document.getElementById('appToast');
+        if (!toast) {
+          toast = document.createElement('div');
+          toast.id = 'appToast';
+          toast.className = 'toast-notification';
+          document.body.appendChild(toast);
+        }
+        toast.innerHTML = `<span>🐾</span> ${message}`;
+        toast.classList.add('visible');
+        if (toast.timeoutId) {
+          clearTimeout(toast.timeoutId);
+        }
+        toast.timeoutId = setTimeout(() => {
+          toast.classList.remove('visible');
+        }, 3000);
       }
 
       // Setup simple Favorites storage array
@@ -2889,14 +3004,24 @@
           if (removing) {
             favoritesList.splice(index, 1);
             favBtn.classList.remove('favorited');
+            favBtn.setAttribute('aria-label', `Save ${currentDogName} to My Dogs`);
             trackEvent('dog_unfavorited', { dog_name: currentDogName, animal_id: currentAnimalId });
+            showToast(`Removed ${currentDogName} from My Dogs.`);
           } else {
             favoritesList.push(currentAnimalId);
             favBtn.classList.add('favorited');
+            favBtn.setAttribute('aria-label', `Remove ${currentDogName} from My Dogs`);
             trackEvent('dog_favorited', { dog_name: currentDogName, animal_id: currentAnimalId });
+            showToast(`🐾 ${currentDogName} saved to My Dogs.`);
           }
           localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
           updateSavedNavBadge();
+
+          // Refresh the modal if open
+          const modal = document.getElementById('savedModal');
+          if (modal && modal.classList.contains('active') && savedActiveTab === 'dogs') {
+            loadSavedTab('dogs');
+          }
 
           // Backend sync if logged in
           if (userEmail) {
@@ -2945,38 +3070,14 @@
         const fetchId = ++activeDogFetchId;
         const isStaleFetch = () => fetchId !== activeDogFetchId;
 
-        hideDogUnavailableState();
-        // Toggle skeleton loaders active
-        profilePanel.classList.add('loading-skeleton');
-
-        // Hide any active empty state cards & restore normal details view display blocks
-        const emptyStateCard = document.getElementById('emptyStateCard');
-        const detailsBox = document.getElementById('detailsBox');
-        const ctaGrid = document.querySelector('.cta-grid');
-        const chatSection = document.getElementById('chatSection');
-        const heroSection = document.querySelector('.hero-section');
-        const mobileActionBar = document.getElementById('mobileActionBar');
-        const stickyDogBar = document.getElementById('stickyDogBar');
-
-        if (emptyStateCard) emptyStateCard.style.display = 'none';
-        if (detailsBox) detailsBox.style.display = 'flex';
-        if (ctaGrid) ctaGrid.style.display = 'grid';
-        if (chatSection) chatSection.style.display = 'flex';
-        if (heroSection) heroSection.style.display = 'block';
-
-        // Hide sticky and mobile overlays during loading to avoid displacement
-        if (mobileActionBar) mobileActionBar.style.display = 'none';
-        if (stickyDogBar) {
-          stickyDogBar.style.display = 'none';
-          stickyDogBar.classList.remove('visible');
-        }
+        setAppState('loading');
 
         // Clear current state instantly to prevent lagging info
         dogImage.src = '';
         dogName.textContent = '';
         dogId.textContent = '';
         const locationTextEl = document.getElementById('dogLocationText');
-        if (locationTextEl) locationTextEl.textContent = '-';
+        if (locationTextEl) locationTextEl.textContent = '';
         dogAge.textContent = '-';
         dogWeight.textContent = '-';
         paccLink.style.display = 'none';
@@ -3089,7 +3190,13 @@
           // Dynamically update dog name in buttons, labels, and placeholders
           const askBtnTitle = document.getElementById('askBtnTitle');
           if (askBtnTitle) askBtnTitle.textContent = "Ask " + currentDogName;
-          if (favBtn) favBtn.setAttribute('aria-label', "Favorite " + currentDogName);
+          if (favBtn) {
+            const isFav = favoritesList.includes(currentAnimalId);
+            favBtn.setAttribute('aria-label', isFav ? `Remove ${currentDogName} from My Dogs` : `Save ${currentDogName} to My Dogs`);
+          }
+          if (paccLink) {
+            paccLink.setAttribute('aria-label', `Open ${currentDogName}'s official shelter page on 24Petconnect`);
+          }
           updateShareButtonLabels();
           if (chatInput) chatInput.placeholder = "Ask about " + currentDogName + "...";
 
@@ -3368,12 +3475,12 @@
           introCard.className = 'chat-intro-card';
           if (loadOptions.resumeChat) {
             introCard.innerHTML = `
-            <div class="chat-intro-title">💬 Continuing chat with ${currentDogName}</div>
+            <div class="chat-intro-title">💬 Continuing your chat with ${currentDogName} 🐾</div>
             <p class="chat-intro-text" style="color:var(--teal);">✓ Loading your previous conversation...</p>`;
           } else {
             introCard.innerHTML = `
             <div class="chat-intro-title">💬 Chat with ${currentDogName}</div>
-            <p class="chat-intro-text">Ask me about my personality, energy level, training, ideal home, or what makes me special! I'll do my best to answer as myself.</p>
+            <p class="chat-intro-text">Start a chat with ${currentDogName}! Ask me anything about my personality, energy, or training.</p>
             <div class="chat-intro-disclaimer">
               🔒 ChattyHound uses available shelter profile details to help you get to know each dog. Always confirm medical, behavioral, and adoption details directly with PACC shelter staff.
             </div>`;
@@ -3496,34 +3603,15 @@
           }
 
           if (!isStaleFetch()) {
-            hideDogUnavailableState();
+            setAppState('dog_loaded');
             trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId });
           }
 
         } catch (err) {
           if (isStaleFetch()) return;
           console.error(err);
-
-          // Display the warm empty state card if load fails or filters return empty sets
-          if (emptyStateCard) emptyStateCard.style.display = 'flex';
-          if (detailsBox) detailsBox.style.display = 'none';
-          if (ctaGrid) ctaGrid.style.display = 'none';
-          if (chatSection) chatSection.style.display = 'none';
-          if (heroSection) heroSection.style.display = 'none';
-
-          // Explicitly hide overlays on empty matches to prevent ghost displays
-          if (mobileActionBar) mobileActionBar.style.display = 'none';
-          if (stickyDogBar) {
-            stickyDogBar.style.display = 'none';
-            stickyDogBar.classList.remove('visible');
-          }
-
-          dogName.textContent = 'Oops!';
-        } finally {
-          if (fetchId === activeDogFetchId) {
-            profilePanel.classList.remove('loading-skeleton');
-            profilePanel.classList.remove('loading');
-          }
+          setAppState('empty');
+          dogName.textContent = '';
         }
       }
 
@@ -3541,10 +3629,9 @@
         if (!botReplyText) {
           const prompts = [
             `What kind of home would you love?`,
-            `Are you good with other dogs?`,
             `What’s your energy level?`,
-            `What should my human know about me?`,
-            `What’s your perfect day?`
+            `Are you good with other dogs?`,
+            `What should my human know?`
           ];
 
           quickPromptsContainer.innerHTML = '';
@@ -4401,7 +4488,7 @@
       const dogUnavailableCtaBtn = document.getElementById('dogUnavailableCtaBtn');
       if (dogUnavailableCtaBtn) {
         dogUnavailableCtaBtn.addEventListener('click', () => {
-          hideDogUnavailableState();
+          setAppState('loading');
           history.replaceState({}, '', '/');
           fetchRandomDog();
         });
@@ -4600,9 +4687,32 @@
           } catch (e) { }
         }
 
-        // If no backend data, render from local favoritesList (no images/names available)
+        // If no backend data, render from local favoritesList with dynamic detail fetching
         if (dogs.length === 0 && favoritesList.length > 0 && !userEmail) {
-          dogs = favoritesList.map(id => ({ animal_id: id, dog_name: 'Saved Dog', dog_image_url: '' }));
+          try {
+            const promises = favoritesList.map(async (id) => {
+              try {
+                const res = await fetch(`/api/random_dog?animal_id=${encodeURIComponent(id)}`);
+                if (res.ok) {
+                  const dog = await res.json();
+                  return {
+                    animal_id: dog.animal_id,
+                    dog_name: dog.name || 'Shelter Pup',
+                    gender: dog.gender || 'Unknown',
+                    age: dog.age || 'Unknown',
+                    weight: dog.weight || 'Unknown',
+                    located_at: dog.located_at || 'Pima Animal Care Center',
+                    url: dog.url || '',
+                    dog_image_url: dog.image_url || dog.image_public_url || ''
+                  };
+                }
+              } catch (e) {}
+              return { animal_id: id, dog_name: 'Shelter Pup', dog_image_url: '' };
+            });
+            dogs = await Promise.all(promises);
+          } catch (e) {
+            dogs = favoritesList.map(id => ({ animal_id: id, dog_name: 'Shelter Pup', dog_image_url: '' }));
+          }
         }
 
         if (dogs.length === 0) {
@@ -4610,24 +4720,52 @@
           <div style="text-align:center; padding:40px 24px;">
             <div style="font-size:3rem; margin-bottom:12px;">💔</div>
             <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No saved dogs yet</h3>
-            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Tap the ❤️ on any dog card to save them here and come back later.</p>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">Tap the ❤️ on any dog card to save them here and come back later.</p>
+            <button class="btn-primary start-sniffing-btn" style="padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--accent); color:var(--accent-text); border:none; box-shadow:0 4px 12px var(--accent-shadow);">Start Sniffing 🐶</button>
           </div>`;
+          
+          container.querySelector('.start-sniffing-btn')?.addEventListener('click', () => {
+            closeSavedModal();
+            fetchRandomDog();
+          });
           return;
         }
 
         container.innerHTML = dogs.map(d => `
-        <div class="saved-dog-card" data-animal-id="${d.animal_id}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:var(--card-elevated); margin-bottom:10px; cursor:pointer; transition:background 0.2s; border:1px solid rgba(255,255,255,0.06);">
-          <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--card-bg);">
-            ${d.dog_image_url ? `<img src="${d.dog_image_url}" alt="${d.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🐾</div>'}
+        <div class="saved-dog-card" data-animal-id="${d.animal_id}" style="display:flex; flex-direction:column; gap:12px; padding:16px; border-radius:18px; background:rgba(255,255,255,0.03); margin-bottom:14px; border:1px solid rgba(255,255,255,0.06); position:relative; transition:all 0.2s ease;">
+          <!-- Top Row: Photo + Meta + Heart -->
+          <div style="display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:68px; height:68px; border-radius:12px; overflow:hidden; flex-shrink:0; background:var(--bg-slate-800); border:1px solid rgba(255,255,255,0.1);">
+              ${d.dog_image_url ? `<img src="${d.dog_image_url}" alt="${d.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;background:var(--bg-slate-800);">🐾</div>'}
+            </div>
+            <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;">
+              <h4 style="font-weight:900; font-size:1.1rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">${d.dog_name || 'Shelter Pup'}</h4>
+              <!-- Gender/Age/Weight/Breed mini pills or badges -->
+              <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
+                <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.gender || 'Unknown'}</span>
+                <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${cleanAgeText(d.age)}</span>
+                <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.located_at ? d.located_at.replace('Pima Animal Care Center', 'PACC') : 'PACC'}</span>
+              </div>
+            </div>
+            <!-- Right side Action Buttons (Share and Heart toggle) -->
+            <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+              <button type="button" class="modal-unheart-btn" data-animal-id="${d.animal_id}" aria-label="Remove ${d.dog_name || 'dog'} from My Dogs" style="background:transparent; border:none; color:var(--accent); font-size:1.25rem; cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;">
+                ❤️
+              </button>
+              <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${d.animal_id}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${d.dog_name || 'this dog'}" title="Share" style="width:28px; height:28px;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              </button>
+            </div>
           </div>
-          <div style="flex:1; min-width:0;">
-            <div style="font-weight:800; font-size:0.95rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.dog_name || 'Shelter Pup'}</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Tap to view &amp; chat</div>
+          <!-- Bottom Row: Twin CTA Buttons -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
+            <button type="button" class="modal-chat-cta" data-animal-id="${d.animal_id}" style="padding:8px; border:1px solid var(--accent); border-radius:10px; background:var(--accent); color:var(--accent-text); font-weight:800; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
+              Chat 💬
+            </button>
+            <a href="${d.url || 'https://www.pima.gov/pacc'}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" style="text-decoration:none; padding:8px; border:1px solid rgba(255,255,255,0.12); border-radius:10px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
+              Official Page 🔗
+            </a>
           </div>
-          <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${d.animal_id}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(d.dog_name || 'this dog').replace(/"/g, '')}" title="Share">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          </button>
-          <div style="color:var(--accent); font-size:1rem;">❤️</div>
         </div>`).join('');
 
         container.querySelectorAll('.saved-card-share-btn').forEach(btn => {
@@ -4639,10 +4777,66 @@
           });
         });
 
-        // Click to jump to dog (loads it in the main view)
+        // unheart inside the modal
+        container.querySelectorAll('.modal-unheart-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const aid = btn.getAttribute('data-animal-id');
+            const targetDog = dogs.find(dg => dg.animal_id === aid);
+            const name = targetDog ? targetDog.dog_name : 'Shelter Pup';
+
+            // Remove from favorite list
+            const index = favoritesList.indexOf(aid);
+            if (index > -1) {
+              favoritesList.splice(index, 1);
+              localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
+              updateSavedNavBadge();
+            }
+
+            // Sync active dog heart if it is currently displaying this dog
+            if (currentAnimalId === aid && favBtn) {
+              favBtn.classList.remove('favorited');
+              favBtn.setAttribute('aria-label', `Save ${currentDogName} to My Dogs`);
+            }
+
+            showToast(`Removed ${name} from My Dogs.`);
+
+            // Hot-reload list
+            loadSavedTab('dogs');
+
+            // Sync to backend if logged in
+            if (userEmail) {
+              try {
+                await fetch('/api/favorites', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    email: userEmail,
+                    animal_id: aid,
+                    action: 'remove'
+                  })
+                });
+              } catch (err) {
+                console.warn('Backend favorites sync failed:', err);
+              }
+            }
+          });
+        });
+
+        // Click Chat CTA
+        container.querySelectorAll('.modal-chat-cta').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const aid = btn.getAttribute('data-animal-id');
+            closeSavedModal();
+            fetchSpecificDog(aid);
+          });
+        });
+
+        // Click card generally
         container.querySelectorAll('.saved-dog-card').forEach(card => {
           card.addEventListener('click', (e) => {
-            if (e.target.closest('.saved-card-share-btn')) return;
+            if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.modal-unheart-btn')) return;
             const aid = card.getAttribute('data-animal-id');
             closeSavedModal();
             fetchSpecificDog(aid);
@@ -4657,7 +4851,7 @@
             <div style="font-size:3rem; margin-bottom:12px;">🔒</div>
             <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">Sign in to see chats</h3>
             <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Your chat history is saved when you're signed in. Sign in to pick up where you left off!</p>
-            <button class="btn-primary" onclick="closeSavedModal();setTimeout(openPrefModal,200);" style="margin-top:16px; padding:10px 24px; border-radius:9999px; font-size:0.85rem;">Sign In</button>
+            <button class="btn-primary" onclick="closeSavedModal();setTimeout(openPrefModal,200);" style="margin-top:16px; padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer;">Sign In</button>
           </div>`;
           return;
         }
@@ -4673,26 +4867,31 @@
             <div style="text-align:center; padding:40px 24px;">
               <div style="font-size:3rem; margin-bottom:12px;">💬</div>
               <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No chats yet</h3>
-              <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Start chatting with any dog to build your conversation history here.</p>
+              <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">Start chatting with any dog to build your conversation history here.</p>
+              <button class="btn-primary meet-dogs-btn" style="padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--teal); color:var(--accent-text); border:none; box-shadow:0 4px 12px rgba(20,184,166,0.25);">Meet dogs 🐾</button>
             </div>`;
+            
+            container.querySelector('.meet-dogs-btn')?.addEventListener('click', () => {
+              closeSavedModal();
+            });
             return;
           }
 
           container.innerHTML = convs.map(c => {
             const dateStr = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
             return `
-          <div class="saved-dog-card" data-animal-id="${c.animal_id}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:var(--card-elevated); margin-bottom:10px; cursor:pointer; transition:background 0.2s; border:1px solid rgba(255,255,255,0.06);">
-            <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--card-bg);">
-              ${c.dog_image_url ? `<img src="${c.dog_image_url}" alt="${c.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">💬</div>'}
+          <div class="saved-dog-card" data-animal-id="${c.animal_id}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:rgba(255,255,255,0.03); margin-bottom:10px; cursor:pointer; transition:all 0.2s ease; border:1px solid rgba(255,255,255,0.06);">
+            <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--bg-slate-800); border:1px solid rgba(255,255,255,0.08);">
+              ${c.dog_image_url ? `<img src="${c.dog_image_url}" alt="${c.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--bg-slate-800);">💬</div>'}
             </div>
             <div style="flex:1; min-width:0;">
               <div style="font-weight:800; font-size:0.95rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.dog_name || 'Shelter Pup'}</div>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.last_message_preview || 'Tap to continue'}</div>
             </div>
-            <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Share">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Share" style="width:28px; height:28px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             </button>
-            <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap;">${dateStr}</div>
+            <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; margin-left:4px;">${dateStr}</div>
           </div>`;
           }).join('');
 
