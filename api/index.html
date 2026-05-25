@@ -1368,12 +1368,20 @@
         border-radius: 28px !important;
       }
 
-      .scroll-content {
+      #appView .scroll-content {
         display: grid !important;
         grid-template-columns: 52% 48% !important;
         height: calc(100% - 73px) !important;
         overflow: hidden !important;
         padding-bottom: 0 !important;
+      }
+
+      #landingView .scroll-content {
+        display: block !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        padding-bottom: 0 !important;
+        padding-top: 0 !important;
       }
 
       .hero-section {
@@ -1413,6 +1421,52 @@
 
       .sticky-dog-bar {
         display: none !important;
+      }
+
+      /* Desktop overrides for Landing Grid */
+      .landing-grid-container {
+        display: grid !important;
+        grid-template-columns: 52% 48% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+      }
+
+      .landing-left-pane {
+        overflow-y: auto !important;
+        height: 100% !important;
+        scrollbar-width: thin;
+      }
+
+      .landing-right-pane {
+        height: 100% !important;
+        border-left: 1px solid var(--border-soft) !important;
+        background: rgba(0, 0, 0, 0.15) !important;
+        padding: 32px !important;
+      }
+
+      .landing-hero {
+        padding: 60px 40px !important;
+        gap: 24px !important;
+      }
+
+      .landing-title {
+        font-size: 2.85rem !important;
+        line-height: 1.15 !important;
+      }
+
+      .landing-sub {
+        font-size: 1.05rem !important;
+        max-width: 440px !important;
+      }
+
+      .landing-cta-group {
+        max-width: 380px !important;
+        flex-direction: row !important;
+        gap: 14px !important;
+      }
+
+      .landing-cta-group button {
+        flex: 1 !important;
       }
     }
 
@@ -1472,6 +1526,7 @@
       background: linear-gradient(135deg, var(--cream-highlight) 30%, var(--accent) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
 
     .landing-sub {
@@ -1491,6 +1546,17 @@
       margin-top: 8px;
     }
 
+    @keyframes ctaBreathe {
+      0%, 100% {
+        box-shadow: 0 6px 20px var(--accent-shadow);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 6px 28px rgba(245, 158, 11, 0.45);
+        transform: scale(1.025);
+      }
+    }
+
     .btn-primary {
       padding: 14px 28px;
       background: var(--accent);
@@ -1506,12 +1572,14 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      animation: ctaBreathe 3s ease-in-out infinite;
     }
 
     .btn-primary:hover {
       background: var(--accent-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px var(--accent-shadow);
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+      animation: none;
     }
 
     .btn-secondary {
@@ -1535,6 +1603,97 @@
       border-color: rgba(255, 255, 255, 0.2);
     }
 
+    /* ── Landing page Grid and Right Pane Showcase ── */
+    .landing-grid-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .landing-right-pane {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .landing-hero-card {
+      position: relative;
+      width: 100%;
+      max-width: 380px;
+      aspect-ratio: 1;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      background: var(--bg-slate-800);
+      transition: transform 0.3s ease;
+    }
+
+    .landing-hero-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      border-color: var(--accent);
+      box-shadow: 0 25px 50px rgba(245, 158, 11, 0.15);
+    }
+
+    .landing-hero-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .landing-mock-bubble {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      right: 14px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-sizing: border-box;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      animation: floatBubble 3s ease-in-out infinite;
+    }
+
+    .landing-mock-bubble p {
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: var(--text-main);
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .bubble-heart {
+      position: absolute;
+      top: -12px;
+      right: 16px;
+      font-size: 1.2rem;
+      filter: drop-shadow(0 2px 5px rgba(239, 68, 68, 0.5));
+      animation: heartPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes floatBubble {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    @keyframes heartPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    .gradient-text-accent {
+      background: linear-gradient(135deg, var(--accent) 30%, #fcd34d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline;
+    }
+
     /* Landing explanation grid */
     .landing-explanation {
       padding: 24px;
@@ -1555,38 +1714,68 @@
     .steps-vertical {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
+      position: relative;
+    }
+
+    .steps-vertical::before {
+      content: '';
+      position: absolute;
+      left: 32px; /* 16px left-padding of step-item + 16px half-width of badge */
+      top: 32px;
+      bottom: 32px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--teal) 0%, rgba(20, 184, 166, 0.1) 100%);
+      z-index: 1;
     }
 
     .step-item {
       display: flex;
       gap: 16px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-soft);
-      border-radius: 18px;
-      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 16px 20px;
       text-align: left;
-      transition: transform 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      z-index: 2;
     }
 
     .step-item:hover {
-      transform: translateX(4px);
-      border-color: rgba(20, 184, 166, 0.2);
+      transform: translateX(6px);
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(20, 184, 166, 0.35);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
 
     .step-badge {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: rgba(20, 184, 166, 0.15);
-      border: 1px solid rgba(20, 184, 166, 0.3);
-      color: var(--teal);
+      background: #141f32; /* solid dark slate matching background */
+      border: 1.5px solid rgba(20, 184, 166, 0.4);
+      color: #2dd4bf;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 900;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       flex-shrink: 0;
+      position: relative;
+      z-index: 3;
+      box-shadow: 0 0 12px rgba(20, 184, 166, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .step-item:hover .step-badge {
+      background: var(--teal);
+      color: var(--bg-slate-950);
+      border-color: var(--teal);
+      box-shadow: 0 0 16px rgba(20, 184, 166, 0.6);
+      transform: scale(1.08);
     }
 
     .step-body h4 {
@@ -1997,78 +2186,91 @@
     <span class="loader" id="loader"></span>
 
     <!-- ────────────────────────────────────────── -->
-    <!-- 1. LANDING SCREEN VIEW (Conversion Funnel) -->
-    <!-- ────────────────────────────────────────── -->
     <div id="landingView" class="view-screen">
-      <div class="scroll-content" style="padding-bottom: 24px; padding-top: 24px;">
-        <!-- High-Impact Hero Landing Section -->
-        <section class="landing-hero">
-          <div class="landing-logo">🐾 ChattyHound</div>
-          <h1 class="landing-title">Meet adoptable dogs in a whole new way.</h1>
-          <p class="landing-sub">Chat with shelter dogs, discover their personality, and find the pup who fits your
-            life.</p>
-          <div class="landing-cta-group">
-            <button class="btn-primary" id="landingStartBtn"
-              aria-label="Start Sniffing: Build your dog match profile">Start Sniffing 🐶</button>
-            <button class="btn-secondary" id="landingHowBtn" aria-label="Learn how ChattyHound works">How It
-              Works</button>
-          </div>
-        </section>
+      <div class="scroll-content" id="landingScrollContent" style="padding-bottom: 24px; padding-top: 24px;">
+        <div class="landing-grid-container">
+          
+          <!-- Left Content Pane -->
+          <div class="landing-left-pane">
+            <section class="landing-hero">
+              <div class="landing-logo">🐾 ChattyHound</div>
+              <h1 class="landing-title">Meet adoptable dogs in a <span class="gradient-text-accent">whole new way</span>.</h1>
+              <p class="landing-sub">Chat with shelter dogs, discover their personality, and find the pup who fits your life.</p>
+              <div class="landing-cta-group">
+                <button class="btn-primary" id="landingStartBtn"
+                  aria-label="Start Sniffing: Build your dog match profile">Start Sniffing 🐶</button>
+                <button class="btn-secondary" id="landingHowBtn" aria-label="Learn how ChattyHound works">How It Works 💡</button>
+              </div>
+            </section>
 
-        <!-- "How It Works" Glassmorphic Steps -->
-        <section class="landing-explanation" id="howItWorksSec">
-          <h3 class="explanation-title">How It Works</h3>
-          <div class="steps-vertical">
-            <div class="step-item">
-              <div class="step-badge">1</div>
-              <div class="step-body">
-                <h4>Tell us what you're looking for</h4>
-                <p>Answer a few quick lifestyle questions to build your dog match profile.</p>
+            <!-- "How It Works" Timeline -->
+            <section class="landing-explanation" id="howItWorksSec">
+              <h3 class="explanation-title">How It Works</h3>
+              <div class="steps-vertical">
+                <div class="step-item">
+                  <div class="step-badge">1</div>
+                  <div class="step-body">
+                    <h4>Tell us what you're looking for</h4>
+                    <p>Answer a few quick lifestyle questions to build your dog match profile.</p>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-badge">2</div>
+                  <div class="step-body">
+                    <h4>Meet matched adoptable dogs</h4>
+                    <p>We prioritize shelter dogs who fit your home, energy levels, and lifestyle preferences.</p>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-badge">3</div>
+                  <div class="step-body">
+                    <h4>Chat to understand personality</h4>
+                    <p>Have an AI-powered conversation directly with the pup to learn their quirks, behavior, and needs.</p>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-badge">4</div>
+                  <div class="step-body">
+                    <h4>Continue with the shelter</h4>
+                    <p>Continue to the official shelter page to schedule a meet-and-greet and finalize the adoption.</p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="step-item">
-              <div class="step-badge">2</div>
-              <div class="step-body">
-                <h4>Meet matched adoptable dogs</h4>
-                <p>We prioritize shelter dogs who fit your home, energy levels, and lifestyle preferences.</p>
-              </div>
-            </div>
-            <div class="step-item">
-              <div class="step-badge">3</div>
-              <div class="step-body">
-                <h4>Chat to understand personality</h4>
-                <p>Have an AI-powered conversation directly with the pup to learn their quirks, behavior, and needs.</p>
-              </div>
-            </div>
-            <div class="step-item">
-              <div class="step-badge">4</div>
-              <div class="step-body">
-                <h4>Continue with the shelter</h4>
-                <p>Continue to the official shelter page to schedule a meet-and-greet and finalize the adoption.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+            </section>
 
-        <!-- Shelter Credibility Disclaimers -->
-        <section class="landing-footer">
-          <div class="disclaimer-card"
-            style="background: rgba(20, 184, 166, 0.08); border: 1.5px solid rgba(20, 184, 166, 0.2); text-align: left; display: flex; gap: 12px; align-items: flex-start; color: var(--text-main); font-size: 0.78rem;">
-            <div style="color: var(--teal); flex-shrink: 0; margin-top: 2px;">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-            </div>
-            <div>
-              <strong
-                style="color: white; font-weight: 800; font-size: 0.85rem; display: block; margin-bottom: 3px;">Shelter
-                info comes first 🛡️</strong>
-              ChattyHound is a playful AI companion to help you discover dogs. The official shelter page remains the
-              absolute authority for all medical details, behavioral history, and adoption eligibility.
+            <!-- Shelter Credibility Disclaimer -->
+            <section class="landing-footer" style="padding: 16px 24px;">
+              <div class="disclaimer-card"
+                style="background: rgba(20, 184, 166, 0.08); border: 1.5px solid rgba(20, 184, 166, 0.2); text-align: left; display: flex; gap: 12px; align-items: flex-start; color: var(--text-main); font-size: 0.78rem;">
+                <div style="color: var(--teal); flex-shrink: 0; margin-top: 2px;">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <div>
+                  <strong
+                    style="color: white; font-weight: 800; font-size: 0.85rem; display: block; margin-bottom: 3px;">Shelter
+                    info comes first 🛡️</strong>
+                  ChattyHound is a playful AI companion to help you discover dogs. The official shelter page remains the
+                  absolute authority for all medical details, behavioral history, and adoption eligibility.
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Right Hero Showcase Pane -->
+          <div class="landing-right-pane">
+            <div class="landing-hero-card">
+              <img src="happy_rescue_pup.png" alt="Extremely cute adoptable shelter puppy" class="landing-hero-img">
+              <div class="landing-mock-bubble">
+                <span class="bubble-heart">❤️</span>
+                <p>Hi! I'm a friendly, playful cuddle bug who loves treats and warm hugs. Wanna chat with me? 🐾</p>
+              </div>
             </div>
           </div>
-        </section>
+
+        </div>
       </div>
     </div>
 
