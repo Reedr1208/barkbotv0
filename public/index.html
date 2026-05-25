@@ -69,6 +69,13 @@
       --border-soft: rgba(255, 255, 255, 0.08);
     }
 
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -5363,6 +5370,18 @@
         window.visualViewport.addEventListener('scroll', updateKeyboardOffset);
         updateKeyboardOffset();
       }
+
+      // Force viewport scale snap reset on orientation change to fix iOS zoom bugs
+      window.addEventListener('orientationchange', () => {
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+          setTimeout(() => {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+            window.scrollTo(0, 0);
+          }, 300);
+        }
+      });
 
     </script>
   
