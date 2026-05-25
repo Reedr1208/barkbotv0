@@ -1470,6 +1470,298 @@
       }
     }
 
+    /* ── Desktop View Redesign overrides (min-width: 1024px) ── */
+    @media (min-width: 1024px) {
+      .app-container {
+        max-width: 1280px !important;
+        height: calc(100vh - 40px) !important;
+        max-height: 860px !important;
+        border-radius: 32px !important;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7) !important;
+      }
+
+      /* 50/50 dual-pane grid layout for main page */
+      #appView .scroll-content {
+        grid-template-columns: 50% 50% !important;
+        height: calc(100% - 85px) !important; /* matches larger header height */
+      }
+
+      /* Cinematic hero overlay gradients */
+      .hero-overlay {
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, transparent 100%) !important;
+        padding: 32px !important;
+      }
+
+      .dog-name {
+        font-size: 3rem !important;
+        font-weight: 950 !important;
+        letter-spacing: -0.04em !important;
+      }
+
+      .dog-meta-header {
+        gap: 6px !important;
+      }
+
+      .dog-breed {
+        font-size: 0.95rem !important;
+      }
+
+      .dog-location {
+        font-size: 0.88rem !important;
+      }
+
+      .hero-actions {
+        gap: 12px !important;
+      }
+
+      /* Larger buttons at bottom left */
+      .fav-btn {
+        width: 54px !important;
+        height: 54px !important;
+      }
+      .fav-btn svg {
+        width: 24px !important;
+        height: 24px !important;
+      }
+      .share-btn {
+        width: 54px !important;
+        height: 54px !important;
+      }
+      .share-btn svg {
+        width: 22px !important;
+        height: 22px !important;
+      }
+
+      /* Desktop Right column spacing */
+      .profile-body {
+        padding: 36px !important;
+        padding-bottom: 150px !important; /* space to scroll past input bar */
+      }
+
+      /* Beautiful details sections cards layout */
+      .details-box {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        gap: 20px !important;
+      }
+
+      .details-stats-row {
+        gap: 12px !important;
+      }
+
+      .detail-chip {
+        min-height: 64px !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 18px !important;
+        padding: 12px 10px !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+
+      .detail-chip:hover {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      .detail-chip .chip-val {
+        font-size: 0.9rem !important;
+      }
+
+      /* Match fit badges styling */
+      #prefMatchBadgeContainer {
+        gap: 8px !important;
+        margin-bottom: 8px !important;
+      }
+
+      .fit-badge-tag {
+        font-size: 0.85rem !important;
+        padding: 6px 14px !important;
+      }
+
+      /* Ideal Fit container alignment */
+      .details-fit-container {
+        border-radius: 14px !important;
+        padding: 12px 16px !important;
+        border-left-width: 4px !important;
+      }
+
+      /* biography show more buttons */
+      .see-more-toggle {
+        display: inline-flex !important;
+        align-items: center !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        padding: 6px 16px !important;
+        border-radius: 9999px !important;
+        font-size: 0.8rem !important;
+        font-weight: 800 !important;
+        color: var(--accent-hover) !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        outline: none !important;
+      }
+
+      .see-more-toggle:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: var(--accent) !important;
+        color: var(--accent) !important;
+        transform: translateY(-1px) !important;
+      }
+
+      /* Non-overlapping chat input bar */
+      .footer-input-bar {
+        right: 36px !important;
+        bottom: 36px !important;
+        width: calc(50% - 72px) !important; /* aligns with 50% split pane right column */
+        max-width: calc(50% - 72px) !important;
+        padding: 8px !important;
+        background: rgba(2, 6, 23, 0.96) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+      }
+
+      .chat-input {
+        padding: 14px 20px !important;
+        font-size: 0.95rem !important;
+      }
+
+      /* Desktop navigation Header */
+      .header {
+        padding: 18px 32px !important;
+      }
+
+      .brand-tagline {
+        display: block !important;
+        font-size: 1.1rem !important;
+      }
+
+      .tab-bar {
+        gap: 6px !important;
+        padding: 4px !important;
+      }
+
+      .tab-btn {
+        padding: 8px 16px !important;
+        font-size: 0.85rem !important;
+      }
+
+      .shuffle-btn {
+        padding: 10px 20px !important;
+        font-size: 0.88rem !important;
+      }
+
+      /* MODALS OVERHAULS ON DESKTOP */
+      .modal-card {
+        padding: 32px !important;
+        border-radius: 32px !important;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
+      }
+
+      /* About Modal */
+      #aboutModal .modal-card {
+        max-width: 680px !important;
+      }
+
+      #aboutModal .modal-content p {
+        font-size: 0.98rem !important;
+        line-height: 1.6 !important;
+        margin-bottom: 16px !important;
+      }
+
+      /* Preferences Wizard Modal */
+      #prefModal .modal-card {
+        max-width: 800px !important;
+        max-height: 85vh !important;
+        width: 800px !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      #prefModal .modal-content {
+        overflow-y: auto !important;
+        flex: 1 !important;
+        max-height: 52vh !important;
+        padding-right: 8px !important;
+        margin-bottom: 20px !important;
+        scrollbar-width: thin;
+      }
+
+      #prefModal .modal-footer {
+        margin-top: auto !important;
+        padding-top: 18px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+      }
+
+      #prefModal .pref-wizard-step {
+        display: none;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+
+      #prefModal .pref-wizard-step.active {
+        display: grid !important;
+      }
+
+      /* My Dogs / Recent Chats Modal */
+      #savedModal .modal-card {
+        max-width: 860px !important;
+        max-height: 85vh !important;
+        width: 860px !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      #savedModalContent {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 16px !important;
+        max-height: 60vh !important;
+        scrollbar-width: thin;
+      }
+
+      /* Widescreen Saved Dog cards */
+      #savedModalContent .saved-dog-card {
+        margin-bottom: 0 !important;
+        border-radius: 20px !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        padding: 20px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+
+      #savedModalContent .saved-dog-card:hover {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-color: rgba(20, 184, 166, 0.3) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      /* Recent Chats dashboard full-width rows selector targeting via :has() */
+      #savedModalContent .saved-dog-card:not(:has(.modal-chat-cta)) {
+        grid-column: 1 / -1 !important; /* spans full width */
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        padding: 16px 20px !important;
+        background: rgba(255, 255, 255, 0.015) !important;
+        border-radius: 16px !important;
+      }
+
+      #savedModalContent .saved-dog-card:not(:has(.modal-chat-cta)):hover {
+        background: rgba(255, 255, 255, 0.035) !important;
+        border-color: rgba(20, 184, 166, 0.25) !important;
+        transform: translateX(4px) !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25) !important;
+      }
+    }
+
     /* ────────────────────────────────────────────────────────
        NEW TELEMETRY, SKELETONS, LANDING & ACCESSIBILITY STYLES
        ──────────────────────────────────────────────────────── */
@@ -2762,7 +3054,7 @@
             <h2 class="modal-title" style="font-size: 1.35rem; font-weight: 900; color: white; margin-bottom: 4px;">Your Match Profile</h2>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.78rem;">
               <span id="loggedInEmailText" style="color: var(--text-muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;">Your Profile</span>
-              <span style="color: var(--border-soft);">|</span>
+              <span style="color: var(--border-soft); margin: 0 2px;">·</span>
               <button id="signOutBtn"
                 style="background: transparent; border: none; color: #ef4444; font-weight: 800; cursor: pointer; text-decoration: underline; padding: 0; white-space: nowrap;">Sign Out</button>
             </div>
@@ -4939,8 +5231,13 @@
       }
 
       window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && prefModal && prefModal.classList.contains('active')) {
-          closePrefModal();
+        if (e.key === 'Escape') {
+          if (prefModal && prefModal.classList.contains('active')) {
+            closePrefModal();
+          }
+          if (savedModal && savedModal.classList.contains('active')) {
+            closeSavedModal();
+          }
         }
       });
 
@@ -5600,6 +5897,38 @@
           }
         }, { passive: true });
       }
+
+      // A11y: Trap focus inside active modal overlay cards on desktop viewports
+      function setupFocusTrap(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modal.addEventListener('keydown', (e) => {
+          if (e.key !== 'Tab') return;
+          const focusables = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex="0"]'))
+            .filter(el => {
+              // Ensure elements are focusable and visible
+              const style = window.getComputedStyle(el);
+              return style.display !== 'none' && style.visibility !== 'hidden' && el.getAttribute('disabled') === null;
+            });
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              last.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === last) {
+              first.focus();
+              e.preventDefault();
+            }
+          }
+        });
+      }
+      setupFocusTrap('aboutModal');
+      setupFocusTrap('prefModal');
+      setupFocusTrap('savedModal');
 
     </script>
   
