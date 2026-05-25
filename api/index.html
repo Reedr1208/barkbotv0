@@ -1317,8 +1317,8 @@
     /* ── Mobile header: hide tagline to free space for tabs + shuffle ── */
     @media (max-width: 480px) {
       .header {
-        padding: 12px 14px;
-        gap: 8px;
+        padding: 12px 10px;
+        gap: 6px;
       }
 
       .brand-tagline {
@@ -1331,9 +1331,9 @@
       }
 
       .tab-btn {
-        padding: 5px 10px;
-        font-size: 0.72rem;
-        gap: 3px;
+        padding: 5px 8px;
+        font-size: 0.7rem;
+        gap: 2px;
       }
 
       .tab-btn svg {
@@ -1342,9 +1342,13 @@
       }
 
       .shuffle-btn {
-        padding: 7px 12px;
-        font-size: 0.78rem;
+        padding: 7px 10px;
+        font-size: 0.75rem;
         gap: 4px;
+      }
+
+      .hide-mobile {
+        display: none !important;
       }
     }
 
@@ -1972,7 +1976,7 @@
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8" />
           </svg>
-          Next Dog 🐶
+          Next<span class="hide-mobile"> Dog</span> 🐶
         </button>
       </header>
 
