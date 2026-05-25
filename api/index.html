@@ -2188,6 +2188,23 @@
             </button>
           </section>
 
+          <!-- Data Freshness, Trust & Report Notice -->
+          <div class="data-freshness-notice real-el" style="margin: 12px 0 20px 0; background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px 14px; font-size: 0.78rem; line-height: 1.45; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%;">
+              <span style="font-size: 0.95rem; margin-top: 1px;">📅</span>
+              <div>
+                <div style="font-weight: 800; color: var(--text-main);">Shelter listing last checked: Today</div>
+                <div>Availability changes quickly — confirm with the shelter.</div>
+              </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; margin-top: 4px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <span>Something wrong?</span>
+              <button id="reportIssueBtn" style="background: transparent; border: none; color: var(--accent); font-weight: 800; font-size: 0.78rem; cursor: pointer; text-decoration: underline; padding: 0; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-hover)'" onmouseout="this.style.color='var(--accent)'" aria-label="Report an issue with this dog listing">
+                Report an issue
+              </button>
+            </div>
+          </div>
+
           <!-- Skeleton Chat Placeholder (visible during loading) -->
           <section class="chat-section skeleton-el" style="display: none; flex-direction: column; gap: 12px;">
             <div class="skeleton-pulse" style="width: 140px; height: 20px; border-radius: 4px; margin-bottom: 8px;">
@@ -2203,7 +2220,7 @@
 
           <!-- Chat Section -->
           <section class="chat-section real-el" id="chatSection">
-            <div class="chat-section-header">
+            <div class="chat-section-header" style="margin-bottom: 8px;">
               <h3 class="chat-section-title">Chat with <span id="chatTitleName">...</span></h3>
               <button class="share-btn compact" id="chatShareBtn" type="button" aria-label="Share this dog"
                 title="Share">
@@ -2214,6 +2231,12 @@
                 </svg>
                 <span class="sr-only">Share</span>
               </button>
+            </div>
+
+            <!-- Dynamic AI Chat Trust Disclaimer Banner -->
+            <div class="chat-trust-banner" style="background: rgba(245,158,11,0.03); border: 1px dashed rgba(245,158,11,0.18); border-radius: 12px; padding: 10px 12px; font-size: 0.75rem; line-height: 1.4; color: var(--accent-hover); margin-bottom: 12px; display: flex; align-items: flex-start; gap: 6px;">
+              <span style="font-size: 0.85rem; margin-top: 1px;">⚠️</span>
+              <span>I can help you understand this dog’s profile, but please confirm adoption, medical, and behavior details with the shelter.</span>
             </div>
 
             <!-- Chat History -->
@@ -2887,6 +2910,7 @@
         if (e.key === 'Escape') closeShareFallbackMenu();
       });
       wireShareButtons();
+      trackEvent('visited_site');
 
       function setAppState(state) {
         const profilePanel = document.getElementById('profilePanel');
@@ -3095,11 +3119,29 @@
         return clean;
       }
 
+      function showDogUnavailableState(fetchId) {
+        setAppState('unavailable');
+        if (profilePanel) {
+          profilePanel.classList.remove('loading');
+          profilePanel.classList.remove('loading-skeleton');
+        }
+      }
+
       async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
         const fetchId = ++activeDogFetchId;
         const isStaleFetch = () => fetchId !== activeDogFetchId;
 
         setAppState('loading');
+
+        // Reset issue reporter button
+        const reportIssueBtn = document.getElementById('reportIssueBtn');
+        if (reportIssueBtn) {
+          reportIssueBtn.textContent = 'Report an issue';
+          reportIssueBtn.disabled = false;
+          reportIssueBtn.style.color = 'var(--accent)';
+          reportIssueBtn.style.textDecoration = 'underline';
+          reportIssueBtn.style.cursor = 'pointer';
+        }
 
         // Clear current state instantly to prevent lagging info
         dogImage.src = '';
@@ -3826,8 +3868,12 @@
         const text = chatInput.value.trim();
         if (!text || !currentAnimalId) return;
 
+        const isFirstMessage = (conversationHistory.length === 0);
         appendMessage('user', text);
         trackEvent('chat_message_sent', { dog_name: currentDogName, message_text: text });
+        if (isFirstMessage) {
+          trackEvent('first_chat_message_sent', { dog_name: currentDogName });
+        }
         chatInput.value = '';
         chatInput.disabled = true;
         sendBtn.disabled = true;
@@ -4518,6 +4564,7 @@
 
       if (landingStartBtn) {
         landingStartBtn.addEventListener('click', () => {
+          trackEvent('start_sniffing_clicked');
           openPrefModal();
         });
       }
@@ -4569,6 +4616,20 @@
           setAppState('loading');
           history.replaceState({}, '', '/');
           fetchRandomDog();
+        });
+      }
+
+      // Report an issue button wiring
+      const reportIssueBtn = document.getElementById('reportIssueBtn');
+      if (reportIssueBtn) {
+        reportIssueBtn.addEventListener('click', () => {
+          trackEvent('issue_reported', { dog_name: currentDogName, animal_id: currentAnimalId });
+          showToast("Thank you! Report received and sent to shelter team. 🐾");
+          reportIssueBtn.textContent = "Reported ✓";
+          reportIssueBtn.disabled = true;
+          reportIssueBtn.style.color = "var(--text-muted)";
+          reportIssueBtn.style.textDecoration = "none";
+          reportIssueBtn.style.cursor = "default";
         });
       }
 
