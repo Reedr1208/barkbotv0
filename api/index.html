@@ -1352,6 +1352,63 @@
       }
     }
 
+    /* ── Desktop View Split-pane layout ── */
+    @media (min-width: 800px) {
+      .app-container {
+        max-width: 980px !important;
+        height: calc(100vh - 60px) !important;
+        max-height: 820px !important;
+        border-radius: 28px !important;
+      }
+
+      .scroll-content {
+        display: grid !important;
+        grid-template-columns: 52% 48% !important;
+        height: calc(100% - 73px) !important;
+        overflow: hidden !important;
+        padding-bottom: 0 !important;
+      }
+
+      .hero-section {
+        height: 100% !important;
+        max-height: 100% !important;
+      }
+
+      .profile-image {
+        height: 100% !important;
+      }
+
+      .skeleton-image {
+        height: 100% !important;
+      }
+
+      .profile-body {
+        overflow-y: auto !important;
+        height: 100% !important;
+        padding: 24px !important;
+        padding-bottom: 110px !important;
+        box-sizing: border-box !important;
+        scrollbar-width: thin;
+      }
+
+      .footer-input-bar {
+        left: auto !important;
+        right: 24px !important;
+        transform: none !important;
+        width: 422px !important;
+        max-width: 422px !important;
+        bottom: 24px !important;
+      }
+
+      .mobile-action-bar {
+        display: none !important;
+      }
+
+      .sticky-dog-bar {
+        display: none !important;
+      }
+    }
+
     /* ────────────────────────────────────────────────────────
        NEW TELEMETRY, SKELETONS, LANDING & ACCESSIBILITY STYLES
        ──────────────────────────────────────────────────────── */
@@ -3709,7 +3766,7 @@
                     });
                     resumeBanner.remove();
                     // Scroll to latest message
-                    if (scrollContent) scrollContent.scrollTop = scrollContent.scrollHeight;
+                    scrollToBottom();
                     trackEvent('resume_chat_loaded', { dog_name: currentDogName, animal_id: currentAnimalId, msg_count: prevMsgs.length });
                   });
                 }
@@ -3888,6 +3945,16 @@
         }
       }
 
+      function scrollToBottom() {
+        if (scrollContent) {
+          scrollContent.scrollTop = scrollContent.scrollHeight;
+        }
+        const profileBody = document.querySelector('.profile-body');
+        if (profileBody) {
+          profileBody.scrollTop = profileBody.scrollHeight;
+        }
+      }
+
       function appendMessage(role, content, avatarLetter = '🐾', shouldScroll = true) {
         const msgRow = document.createElement('div');
         msgRow.className = `msg-row ${role === 'bot' ? 'bot' : 'user'}`;
@@ -3912,8 +3979,8 @@
         chatHistory.appendChild(msgRow);
 
         // Smoothly scroll the main layout down as chat history grows
-        if (shouldScroll && scrollContent) {
-          scrollContent.scrollTop = scrollContent.scrollHeight;
+        if (shouldScroll) {
+          scrollToBottom();
         }
 
         // Add to internal history state
@@ -3936,9 +4003,7 @@
         container.appendChild(bubble);
 
         chatHistory.appendChild(container);
-        if (scrollContent) {
-          scrollContent.scrollTop = scrollContent.scrollHeight;
-        }
+        scrollToBottom();
       }
 
       function removeTypingIndicator() {
@@ -4023,9 +4088,7 @@
       chatInput.addEventListener('focus', () => {
         setTimeout(() => {
           window.scrollTo(0, 0);
-          if (scrollContent) {
-            scrollContent.scrollTop = scrollContent.scrollHeight;
-          }
+          scrollToBottom();
         }, 150);
       });
 
@@ -5216,8 +5279,8 @@
             document.documentElement.style.setProperty('--keyboard-offset', '0px');
             
             // If the chat input is focused, scroll the content to the bottom so they can see the chat box!
-            if (document.activeElement === chatInput && scrollContent) {
-              scrollContent.scrollTop = scrollContent.scrollHeight;
+            if (document.activeElement === chatInput) {
+              scrollToBottom();
             }
           } else {
             // Reset styles on desktop
