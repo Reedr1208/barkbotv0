@@ -278,7 +278,7 @@
     .scroll-content {
       flex: 1;
       overflow-y: auto;
-      padding-bottom: 110px;
+      padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
       /* space for float footer */
       scroll-behavior: smooth;
     }
@@ -889,7 +889,7 @@
     /* Floating Translucent Sticky Footer */
     .footer-input-bar {
       position: absolute;
-      bottom: 16px;
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px) + var(--keyboard-offset, 0px));
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 32px);
@@ -1729,7 +1729,7 @@
     .mobile-action-bar {
       display: flex;
       position: absolute;
-      bottom: 74px;
+      bottom: calc(74px + env(safe-area-inset-bottom, 0px) + var(--keyboard-offset, 0px));
       /* sits right above the text input bar */
       left: 12px;
       right: 12px;
@@ -4762,6 +4762,18 @@
         savedNavBtn.style.display = '';
       }
       updateSavedNavBadge();
+
+      // Keep floating elements perfectly aligned with keyboard on mobile viewports
+      if (window.visualViewport) {
+        const updateKeyboardOffset = () => {
+          const offset = window.innerHeight - window.visualViewport.height;
+          const keyboardOffset = Math.max(0, offset);
+          document.documentElement.style.setProperty('--keyboard-offset', `${keyboardOffset}px`);
+        };
+        window.visualViewport.addEventListener('resize', updateKeyboardOffset);
+        window.visualViewport.addEventListener('scroll', updateKeyboardOffset);
+        updateKeyboardOffset();
+      }
 
     </script>
 </body>
