@@ -4019,6 +4019,9 @@
       chatInput.addEventListener('focus', () => {
         setTimeout(() => {
           window.scrollTo(0, 0);
+          if (scrollContent) {
+            scrollContent.scrollTop = scrollContent.scrollHeight;
+          }
         }, 150);
       });
 
@@ -5197,10 +5200,31 @@
 
       // Keep floating elements perfectly aligned with keyboard on mobile viewports
       if (window.visualViewport) {
+        const appContainer = document.querySelector('.app-container');
         const updateKeyboardOffset = () => {
-          const offset = window.innerHeight - window.visualViewport.height;
-          const keyboardOffset = Math.max(0, offset);
-          document.documentElement.style.setProperty('--keyboard-offset', `${keyboardOffset}px`);
+          if (window.innerWidth <= 480 && appContainer) {
+            // Size the app container exactly to the visual viewport height!
+            // This natively shrinks the app to fit the space above the keyboard.
+            appContainer.style.height = `${window.visualViewport.height}px`;
+            appContainer.style.top = `${window.visualViewport.offsetTop}px`;
+            
+            // Set keyboard offset to 0 because the container itself has shrunk!
+            document.documentElement.style.setProperty('--keyboard-offset', '0px');
+            
+            // If the chat input is focused, scroll the content to the bottom so they can see the chat box!
+            if (document.activeElement === chatInput && scrollContent) {
+              scrollContent.scrollTop = scrollContent.scrollHeight;
+            }
+          } else {
+            // Reset styles on desktop
+            if (appContainer) {
+              appContainer.style.height = '';
+              appContainer.style.top = '';
+            }
+            const offset = window.innerHeight - window.visualViewport.height;
+            const keyboardOffset = Math.max(0, offset);
+            document.documentElement.style.setProperty('--keyboard-offset', `${keyboardOffset}px`);
+          }
         };
         window.visualViewport.addEventListener('resize', updateKeyboardOffset);
         window.visualViewport.addEventListener('scroll', updateKeyboardOffset);
