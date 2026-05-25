@@ -2857,22 +2857,10 @@
               text: payload.text,
               url: payload.url
             };
-            const imageFile = await buildDogShareImageFile(dog);
-            let shareMethod = 'native';
-            if (imageFile) {
-              const withImage = { ...shareData, files: [imageFile] };
-              if (navigator.canShare && navigator.canShare(withImage)) {
-                await navigator.share(withImage);
-                shareMethod = 'native_with_image';
-              } else {
-                await navigator.share(shareData);
-              }
-            } else {
-              await navigator.share(shareData);
-            }
+            await navigator.share(shareData);
             trackEvent('dog_share_completed', {
               animal_id: payload.animal_id,
-              share_method: shareMethod
+              share_method: 'native'
             });
           } catch (err) {
             if (err && err.name === 'AbortError') return;
