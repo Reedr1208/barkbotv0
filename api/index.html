@@ -4221,7 +4221,7 @@
       }
 
       function scrollToBottom() {
-        if (scrollContent) {
+        if (scrollContent && window.innerWidth < 800) {
           scrollContent.scrollTop = scrollContent.scrollHeight;
         }
         const profileBody = document.querySelector('.profile-body');
@@ -5584,6 +5584,22 @@
           }, 300);
         }
       });
+
+      // Completely block native window layout scroll to prevent iOS Safari input focus layout offset bugs
+      window.addEventListener('scroll', () => {
+        if (window.scrollY !== 0 || window.scrollX !== 0) {
+          window.scrollTo(0, 0);
+        }
+      }, { passive: true });
+
+      // Completely block scrollContent from scrolling on desktop viewports
+      if (scrollContent) {
+        scrollContent.addEventListener('scroll', () => {
+          if (window.innerWidth >= 800 && scrollContent.scrollTop !== 0) {
+            scrollContent.scrollTop = 0;
+          }
+        }, { passive: true });
+      }
 
     </script>
   
