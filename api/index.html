@@ -1952,7 +1952,7 @@
       <div class="sticky-dog-bar" id="stickyDogBar">
         <img class="sticky-dog-avatar" id="stickyDogAvatar" src="" alt="">
         <div class="sticky-dog-info">
-          <div class="sticky-dog-name" id="stickyDogName">Loading...</div>
+          <div class="sticky-dog-name" id="stickyDogName"></div>
           <div class="sticky-dog-meta" id="stickyDogMeta">—</div>
         </div>
         <button class="sticky-chat-btn" id="stickyChatBtn" aria-label="Scroll to chat panel">Chat 💬</button>
@@ -1995,7 +1995,6 @@
                 </div>
                 <!-- REAL CONTENT -->
                 <div class="real-el">
-                  <div id="prefMatchBadgeContainer" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                   <h2 class="dog-name" id="dogName"></h2>
                   <div class="dog-meta-header"
                     style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
@@ -2040,7 +2039,7 @@
         <main class="profile-body">
 
           <!-- DOG UNAVAILABLE (shared link / missing dog) -->
-          <section class="details-box dog-unavailable-card" id="dogUnavailableCard">
+          <section class="details-box dog-unavailable-card" id="dogUnavailableCard" style="display: none;" aria-hidden="true">
             <div style="font-size: 3rem; margin-bottom: 8px;">🐾</div>
             <h3 style="font-size: 1.35rem; font-weight: 900; color: white; margin-bottom: 8px;">This dog may no longer
               be available.</h3>
@@ -2054,7 +2053,7 @@
 
           <!-- EMPTY STATE CARD -->
           <section class="details-box empty-state-card" id="emptyStateCard"
-            style="display: none; padding: 32px 24px; text-align: center;">
+            style="display: none; padding: 32px 24px; text-align: center;" aria-hidden="true">
             <div class="empty-state-icon"
               style="font-size: 3rem; margin-bottom: 12px; filter: drop-shadow(0 4px 8px rgba(99,102,241,0.25));">🐾
             </div>
@@ -2107,23 +2106,26 @@
                   <span class="detail-chip" id="chipGender">
                     <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Sex</span>
-                    <span class="chip-val" id="dogGender" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">-</span>
+                    <span class="chip-val" id="dogGender" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
                   </span>
                   <span class="detail-chip" id="chipAge">
                     <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Age</span>
-                    <span class="chip-val" id="dogAge" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">-</span>
+                    <span class="chip-val" id="dogAge" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
                   </span>
                   <span class="detail-chip" id="chipWeight">
                     <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Weight</span>
-                    <span class="chip-val" id="dogWeight" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">-</span>
+                    <span class="chip-val" id="dogWeight" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
                   </span>
                 </div>
               </div>
 
+              <!-- Match Fit Badge Container (Moved lower to avoid obscuring picture) -->
+              <div id="prefMatchBadgeContainer" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;"></div>
+
               <!-- SECTION 2: Personality & Observations -->
-              <div class="details-section" id="secPersonality">
+              <div class="details-section" id="secPersonality" style="display: none;" aria-hidden="true">
                 <div class="details-section-header" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 900; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
                   🧠 Personality &amp; Observations
                 </div>
@@ -2173,8 +2175,7 @@
                   <line x1="10" y1="14" x2="21" y2="3"></line>
                 </svg>
               </div>
-              <p class="cta-title">Official Page 🔗</p>
-              <p class="cta-sub">Official shelter page 🛡️</p>
+              <p class="cta-title">Official Shelter Page</p>
             </a>
             <button class="cta-card primary-cta" id="askBtn" aria-label="Scroll to chat input to chat with this dog">
               <div class="cta-icon-box">
@@ -2219,7 +2220,7 @@
           </section>
 
           <!-- Chat Section -->
-          <section class="chat-section real-el" id="chatSection">
+          <section class="chat-section real-el" id="chatSection" style="display: none;" aria-hidden="true">
             <div class="chat-section-header" style="margin-bottom: 8px;">
               <h3 class="chat-section-title">Chat with <span id="chatTitleName">...</span></h3>
               <button class="share-btn compact" id="chatShareBtn" type="button" aria-label="Share this dog"
@@ -2394,11 +2395,13 @@
           <div class="modal-header" style="margin-bottom: 12px;">
             <div class="modal-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-hover);">💖 Build
               Your Dog Match Profile</div>
-            <h2 class="modal-title" style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 1.35rem; gap: 8px;">
-              <span id="loggedInEmailText" style="color: var(--text-main); font-size: 1.1rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;">Your Match Profile</span>
+            <h2 class="modal-title" style="font-size: 1.35rem; font-weight: 900; color: white; margin-bottom: 4px;">Your Match Profile</h2>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.78rem;">
+              <span id="loggedInEmailText" style="color: var(--text-muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;">Your Profile</span>
+              <span style="color: var(--border-soft);">|</span>
               <button id="signOutBtn"
-                style="background: transparent; border: none; color: #ef4444; font-weight: 800; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0; white-space: nowrap;">(Sign Out)</button>
-            </h2>
+                style="background: transparent; border: none; color: #ef4444; font-weight: 800; cursor: pointer; text-decoration: underline; padding: 0; white-space: nowrap;">Sign Out</button>
+            </div>
             <p class="modal-subtitle" style="margin-bottom: 6px;">Save your preferences so we can prioritize dogs who
               fit your lifestyle.</p>
             <p
@@ -3096,6 +3099,16 @@
         if (!weightStr) return '-';
         let clean = weightStr.replace(/I weigh approximately/i, '').trim();
         clean = clean.replace(/\bpounds\b/gi, 'lbs');
+        
+        // Strip decimals and round to nearest whole integer (e.g. "49.00 lbs." -> "49 lbs")
+        const numMatch = clean.match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+        if (numMatch) {
+          const val = parseFloat(numMatch[1]);
+          const unit = numMatch[2].replace(/\./g, '').trim();
+          const roundedVal = Math.round(val);
+          return `${roundedVal} ${unit || 'lbs'}`.trim();
+        }
+        
         return clean || weightStr;
       }
 
@@ -3137,8 +3150,13 @@
         dogId.textContent = '';
         const locationTextEl = document.getElementById('dogLocationText');
         if (locationTextEl) locationTextEl.textContent = '';
-        dogAge.textContent = '-';
-        dogWeight.textContent = '-';
+        dogAge.textContent = '';
+        dogWeight.textContent = '';
+        const secPersonality = document.getElementById('secPersonality');
+        if (secPersonality) {
+          secPersonality.style.display = 'none';
+          secPersonality.setAttribute('aria-hidden', 'true');
+        }
         paccLink.style.display = 'none';
         chatTitleName.textContent = '...';
         currentDogName = 'this dog';
@@ -3176,7 +3194,7 @@
           }
         });
         const dogGender = document.getElementById('dogGender');
-        if (dogGender) dogGender.textContent = '-';
+        if (dogGender) dogGender.textContent = '';
 
         profilePanel.classList.add('loading');
 
@@ -3370,6 +3388,13 @@
             }
           }
 
+          // Show observations section on successful load
+          const secPersonality = document.getElementById('secPersonality');
+          if (secPersonality) {
+            secPersonality.style.display = 'block';
+            secPersonality.removeAttribute('aria-hidden');
+          }
+
           // Render Trait Chips from dog.important_facts
           const traitChipsContainer = document.getElementById('traitChipsContainer');
           if (traitChipsContainer) {
@@ -3521,7 +3546,8 @@
 
           const matchBadgeContainer = document.getElementById('prefMatchBadgeContainer');
           if (matchBadgeContainer) {
-            matchBadgeContainer.innerHTML = `<span class="fit-badge-tag ${fitBadgeType}">${fitBadgeLabel}</span>`;
+            const fitBadgeHtml = `<span class="fit-badge-tag ${fitBadgeType}">${fitBadgeLabel}</span>`;
+            matchBadgeContainer.innerHTML = fitBadgeHtml + matchBadgeContainer.innerHTML;
           }
 
           // Initialize dynamic, context-aware prompt suggestions
@@ -4909,7 +4935,7 @@
               Chat 💬
             </button>
             <a href="${d.url || 'https://www.pima.gov/pacc'}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" style="text-decoration:none; padding:8px; border:1px solid rgba(255,255,255,0.12); border-radius:10px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
-              Official Page 🔗
+              Shelter Page 🔗
             </a>
           </div>
         </div>`).join('');
