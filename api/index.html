@@ -4714,15 +4714,34 @@
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         loadSavedTab(savedActiveTab);
+
+        // Focus close button inside the modal for accessibility
+        const closeBtn = document.getElementById('savedModalCloseBtn');
+        if (closeBtn) {
+          closeBtn.focus();
+        }
+
         trackEvent('saved_modal_opened');
       }
 
       function closeSavedModal() {
         const modal = document.getElementById('savedModal');
         if (!modal) return;
+
+        // Remove active element focus if inside the modal to avoid aria-hidden parent focus block warnings
+        if (document.activeElement && modal && modal.contains(document.activeElement)) {
+          document.activeElement.blur();
+        }
+
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+
+        // Restore focus to the trigger button that opened it
+        const savedNavBtn = document.getElementById('savedNavBtn');
+        if (savedNavBtn) {
+          savedNavBtn.focus();
+        }
       }
 
       async function loadSavedTab(tab) {
