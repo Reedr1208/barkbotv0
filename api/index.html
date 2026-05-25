@@ -1915,6 +1915,72 @@
       width: 14px;
       height: 14px;
     }
+
+    /* Orientation rotate overlay screen */
+    .orientation-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+      color: white;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+      box-sizing: border-box;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .orientation-content {
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .rotate-phone-icon {
+      font-size: 3.5rem;
+      animation: rotatePhone 2s ease-in-out infinite;
+      filter: drop-shadow(0 10px 20px var(--accent-shadow));
+    }
+
+    .orientation-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: var(--accent-hover);
+    }
+
+    .orientation-text {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    @keyframes rotatePhone {
+      0% {
+        transform: rotate(0deg);
+      }
+      50% {
+        transform: rotate(-90deg);
+      }
+      100% {
+        transform: rotate(0deg);
+      }
+    }
+
+    /* Trigger only on mobile landscape mode with short heights */
+    @media (max-height: 480px) and (orientation: landscape) {
+      .orientation-overlay {
+        display: flex;
+      }
+      body {
+        overflow: hidden !important;
+      }
+    }
   </style>
 </head>
 
@@ -5299,6 +5365,15 @@
       }
 
     </script>
+  
+  <!-- Device Orientation Landscape Lock Overlay screen -->
+  <div class="orientation-overlay" aria-hidden="true">
+    <div class="orientation-content">
+      <div class="rotate-phone-icon">📱</div>
+      <h3 class="orientation-title">Please Rotate Your Device</h3>
+      <p class="orientation-text">ChattyHound is optimized for portrait mode. Spin your phone around to continue finding and chatting with shelter dogs! 🐾</p>
+    </div>
+  </div>
 </body>
 
 </html>
