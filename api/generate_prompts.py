@@ -12,26 +12,6 @@ from http.server import BaseHTTPRequestHandler
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-# For parsing structured outputs, use a model that supports it
-PROMPT_GENERATION_MODEL = "gpt-5.4-mini"
-
-class DogPromptPackage(BaseModel):
-    system_prompt: str = Field(
-        description="The complete final system prompt to use for this specific dog's chat persona."
-    )
-    important_facts: List[str] = Field(
-        description="Important factual adoption notes that should be preserved and surfaced when relevant."
-    )
-    risk_flags: List[str] = Field(
-        description="Safety, behavior, medical, handling, or placement concerns that should not be minimized."
-    )
-    unknowns: List[str] = Field(
-        description="Relevant adoption or behavior details that are not known from the animal record."
-    )
-    ideal_home_summary: str = Field(
-        description="Plain-English summary of the kind of home likely to be a good fit."
-    )
-
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         start_time = time.time()
@@ -49,11 +29,12 @@ class handler(BaseHTTPRequestHandler):
             sb_client = create_client(supabase_url, supabase_key)
             openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-            # Load template
-            template_path = Path(__file__).resolve().parent.parent / "app" / "systemPromptTemplate.txt"
-            if not template_path.exists():
-                raise RuntimeError(f"Template not found at {template_path}")
-            prompt_template = template_path.read_text(encoding="utf-8")
+            # Fetch catalogs
+            factors_res = sb_client.table("persona_factor_definitions").select("*").eq("active", True).execute()
+            factors = factors_res.data
+            
+            archetypes_res = sb_client.table("persona_archetypes").select("*").eq("active", True).execute()
+            archetypes = archetypes_res.data
 
             # 1. Fetch active dogs from pima_all_dogs
             pima_res = sb_client.table("pima_all_dogs").select("animal_id").execute()
@@ -65,7 +46,6 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             # 2. Fetch all animals with bio length checking
-            # Since length() is tricky in REST without an RPC, fetch bio and animal_id for active dogs
             animals_res = sb_client.table("animals").select("animal_id, bio").execute()
             
             eligible_animal_ids = []
@@ -81,7 +61,7 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             # 3. Fetch existing system_prompts
-            prompts_res = sb_client.table("system_prompts").select("animal_id, updated_at").execute()
+            prompts_res = sb_client.table("system_prompts_v2").select("animal_id, updated_at").execute()
             existing_prompts = {row["animal_id"]: row["updated_at"] for row in prompts_res.data}
 
             # 4. Filter and sort targets
@@ -94,15 +74,12 @@ class handler(BaseHTTPRequestHandler):
                     targets.append((aid, datetime.min.replace(tzinfo=timezone.utc)))
                 else:
                     # Parse updated_at
-                    # Supabase returns ISO format
                     dt_str = existing_prompts[aid]
                     try:
-                        # Handle Python 3.10+ fromisoformat
                         if dt_str.endswith("Z"):
                             dt_str = dt_str[:-1] + "+00:00"
                         updated_at = datetime.fromisoformat(dt_str)
                     except ValueError:
-                        # Fallback
                         updated_at = datetime.min.replace(tzinfo=timezone.utc)
                         
                     if updated_at < three_days_ago:
@@ -117,6 +94,10 @@ class handler(BaseHTTPRequestHandler):
             processed_count = 0
             
             # 5. Process loop
+            from pipeline.extract_fact_profiles import extract_fact_profile
+            from pipeline.build_persona_profiles import build_persona_profile
+            from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
+
             for aid in target_ids:
                 if time.time() - start_time > MAX_EXECUTION_TIME:
                     logging.info("Nearing execution time limit. Halting gracefully.")
@@ -130,57 +111,53 @@ class handler(BaseHTTPRequestHandler):
                     continue
                     
                 animal_record = animal_record_res.data[0]
+                record_hash = animal_record.get("record_hash", "none")
                 
-                # Strip developer fields before sending to LLM to save tokens/confusion
+                # Strip developer fields before sending to LLM
                 internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id", "data_updated"]
                 for key in internal_keys:
                     animal_record.pop(key, None)
 
                 # Generate prompt
                 try:
-                    response = openai_client.beta.chat.completions.parse(
-                        model=PROMPT_GENERATION_MODEL,
-                        messages=[
-                            {
-                                "role": "system",
-                                "content": (
-                                    "You generate high-quality system prompts for adoptable-dog chatbot personas. "
-                                    "Your job is to transform an animal record and a reusable prompt template into a "
-                                    "dog-specific system prompt. Preserve all adoption-relevant facts. Do not invent facts. "
-                                    "Do not minimize safety or behavior concerns. Keep the final dog persona warm, lovable, "
-                                    "honest, and useful for adoption/foster fit."
-                                ),
-                            },
-                            {
-                                "role": "user",
-                                "content": (
-                                    "Create a dog-specific system prompt package using the following template and animal record.\n\n"
-                                    "Requirements:\n"
-                                    "- Output must match the requested structured schema.\n"
-                                    "- The system_prompt should be complete and ready to pass directly as a system message.\n"
-                                    "- The system_prompt should be written as instructions for the live chat model.\n"
-                                    "- Preserve serious facts such as bite history, stranger sensitivity, dog-selectivity, "
-                                    "escape/containment needs, required introductions, medical notes, or adoption deadlines.\n"
-                                    "- Do not include unsupported claims such as house-trained, kid-friendly, cat-friendly, "
-                                    "dog-friendly, crate-trained, or safe off leash unless explicitly present in the record.\n"
-                                    "- If the source record contains placeholders or unclear text, treat that as an unknown "
-                                    "rather than filling it in.\n\n"
-                                    f"PROMPT TEMPLATE:\n{prompt_template}\n\n"
-                                    f"ANIMAL RECORD JSON:\n{json.dumps(animal_record, ensure_ascii=False)}"
-                                ),
-                            },
-                        ],
-                        response_format=DogPromptPackage,
-                        temperature=0.4
-                    )
+                    # 1. Fact Extraction
+                    fact_profile_obj = extract_fact_profile(openai_client, animal_record)
+                    fact_profile = fact_profile_obj.model_dump()
+                    fact_profile["animal_id"] = aid
+                    fact_profile["source_record_hash"] = record_hash
+                    fact_profile["schema_version"] = "fact_v1"
+                    fact_profile["extraction_model"] = "gpt-4o-mini"
+                    fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
+                    sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
+
+                    # 2. Persona Scoring
+                    overrides = {}
+                    persona_profile = build_persona_profile(openai_client, fact_profile, factors, archetypes, overrides)
+                    persona_profile["source_record_hash"] = record_hash
+                    sb_client.table("animal_persona_profiles").upsert(persona_profile).execute()
+
+                    # 3. Prompt Rendering
+                    system_prompt = render_system_prompt(fact_profile, persona_profile)
+                    validation = validate_system_prompt(system_prompt)
                     
-                    prompt_package = response.choices[0].message.parsed
+                    render_context = {
+                        "fact_profile_used": True,
+                        "persona_profile_used": True,
+                        "archetype": persona_profile.get("primary_archetype_key")
+                    }
+
+                    prompt_record = {
+                        "animal_id": aid,
+                        "prompt_version": "v2",
+                        "source_record_hash": record_hash,
+                        "system_prompt": system_prompt,
+                        "render_context_jsonb": render_context,
+                        "validation_results_jsonb": validation,
+                        "is_active": True
+                    }
+
+                    sb_client.table("system_prompts_v2").upsert(prompt_record).execute()
                     
-                    # Upsert to DB
-                    upsert_data = prompt_package.model_dump()
-                    upsert_data["animal_id"] = aid
-                    
-                    sb_client.table("system_prompts").upsert(upsert_data, on_conflict="animal_id").execute()
                     processed_count += 1
                     
                 except Exception as gen_exc:

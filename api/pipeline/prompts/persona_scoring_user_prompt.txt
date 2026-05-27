@@ -1,0 +1,20 @@
+Score the six persona factors for this dog.
+
+FACTOR DEFINITION CATALOG JSON
+{FACTOR_DEFINITION_CATALOG_JSON}
+
+ANIMAL FACT PROFILE JSON
+{ANIMAL_FACT_PROFILE_JSON}
+
+OPTIONAL MANUAL OVERRIDE JSON
+{ANIMAL_PERSONA_OVERRIDE_JSON}
+
+RUNTIME CONFIG JSON
+{PERSONA_RUNTIME_CONFIG_JSON}
+
+Additional instructions:
+- If a manual override locks a factor score, still provide your inferred score in the rationale if useful, but the locked score will win downstream.
+- If the factual profile is sparse, keep scores conservative.
+- Use evidence snippets drawn from the fact profile content, not from imagination.
+
+Return only valid JSON matching the schema.

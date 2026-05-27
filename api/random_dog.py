@@ -85,8 +85,10 @@ class handler(BaseHTTPRequestHandler):
             # ── Direct lookup by animal_id (for Saved Dogs / Resume Chat) ──
             if animal_id_override:
                 pima_res = client.table("pima_all_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
-                prompts_res = client.table("system_prompts").select("animal_id, important_facts").eq("animal_id", animal_id_override).limit(1).execute()
+                prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
                 profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
+                fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb").eq("animal_id", animal_id_override).limit(1).execute()
+                
                 if not pima_res.data or not profile_res.data:
                     self._send_response(404, {"error": "Dog not found."})
                     return
@@ -94,7 +96,15 @@ class handler(BaseHTTPRequestHandler):
                 profile = profile_res.data[0]
                 profile["name"] = pima_dog.get("name") or "Unknown"
                 profile["gender"] = pima_dog.get("gender") or "Unknown"
-                profile["important_facts"] = prompts_res.data[0].get("important_facts", []) if prompts_res.data else []
+                
+                facts_data = fact_res.data[0] if fact_res.data else {}
+                profile["important_facts"] = facts_data.get("important_facts_jsonb", [])
+                profile["bio"] = facts_data.get("backstory_summary", profile.get("bio", ""))
+                profile["risk_flags"] = facts_data.get("risk_flags_jsonb", [])
+                profile["strengths"] = facts_data.get("strengths_jsonb", [])
+                profile["challenges"] = facts_data.get("challenges_jsonb", [])
+                profile["ideal_home"] = facts_data.get("ideal_home_jsonb", [])
+                
                 profile["preferences_matched"] = False
                 profile["user_has_preferences"] = False
                 profile["match_details"] = {}
@@ -115,7 +125,7 @@ class handler(BaseHTTPRequestHandler):
             pima_dogs = {row["animal_id"]: row for row in pima_res.data}
             
             # Fetch from system_prompts
-            prompts_res = client.table("system_prompts").select("animal_id, updated_at, important_facts").execute()
+            prompts_res = client.table("system_prompts_v2").select("animal_id, updated_at").execute()
             prompts_data = {row["animal_id"]: row for row in prompts_res.data}
             
             # Intersect to find valid current dogs that have a system_prompt
@@ -255,7 +265,16 @@ class handler(BaseHTTPRequestHandler):
             # Add the name, gender and facts
             profile["name"] = pima_dogs[random_id].get("name") or "Unknown"
             profile["gender"] = pima_dogs[random_id].get("gender") or "Unknown"
-            profile["important_facts"] = prompts_data[random_id].get("important_facts", [])
+            
+            fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb").eq("animal_id", random_id).limit(1).execute()
+            facts_data = fact_res.data[0] if fact_res.data else {}
+            
+            profile["important_facts"] = facts_data.get("important_facts_jsonb", [])
+            profile["bio"] = facts_data.get("backstory_summary", profile.get("bio", ""))
+            profile["risk_flags"] = facts_data.get("risk_flags_jsonb", [])
+            profile["strengths"] = facts_data.get("strengths_jsonb", [])
+            profile["challenges"] = facts_data.get("challenges_jsonb", [])
+            profile["ideal_home"] = facts_data.get("ideal_home_jsonb", [])
             profile["preferences_matched"] = preferences_matched
             profile["user_has_preferences"] = (preferences is not None)
             profile["match_details"] = best_match_details.get(random_id, {})
