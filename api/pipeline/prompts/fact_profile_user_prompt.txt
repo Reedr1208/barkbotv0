@@ -1,0 +1,26 @@
+Create an `animal_fact_profiles` record from the following raw animal source record.
+
+RAW ANIMAL RECORD
+animal_id: {ANIMAL_ID}
+url: {URL}
+located_at: {LOCATED_AT}
+description: {DESCRIPTION}
+weight: {WEIGHT}
+age: {AGE}
+more_info: {MORE_INFO}
+bio: {BIO}
+data_updated: {DATA_UPDATED}
+image_public_url: {IMAGE_PUBLIC_URL}
+record_hash: {RECORD_HASH}
+qa_status: {QA_STATUS}
+qa_notes: {QA_NOTES}
+
+Instructions:
+- Populate all schema fields as completely as the source allows.
+- Evidence snippets should cite short phrases from the input text, not external data.
+- `important_facts_jsonb`, `risk_flags_jsonb`, `unknowns_jsonb`, `strengths_jsonb`, `challenges_jsonb`, `ideal_home_jsonb`, and `management_notes_jsonb` should be arrays of short strings.
+- Keep `backstory_summary` concise and factual.
+- `other_animals_notes`, `people_notes`, `containment_notes`, `medical_notes`, and `adoption_process_notes` should be plain-language summaries.
+- If something is truly absent, do not guess.
+
+Return only valid JSON matching the schema.

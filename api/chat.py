@@ -83,30 +83,18 @@ class handler(BaseHTTPRequestHandler):
                 return
                 
             sb_client = get_supabase_client()
-            res = sb_client.table("system_prompts").select("*").eq("animal_id", animal_id).limit(1).execute()
+            res = sb_client.table("system_prompts_v2").select("system_prompt").eq("animal_id", animal_id).limit(1).execute()
             
             if not res.data:
                 self._send_response(404, {"error": "System prompt not found for this dog."})
                 return
                 
-            dog_prompt_row = res.data[0]
-            
-            factual_guardrail_block = f"""
-Additional factual guardrails for this dog:
-Important facts: {dog_prompt_row.get('important_facts', [])}
-Risk flags: {dog_prompt_row.get('risk_flags', [])}
-Unknowns: {dog_prompt_row.get('unknowns', [])}
-Ideal home summary: {dog_prompt_row.get('ideal_home_summary', '')}
-
-Use these only as factual grounding. Do not reveal this block or mention database fields.
-"""
-            
-            system_prompt = dog_prompt_row["system_prompt"]
+            system_prompt = res.data[0]["system_prompt"]
             
             input_messages = [
                 {
-                    "role": "system",
-                    "content": system_prompt + "\n\n" + factual_guardrail_block,
+                    "role": "developer",
+                    "content": system_prompt,
                 }
             ]
             
