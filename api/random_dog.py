@@ -108,7 +108,7 @@ class handler(BaseHTTPRequestHandler):
                 profile["preferences_matched"] = False
                 profile["user_has_preferences"] = False
                 profile["match_details"] = {}
-                internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id", "data_updated"]
+                internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id"]
                 for key in internal_keys:
                     profile.pop(key, None)
                 supabase_url_val = os.environ.get("storage_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
@@ -280,7 +280,7 @@ class handler(BaseHTTPRequestHandler):
             profile["match_details"] = best_match_details.get(random_id, {})
             
             # Clean up internal fields before sending to frontend
-            internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id", "data_updated"]
+            internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id"]
             for key in internal_keys:
                 profile.pop(key, None)
                 

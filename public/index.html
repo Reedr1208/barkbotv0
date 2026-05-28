@@ -2850,7 +2850,7 @@
             <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%;">
               <span style="font-size: 0.95rem; margin-top: 1px;">📅</span>
               <div>
-                <div style="font-weight: 800; color: var(--text-main);">Shelter listing last checked: Today</div>
+                <div style="font-weight: 800; color: var(--text-main);">Shelter listing last checked: <span id="lastCheckedDate">Today</span></div>
                 <div>Availability changes quickly — confirm with the shelter.</div>
               </div>
             </div>
@@ -3806,6 +3806,8 @@
         dogId.textContent = '';
         const locationTextEl = document.getElementById('dogLocationText');
         if (locationTextEl) locationTextEl.textContent = '';
+        const lastCheckedEl = document.getElementById('lastCheckedDate');
+        if (lastCheckedEl) lastCheckedEl.textContent = 'Today';
         dogAge.textContent = '';
         dogWeight.textContent = '';
         const secPersonality = document.getElementById('secPersonality');
@@ -3918,6 +3920,10 @@
           dogId.textContent = dog.animal_id ? `${dog.animal_id} • PACC` : '';
           if (locationTextEl) {
             locationTextEl.textContent = dog.located_at || 'Pima Animal Care Center';
+          }
+          const lastCheckedEl = document.getElementById('lastCheckedDate');
+          if (lastCheckedEl) {
+            lastCheckedEl.textContent = dog.data_updated || 'Today';
           }
 
           // Dynamically update dog name in buttons, labels, and placeholders
