@@ -4366,156 +4366,165 @@
         const quickPromptsContainer = document.getElementById('quickPromptsContainer');
         if (!quickPromptsContainer) return;
 
-        const text = (botReplyText || '').toLowerCase();
         const genderEl = document.getElementById('dogGender');
         const dogGender = genderEl ? genderEl.textContent : 'male';
         const pron = (dogGender && dogGender.toLowerCase().includes('female')) ? 'her' : 'him';
         const possessive = pron === 'her' ? 'her' : 'his';
 
-        // 1. If no bot reply text is passed, show the initial prompts
-        if (!botReplyText) {
-          const prompts = [
-            `What kind of home would you love?`,
-            `What’s your energy level?`,
-            `Are you good with other dogs?`,
-            `What should my human know?`
-          ];
-
-          quickPromptsContainer.innerHTML = '';
-          prompts.forEach(p => {
-            const btn = document.createElement('button');
-            btn.className = 'prompt-shortcut-btn';
-            btn.setAttribute('type', 'button');
-            btn.setAttribute('data-prompt', p);
-            btn.textContent = p;
-            
-            const handleImmediateSend = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (btn.disabled) return;
-              const promptText = btn.getAttribute('data-prompt');
-              if (promptText && chatInput && !chatInput.disabled) {
-                btn.disabled = true;
-                btn.style.opacity = '0.6';
-                btn.style.background = 'var(--accent)';
-                btn.style.color = 'var(--accent-text)';
-                trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
-                sendMessage(promptText);
-              }
-            };
-            btn.addEventListener('click', handleImmediateSend);
-            btn.addEventListener('pointerdown', handleImmediateSend);
-            
-            quickPromptsContainer.appendChild(btn);
-          });
-          return;
-        }
-
-        // 2. Pool of candidate suggestions based on keyword categories
-        const categoryPools = [];
-
-        if (text.includes('walk') || text.includes('leash') || text.includes('run') || text.includes('heel') || text.includes('energy') || text.includes('active') || text.includes('play')) {
-          categoryPools.push(
-            `How does ${currentDogName} behave on a leash?`,
-            `What is ${possessive} favorite game to play?`,
-            `Do you think ${currentDogName} would like hiking?`
-          );
-        }
-        if (text.includes('kid') || text.includes('child') || text.includes('family') || text.includes('people') || text.includes('hooman') || text.includes('person') || text.includes('human')) {
-          categoryPools.push(
-            `Is ${currentDogName} calm or high energy at home?`,
-            `How does ${currentDogName} act when meeting strangers?`,
-            `What is the best way to introduce ${pron} to a new family?`
-          );
-        }
-        if (text.includes('dog') || text.includes('cat') || text.includes('fren') || text.includes('animal') || text.includes('pet') || text.includes('pack')) {
-          categoryPools.push(
-            `Has ${currentDogName} lived with cats or other dogs before?`,
-            `What is ${possessive} play style with other dogs?`
-          );
-        }
-        if (text.includes('shy') || text.includes('scared') || text.includes('nervous') || text.includes('go-slow') || text.includes('go slow') || text.includes('patient') || text.includes('soft heart')) {
-          categoryPools.push(
-            `How can I make ${currentDogName} feel safe and cozy?`,
-            `What treats does ${currentDogName} love most?`,
-            `How long does it take for ${pron} to warm up to new friends?`
-          );
-        }
-        if (text.includes('treat') || text.includes('food') || text.includes('toy') || text.includes('snack') || text.includes('bone') || text.includes('kong') || text.includes('chew')) {
-          categoryPools.push(
-            `What is ${possessive} absolute favorite treat or toy?`,
-            `Is ${currentDogName} easy to train with treats?`
-          );
-        }
-        if (text.includes('home') || text.includes('house') || text.includes('crate') || text.includes('sleep') || text.includes('bed') || text.includes('cozy') || text.includes('couch')) {
-          categoryPools.push(
-            `Does ${currentDogName} prefer sleeping in a crate or on the bed?`,
-            `What is ${possessive} favorite cozy spot in the house?`
-          );
-        }
-
-        // General fallbacks if no keyword matching or to fill up slots
-        const generalPool = [
-          `What are some of ${currentDogName}'s favorite things?`,
-          `Tell me more about ${possessive} story before coming here.`,
-          `What is the absolute best way to spend the day with ${pron}?`,
-          `Does ${currentDogName} know any fun tricks?`,
-          `What should I know before adopting ${pron}?`,
-          `What does ${possessive} perfect day look like?`
+        // Candidate questions mapping
+        const candidates = [
+          {
+            text: `What is your rescue story?`,
+            keywords: ['story', 'backstory', 'arrive', 'shelter', 'before', 'past', 'background', 'rescue', 'history'],
+            hasAnswer: () => currentDogData && (currentDogData.backstory_summary || currentDogData.bio)
+          },
+          {
+            text: `Are you good with other dogs or cats?`,
+            keywords: ['dog', 'cat', 'fren', 'animal', 'pet', 'pack', 'other', 'friend', 'doggy'],
+            hasAnswer: () => currentDogData && currentDogData.other_animals_notes
+          },
+          {
+            text: `Are you good with kids or strangers?`,
+            keywords: ['kid', 'child', 'family', 'people', 'hooman', 'stranger', 'guest', 'person', 'new', 'introduce'],
+            hasAnswer: () => currentDogData && currentDogData.people_notes
+          },
+          {
+            text: `How do you do on walks and leash?`,
+            keywords: ['walk', 'leash', 'hike', 'run', 'outside', 'yard', 'fence', 'activity', 'collar', 'pull'],
+            hasAnswer: () => currentDogData && currentDogData.containment_notes
+          },
+          {
+            text: `Do you have any medical needs or health concerns?`,
+            keywords: ['health', 'medical', 'pill', 'vet', 'treat', 'hurt', 'med', 'injury', 'sick'],
+            hasAnswer: () => currentDogData && currentDogData.medical_notes
+          },
+          {
+            text: `What does your ideal home look like?`,
+            keywords: ['home', 'house', 'apartment', 'yard', 'live', 'owner', 'family', 'ideal', 'space'],
+            hasAnswer: () => currentDogData && (
+              (currentDogData.ideal_home && currentDogData.ideal_home.length > 0) || 
+              currentDogData.containment_notes
+            )
+          },
+          {
+            text: `What are your biggest strengths or best qualities?`,
+            keywords: ['good', 'best', 'strength', 'love', 'happy', 'cuddle', 'sweet', 'positives', 'special'],
+            hasAnswer: () => currentDogData && currentDogData.strengths && currentDogData.strengths.length > 0
+          },
+          {
+            text: `What quirks or challenges are you working on?`,
+            keywords: ['quirk', 'challenge', 'bad', 'difficult', 'scared', 'fear', 'issue', 'work', 'trouble', 'nervous'],
+            hasAnswer: () => currentDogData && (
+              (currentDogData.challenges && currentDogData.challenges.length > 0) ||
+              (currentDogData.risk_flags && currentDogData.risk_flags.length > 0)
+            )
+          },
+          {
+            text: `What should my human know?`,
+            keywords: ['know', 'human', 'owner', 'adopter', 'tell', 'important', 'advice'],
+            hasAnswer: () => true
+          },
+          {
+            text: `What does your perfect day look like?`,
+            keywords: ['day', 'perfect', 'routine', 'spend', 'sleep', 'morning', 'night'],
+            hasAnswer: () => true
+          },
+          {
+            text: `What are some of your favorite things?`,
+            keywords: ['favorite', 'thing', 'toy', 'game', 'play', 'treat', 'food', 'bone', 'snack'],
+            hasAnswer: () => true
+          }
         ];
 
-        // Combine category suggestions first, then general pool
-        const allCandidates = [...categoryPools, ...generalPool];
+        // Filter candidates down to those that have actual answers for this dog
+        const answeredCandidates = candidates.filter(c => c.hasAnswer());
 
         // Get user messages already sent to filter out
         const sentMessages = conversationHistory
           .filter(msg => msg.role === 'user')
           .map(msg => msg.content.toLowerCase().trim());
 
-        // Filter out duplicates and clean
-        const uniqueFiltered = [];
-        const seen = new Set();
+        let finalPrompts = [];
 
-        for (const candidate of allCandidates) {
-          const cleanCand = candidate.toLowerCase().trim();
-          if (!seen.has(cleanCand) && !sentMessages.includes(cleanCand)) {
-            seen.add(cleanCand);
-            uniqueFiltered.push(candidate);
+        if (!botReplyText) {
+          // 1. Initial State: show 4 diverse prompts that have answers
+          // Prioritize specific questions (where hasAnswer checks a field) over general ones
+          const specific = answeredCandidates.filter(c => c.text !== `What should my human know?` && c.text !== `What does your perfect day look like?` && c.text !== `What are some of your favorite things?`);
+          const general = answeredCandidates.filter(c => c.text === `What should my human know?` || c.text === `What does your perfect day look like?` || c.text === `What are some of your favorite things?`);
+          
+          const sortedCandidates = [...specific, ...general];
+          
+          for (const cand of sortedCandidates) {
+            const cleanCand = cand.text.toLowerCase().trim();
+            if (!sentMessages.includes(cleanCand)) {
+              finalPrompts.push(cand.text);
+            }
+            if (finalPrompts.length >= 4) break;
           }
-        }
+        } else {
+          // 2. Contextual State: show top 3 prompts based on matching keywords in the conversation context
+          const lastUserMsg = conversationHistory.length > 0 ? conversationHistory[conversationHistory.length - 1].content : '';
+          const contextText = (botReplyText + ' ' + lastUserMsg).toLowerCase();
 
-        // Render top 3 suggestions
-        quickPromptsContainer.innerHTML = '';
-        const finalSuggestions = uniqueFiltered.slice(0, 3);
+          // Find matches
+          const matched = answeredCandidates.filter(c => c.keywords.some(kw => contextText.includes(kw)));
+          
+          // Add matched items first, making sure they haven't been sent yet
+          for (const cand of matched) {
+            const cleanCand = cand.text.toLowerCase().trim();
+            if (!sentMessages.includes(cleanCand) && !finalPrompts.includes(cand.text)) {
+              finalPrompts.push(cand.text);
+            }
+          }
 
-        if (finalSuggestions.length > 0) {
-          finalSuggestions.forEach(p => {
-            const btn = document.createElement('button');
-            btn.className = 'prompt-shortcut-btn';
-            btn.setAttribute('type', 'button');
-            btn.setAttribute('data-prompt', p);
-            btn.textContent = p;
-            
-            const handleImmediateSend = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (btn.disabled) return;
-              const promptText = btn.getAttribute('data-prompt');
-              if (promptText && chatInput && !chatInput.disabled) {
-                btn.disabled = true;
-                btn.style.opacity = '0.6';
-                btn.style.background = 'var(--accent)';
-                btn.style.color = 'var(--accent-text)';
-                trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
-                sendMessage(promptText);
+          // If we have fewer than 3 matched items, fill with remaining answered candidates
+          if (finalPrompts.length < 3) {
+            const specific = answeredCandidates.filter(c => c.text !== `What should my human know?` && c.text !== `What does your perfect day look like?` && c.text !== `What are some of your favorite things?`);
+            const general = answeredCandidates.filter(c => c.text === `What should my human know?` || c.text === `What does your perfect day look like?` || c.text === `What are some of your favorite things?`);
+            const sortedCandidates = [...specific, ...general];
+
+            for (const cand of sortedCandidates) {
+              const cleanCand = cand.text.toLowerCase().trim();
+              if (!sentMessages.includes(cleanCand) && !finalPrompts.includes(cand.text)) {
+                finalPrompts.push(cand.text);
               }
-            };
-            btn.addEventListener('click', handleImmediateSend);
-            btn.addEventListener('pointerdown', handleImmediateSend);
-            
-            quickPromptsContainer.appendChild(btn);
-          });
+              if (finalPrompts.length >= 3) break;
+            }
+          }
+          
+          // Limit to exactly 3 suggestions for conversational turns
+          finalPrompts = finalPrompts.slice(0, 3);
         }
+
+        // Render the suggestions
+        quickPromptsContainer.innerHTML = '';
+        finalPrompts.forEach(p => {
+          const btn = document.createElement('button');
+          btn.className = 'prompt-shortcut-btn';
+          btn.setAttribute('type', 'button');
+          btn.setAttribute('data-prompt', p);
+          btn.textContent = p;
+          
+          const handleImmediateSend = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (btn.disabled) return;
+            const promptText = btn.getAttribute('data-prompt');
+            if (promptText && chatInput && !chatInput.disabled) {
+              btn.disabled = true;
+              btn.style.opacity = '0.6';
+              btn.style.background = 'var(--accent)';
+              btn.style.color = 'var(--accent-text)';
+              trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
+              sendMessage(promptText);
+            }
+          };
+          btn.addEventListener('click', handleImmediateSend);
+          btn.addEventListener('pointerdown', handleImmediateSend);
+          
+          quickPromptsContainer.appendChild(btn);
+        });
+      }
       }
 
       function scrollToBottom() {

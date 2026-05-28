@@ -87,7 +87,7 @@ class handler(BaseHTTPRequestHandler):
                 pima_res = client.table("pima_all_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
                 prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
                 profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
-                fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb").eq("animal_id", animal_id_override).limit(1).execute()
+                fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb").eq("animal_id", animal_id_override).limit(1).execute()
                 
                 if not pima_res.data or not profile_res.data:
                     self._send_response(404, {"error": "Dog not found."})
@@ -104,6 +104,12 @@ class handler(BaseHTTPRequestHandler):
                 profile["strengths"] = facts_data.get("strengths_jsonb", [])
                 profile["challenges"] = facts_data.get("challenges_jsonb", [])
                 profile["ideal_home"] = facts_data.get("ideal_home_jsonb", [])
+                profile["other_animals_notes"] = facts_data.get("other_animals_notes")
+                profile["people_notes"] = facts_data.get("people_notes")
+                profile["containment_notes"] = facts_data.get("containment_notes")
+                profile["medical_notes"] = facts_data.get("medical_notes")
+                profile["adoption_process_notes"] = facts_data.get("adoption_process_notes")
+                profile["unknowns"] = facts_data.get("unknowns_jsonb", [])
                 
                 profile["preferences_matched"] = False
                 profile["user_has_preferences"] = False
@@ -266,7 +272,7 @@ class handler(BaseHTTPRequestHandler):
             profile["name"] = pima_dogs[random_id].get("name") or "Unknown"
             profile["gender"] = pima_dogs[random_id].get("gender") or "Unknown"
             
-            fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb").eq("animal_id", random_id).limit(1).execute()
+            fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb").eq("animal_id", random_id).limit(1).execute()
             facts_data = fact_res.data[0] if fact_res.data else {}
             
             profile["important_facts"] = facts_data.get("important_facts_jsonb", [])
@@ -275,6 +281,12 @@ class handler(BaseHTTPRequestHandler):
             profile["strengths"] = facts_data.get("strengths_jsonb", [])
             profile["challenges"] = facts_data.get("challenges_jsonb", [])
             profile["ideal_home"] = facts_data.get("ideal_home_jsonb", [])
+            profile["other_animals_notes"] = facts_data.get("other_animals_notes")
+            profile["people_notes"] = facts_data.get("people_notes")
+            profile["containment_notes"] = facts_data.get("containment_notes")
+            profile["medical_notes"] = facts_data.get("medical_notes")
+            profile["adoption_process_notes"] = facts_data.get("adoption_process_notes")
+            profile["unknowns"] = facts_data.get("unknowns_jsonb", [])
             profile["preferences_matched"] = preferences_matched
             profile["user_has_preferences"] = (preferences is not None)
             profile["match_details"] = best_match_details.get(random_id, {})
