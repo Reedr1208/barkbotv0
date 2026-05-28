@@ -2433,53 +2433,125 @@
       position: fixed;
       inset: 0;
       z-index: 10000;
-      background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+      background: radial-gradient(circle at center, #111827 0%, #030712 100%);
       color: white;
       justify-content: center;
       align-items: center;
       text-align: center;
       padding: 24px;
       box-sizing: border-box;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
     }
 
-    .orientation-content {
+    .orientation-card {
+      background: rgba(24, 34, 53, 0.65);
+      border: 1.5px solid var(--border-soft);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      padding: 32px 24px;
       max-width: 380px;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .rotate-phone-icon {
-      font-size: 3.5rem;
-      animation: rotatePhone 2s ease-in-out infinite;
-      filter: drop-shadow(0 10px 20px var(--accent-shadow));
+    .orientation-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .rotate-dog-img-container {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      box-shadow: 0 8px 24px var(--accent-shadow), 0 0 0 6px rgba(245, 158, 11, 0.1);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-slate-900);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .rotate-dog-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .orientation-title {
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-weight: 900;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
       color: var(--accent-hover);
+      line-height: 1.35;
+      margin: 0;
     }
 
     .orientation-text {
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       line-height: 1.5;
+      margin: 0;
+    }
+
+    .rotate-device-hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      color: var(--accent-hover);
+      font-size: 0.75rem;
+      font-weight: 800;
+      margin-top: 4px;
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+
+    .rotate-phone-svg {
+      width: 16px;
+      height: 16px;
+      animation: rotatePhone 2.5s ease-in-out infinite;
     }
 
     @keyframes rotatePhone {
       0% {
         transform: rotate(0deg);
       }
-      50% {
+      35% {
+        transform: rotate(-90deg);
+      }
+      65% {
         transform: rotate(-90deg);
       }
       100% {
         transform: rotate(0deg);
+      }
+    }
+
+    @keyframes hintPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.15);
+      }
+      50% {
+        transform: scale(1.03);
+        box-shadow: 0 0 12px 2px rgba(245, 158, 11, 0.25);
       }
     }
 
@@ -3805,6 +3877,12 @@
           profilePanel.classList.remove('loading');
           profilePanel.classList.remove('loading-skeleton');
         }
+        const rotateDogPhoto = document.getElementById('rotateDogPhoto');
+        const rotateDogTitle = document.getElementById('rotateDogTitle');
+        const rotateDogText = document.getElementById('rotateDogText');
+        if (rotateDogPhoto) rotateDogPhoto.src = 'happy_rescue_pup.png';
+        if (rotateDogTitle) rotateDogTitle.innerHTML = `Dog Unavailable 🐾`;
+        if (rotateDogText) rotateDogText.textContent = `This pup is no longer available. Spin your device around to meet other adoptable dogs!`;
       }
 
       async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
@@ -3833,6 +3911,15 @@
         if (lastCheckedEl) lastCheckedEl.textContent = 'Today';
         dogAge.textContent = '';
         dogWeight.textContent = '';
+
+        // Reset rotate overlay properties
+        const rotateDogPhoto = document.getElementById('rotateDogPhoto');
+        const rotateDogTitle = document.getElementById('rotateDogTitle');
+        const rotateDogText = document.getElementById('rotateDogText');
+        if (rotateDogPhoto) rotateDogPhoto.src = 'happy_rescue_pup.png';
+        if (rotateDogTitle) rotateDogTitle.innerHTML = `Find your perfect match! 🐶`;
+        if (rotateDogText) rotateDogText.textContent = `ChattyHound is optimized for portrait mode. Spin your device around to continue finding and chatting with shelter dogs! 🐾`;
+
         const secPersonality = document.getElementById('secPersonality');
         if (secPersonality) {
           secPersonality.style.display = 'none';
@@ -3947,6 +4034,20 @@
           const lastCheckedEl = document.getElementById('lastCheckedDate');
           if (lastCheckedEl) {
             lastCheckedEl.textContent = dog.data_updated || 'Today';
+          }
+
+          // Populate rotate overlay with current dog details
+          const rotateDogPhoto = document.getElementById('rotateDogPhoto');
+          const rotateDogTitle = document.getElementById('rotateDogTitle');
+          const rotateDogText = document.getElementById('rotateDogText');
+          if (rotateDogPhoto) {
+            rotateDogPhoto.src = dog.image_public_url || dog.image_url || (dog.image_file ? (dog.image_base_url + dog.image_file) : 'happy_rescue_pup.png');
+          }
+          if (rotateDogTitle) {
+            rotateDogTitle.innerHTML = `Let's chat with <span style="color:var(--accent-hover);">${currentDogName}</span>! 🐾`;
+          }
+          if (rotateDogText) {
+            rotateDogText.textContent = `To interact with ${currentDogName} or see more profile details, spin your device back to portrait mode!`;
           }
 
           // Dynamically update dog name in buttons, labels, and placeholders
@@ -5971,10 +6072,19 @@
   
   <!-- Device Orientation Landscape Lock Overlay screen -->
   <div class="orientation-overlay" aria-hidden="true">
-    <div class="orientation-content">
-      <div class="rotate-phone-icon">📱</div>
-      <h3 class="orientation-title">Please Rotate Your Device</h3>
-      <p class="orientation-text">ChattyHound is optimized for portrait mode. Spin your phone around to continue finding and chatting with shelter dogs! 🐾</p>
+    <div class="orientation-card">
+      <div class="rotate-dog-img-container">
+        <img id="rotateDogPhoto" class="rotate-dog-img" src="happy_rescue_pup.png" alt="Rescue Pup">
+      </div>
+      <h3 class="orientation-title" id="rotateDogTitle">Find your perfect match! 🐶</h3>
+      <p class="orientation-text" id="rotateDogText">ChattyHound is optimized for portrait mode. Spin your device around to continue finding and chatting with shelter dogs! 🐾</p>
+      <div class="rotate-device-hint">
+        <svg class="rotate-phone-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+          <line x1="12" y1="18" x2="12.01" y2="18" stroke-width="4" />
+        </svg>
+        <span>Rotate device to portrait</span>
+      </div>
     </div>
   </div>
 </body>
