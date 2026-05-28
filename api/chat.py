@@ -83,7 +83,7 @@ class handler(BaseHTTPRequestHandler):
                 return
                 
             sb_client = get_supabase_client()
-            res = sb_client.table("system_prompts_v2").select("system_prompt").eq("animal_id", animal_id).limit(1).execute()
+            res = sb_client.table("system_prompts_v2").select("system_prompt").eq("animal_id", animal_id).order("created_at", desc=True).limit(1).execute()
             
             if not res.data:
                 self._send_response(404, {"error": "System prompt not found for this dog."})
