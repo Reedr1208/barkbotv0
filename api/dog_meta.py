@@ -87,8 +87,8 @@ def _fetch_dog_profile(animal_id):
         .execute()
     )
     prompts_res = (
-        client.table("system_prompts")
-        .select("animal_id, important_facts")
+        client.table("animal_fact_profiles")
+        .select("animal_id, important_facts_jsonb")
         .eq("animal_id", animal_id)
         .limit(1)
         .execute()
@@ -104,7 +104,7 @@ def _fetch_dog_profile(animal_id):
     profile["name"] = pima_dog.get("name") or "Unknown"
     profile["gender"] = pima_dog.get("gender") or "Unknown"
     profile["important_facts"] = (
-        prompts_res.data[0].get("important_facts", []) if prompts_res.data else []
+        prompts_res.data[0].get("important_facts_jsonb", []) if prompts_res.data else []
     )
     supabase_url_val = os.environ.get("storage_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
     bucket = os.environ.get("SUPABASE_BUCKET", "animal-images")
