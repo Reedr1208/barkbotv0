@@ -52,6 +52,14 @@ def main():
     archetypes_res = sb_client.table("persona_archetypes").select("*").eq("active", True).execute()
     archetypes = archetypes_res.data
 
+    # Fetch current distribution to prevent skewed archetype assignment
+    dist_res = sb_client.table("animal_persona_profiles").select("primary_archetype_key").execute()
+    distribution = {}
+    for row in dist_res.data:
+        k = row.get("primary_archetype_key")
+        if k:
+            distribution[k] = distribution.get(k, 0) + 1
+
     for dog in dogs:
         animal_id = dog["animal_id"]
         record_hash = dog.get("record_hash", "none")
@@ -71,7 +79,12 @@ def main():
             sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
 
             # 2. Persona Scoring
-            persona_profile = build_persona_profile(openai_client, fact_profile, archetypes)
+            persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)
+            
+            # Update local distribution so it balances dynamically during the run
+            assigned_key = persona_profile.get("primary_archetype_key")
+            if assigned_key:
+                distribution[assigned_key] = distribution.get(assigned_key, 0) + 1
             persona_profile["source_record_hash"] = record_hash
             
             db_persona = {

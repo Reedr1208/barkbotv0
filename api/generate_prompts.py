@@ -112,6 +112,14 @@ class handler(BaseHTTPRequestHandler):
             from pipeline.build_persona_profiles import build_persona_profile
             from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
 
+            # Fetch current distribution to prevent skewed archetype assignment
+            dist_res = sb_client.table("animal_persona_profiles").select("primary_archetype_key").execute()
+            distribution = {}
+            for row in dist_res.data:
+                k = row.get("primary_archetype_key")
+                if k:
+                    distribution[k] = distribution.get(k, 0) + 1
+
             for aid in target_ids:
                 if time.time() - start_time > MAX_EXECUTION_TIME:
                     logging.info("Nearing execution time limit. Halting gracefully.")
@@ -140,12 +148,17 @@ class handler(BaseHTTPRequestHandler):
                     fact_profile["animal_id"] = aid
                     fact_profile["source_record_hash"] = record_hash
                     fact_profile["schema_version"] = "fact_v1"
-                    fact_profile["extraction_model"] = "gpt-4o-mini"
+                    fact_profile["extraction_model"] = "gpt-5.4-mini"
                     fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
                     sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
 
                     # 2. Persona Scoring
-                    persona_profile = build_persona_profile(openai_client, fact_profile, archetypes)
+                    persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)
+                    
+                    # Update local distribution so it balances dynamically during the run
+                    assigned_key = persona_profile.get("primary_archetype_key")
+                    if assigned_key:
+                        distribution[assigned_key] = distribution.get(assigned_key, 0) + 1
                     persona_profile["source_record_hash"] = record_hash
                     
                     db_persona = {
