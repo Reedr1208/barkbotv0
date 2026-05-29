@@ -44,9 +44,6 @@ class handler(BaseHTTPRequestHandler):
             openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
             # Fetch catalogs
-            factors_res = sb_client.table("persona_factor_definitions").select("*").eq("active", True).execute()
-            factors = factors_res.data
-            
             archetypes_res = sb_client.table("persona_archetypes").select("*").eq("active", True).execute()
             archetypes = archetypes_res.data
 
