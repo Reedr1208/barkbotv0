@@ -1,0 +1,40 @@
+import os
+import subprocess
+import sys
+import logging
+from pathlib import Path
+from http.server import BaseHTTPRequestHandler
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        logging.info("Starting up scrape_muddypaws handler...")
+
+        auth_header = self.headers.get("Authorization")
+        cron_secret = os.environ.get("CRON_SECRET")
+        if cron_secret:
+            expected = f"Bearer {cron_secret}"
+            if auth_header != expected:
+                logging.warning("Unauthorized access attempt to scrape_muddypaws.")
+                self.send_response(401)
+                self.end_headers()
+                self.wfile.write(b"Unauthorized")
+                return
+        
+        target_script = Path(__file__).resolve().parent.parent / "jobs" / "03_scrape_muddypaws.py"
+        python_exe = sys.executable
+
+        try:
+            logging.info(f"Running command: {python_exe} {target_script}")
+            subprocess.Popen([python_exe, str(target_script)], env=os.environ.copy())
+            logging.info("Subprocess spawned successfully. Returning 200 to Vercel.")
+            
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"Job started in background")
+        except Exception as e:
+            logging.error(f"Failed to spawn subprocess: {e}")
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(str(e).encode())

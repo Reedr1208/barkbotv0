@@ -24,6 +24,10 @@
     {
       "path": "/api/scrape",
       "schedule": "5 * * * *"
+    },
+    {
+      "path": "/api/scrape_muddypaws",
+      "schedule": "0 */6 * * *"
     }
   ]
 }

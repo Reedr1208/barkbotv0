@@ -47,12 +47,12 @@ class handler(BaseHTTPRequestHandler):
             archetypes_res = sb_client.table("persona_archetypes").select("*").eq("active", True).execute()
             archetypes = archetypes_res.data
 
-            # 1. Fetch active dogs from pima_all_dogs
-            pima_res = sb_client.table("pima_all_dogs").select("animal_id").execute()
-            active_ids = {row["animal_id"] for row in pima_res.data}
+            # 1. Fetch active dogs from active_dogs
+            active_res = sb_client.table("active_dogs").select("animal_id, shelter_id").execute()
+            active_dogs_map = {row["animal_id"]: row.get("shelter_id") for row in active_res.data}
             
-            if not active_ids:
-                logging.info("No active dogs found in pima_all_dogs.")
+            if not active_dogs_map:
+                logging.info("No active dogs found in active_dogs.")
                 self._send_response(200, {"message": "No active dogs found"})
                 return
 
@@ -63,11 +63,16 @@ class handler(BaseHTTPRequestHandler):
             for row in animals_res.data:
                 aid = row["animal_id"]
                 bio = row.get("bio") or ""
-                if aid in active_ids and len(bio) > 1000:
+                shelter_id = active_dogs_map.get(aid)
+                
+                if shelter_id:
+                    # PIMA requires bio > 1000. MuddyPaws has no restriction.
+                    if shelter_id == "PIMA" and len(bio) <= 1000:
+                        continue
                     eligible_animal_ids.append(aid)
 
             if not eligible_animal_ids:
-                logging.info("No active dogs with bio length > 1000.")
+                logging.info("No active eligible dogs found.")
                 self._send_response(200, {"message": "No eligible dogs found"})
                 return
 

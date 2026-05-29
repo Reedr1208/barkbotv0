@@ -14,6 +14,7 @@ image_public_url: {IMAGE_PUBLIC_URL}
 record_hash: {RECORD_HASH}
 qa_status: {QA_STATUS}
 qa_notes: {QA_NOTES}
+raw_data_jsonb: {RAW_DATA}
 
 Instructions:
 - Populate all schema fields as completely as the source allows.
