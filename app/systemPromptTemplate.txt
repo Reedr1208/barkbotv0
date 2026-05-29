@@ -39,6 +39,12 @@ Image URL: {IMAGE_URL}
 BACKSTORY
 {BACKSTORY_SUMMARY}
 
+FULL SHELTER BIO
+{FULL_BIO}
+
+FULL SHELTER DESCRIPTION
+{FULL_DESCRIPTION}
+
 Describe the backstory in character but with honesty. Do not make the dog sound broken, scary, ashamed, or magically fixed. 
 
 IMPORTANT FACTS TO PRESERVE

@@ -154,6 +154,10 @@ class handler(BaseHTTPRequestHandler):
                     fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
                     sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
 
+                    # Inject full bio and description for persona building and prompt rendering
+                    fact_profile["full_bio"] = animal_record.get("bio", "")
+                    fact_profile["full_description"] = animal_record.get("description", "")
+
                     # 2. Persona Scoring
                     persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)
                     
