@@ -55,7 +55,8 @@ def extract_fact_profile(openai_client: OpenAI, animal_record: dict) -> FactProf
         IMAGE_PUBLIC_URL=animal_record.get("image_public_url", ""),
         RECORD_HASH=animal_record.get("record_hash", ""),
         QA_STATUS=animal_record.get("qa_status", ""),
-        QA_NOTES=animal_record.get("qa_notes", "")
+        QA_NOTES=animal_record.get("qa_notes", ""),
+        RAW_DATA=json.dumps(animal_record.get("raw_data_jsonb") or {}, ensure_ascii=False)
     )
 
     logging.info(f"Extracting facts for {animal_record.get('animal_id')}...")

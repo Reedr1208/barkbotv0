@@ -85,18 +85,18 @@ class handler(BaseHTTPRequestHandler):
             
             # ── Direct lookup by animal_id (for Saved Dogs / Resume Chat) ──
             if animal_id_override:
-                pima_res = client.table("pima_all_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
+                active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
                 prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
                 profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
                 fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb").eq("animal_id", animal_id_override).limit(1).execute()
                 
-                if not pima_res.data or not profile_res.data:
+                if not active_res.data or not profile_res.data:
                     self._send_response(404, {"error": "Dog not found."})
                     return
-                pima_dog = pima_res.data[0]
+                active_dog = active_res.data[0]
                 profile = profile_res.data[0]
-                profile["name"] = pima_dog.get("name") or "Unknown"
-                profile["gender"] = pima_dog.get("gender") or "Unknown"
+                profile["name"] = active_dog.get("name") or "Unknown"
+                profile["gender"] = active_dog.get("gender") or "Unknown"
                 
                 facts_data = fact_res.data[0] if fact_res.data else {}
                 profile["important_facts"] = facts_data.get("important_facts_jsonb", [])
@@ -124,19 +124,19 @@ class handler(BaseHTTPRequestHandler):
                 self._send_response(200, profile)
                 return
 
-            # Fetch all dog IDs, names, and filterable fields from pima_all_dogs
-            pima_res = client.table("pima_all_dogs").select("animal_id, name, gender, age, weight").execute()
-            if not pima_res.data:
-                self._send_response(404, {"error": "No dogs found in pima_all_dogs."})
+            # Fetch all dog IDs, names, and filterable fields from active_dogs
+            active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").execute()
+            if not active_res.data:
+                self._send_response(404, {"error": "No dogs found in active_dogs."})
                 return
-            pima_dogs = {row["animal_id"]: row for row in pima_res.data}
+            active_dogs = {row["animal_id"]: row for row in active_res.data}
             
             # Fetch from animal_persona_profiles to get archetype data and freshness
             persona_res = client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at").execute()
             persona_data = {row["animal_id"]: row for row in persona_res.data}
             
             # Intersect to find valid current dogs that have a persona
-            valid_ids = list(set(pima_dogs.keys()).intersection(persona_data.keys()))
+            valid_ids = list(set(active_dogs.keys()).intersection(persona_data.keys()))
             if not valid_ids:
                 self._send_response(404, {"error": "No dogs with generated personas found."})
                 return
@@ -179,7 +179,7 @@ class handler(BaseHTTPRequestHandler):
                 if total_pref_count > 0:
                     preferences_configured = True
                     for aid in valid_ids:
-                        dog = pima_dogs[aid]
+                        dog = active_dogs[aid]
                         score = 0
                         details = {
                             "gender": {"active": has_gender, "preferred": pref_gender, "actual": dog.get("gender") or "Unknown", "matched": False},
@@ -294,8 +294,8 @@ class handler(BaseHTTPRequestHandler):
             profile = profile_res.data[0]
             
             # Add the name, gender and facts
-            profile["name"] = pima_dogs[random_id].get("name") or "Unknown"
-            profile["gender"] = pima_dogs[random_id].get("gender") or "Unknown"
+            profile["name"] = active_dogs[random_id].get("name") or "Unknown"
+            profile["gender"] = active_dogs[random_id].get("gender") or "Unknown"
             
             fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb").eq("animal_id", random_id).limit(1).execute()
             facts_data = fact_res.data[0] if fact_res.data else {}

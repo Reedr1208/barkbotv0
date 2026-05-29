@@ -268,8 +268,8 @@ class BarkbotStore:
         return change_type
     
     def get_least_recently_updated_urls(self, limit: int = DOGS_PER_RUN) -> List[str]:
-        # Get all currently adoptable dogs
-        adoptable_resp = self.client.table("pima_all_dogs").select("animal_id").execute()
+        # Get all currently adoptable dogs for PIMA
+        adoptable_resp = self.client.table("active_dogs").select("animal_id").eq("shelter_id", "PIMA").execute()
         adoptable_ids = [row["animal_id"] for row in adoptable_resp.data]
 
         if not adoptable_ids:
@@ -336,12 +336,12 @@ def main() -> int:
                 errors += 1
                 if exc.response.status_code in (404, 500):
                     # If the server throws a 500 or 404 for this detail page, 
-                    # the animal was likely adopted/removed. We delete it from pima_all_dogs 
+                    # the animal was likely adopted/removed. We delete it from active_dogs 
                     # so we skip it in future update processes.
                     aid = get_animal_id_from_url(url)
                     try:
-                        store.client.table("pima_all_dogs").delete().eq("animal_id", aid).execute()
-                        print(json.dumps({"animal_id": aid, "result": "removed_from_pima_all_dogs_due_to_http_error", "status_code": exc.response.status_code}, ensure_ascii=False))
+                        store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
+                        print(json.dumps({"animal_id": aid, "result": "removed_from_active_dogs_due_to_http_error", "status_code": exc.response.status_code}, ensure_ascii=False))
                     except Exception as del_exc:
                         print(json.dumps({"url": url, "error": f"Failed to delete after HTTP {exc.response.status_code}: {str(del_exc)}"}, ensure_ascii=False), file=sys.stderr)
                 print(json.dumps({"url": url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)

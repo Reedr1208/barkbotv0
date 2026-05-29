@@ -161,17 +161,21 @@ def save_to_supabase(dogs: list[dict]):
 
     client = get_supabase_client()
 
-    print("Clearing existing pima_all_dogs table data...")
-    # Delete all rows. neq("animal_id", "dummy") matches all valid records.
-    client.table("pima_all_dogs").delete().neq("animal_id", "dummy").execute()
+    print("Clearing existing active_dogs table data for PIMA...")
+    # Delete all rows for PIMA.
+    client.table("active_dogs").delete().eq("shelter_id", "PIMA").execute()
 
-    print(f"Inserting {len(dogs)} dogs into pima_all_dogs...")
+    print(f"Inserting {len(dogs)} dogs into active_dogs...")
     
+    # Ensure shelter_id is set
+    for dog in dogs:
+        dog["shelter_id"] = "PIMA"
+        
     # We may need to chunk inserts if there are too many, but Supabase can handle a few hundred fine.
-    client.table("pima_all_dogs").insert(dogs).execute()
+    client.table("active_dogs").insert(dogs).execute()
 
 
 if __name__ == "__main__":
     dogs = scrape_all_dogs()
     save_to_supabase(dogs)
-    print(f"Done. Wrote {len(dogs)} dogs to pima_all_dogs table in Supabase.")
+    print(f"Done. Wrote {len(dogs)} dogs to active_dogs table in Supabase.")

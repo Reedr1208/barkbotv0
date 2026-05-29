@@ -79,8 +79,8 @@ def _build_meta_copy(profile):
 
 def _fetch_dog_profile(animal_id):
     client = get_supabase_client()
-    pima_res = (
-        client.table("pima_all_dogs")
+    active_res = (
+        client.table("active_dogs")
         .select("animal_id, name, gender, age, weight")
         .eq("animal_id", animal_id)
         .limit(1)
@@ -96,13 +96,13 @@ def _fetch_dog_profile(animal_id):
     profile_res = (
         client.table("animals").select("*").eq("animal_id", animal_id).limit(1).execute()
     )
-    if not pima_res.data or not profile_res.data:
+    if not active_res.data or not profile_res.data:
         return None
 
-    pima_dog = pima_res.data[0]
+    active_dog = active_res.data[0]
     profile = profile_res.data[0]
-    profile["name"] = pima_dog.get("name") or "Unknown"
-    profile["gender"] = pima_dog.get("gender") or "Unknown"
+    profile["name"] = active_dog.get("name") or "Unknown"
+    profile["gender"] = active_dog.get("gender") or "Unknown"
     profile["important_facts"] = (
         prompts_res.data[0].get("important_facts_jsonb", []) if prompts_res.data else []
     )

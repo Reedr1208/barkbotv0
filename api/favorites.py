@@ -47,9 +47,9 @@ class handler(BaseHTTPRequestHandler):
 
             animal_ids = [r["animal_id"] for r in saved_records]
 
-            # Fetch from pima_all_dogs to get breed/mix, name, gender, age, weight
-            pima_res = sb.table("pima_all_dogs").select("animal_id, name, gender, age, weight").in_("animal_id", animal_ids).execute()
-            pima_map = {p["animal_id"]: p for p in (pima_res.data or [])}
+            # Fetch from active_dogs to get breed/mix, name, gender, age, weight
+            active_res = sb.table("active_dogs").select("animal_id, name, gender, age, weight").in_("animal_id", animal_ids).execute()
+            active_map = {p["animal_id"]: p for p in (active_res.data or [])}
 
             # Fetch from animals to get located_at, url, image_file, image_public_url, image_url
             animals_res = sb.table("animals").select("animal_id, located_at, url, image_file, image_public_url, image_url").in_("animal_id", animal_ids).execute()
@@ -62,7 +62,7 @@ class handler(BaseHTTPRequestHandler):
 
             for r in saved_records:
                 aid = r["animal_id"]
-                pima_dog = pima_map.get(aid, {})
+                active_dog = active_map.get(aid, {})
                 animal = animals_map.get(aid, {})
 
                 # Determine dynamic image url
@@ -73,16 +73,16 @@ class handler(BaseHTTPRequestHandler):
                     dog_image_url = animal["image_public_url"]
                 elif animal.get("image_url"):
                     dog_image_url = animal["image_url"]
-                elif pima_dog.get("image_url"):
-                    dog_image_url = pima_dog["image_url"]
+                elif active_dog.get("image_url"):
+                    dog_image_url = active_dog["image_url"]
 
                 saved_dogs_rich.append({
                     "animal_id": aid,
                     "created_at": r["created_at"],
-                    "dog_name": pima_dog.get("name") or "Shelter Pup",
-                    "gender": pima_dog.get("gender") or "Unknown",
-                    "age": pima_dog.get("age") or "Unknown",
-                    "weight": pima_dog.get("weight") or "Unknown",
+                    "dog_name": active_dog.get("name") or "Shelter Pup",
+                    "gender": active_dog.get("gender") or "Unknown",
+                    "age": active_dog.get("age") or "Unknown",
+                    "weight": active_dog.get("weight") or "Unknown",
                     "located_at": animal.get("located_at") or "Pima Animal Care Center",
                     "url": animal.get("url") or "",
                     "dog_image_url": dog_image_url

@@ -37,18 +37,32 @@ def main():
     sb_client = create_client(supabase_url, supabase_key)
     openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    # Fetch active dogs from pima_all_dogs
-    pima_res = sb_client.table("pima_all_dogs").select("animal_id").execute()
-    active_ids = {row["animal_id"] for row in pima_res.data}
+    # Fetch active dogs from active_dogs
+    active_res = sb_client.table("active_dogs").select("animal_id, shelter_id").execute()
+    active_dogs_map = {row["animal_id"]: row.get("shelter_id") for row in active_res.data}
 
     # Fetch dogs to backfill
     res = sb_client.table("animals").select("*").execute()
+    
+    # Fetch existing prompts to avoid re-running all
+    prompts_res = sb_client.table("system_prompts_v2").select("animal_id").execute()
+    existing_prompt_ids = {row["animal_id"] for row in prompts_res.data}
     
     dogs = []
     for row in res.data:
         aid = row["animal_id"]
         bio = row.get("bio") or ""
-        if aid in active_ids and len(bio) > 1000:
+        shelter_id = active_dogs_map.get(aid)
+        
+        if shelter_id:
+            # PIMA requires bio > 1000. MuddyPaws has no restriction.
+            if shelter_id == "PIMA" and len(bio) <= 1000:
+                continue
+            
+            # Skip dogs that already have prompts
+            if aid in existing_prompt_ids:
+                continue
+                
             dogs.append(row)
 
     if not dogs:
