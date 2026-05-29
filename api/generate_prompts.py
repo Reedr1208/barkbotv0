@@ -131,10 +131,16 @@ class handler(BaseHTTPRequestHandler):
                     sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
 
                     # 2. Persona Scoring
-                    overrides = {}
-                    persona_profile = build_persona_profile(openai_client, fact_profile, factors, archetypes, overrides)
+                    persona_profile = build_persona_profile(openai_client, fact_profile, archetypes)
                     persona_profile["source_record_hash"] = record_hash
-                    sb_client.table("animal_persona_profiles").upsert(persona_profile).execute()
+                    
+                    db_persona = {
+                        "animal_id": persona_profile.get("animal_id"),
+                        "source_record_hash": persona_profile.get("source_record_hash"),
+                        "primary_archetype_key": persona_profile.get("primary_archetype_key"),
+                        "selection_reasoning": persona_profile.get("selection_reasoning"),
+                    }
+                    sb_client.table("animal_persona_profiles").upsert(db_persona).execute()
 
                     # 3. Prompt Rendering
                     system_prompt = render_system_prompt(fact_profile, persona_profile)
