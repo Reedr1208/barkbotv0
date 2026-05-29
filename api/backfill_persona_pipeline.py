@@ -93,8 +93,8 @@ def main():
             }
 
             prompt_record = {
-                "animal_id": animal_id,
-                "prompt_version": "v2",
+                "animal_id": persona_profile.get("animal_id"),
+                "prompt_version": "v3",
                 "source_record_hash": record_hash,
                 "system_prompt": system_prompt,
                 "render_context_jsonb": render_context,

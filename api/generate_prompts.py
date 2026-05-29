@@ -94,6 +94,10 @@ class handler(BaseHTTPRequestHandler):
             processed_count = 0
             
             # 5. Process loop
+            import sys
+            import os
+            sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+            
             from pipeline.extract_fact_profiles import extract_fact_profile
             from pipeline.build_persona_profiles import build_persona_profile
             from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
@@ -154,7 +158,7 @@ class handler(BaseHTTPRequestHandler):
 
                     prompt_record = {
                         "animal_id": aid,
-                        "prompt_version": "v2",
+                        "prompt_version": "v3",
                         "source_record_hash": record_hash,
                         "system_prompt": system_prompt,
                         "render_context_jsonb": render_context,
