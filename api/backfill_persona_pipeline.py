@@ -88,16 +88,26 @@ def main():
 
         try:
             # 1. Fact Extraction
-            fact_profile_obj = extract_fact_profile(openai_client, dog)
-            fact_profile = fact_profile_obj.model_dump()
-            fact_profile["animal_id"] = animal_id
-            fact_profile["source_record_hash"] = record_hash
-            fact_profile["schema_version"] = "fact_v1"
-            fact_profile["extraction_model"] = "gpt-4o-mini"
-            fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
-            
-            # Upsert
-            sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
+            fact_res = sb_client.table("animal_fact_profiles").select("*").eq("animal_id", animal_id).limit(1).execute()
+            if fact_res.data:
+                fact_profile = fact_res.data[0]
+                logging.info(f"Using existing fact profile for {animal_id}.")
+            else:
+                logging.info(f"Extracting fact profile for {animal_id}...")
+                fact_profile_obj = extract_fact_profile(openai_client, dog)
+                fact_profile = fact_profile_obj.model_dump()
+                fact_profile["animal_id"] = animal_id
+                fact_profile["source_record_hash"] = record_hash
+                fact_profile["schema_version"] = "fact_v1"
+                fact_profile["extraction_model"] = "gpt-4o-mini"
+                fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
+                
+                # Upsert
+                sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
+
+            # Inject full bio and description for persona building and prompt rendering
+            fact_profile["full_bio"] = dog.get("bio", "")
+            fact_profile["full_description"] = dog.get("description", "")
 
             # 2. Persona Scoring
             persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)

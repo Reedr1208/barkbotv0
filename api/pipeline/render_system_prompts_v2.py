@@ -57,6 +57,8 @@ def render_system_prompt(fact_profile: Dict[str, Any], persona_profile: Dict[str
         "CONTAINMENT_NOTES": fact_profile.get("containment_notes", ""),
         "MEDICAL_NOTES": fact_profile.get("medical_notes", ""),
         "ADOPTION_PROCESS_NOTES": fact_profile.get("adoption_process_notes", ""),
+        "FULL_BIO": fact_profile.get("full_bio", ""),
+        "FULL_DESCRIPTION": fact_profile.get("full_description", ""),
     }
 
     # Replace placeholders
