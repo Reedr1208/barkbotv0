@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import time
 import logging
 from datetime import datetime, timezone, timedelta
@@ -9,6 +10,19 @@ from pydantic import BaseModel, Field
 from openai import OpenAI
 from supabase import create_client
 from http.server import BaseHTTPRequestHandler
+
+# Ensure the pipeline modules can be imported
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Force load .env.development.local if present to bypass Vercel CLI bugs locally
+env_local = Path(__file__).resolve().parent.parent / ".env.development.local"
+if env_local.exists():
+    with open(env_local) as f:
+        for line in f:
+            line = line.strip()
+            if "=" in line and not line.startswith("#"):
+                k, v = line.split("=", 1)
+                os.environ[k] = v.strip().strip('"').strip("'")
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -94,10 +108,6 @@ class handler(BaseHTTPRequestHandler):
             processed_count = 0
             
             # 5. Process loop
-            import sys
-            import os
-            sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-            
             from pipeline.extract_fact_profiles import extract_fact_profile
             from pipeline.build_persona_profiles import build_persona_profile
             from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
