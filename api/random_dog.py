@@ -75,7 +75,8 @@ class handler(BaseHTTPRequestHandler):
             parsed_url = urlparse(self.path)
             query_params = parse_qs(parsed_url.query)
             viewed_str = query_params.get("viewed", [""])[0]
-            viewed_ids = set(filter(None, viewed_str.split(",")))
+            viewed_list = [aid.strip() for aid in viewed_str.split(",") if aid.strip()]
+            viewed_ids = set(viewed_list)
             email = query_params.get("email", [""])[0].strip().lower()
             # animal_id override: fetch a specific dog directly (for Saved/chat resume)
             animal_id_override = query_params.get("animal_id", [""])[0].strip() or None
@@ -130,15 +131,25 @@ class handler(BaseHTTPRequestHandler):
                 return
             pima_dogs = {row["animal_id"]: row for row in pima_res.data}
             
-            # Fetch from system_prompts
-            prompts_res = client.table("system_prompts_v2").select("animal_id, updated_at").execute()
-            prompts_data = {row["animal_id"]: row for row in prompts_res.data}
+            # Fetch from animal_persona_profiles to get archetype data and freshness
+            persona_res = client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at").execute()
+            persona_data = {row["animal_id"]: row for row in persona_res.data}
             
-            # Intersect to find valid current dogs that have a system_prompt
-            valid_ids = list(set(pima_dogs.keys()).intersection(prompts_data.keys()))
+            # Intersect to find valid current dogs that have a persona
+            valid_ids = list(set(pima_dogs.keys()).intersection(persona_data.keys()))
             if not valid_ids:
-                self._send_response(404, {"error": "No dogs with generated prompts found."})
+                self._send_response(404, {"error": "No dogs with generated personas found."})
                 return
+                
+            # Determine last 2 unique archetypes the user has seen
+            last_2_archetypes = set()
+            for aid in reversed(viewed_list):
+                if aid in persona_data:
+                    arch = persona_data[aid].get("primary_archetype_key")
+                    if arch:
+                        last_2_archetypes.add(arch)
+                if len(last_2_archetypes) >= 2:
+                    break
 
             # Fetch user preferences if logged in
             preferences = None
@@ -207,14 +218,27 @@ class handler(BaseHTTPRequestHandler):
                                 details["size"]["matched"] = True
                             details["size"]["actual"] = f"{dog.get('weight') or 'Unknown'} ({dog_size_class.capitalize()})"
                             
+                        # Tie-breaker for archetype diversity (layer below preferences)
+                        dog_arch = persona_data[aid].get("primary_archetype_key")
+                        if dog_arch and dog_arch not in last_2_archetypes:
+                            score += 0.5
+                            
                         scored_dogs[aid] = score
                         best_match_details[aid] = details
+            else:
+                # If no preferences configured, just score based on archetype diversity
+                for aid in valid_ids:
+                    score = 0
+                    dog_arch = persona_data[aid].get("primary_archetype_key")
+                    if dog_arch and dog_arch not in last_2_archetypes:
+                        score += 0.5
+                    scored_dogs[aid] = score
 
             # Categorize all valid dogs by freshness
             three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
             fresh_status = {}
             for aid in valid_ids:
-                dt_str = prompts_data[aid].get("updated_at", "")
+                dt_str = persona_data[aid].get("updated_at", "")
                 if dt_str.endswith("Z"):
                     dt_str = dt_str[:-1] + "+00:00"
                 try:
@@ -256,9 +280,10 @@ class handler(BaseHTTPRequestHandler):
 
             # Determine whether preferences are matched for the selected dog
             if preferences_configured and random_id:
-                # A match is strong if it scores at least 1, or is the maximum possible score
+                # A match is strong if it matched at least one preference (score >= 1.0)
+                # and either it's the max overall score or it meets a minimum threshold.
                 max_overall_score = max(scored_dogs.values()) if scored_dogs else 0
-                preferences_matched = (scored_dogs[random_id] > 0 and (scored_dogs[random_id] == max_overall_score or scored_dogs[random_id] >= 1))
+                preferences_matched = (scored_dogs[random_id] >= 1.0 and (scored_dogs[random_id] == max_overall_score or scored_dogs[random_id] >= 1.0))
             
             # Fetch the full profile
             profile_res = client.table("animals").select("*").eq("animal_id", random_id).limit(1).execute()

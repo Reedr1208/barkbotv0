@@ -37,12 +37,22 @@ def main():
     sb_client = create_client(supabase_url, supabase_key)
     openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    # Fetch 5 dogs to backfill for testing
-    res = sb_client.table("animals").select("*").limit(5).execute()
-    dogs = res.data
+    # Fetch active dogs from pima_all_dogs
+    pima_res = sb_client.table("pima_all_dogs").select("animal_id").execute()
+    active_ids = {row["animal_id"] for row in pima_res.data}
+
+    # Fetch dogs to backfill
+    res = sb_client.table("animals").select("*").execute()
+    
+    dogs = []
+    for row in res.data:
+        aid = row["animal_id"]
+        bio = row.get("bio") or ""
+        if aid in active_ids and len(bio) > 1000:
+            dogs.append(row)
 
     if not dogs:
-        logging.info("No dogs found in the database.")
+        logging.info("No eligible dogs found in the database.")
         return
 
     # Fetch catalogs
