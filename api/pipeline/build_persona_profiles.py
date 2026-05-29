@@ -10,9 +10,10 @@ class ArchetypeSelection(BaseModel):
     archetype_key: str = Field(description="The key of the chosen archetype")
     reasoning: str = Field(description="Brief explanation of why this archetype was chosen based on the animal's facts and the archetype's evidence criteria.")
 
-def build_persona_profile(openai_client: OpenAI, fact_profile: dict, archetypes: list) -> dict:
+def build_persona_profile(openai_client: OpenAI, fact_profile: dict, archetypes: list, archetype_distribution: dict = None) -> dict:
     """
-    Calls OpenAI to select the most fitting archetype based on the animal's facts and the archetype evidence criteria.
+    Calls OpenAI to select the most fitting archetype based on the animal's facts and the archetype evidence criteria,
+    while using the current distribution to break ties and prevent severe skewing.
     """
     archetypes_context = []
     for arch in archetypes:
@@ -25,12 +26,23 @@ def build_persona_profile(openai_client: OpenAI, fact_profile: dict, archetypes:
     developer_prompt = (
         "You are an expert animal behavior analyst and creative writer. "
         "Your task is to review an animal's factual profile and select the SINGLE most appropriate persona archetype "
-        "from the provided catalog. You must base your decision STRICTLY on the 'evidence_criteria' provided for each archetype."
+        "from the provided catalog. You must base your decision STRICTLY on the 'evidence_criteria' provided for each archetype. "
     )
+    if archetype_distribution:
+        developer_prompt += (
+            "\n\nIMPORTANT TIE-BREAKER RULE: To ensure a diverse cast of characters, if you feel two or more archetypes "
+            "are roughly equally appropriate for this animal, you MUST choose the archetype that is currently UNDER-REPRESENTED "
+            "in the current population distribution."
+        )
 
     user_prompt = (
         f"ANIMAL FACT PROFILE:\n{json.dumps(fact_profile, indent=2)}\n\n"
         f"AVAILABLE ARCHETYPES:\n{json.dumps(archetypes_context, indent=2)}\n\n"
+    )
+    if archetype_distribution:
+        user_prompt += f"CURRENT POPULATION DISTRIBUTION (For Tie-Breaking):\n{json.dumps(archetype_distribution, indent=2)}\n\n"
+
+    user_prompt += (
         "Analyze the animal's facts and choose the archetype whose evidence criteria best matches the animal. "
         "Return the exact archetype_key and a brief reasoning."
     )
