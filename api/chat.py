@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler
 from supabase import create_client
 from openai import OpenAI
 
-CHAT_MODEL = "gpt-4o-mini"
+CHAT_MODEL = "gpt-5.4-mini"
 
 from pathlib import Path
 
