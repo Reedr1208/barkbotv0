@@ -33,6 +33,7 @@ class handler(BaseHTTPRequestHandler):
             gender = body.get("gender", "any").strip().lower()
             age_group = body.get("age_group", "any").strip().lower()
             size = body.get("size", "any").strip().lower()
+            location = body.get("location", "any").strip().lower()
             
             if not email:
                 self._send_response(400, {"error": "Email is required."})
@@ -42,10 +43,12 @@ class handler(BaseHTTPRequestHandler):
             valid_genders = {"male", "female", "any"}
             valid_ages = {"puppy", "young", "adult", "senior", "any"}
             valid_sizes = {"small", "medium", "large", "any"}
+            valid_locations = {"tucson", "new_york", "any"}
             
             if gender not in valid_genders: gender = "any"
             if age_group not in valid_ages: age_group = "any"
             if size not in valid_sizes: size = "any"
+            if location not in valid_locations: location = "any"
             
             client = get_supabase_client()
             
@@ -54,6 +57,7 @@ class handler(BaseHTTPRequestHandler):
                 "gender": gender,
                 "age_group": age_group,
                 "size": size,
+                "location": location,
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }
             

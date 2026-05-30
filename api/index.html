@@ -2759,8 +2759,9 @@
                     </p>
                     <p class="dog-location" id="dogLocation"
                       style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin: 0;">
+                      <span class="compat-dot gray" id="dotLocation" style="display:none; flex-shrink: 0; margin-right: 2px;"></span>
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent); flex-shrink: 0;">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                         <circle cx="12" cy="10" r="3" />
                       </svg>
@@ -3235,6 +3236,21 @@
                   <button class="pref-btn" data-value="large">Large (60+ lbs)</button>
                 </div>
               </div>
+              
+              <!-- Location Row -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">📍</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Preferred Area</span>
+                </div>
+                <div class="pref-selector-group" id="prefLocationGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <button class="pref-btn" data-value="any">Any Location 🌎</button>
+                  <button class="pref-btn" data-value="tucson">Tucson, AZ 🌵</button>
+                  <button class="pref-btn" data-value="new_york">New York, NY 🗽</button>
+                </div>
+              </div>
             </div>
 
             <!-- STEP 2: YOUR HOME -->
@@ -3344,6 +3360,26 @@
       let currentDogName = 'this dog';
       let currentDogData = null;
       let activeDogFetchId = 0;
+
+      let userCoords = null;
+      function getUserLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              userCoords = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+              };
+              console.log('User coordinates loaded:', userCoords);
+            },
+            (error) => {
+              console.warn('Geolocation failed or blocked:', error);
+            },
+            { timeout: 8000 }
+          );
+        }
+      }
+      getUserLocation();
 
       const CH_CANONICAL_ORIGIN = 'https://chattyhound.com';
       const CH_DEFAULT_OG_IMAGE = CH_CANONICAL_ORIGIN + '/og-image.jpg';
@@ -3949,7 +3985,7 @@
             el.className = 'detail-chip';
           }
         });
-        const compatDots = ['dotGender', 'dotAge', 'dotWeight'];
+        const compatDots = ['dotGender', 'dotAge', 'dotWeight', 'dotLocation'];
         compatDots.forEach(id => {
           const el = document.getElementById(id);
           if (el) {
@@ -3979,6 +4015,10 @@
             params.push('viewed=' + viewedIds.join(','));
           }
           if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+          if (userCoords) {
+            params.push('lat=' + userCoords.lat);
+            params.push('lon=' + userCoords.lon);
+          }
           url += params.join('&');
 
           const response = await fetch(url);
@@ -4117,7 +4157,8 @@
               const categories = [
                 { key: 'gender', boxId: 'chipGender', dotId: 'dotGender' },
                 { key: 'age', boxId: 'chipAge', dotId: 'dotAge' },
-                { key: 'size', boxId: 'chipWeight', dotId: 'dotWeight' }
+                { key: 'size', boxId: 'chipWeight', dotId: 'dotWeight' },
+                { key: 'location', boxId: 'dogLocation', dotId: 'dotLocation' }
               ];
 
               categories.forEach(cat => {
@@ -4131,10 +4172,10 @@
 
                 if (details.active) {
                   if (details.matched) {
-                    box.classList.add('matched');
+                    if (cat.boxId !== 'dogLocation') box.classList.add('matched');
                     dot.className = 'compat-dot green';
                   } else {
-                    box.classList.add('mismatched');
+                    if (cat.boxId !== 'dogLocation') box.classList.add('mismatched');
                     dot.className = 'compat-dot yellow';
                   }
                 } else {
@@ -4912,7 +4953,7 @@
       const savePrefBtn = document.getElementById('savePrefBtn');
 
       let userEmail = localStorage.getItem('chattyhound_user_email') || null;
-      let currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+      let currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
 
       // Expanded lifestyle preferences stored locally
       let lifestylePrefs = JSON.parse(localStorage.getItem('chattyhound_lifestyle_prefs') || JSON.stringify({
@@ -5041,6 +5082,7 @@
           setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
           setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
           setupSelectorButtons('prefSizeGroup', currentPrefs.size);
+          setupSelectorButtons('prefLocationGroup', currentPrefs.location || 'any');
           setupSelectorButtons('prefEnergyGroup', lifestylePrefs.energy || 'any');
           setupSelectorButtons('prefHomeGroup', lifestylePrefs.home || 'any');
 
@@ -5116,12 +5158,14 @@
       const prefGenderGroup = document.getElementById('prefGenderGroup');
       const prefAgeGroup = document.getElementById('prefAgeGroup');
       const prefSizeGroup = document.getElementById('prefSizeGroup');
+      const prefLocationGroup = document.getElementById('prefLocationGroup');
       const prefEnergyGroup = document.getElementById('prefEnergyGroup');
       const prefHomeGroup = document.getElementById('prefHomeGroup');
 
       if (prefGenderGroup) prefGenderGroup.addEventListener('click', handleSelectorClick);
       if (prefAgeGroup) prefAgeGroup.addEventListener('click', handleSelectorClick);
       if (prefSizeGroup) prefSizeGroup.addEventListener('click', handleSelectorClick);
+      if (prefLocationGroup) prefLocationGroup.addEventListener('click', handleSelectorClick);
       if (prefEnergyGroup) prefEnergyGroup.addEventListener('click', handleSelectorClick);
       if (prefHomeGroup) prefHomeGroup.addEventListener('click', handleSelectorClick);
 
@@ -5175,7 +5219,8 @@
           currentPrefs = {
             gender: profile.gender || 'any',
             age_group: profile.age_group || 'any',
-            size: profile.size || 'any'
+            size: profile.size || 'any',
+            location: profile.location || 'any'
           };
 
           localStorage.setItem('chattyhound_user_email', userEmail);
@@ -5190,6 +5235,7 @@
           setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
           setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
           setupSelectorButtons('prefSizeGroup', currentPrefs.size);
+          setupSelectorButtons('prefLocationGroup', currentPrefs.location || 'any');
 
           // Sync local favorites to backend
           syncLocalFavoritesToBackend(userEmail);
@@ -5224,10 +5270,12 @@
         const genderActive = document.getElementById('prefGenderGroup').querySelector('.pref-btn.active');
         const ageActive = document.getElementById('prefAgeGroup').querySelector('.pref-btn.active');
         const sizeActive = document.getElementById('prefSizeGroup').querySelector('.pref-btn.active');
+        const locationActive = document.getElementById('prefLocationGroup').querySelector('.pref-btn.active');
 
         const gender = genderActive ? genderActive.getAttribute('data-value') : 'any';
         const age_group = ageActive ? ageActive.getAttribute('data-value') : 'any';
         const size = sizeActive ? sizeActive.getAttribute('data-value') : 'any';
+        const location = locationActive ? locationActive.getAttribute('data-value') : 'any';
 
         // Save advanced lifestyle preferences
         const energyActive = document.getElementById('prefEnergyGroup').querySelector('.pref-btn.active');
@@ -5241,8 +5289,9 @@
 
         // If user is not logged in / email-less, save locally and transition directly!
         if (!userEmail) {
+          currentPrefs = { gender, age_group, size, location };
           closePrefModal();
-          trackEvent('preferences_saved', { gender, age_group, size, ...lifestylePrefs });
+          trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
           switchView('app'); // Transition to active dog matching cards!
           fetchRandomDog();
           savePrefBtn.disabled = false;
@@ -5254,7 +5303,7 @@
           const response = await fetch('/api/save_preferences', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: userEmail, gender, age_group, size })
+            body: JSON.stringify({ email: userEmail, gender, age_group, size, location })
           });
 
           if (!response.ok) throw new Error('Failed to save preferences');
@@ -5263,11 +5312,12 @@
           currentPrefs = {
             gender: data.preferences.gender,
             age_group: data.preferences.age_group,
-            size: data.preferences.size
+            size: data.preferences.size,
+            location: data.preferences.location || 'any'
           };
 
           closePrefModal();
-          trackEvent('preferences_saved', { gender, age_group, size, ...lifestylePrefs });
+          trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
           switchView('app'); // Transition to active dog matching cards!
           // Fetch new random dog matching these preferences
           fetchRandomDog();
@@ -5283,7 +5333,7 @@
 
       async function resetPreferences() {
         // 1. Clear local state
-        currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+        currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
         lifestylePrefs = {
           energy: 'any',
           home: 'any',
@@ -5302,6 +5352,7 @@
         setupSelectorButtons('prefGenderGroup', 'any');
         setupSelectorButtons('prefAgeGroup', 'any');
         setupSelectorButtons('prefSizeGroup', 'any');
+        setupSelectorButtons('prefLocationGroup', 'any');
         setupSelectorButtons('prefEnergyGroup', 'any');
         setupSelectorButtons('prefHomeGroup', 'any');
         lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
@@ -5312,7 +5363,7 @@
             await fetch('/api/save_preferences', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: userEmail, gender: 'any', age_group: 'any', size: 'any' })
+              body: JSON.stringify({ email: userEmail, gender: 'any', age_group: 'any', size: 'any', location: 'any' })
             });
           } catch (err) {
             console.error("Failed to reset backend preferences:", err);
@@ -5327,7 +5378,7 @@
 
       function handleSignOut() {
         userEmail = null;
-        currentPrefs = { gender: 'any', age_group: 'any', size: 'any' };
+        currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
         lifestylePrefs = {
           energy: 'any',
           home: 'any',
@@ -5516,7 +5567,8 @@
                 currentPrefs = {
                   gender: profile.gender || 'any',
                   age_group: profile.age_group || 'any',
-                  size: profile.size || 'any'
+                  size: profile.size || 'any',
+                  location: profile.location || 'any'
                 };
               }
             } catch (err) {
