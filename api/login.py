@@ -46,7 +46,8 @@ class handler(BaseHTTPRequestHandler):
                     "email": email,
                     "gender": "any",
                     "age_group": "any",
-                    "size": "any"
+                    "size": "any",
+                    "location": "any"
                 }
                 insert_res = client.table("user_preferences").insert(new_profile).execute()
                 if not insert_res.data:

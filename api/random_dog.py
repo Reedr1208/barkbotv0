@@ -124,8 +124,28 @@ class handler(BaseHTTPRequestHandler):
                 self._send_response(200, profile)
                 return
 
+            # Parse user coordinates from query params for proximity matching
+            user_lat = None
+            user_lon = None
+            try:
+                lat_str = query_params.get("lat", [""])[0].strip()
+                lon_str = query_params.get("lon", [""])[0].strip()
+                if lat_str and lon_str:
+                    user_lat = float(lat_str)
+                    user_lon = float(lon_str)
+            except Exception:
+                pass
+
+            closer_shelter = None
+            if user_lat is not None and user_lon is not None:
+                # Tucson, AZ coordinates: 32.2226, -110.9747
+                # New York, NY coordinates: 40.7128, -74.0060
+                dist_tucson = (user_lat - 32.2226)**2 + (user_lon - (-110.9747))**2
+                dist_ny = (user_lat - 40.7128)**2 + (user_lon - (-74.0060))**2
+                closer_shelter = "PIMA" if dist_tucson < dist_ny else "MUDDYPAWS"
+
             # Fetch all dog IDs, names, and filterable fields from active_dogs
-            active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").execute()
+            active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").execute()
             if not active_res.data:
                 self._send_response(404, {"error": "No dogs found in active_dogs."})
                 return
@@ -168,13 +188,15 @@ class handler(BaseHTTPRequestHandler):
                 pref_gender = preferences.get("gender", "any")
                 pref_age = preferences.get("age_group", "any")
                 pref_size = preferences.get("size", "any")
+                pref_location = preferences.get("location", "any")
                 
                 # Triggers for active categories
                 has_gender = (pref_gender != "any")
                 has_age = (pref_age != "any")
                 has_size = (pref_size != "any")
+                has_location = (pref_location != "any")
                 
-                total_pref_count = sum([has_gender, has_age, has_size])
+                total_pref_count = sum([has_gender, has_age, has_size, has_location])
                 
                 if total_pref_count > 0:
                     preferences_configured = True
@@ -184,7 +206,8 @@ class handler(BaseHTTPRequestHandler):
                         details = {
                             "gender": {"active": has_gender, "preferred": pref_gender, "actual": dog.get("gender") or "Unknown", "matched": False},
                             "age": {"active": has_age, "preferred": pref_age, "actual": dog.get("age") or "Unknown", "matched": False},
-                            "size": {"active": has_size, "preferred": pref_size, "actual": dog.get("weight") or "Unknown", "matched": False}
+                            "size": {"active": has_size, "preferred": pref_size, "actual": dog.get("weight") or "Unknown", "matched": False},
+                            "location": {"active": has_location, "preferred": pref_location, "actual": "Tucson, AZ" if dog.get("shelter_id") == "PIMA" else "New York, NY", "matched": False}
                         }
                         
                         # 1. Gender Filter
@@ -218,6 +241,17 @@ class handler(BaseHTTPRequestHandler):
                                 details["size"]["matched"] = True
                             details["size"]["actual"] = f"{dog.get('weight') or 'Unknown'} ({dog_size_class.capitalize()})"
                             
+                        # 4. Location Filter
+                        if has_location:
+                            pref_shelter = "PIMA" if pref_location == "tucson" else "MUDDYPAWS"
+                            if dog.get("shelter_id") == pref_shelter:
+                                score += 1
+                                details["location"]["matched"] = True
+                        else:
+                            # User has no location preference but coordinates are available
+                            if closer_shelter and dog.get("shelter_id") == closer_shelter:
+                                score += 0.8 # Promoted as closer dog
+
                         # Tie-breaker for archetype diversity (layer below preferences)
                         dog_arch = persona_data[aid].get("primary_archetype_key")
                         if dog_arch and dog_arch not in last_2_archetypes:
@@ -226,9 +260,12 @@ class handler(BaseHTTPRequestHandler):
                         scored_dogs[aid] = score
                         best_match_details[aid] = details
             else:
-                # If no preferences configured, just score based on archetype diversity
+                # If no preferences configured, score based on closer shelter (if available) and archetype diversity
                 for aid in valid_ids:
                     score = 0
+                    dog = active_dogs[aid]
+                    if closer_shelter and dog.get("shelter_id") == closer_shelter:
+                        score += 0.8
                     dog_arch = persona_data[aid].get("primary_archetype_key")
                     if dog_arch and dog_arch not in last_2_archetypes:
                         score += 0.5

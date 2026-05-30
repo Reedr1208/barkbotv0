@@ -80,6 +80,7 @@ create table if not exists user_preferences (
   gender text default 'any',
   age_group text default 'any',
   size text default 'any',
+  location text default 'any',
   updated_at timestamptz not null default now()
 );
 
