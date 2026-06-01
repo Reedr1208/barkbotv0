@@ -177,6 +177,20 @@ class handler(BaseHTTPRequestHandler):
                 pref_res = client.table("user_preferences").select("*").eq("email", email).limit(1).execute()
                 if pref_res.data:
                     preferences = pref_res.data[0]
+            
+            if not preferences:
+                # Fallback to query params for guest users
+                q_gender = query_params.get("gender", [""])[0].strip().lower()
+                q_age = query_params.get("age_group", [""])[0].strip().lower()
+                q_size = query_params.get("size", [""])[0].strip().lower()
+                q_location = query_params.get("location", [""])[0].strip().lower()
+                if q_gender or q_age or q_size or q_location:
+                    preferences = {
+                        "gender": q_gender or "any",
+                        "age_group": q_age or "any",
+                        "size": q_size or "any",
+                        "location": q_location or "any"
+                    }
 
             # Apply preferences filtering if preferences are configured
             preferences_matched = False
