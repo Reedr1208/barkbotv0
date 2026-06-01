@@ -2590,44 +2590,11 @@
               <div class="landing-cta-group">
                 <button class="btn-primary" id="landingStartBtn"
                   aria-label="Start Sniffing: Build your dog match profile">Start Sniffing 🐶</button>
-                <button class="btn-secondary" id="landingHowBtn" aria-label="Learn how ChattyHound works">How It Works 💡</button>
+                <button class="btn-secondary" id="landingLoginBtn" aria-label="Sign in to your account" style="border: 1.5px solid transparent; background: rgba(255,255,255,0.05); color: var(--text-muted);">Sign In 🔑</button>
               </div>
             </section>
 
-            <!-- "How It Works" Timeline -->
-            <section class="landing-explanation" id="howItWorksSec">
-              <h3 class="explanation-title">How It Works</h3>
-              <div class="steps-vertical">
-                <div class="step-item">
-                  <div class="step-badge">1</div>
-                  <div class="step-body">
-                    <h4>Tell us what you're looking for</h4>
-                    <p>Answer a few quick lifestyle questions to build your dog match profile.</p>
-                  </div>
-                </div>
-                <div class="step-item">
-                  <div class="step-badge">2</div>
-                  <div class="step-body">
-                    <h4>Meet matched adoptable dogs</h4>
-                    <p>We prioritize shelter dogs who fit your home, energy levels, and lifestyle preferences.</p>
-                  </div>
-                </div>
-                <div class="step-item">
-                  <div class="step-badge">3</div>
-                  <div class="step-body">
-                    <h4>Chat to understand personality</h4>
-                    <p>Have an AI-powered conversation directly with the pup to learn their quirks, behavior, and needs.</p>
-                  </div>
-                </div>
-                <div class="step-item">
-                  <div class="step-badge">4</div>
-                  <div class="step-body">
-                    <h4>Continue with the shelter</h4>
-                    <p>Continue to the official shelter page to schedule a meet-and-greet and finalize the adoption.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
+
 
             <!-- Shelter Credibility Disclaimer -->
             <section class="landing-footer" style="padding: 16px 24px;">
@@ -3138,11 +3105,11 @@
                 We never share your data.</p>
             </div>
           </div>
-          <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center; width: 100%;">
-            <button class="btn-secondary" id="loginSkipBtn" style="flex: 1; border-radius: 9999px; padding: 12px;">Skip
-              & Browse 🐾</button>
+          <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center; width: 100%; flex-wrap: wrap;">
+            <button class="btn-secondary" id="loginSkipBtn" style="flex: 1; min-width: 120px; border-radius: 9999px; padding: 12px;">Skip</button>
+            <button class="btn-secondary" id="loginGuestBtn" style="flex: 1; min-width: 120px; border-radius: 9999px; padding: 12px;">Guest Mode</button>
             <button class="modal-start-btn" id="loginSubmitBtn"
-              style="flex: 1; background: var(--teal); color: var(--accent-text); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25); margin-top: 0; padding: 12px 24px;">Continue</button>
+              style="flex: 1; min-width: 100%; background: var(--teal); color: var(--accent-text); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25); margin-top: 0; padding: 12px 24px;">Sign In & Save</button>
           </div>
         </div>
 
@@ -3324,8 +3291,9 @@
 
           </div>
           <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 8px; width: 100%;">
+            <button class="btn-secondary" id="prefSkipBtn" style="border-radius: 9999px; padding: 12px 16px; font-weight: 800; font-size: 0.85rem; border: 2px solid rgba(255,255,255,0.15); background: transparent; color: var(--text-muted); transition: all 0.2s; cursor: pointer;">Skip</button>
             <button class="btn-secondary" id="prefBackBtn"
-              style="display: none; border-radius: 9999px; flex: 0 0 90px; padding: 12px 16px; font-weight: 800; font-size: 0.85rem; border: 2px solid rgba(255,255,255,0.15); background: transparent; color: var(--text-main); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;">
+              style="display: none; border-radius: 9999px; flex: 0 0 90px; padding: 12px 16px; font-weight: 800; font-size: 0.85rem; border: 2px solid rgba(255,255,255,0.15); background: transparent; color: var(--text-main); transition: all 0.2s; align-items: center; justify-content: center; gap: 4px;">
               ← Back
             </button>
             <button class="modal-start-btn" id="savePrefBtn" style="margin-top: 0; flex: 1; padding: 12px 24px; font-weight: 800; font-size: 0.88rem; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;">Continue ➔</button>
@@ -3379,7 +3347,6 @@
           );
         }
       }
-      getUserLocation();
 
       const CH_CANONICAL_ORIGIN = 'https://chattyhound.com';
       const CH_DEFAULT_OG_IMAGE = CH_CANONICAL_ORIGIN + '/og-image.jpg';
@@ -4015,6 +3982,10 @@
             params.push('viewed=' + viewedIds.join(','));
           }
           if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+          if (currentPrefs.gender && currentPrefs.gender !== 'any') params.push('gender=' + encodeURIComponent(currentPrefs.gender));
+          if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.push('age_group=' + encodeURIComponent(currentPrefs.age_group));
+          if (currentPrefs.size && currentPrefs.size !== 'any') params.push('size=' + encodeURIComponent(currentPrefs.size));
+          if (currentPrefs.location && currentPrefs.location !== 'any') params.push('location=' + encodeURIComponent(currentPrefs.location));
           if (userCoords) {
             params.push('lat=' + userCoords.lat);
             params.push('lon=' + userCoords.lon);
@@ -4786,6 +4757,13 @@
 
         try {
           const currentImageUrl = document.getElementById('dogImage')?.src || '';
+          
+          let guestSessionId = localStorage.getItem('chattyhound_guest_id');
+          if (!guestSessionId) {
+            guestSessionId = 'guest_' + Math.random().toString(36).substr(2, 9) + '@guest.chattyhound.com';
+            localStorage.setItem('chattyhound_guest_id', guestSessionId);
+          }
+
           const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -4793,7 +4771,7 @@
               animal_id: currentAnimalId,
               message: text,
               conversation_history: historyToSend,
-              email: userEmail || null,
+              email: userEmail || guestSessionId,
               dog_name: currentDogName,
               dog_image_url: currentImageUrl
             })
@@ -4824,7 +4802,18 @@
 
       nextBtn.addEventListener('click', () => {
         trackEvent('dog_shuffled');
-        fetchRandomDog();
+        const nextDogClicks = parseInt(localStorage.getItem('chattyhound_next_dog_clicks') || '0', 10);
+        const hasPromptedLogin = localStorage.getItem('chattyhound_prompted_login');
+        if (!userEmail && hasPromptedLogin !== 'true' && nextDogClicks >= 2) {
+          localStorage.setItem('chattyhound_prompted_login', 'true');
+          window.__CH_INTERRUPTED_NEXT_DOG__ = true;
+          openPrefModal();
+        } else {
+          if (!userEmail) {
+            localStorage.setItem('chattyhound_next_dog_clicks', (nextDogClicks + 1).toString());
+          }
+          fetchRandomDog();
+        }
       });
       sendBtn.addEventListener('click', sendMessage);
       chatInput.addEventListener('keydown', (e) => {
@@ -5059,6 +5048,20 @@
         });
       }
 
+      const prefSkipBtn = document.getElementById('prefSkipBtn');
+      if (prefSkipBtn) {
+        prefSkipBtn.addEventListener('click', () => {
+          closePrefModal();
+          if (window.__CH_INTERRUPTED_NEXT_DOG__) {
+            window.__CH_INTERRUPTED_NEXT_DOG__ = false;
+            fetchRandomDog();
+          } else if (document.getElementById('landingView').classList.contains('active')) {
+            switchView('app');
+            fetchRandomDog();
+          }
+        });
+      }
+
       function updateProfileButton() {
         if (prefBtnText) {
           prefBtnText.textContent = userEmail ? 'Fit' : 'Fit';
@@ -5072,6 +5075,11 @@
         document.body.style.overflow = 'hidden';
 
         showWizardStep(1); // Default to Step 1 basics on open
+        
+        // Defer location prompt until preferences are opened
+        if (!userCoords) {
+          getUserLocation();
+        }
 
         if (userEmail) {
           prefLoggedOutState.style.display = 'none';
@@ -5216,37 +5224,44 @@
           const profile = await response.json();
 
           userEmail = profile.email;
-          currentPrefs = {
-            gender: profile.gender || 'any',
-            age_group: profile.age_group || 'any',
-            size: profile.size || 'any',
-            location: profile.location || 'any'
-          };
-
           localStorage.setItem('chattyhound_user_email', userEmail);
           trackEvent('user_signed_in');
           updateProfileButton();
 
-          // Transition to logged in preferences form
-          prefLoggedOutState.style.display = 'none';
-          prefLoggedInState.style.display = 'block';
-          if (loggedInEmailText) loggedInEmailText.textContent = userEmail.split('@')[0] + "'s Profile";
+          const hasCustomPrefs = Object.values(currentPrefs).some(v => v && v !== 'any') || Object.values(lifestylePrefs).some(v => v !== 'any' && v !== false);
+          const isFromNextDog = window.__CH_INTERRUPTED_NEXT_DOG__ || document.getElementById('landingView').classList.contains('active');
 
-          setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
-          setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
-          setupSelectorButtons('prefSizeGroup', currentPrefs.size);
-          setupSelectorButtons('prefLocationGroup', currentPrefs.location || 'any');
+          if (hasCustomPrefs) {
+            // Auto-save guest preferences to backend
+            await fetch('/api/save_preferences', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: userEmail, ...currentPrefs })
+            });
+          } else {
+            // Load backend preferences
+            currentPrefs = {
+              gender: profile.gender || 'any',
+              age_group: profile.age_group || 'any',
+              size: profile.size || 'any',
+              location: profile.location || 'any'
+            };
+          }
 
-          // Sync local favorites to backend
           syncLocalFavoritesToBackend(userEmail);
-
-          // Show saved nav button now user is signed in
           const savedNavBtnEl = document.getElementById('savedNavBtn');
           if (savedNavBtnEl) savedNavBtnEl.style.display = '';
           updateSavedNavBadge();
 
+          const hasBackendPrefs = profile.gender && profile.gender !== 'any' || profile.age_group && profile.age_group !== 'any' || profile.size && profile.size !== 'any' || profile.location && profile.location !== 'any';
+          const hasDefinedPrefs = hasCustomPrefs || hasBackendPrefs;
 
-          // Fetch random dog with the new email
+          // Unconditionally skip the wizard and route to a dog upon successful sign-in
+          closePrefModal();
+          switchView('app');
+          if (window.__CH_INTERRUPTED_NEXT_DOG__) {
+            window.__CH_INTERRUPTED_NEXT_DOG__ = false;
+          }
           fetchRandomDog();
 
         } catch (err) {
@@ -5476,24 +5491,39 @@
       if (landingStartBtn) {
         landingStartBtn.addEventListener('click', () => {
           trackEvent('start_sniffing_clicked');
+          switchView('app');
+          fetchRandomDog();
+        });
+      }
+
+      const landingLoginBtn = document.getElementById('landingLoginBtn');
+      if (landingLoginBtn) {
+        landingLoginBtn.addEventListener('click', () => {
           openPrefModal();
         });
       }
 
-      if (landingHowBtn) {
-        landingHowBtn.addEventListener('click', () => {
-          const howItWorksSec = document.getElementById('howItWorksSec');
-          if (howItWorksSec) {
-            howItWorksSec.scrollIntoView({ behavior: 'smooth' });
-          }
-        });
-      }
+      // Cleaned up landingHowBtn
 
       if (loginSkipBtn) {
         loginSkipBtn.addEventListener('click', () => {
           closePrefModal();
-          switchView('app');
-          fetchRandomDog();
+          if (window.__CH_INTERRUPTED_NEXT_DOG__) {
+            window.__CH_INTERRUPTED_NEXT_DOG__ = false;
+            fetchRandomDog();
+          } else if (document.getElementById('landingView').classList.contains('active')) {
+            switchView('app');
+            fetchRandomDog();
+          }
+        });
+      }
+
+      const loginGuestBtn = document.getElementById('loginGuestBtn');
+      if (loginGuestBtn) {
+        loginGuestBtn.addEventListener('click', () => {
+          document.getElementById('prefLoggedOutState').style.display = 'none';
+          document.getElementById('prefLoggedInState').style.display = 'block';
+          if (loggedInEmailText) loggedInEmailText.textContent = "Guest Profile";
         });
       }
 
@@ -5504,7 +5534,18 @@
       if (mobileShuffleBtn) {
         mobileShuffleBtn.addEventListener('click', () => {
           trackEvent('dog_shuffled');
-          fetchRandomDog();
+          const nextDogClicks = parseInt(localStorage.getItem('chattyhound_next_dog_clicks') || '0', 10);
+          const hasPromptedLogin = localStorage.getItem('chattyhound_prompted_login');
+          if (!userEmail && hasPromptedLogin !== 'true' && nextDogClicks >= 2) {
+            localStorage.setItem('chattyhound_prompted_login', 'true');
+            window.__CH_INTERRUPTED_NEXT_DOG__ = true;
+            openPrefModal();
+          } else {
+            if (!userEmail) {
+              localStorage.setItem('chattyhound_next_dog_clicks', (nextDogClicks + 1).toString());
+            }
+            fetchRandomDog();
+          }
         });
       }
 
