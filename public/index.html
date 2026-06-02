@@ -2618,17 +2618,14 @@
         padding-bottom: 0px !important;
       }
       body.chat-engaged .chat-section {
-        display: flex !important;
-        flex-direction: column;
-        flex: 1;
-        min-height: calc(100vh - 60px);
+        display: block !important;
         padding-bottom: 120px !important;
       }
       body.chat-engaged .chat-history {
-        flex: 1;
+        display: block;
       }
       body.chat-engaged .prompt-shortcuts-area {
-        margin-top: auto;
+        margin-top: 16px;
       }
       body.keyboard-active .prompt-shortcuts-area {
         display: none !important;
@@ -4681,7 +4678,7 @@
             if (!sentMessages.includes(cleanCand)) {
               finalPrompts.push(cand.text);
             }
-            if (finalPrompts.length >= 4) break;
+            if (finalPrompts.length >= 3) break;
           }
         } else {
           // 2. Contextual State: show top 3 prompts based on matching keywords in the conversation context
@@ -4717,6 +4714,9 @@
           // Limit to exactly 3 suggestions for conversational turns
           finalPrompts = finalPrompts.slice(0, 3);
         }
+
+        // Limit initial state to 3 as well just to be safe
+        finalPrompts = finalPrompts.slice(0, 3);
 
         // Render the suggestions
         quickPromptsContainer.innerHTML = '';
@@ -4880,7 +4880,9 @@
         } finally {
           chatInput.disabled = false;
           sendBtn.disabled = false;
-          chatInput.focus();
+          if (window.innerWidth >= 800) {
+            chatInput.focus();
+          }
         }
       }
 
@@ -4925,6 +4927,25 @@
           chatInput.blur();
         }
       });
+
+      // Robust keyboard detection via VisualViewport API
+      if (window.visualViewport) {
+        let maxVpHeight = window.visualViewport.height;
+        window.visualViewport.addEventListener('resize', () => {
+          if (window.visualViewport.height > maxVpHeight) {
+            maxVpHeight = window.visualViewport.height;
+          }
+          // If viewport height is close to max (keyboard closed) but input still thinks it's active
+          if (window.visualViewport.height > maxVpHeight - 100 && document.body.classList.contains('keyboard-active')) {
+            document.body.classList.remove('keyboard-active');
+            chatInput.blur();
+            setTimeout(() => {
+              window.scrollTo(0, 0);
+              scrollToBottom();
+            }, 100);
+          }
+        });
+      }
       
       const stickyInfoBtn = document.getElementById('stickyInfoBtn');
       if (stickyInfoBtn) {
