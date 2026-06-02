@@ -2615,12 +2615,14 @@
       }
       body.chat-engaged .scroll-content {
         padding-top: 60px !important;
+        padding-bottom: 0px !important;
       }
       body.chat-engaged .chat-section {
         display: flex !important;
         flex-direction: column;
         flex: 1;
-        min-height: calc(100vh - 80px);
+        min-height: calc(100vh - 60px);
+        padding-bottom: 120px !important;
       }
       body.chat-engaged .chat-history {
         flex: 1;
@@ -2629,6 +2631,9 @@
         margin-top: auto;
       }
       body.keyboard-active .prompt-shortcuts-area {
+        display: none !important;
+      }
+      body.chat-engaged #footerOverlay {
         display: none !important;
       }
     }
@@ -3044,6 +3049,7 @@
 
       <!-- Sticky Translucent Bottom Input Footer -->
       <footer class="footer-input-bar">
+        <div id="footerOverlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; cursor: pointer;"></div>
         <div class="input-row">
           <input type="text" class="chat-input" id="chatInput" placeholder="Ask about me..." disabled
             aria-label="Type your question to the dog here" autocomplete="off" autocorrect="off" spellcheck="false">
@@ -4746,12 +4752,9 @@
 
       function scrollToBottom() {
         if (scrollContent && window.innerWidth < 800) {
-          const messages = document.querySelectorAll('.msg-row');
-          if (messages.length > 0) {
-            messages[messages.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
-          } else {
+          setTimeout(() => {
             scrollContent.scrollTop = scrollContent.scrollHeight;
-          }
+          }, 50); // small delay to allow DOM updates (like prompt rendering)
         }
         const profileBody = document.querySelector('.profile-body');
         if (profileBody) {
@@ -4943,13 +4946,17 @@
         });
       }
 
+      const footerOverlay = document.getElementById('footerOverlay');
+      if (footerOverlay) {
+        footerOverlay.addEventListener('click', () => {
+          enterChatMode();
+        });
+      }
+
       const stickyChatBtn = document.getElementById('stickyChatBtn');
       if (stickyChatBtn) {
         stickyChatBtn.addEventListener('click', () => {
           enterChatMode();
-          if (chatInput && !chatInput.disabled) {
-             chatInput.focus();
-          }
         });
       }
 
@@ -4976,9 +4983,7 @@
           const chatSec = document.getElementById('chatSection');
           if (chatSec) {
             chatSec.scrollIntoView({ behavior: 'smooth' });
-            setTimeout(() => {
-              if (chatInput) chatInput.focus();
-            }, 400);
+            enterChatMode();
           }
         });
       }
