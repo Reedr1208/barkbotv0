@@ -2621,7 +2621,6 @@
         flex-direction: column;
         flex: 1;
         min-height: calc(100vh - 80px);
-        padding-bottom: 90px;
       }
       body.chat-engaged .chat-history {
         flex: 1;
@@ -4747,7 +4746,12 @@
 
       function scrollToBottom() {
         if (scrollContent && window.innerWidth < 800) {
-          scrollContent.scrollTop = scrollContent.scrollHeight;
+          const messages = document.querySelectorAll('.msg-row');
+          if (messages.length > 0) {
+            messages[messages.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
+          } else {
+            scrollContent.scrollTop = scrollContent.scrollHeight;
+          }
         }
         const profileBody = document.querySelector('.profile-body');
         if (profileBody) {
@@ -4826,8 +4830,9 @@
           trackEvent('first_chat_message_sent', { dog_name: currentDogName });
         }
         chatInput.value = '';
-        chatInput.disabled = true;
         chatInput.blur();
+        document.body.classList.remove('keyboard-active');
+        chatInput.disabled = true;
         sendBtn.disabled = true;
 
         showTypingIndicator();
