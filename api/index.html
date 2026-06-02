@@ -2633,9 +2633,6 @@
       body.keyboard-active .prompt-shortcuts-area {
         display: none !important;
       }
-      body.chat-engaged #footerOverlay {
-        display: none !important;
-      }
     }
     </style>
 </head>
@@ -4948,7 +4945,8 @@
 
       const footerOverlay = document.getElementById('footerOverlay');
       if (footerOverlay) {
-        footerOverlay.addEventListener('click', () => {
+        footerOverlay.addEventListener('click', (e) => {
+          e.preventDefault();
           enterChatMode();
         });
       }
@@ -5116,6 +5114,9 @@
 
       function enterChatMode() {
         document.body.classList.add('chat-engaged');
+        const footerOverlay = document.getElementById('footerOverlay');
+        if (footerOverlay) footerOverlay.style.display = 'none';
+
         setTimeout(() => {
           window.scrollTo(0, 0);
           scrollToBottom();
@@ -5124,6 +5125,8 @@
 
       function exitChatMode() {
         document.body.classList.remove('chat-engaged');
+        const footerOverlay = document.getElementById('footerOverlay');
+        if (footerOverlay) footerOverlay.style.display = 'block';
       }
 
       // Step-by-Step wizard controller
