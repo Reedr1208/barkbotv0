@@ -2568,7 +2568,72 @@
         overflow: hidden !important;
       }
     }
-  </style>
+    
+    /* Full-Screen Chat UX (Mobile Only) */
+    @media (max-width: 800px) {
+      body.chat-engaged .header {
+        display: none !important;
+      }
+      body.chat-engaged .sticky-dog-bar {
+        transform: translateY(0) !important;
+        background: var(--bg-card);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        position: fixed;
+        top: 0;
+        z-index: 1000;
+        box-shadow: none;
+      }
+      body.chat-engaged .sticky-dog-bar .sticky-back-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+      }
+      body.chat-engaged .sticky-dog-bar #stickyChatBtn {
+        display: none !important;
+      }
+      body.chat-engaged .sticky-dog-bar #stickyShelterBtn,
+      body.chat-engaged .sticky-dog-bar #stickyNextBtn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        font-weight: 800;
+      }
+      body.chat-engaged .sticky-dog-bar #stickyInfoBtn {
+        display: flex !important;
+      }
+      body.chat-engaged .hero-section,
+      body.chat-engaged .details-box,
+      body.chat-engaged .cta-grid,
+      body.chat-engaged .data-freshness-notice,
+      body.chat-engaged .chat-section-header,
+      body.chat-engaged #dogUnavailableCard,
+      body.chat-engaged #emptyStateCard {
+        display: none !important;
+      }
+      body.chat-engaged .scroll-content {
+        padding-top: 60px !important;
+      }
+      body.chat-engaged .chat-section {
+        display: flex !important;
+        flex-direction: column;
+        flex: 1;
+        min-height: calc(100vh - 80px);
+        padding-bottom: 90px;
+      }
+      body.chat-engaged .chat-history {
+        flex: 1;
+      }
+      body.chat-engaged .prompt-shortcuts-area {
+        margin-top: auto;
+      }
+      body.keyboard-active .prompt-shortcuts-area {
+        display: none !important;
+      }
+    }
+    </style>
 </head>
 
 <body>
@@ -2672,30 +2737,31 @@
 
       <!-- Sticky Condensed Dog Bar (appears on scroll, absolute overlay) -->
       <div class="sticky-dog-bar" id="stickyDogBar">
+        <button class="sticky-back-btn" id="stickyBackBtn" aria-label="Go back to profile" style="display:none; background:none; border:none; color:white; margin-right:8px; cursor:pointer; padding:4px;">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
         <img class="sticky-dog-avatar" id="stickyDogAvatar" src="" alt="">
         <div class="sticky-dog-info">
-          <div class="sticky-dog-name" id="stickyDogName"></div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div class="sticky-dog-name" id="stickyDogName"></div>
+            <button class="sticky-chat-btn" id="stickyInfoBtn" aria-label="Chat Info" style="display:none; background:rgba(255,255,255,0.1); color:white; border-radius:50%; width:20px; height:20px; padding:0; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </button>
+          </div>
           <div class="sticky-dog-meta" id="stickyDogMeta">—</div>
         </div>
-        <button class="sticky-chat-btn" id="stickyChatBtn" aria-label="Scroll to chat panel">Chat 💬</button>
-      </div>
-
-      <!-- Sticky Mobile Thumb Action Bar Overlay (Visible only <= 480px) -->
-      <div class="mobile-action-bar" id="mobileActionBar">
-        <button class="mobile-action-btn" id="mobileShuffleBtn" aria-label="Shuffle: Show another adoptable dog">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8" />
-          </svg>
-          <span>Next</span>
-        </button>
-        <button class="mobile-action-btn primary" id="mobileChatBtn" aria-label="Chat with current pup">
-          <span>Chat</span>
-        </button>
-        <a href="#" target="_blank" class="mobile-action-btn" id="mobileAdoptBtn"
-          aria-label="View official shelter page">
-          <span>Shelter 🛡️</span>
-        </a>
+        <div class="sticky-actions" id="stickyActionsGroup">
+          <button class="sticky-chat-btn" id="stickyChatBtn" aria-label="Scroll to chat panel">Chat 💬</button>
+          <a href="#" target="_blank" class="sticky-chat-btn" id="stickyShelterBtn" aria-label="View official shelter page" style="display:none; text-decoration:none; margin-right:6px; background:rgba(255,255,255,0.1); color:white;">Shelter 🛡️</a>
+          <button class="sticky-chat-btn" id="stickyNextBtn" aria-label="Next dog" style="display:none; background:var(--accent); color:var(--accent-text);">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;">
+              <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8" />
+            </svg>
+            Next
+          </button>
+        </div>
       </div>
 
       <!-- Scrollable content area -->
@@ -2958,7 +3024,7 @@
             </div>
 
             <!-- Dynamic AI Chat Trust Disclaimer Banner -->
-            <div class="chat-trust-banner" style="background: rgba(245,158,11,0.03); border: 1px dashed rgba(245,158,11,0.18); border-radius: 12px; padding: 10px 12px; font-size: 0.75rem; line-height: 1.4; color: var(--accent-hover); margin-bottom: 12px; display: flex; align-items: flex-start; gap: 6px;">
+            <div class="chat-trust-banner" id="chatTrustBanner" style="display:none; background: rgba(245,158,11,0.03); border: 1px dashed rgba(245,158,11,0.18); border-radius: 12px; padding: 10px 12px; font-size: 0.75rem; line-height: 1.4; color: var(--accent-hover); margin-bottom: 12px; align-items: flex-start; gap: 6px;">
               <span style="font-size: 0.85rem; margin-top: 1px;">⚠️</span>
               <span>I can help you understand this dog’s profile, but please confirm adoption, medical, and behavior details with the shelter.</span>
             </div>
@@ -2981,7 +3047,7 @@
       <footer class="footer-input-bar">
         <div class="input-row">
           <input type="text" class="chat-input" id="chatInput" placeholder="Ask about me..." disabled
-            aria-label="Type your question to the dog here">
+            aria-label="Type your question to the dog here" autocomplete="off" autocorrect="off" spellcheck="false">
           <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send message">
             <svg viewBox="0 0 24 24">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
@@ -3897,6 +3963,10 @@
         const isStaleFetch = () => fetchId !== activeDogFetchId;
 
         setAppState('loading');
+        if (typeof exitChatMode === 'function') {
+          exitChatMode();
+        }
+        window.scrollTo(0, 0);
 
         // Reset issue reporter button
         const reportIssueBtn = document.getElementById('reportIssueBtn');
@@ -4097,7 +4167,9 @@
           dogWeight.textContent = cleanWeightText(dog.weight || 'Unknown');
 
           // Restore action overlays on successful load
+          const mobileActionBar = document.getElementById('mobileActionBar');
           if (mobileActionBar) mobileActionBar.style.display = 'flex';
+          const stickyDogBar = document.getElementById('stickyDogBar');
           if (stickyDogBar) stickyDogBar.style.display = 'flex';
 
           // ──── CLIENT-SIDE LIFESTYLE COMPATIBILITY ENGINE & MATCH SENTENCE GENERATOR ────
@@ -4322,6 +4394,11 @@
             mobileAdoptBtn.href = dog.url;
           }
 
+          const stickyShelterBtn = document.getElementById('stickyShelterBtn');
+          if (stickyShelterBtn && dog.url) {
+            stickyShelterBtn.href = dog.url;
+          }
+
           chatInput.disabled = false;
           sendBtn.disabled = false;
 
@@ -4361,6 +4438,7 @@
 
           const introCard = document.createElement('div');
           introCard.className = 'chat-intro-card';
+          introCard.id = 'chatIntroCard';
           if (loadOptions.resumeChat) {
             introCard.innerHTML = `
             <div class="chat-intro-title">💬 Continuing your chat with ${currentDogName} 🐾</div>
@@ -4373,6 +4451,7 @@
               🔒 ChattyHound uses available shelter profile details to help you get to know each dog. Always confirm medical, behavioral, and adoption details directly with shelter staff.
             </div>`;
           }
+          introCard.style.display = 'none'; // Hidden by default in chat-engaged mode
           chatHistory.appendChild(introCard);
 
           let resumeMsgsLoaded = 0;
@@ -4661,7 +4740,6 @@
             }
           };
           btn.addEventListener('click', handleImmediateSend);
-          btn.addEventListener('pointerdown', handleImmediateSend);
           
           quickPromptsContainer.appendChild(btn);
         });
@@ -4749,6 +4827,7 @@
         }
         chatInput.value = '';
         chatInput.disabled = true;
+        chatInput.blur();
         sendBtn.disabled = true;
 
         showTypingIndicator();
@@ -4821,16 +4900,67 @@
       });
       // Force viewport scroll reset to fix iOS keyboard layout displacement bug
       chatInput.addEventListener('blur', () => {
+        document.body.classList.remove('keyboard-active');
         setTimeout(() => {
           window.scrollTo(0, 0);
         }, 150);
       });
       chatInput.addEventListener('focus', () => {
+        enterChatMode();
+        document.body.classList.add('keyboard-active');
         setTimeout(() => {
           window.scrollTo(0, 0);
           scrollToBottom();
         }, 150);
       });
+
+      // Dismiss keyboard on outside tap
+      document.addEventListener('touchstart', (e) => {
+        if (document.body.classList.contains('keyboard-active') && e.target !== chatInput && e.target.closest('.footer-input-bar') === null && e.target.closest('#quickPromptsContainer') === null) {
+          chatInput.blur();
+        }
+      });
+      
+      const stickyInfoBtn = document.getElementById('stickyInfoBtn');
+      if (stickyInfoBtn) {
+        stickyInfoBtn.addEventListener('click', () => {
+          const trustBanner = document.getElementById('chatTrustBanner');
+          const introCard = document.getElementById('chatIntroCard');
+          if (trustBanner && introCard) {
+            const isHidden = trustBanner.style.display === 'none';
+            trustBanner.style.display = isHidden ? 'flex' : 'none';
+            introCard.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) {
+              const chatSec = document.getElementById('chatSection');
+              if (chatSec) chatSec.scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        });
+      }
+
+      const stickyChatBtn = document.getElementById('stickyChatBtn');
+      if (stickyChatBtn) {
+        stickyChatBtn.addEventListener('click', () => {
+          enterChatMode();
+          if (chatInput && !chatInput.disabled) {
+             chatInput.focus();
+          }
+        });
+      }
+
+      const stickyBackBtn = document.getElementById('stickyBackBtn');
+      if (stickyBackBtn) {
+        stickyBackBtn.addEventListener('click', () => {
+          exitChatMode();
+        });
+      }
+
+      const stickyNextBtn = document.getElementById('stickyNextBtn');
+      if (stickyNextBtn) {
+        stickyNextBtn.addEventListener('click', () => {
+          fetchRandomDog();
+        });
+      }
 
       // Anchor smooth-scrolling ask CTA
       const askBtn = document.getElementById('askBtn');
@@ -4972,6 +5102,18 @@
           appView.classList.add('hidden');
           if (footerInputBar) footerInputBar.style.display = 'none';
         }
+      }
+
+      function enterChatMode() {
+        document.body.classList.add('chat-engaged');
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          scrollToBottom();
+        }, 50);
+      }
+
+      function exitChatMode() {
+        document.body.classList.remove('chat-engaged');
       }
 
       // Step-by-Step wizard controller
@@ -5662,20 +5804,7 @@
         heroObserver.observe(heroSection);
       }
 
-      // Sticky Chat button scrolls to chat input
-      const stickyChatBtn = document.getElementById('stickyChatBtn');
-      if (stickyChatBtn) {
-        stickyChatBtn.addEventListener('click', () => {
-          trackEvent('sticky_chat_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
-          const chatSec = document.getElementById('chatSection');
-          if (chatSec && scrollContent) {
-            chatSec.scrollIntoView({ behavior: 'smooth' });
-            setTimeout(() => {
-              if (chatInput) chatInput.focus();
-            }, 400);
-          }
-        });
-      }
+
 
       // ─── SAVED DOGS FEATURE ────────────────────────────────────────────────
 

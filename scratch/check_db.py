@@ -1,36 +1,17 @@
 import os
-import sys
-import psycopg2
+import json
+from supabase import create_client, Client
+from dotenv import load_dotenv
 
-sys.path.append("/Users/chayev/repos/Reedr1208/barkbotv0")
-env_file = "/Users/chayev/repos/Reedr1208/barkbotv0/.env.local"
-if os.path.exists(env_file):
-    with open(env_file, "r") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" in line:
-                key, val = line.split("=", 1)
-                key = key.strip()
-                val = val.strip()
-                if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
-                    val = val[1:-1]
-                os.environ[key] = val
+load_dotenv()
 
-db_url = os.environ.get("STORAGE_POSTGRES_URL") or os.environ.get("storage_POSTGRES_URL")
-if not db_url:
-    print("Error: No database connection URL found.")
-    sys.exit(1)
+url = os.getenv("SUPABASE_URL")
+key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-try:
-    conn = psycopg2.connect(db_url)
-    print("Successfully connected to the database via PostgreSQL!")
-    cursor = conn.cursor()
-    cursor.execute("SELECT version();")
-    db_version = cursor.fetchone()
-    print("Database Version:", db_version)
-    cursor.close()
-    conn.close()
-except Exception as e:
-    print("Database Connection Error:", e)
+supabase = create_client(url, key)
+
+res = supabase.table("animal_persona_profiles").select("count", count="exact").execute()
+print(f"Total persona profiles: {res.count}")
+
+active_res = supabase.table("animal_persona_profiles").select("count", count="exact").eq("archived", False).execute()
+print(f"Active persona profiles: {active_res.count}")
