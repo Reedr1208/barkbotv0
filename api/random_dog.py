@@ -144,22 +144,13 @@ class handler(BaseHTTPRequestHandler):
                 dist_ny = (user_lat - 40.7128)**2 + (user_lon - (-74.0060))**2
                 closer_shelter = "PIMA" if dist_tucson < dist_ny else "MUDDYPAWS"
 
-            # Add include_hssa flag. HSSA is currently only available for testing by reedr1208@gmail.com
-            include_hssa = query_params.get("include_hssa", ["false"])[0].strip().lower() == "true"
-            if email == "reedr1208@gmail.com":
-                include_hssa = True
-            
             # Fetch all dog IDs, names, and filterable fields from active_dogs
             active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").execute()
             if not active_res.data:
                 self._send_response(404, {"error": "No dogs found in active_dogs."})
                 return
                 
-            active_dogs = {}
-            for row in active_res.data:
-                if row.get("shelter_id") == "HSSA" and not include_hssa:
-                    continue
-                active_dogs[row["animal_id"]] = row
+            active_dogs = {row["animal_id"]: row for row in active_res.data}
             
             # Fetch from animal_persona_profiles to get archetype data and freshness
             persona_res = client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at").execute()
@@ -231,7 +222,7 @@ class handler(BaseHTTPRequestHandler):
                             "gender": {"active": has_gender, "preferred": pref_gender, "actual": dog.get("gender") or "Unknown", "matched": False},
                             "age": {"active": has_age, "preferred": pref_age, "actual": dog.get("age") or "Unknown", "matched": False},
                             "size": {"active": has_size, "preferred": pref_size, "actual": dog.get("weight") or "Unknown", "matched": False},
-                            "location": {"active": has_location, "preferred": pref_location, "actual": "Tucson, AZ" if dog.get("shelter_id") == "PIMA" else "New York, NY", "matched": False}
+                            "location": {"active": has_location, "preferred": pref_location, "actual": "Tucson, AZ" if dog.get("shelter_id") in ("PIMA", "HSSA") else "New York, NY", "matched": False}
                         }
                         
                         # 1. Gender Filter
@@ -267,10 +258,14 @@ class handler(BaseHTTPRequestHandler):
                             
                         # 4. Location Filter
                         if has_location:
-                            pref_shelter = "PIMA" if pref_location == "tucson" else "MUDDYPAWS"
-                            if dog.get("shelter_id") == pref_shelter:
-                                score += 1
-                                details["location"]["matched"] = True
+                            if pref_location == "tucson":
+                                if dog.get("shelter_id") in ("PIMA", "HSSA"):
+                                    score += 1
+                                    details["location"]["matched"] = True
+                            else:
+                                if dog.get("shelter_id") == "MUDDYPAWS":
+                                    score += 1
+                                    details["location"]["matched"] = True
                         else:
                             # User has no location preference but coordinates are available
                             if closer_shelter and dog.get("shelter_id") == closer_shelter:
