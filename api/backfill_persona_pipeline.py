@@ -58,6 +58,13 @@ def main():
             # PIMA requires bio > 1000. MuddyPaws has no restriction.
             if shelter_id == "PIMA" and len(bio) <= 1000:
                 continue
+                
+            # HSSA requires a minimum description length parameter
+            if shelter_id == "HSSA":
+                desc = row.get("description") or ""
+                min_desc_len = int(os.environ.get("MIN_HSSA_DESC_LENGTH", "500"))
+                if len(desc) <= min_desc_len:
+                    continue
             
             # Skip dogs that already have prompts
             if aid in existing_prompt_ids:

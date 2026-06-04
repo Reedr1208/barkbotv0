@@ -144,12 +144,20 @@ class handler(BaseHTTPRequestHandler):
                 dist_ny = (user_lat - 40.7128)**2 + (user_lon - (-74.0060))**2
                 closer_shelter = "PIMA" if dist_tucson < dist_ny else "MUDDYPAWS"
 
+            # Add include_hssa flag
+            include_hssa = query_params.get("include_hssa", ["false"])[0].strip().lower() == "true"
+            
             # Fetch all dog IDs, names, and filterable fields from active_dogs
             active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").execute()
             if not active_res.data:
                 self._send_response(404, {"error": "No dogs found in active_dogs."})
                 return
-            active_dogs = {row["animal_id"]: row for row in active_res.data}
+                
+            active_dogs = {}
+            for row in active_res.data:
+                if row.get("shelter_id") == "HSSA" and not include_hssa:
+                    continue
+                active_dogs[row["animal_id"]] = row
             
             # Fetch from animal_persona_profiles to get archetype data and freshness
             persona_res = client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at").execute()
