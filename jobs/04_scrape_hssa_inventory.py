@@ -215,11 +215,11 @@ def scrape_inventory() -> None:
     start_page = get_next_page(client)
     print(f"Resuming HSSA inventory scrape from page {start_page}...")
 
-    # Dynamic install of Playwright Firefox if running in Vercel environment
+    # Dynamic install of Playwright Chromium if running in Vercel environment
     import os
     if "VERCEL" in os.environ or "storage_SUPABASE_URL" in os.environ:
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/tmp/ms-playwright"
-        os.system("python -m playwright install firefox")
+        os.system("python -m playwright install chromium")
 
     from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
     from playwright.sync_api import sync_playwright
@@ -231,7 +231,7 @@ def scrape_inventory() -> None:
     status = "success"
 
     with sync_playwright() as p:
-        browser = p.firefox.launch(headless=True)
+        browser = p.chromium.launch(headless=True)
         context = browser.new_context(
             viewport={"width": 1600, "height": 1200},
             user_agent=USER_AGENT,
