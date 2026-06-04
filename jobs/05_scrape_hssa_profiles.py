@@ -15,8 +15,7 @@ from bs4 import BeautifulSoup
 from supabase import create_client
 
 # Import HSSA specific scraping logic
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from WorkingFiles.hssa_profile_scraper import build_record, extension_from_response_or_url
+from lib_hssa_parser import build_record, extension_from_response_or_url
 
 HEADERS = {
     "User-Agent": (
