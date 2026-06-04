@@ -306,6 +306,31 @@ class handler(BaseHTTPRequestHandler):
             # Separate candidates into unviewed and viewed
             unviewed_ids = [aid for aid in valid_ids if aid not in viewed_ids]
             
+            def select_weighted_dog(candidates):
+                if not candidates:
+                    return None
+                if len(candidates) == 1:
+                    return candidates[0]
+                
+                try:
+                    res = client.table("animals").select("animal_id, bio, description").in_("animal_id", candidates).execute()
+                    lengths = {}
+                    for row in res.data:
+                        b_len = len(row.get("bio") or "")
+                        d_len = len(row.get("description") or "")
+                        lengths[row["animal_id"]] = max(b_len, d_len)
+                    
+                    weights = []
+                    for cid in candidates:
+                        # Add a baseline weight so even empty bios have a non-zero chance,
+                        # but longer bios are significantly more likely to be chosen.
+                        weights.append(lengths.get(cid, 0) + 10)
+                        
+                    return random.choices(candidates, weights=weights, k=1)[0]
+                except Exception as e:
+                    # Fallback to uniform random if DB fetch fails
+                    return random.choice(candidates)
+            
             random_id = None
 
             if unviewed_ids:
@@ -318,9 +343,9 @@ class handler(BaseHTTPRequestHandler):
                 unviewed_stale = [aid for aid in best_unviewed_candidates if not fresh_status[aid]]
                 
                 if unviewed_fresh:
-                    random_id = random.choice(unviewed_fresh)
+                    random_id = select_weighted_dog(unviewed_fresh)
                 else:
-                    random_id = random.choice(unviewed_stale)
+                    random_id = select_weighted_dog(unviewed_stale)
             else:
                 # All dogs viewed. Reset viewed list and select from all top-scoring dogs in the system
                 max_score = max(scored_dogs.values()) if scored_dogs else 0
@@ -330,9 +355,9 @@ class handler(BaseHTTPRequestHandler):
                 all_stale = [aid for aid in best_candidates if not fresh_status[aid]]
                 
                 if all_fresh:
-                    random_id = random.choice(all_fresh)
+                    random_id = select_weighted_dog(all_fresh)
                 else:
-                    random_id = random.choice(all_stale)
+                    random_id = select_weighted_dog(all_stale)
 
             # Determine whether preferences are matched for the selected dog
             if preferences_configured and random_id:

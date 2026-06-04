@@ -63,19 +63,18 @@ class handler(BaseHTTPRequestHandler):
             for row in animals_res.data:
                 aid = row["animal_id"]
                 bio = row.get("bio") or ""
+                desc = row.get("description") or ""
                 shelter_id = active_dogs_map.get(aid)
                 
                 if shelter_id:
-                    # PIMA requires bio > 1000. MuddyPaws has no restriction.
-                    if shelter_id == "PIMA" and len(bio) <= 1000:
+                    # All dogs must have at least 400 characters of text
+                    max_len = max(len(bio), len(desc))
+                    if max_len <= 400:
                         continue
                         
-                    # HSSA requires a minimum description length parameter
-                    if shelter_id == "HSSA":
-                        desc = row.get("description") or ""
-                        min_desc_len = int(os.environ.get("MIN_HSSA_DESC_LENGTH", "500"))
-                        if len(desc) <= min_desc_len:
-                            continue
+                    # PIMA requires bio > 1000.
+                    if shelter_id == "PIMA" and len(bio) <= 1000:
+                        continue
                             
                     eligible_animal_ids.append(aid)
 
