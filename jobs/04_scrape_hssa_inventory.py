@@ -125,6 +125,12 @@ def parse_cards_from_html(html: str, scraped_at: str) -> List[Dict[str, Optional
     rows = []
     for card in cards:
         href = urljoin(BASE_URL, card.get("href") or "")
+        
+        # Filter out obvious non-dogs based on URL patterns
+        lower_href = href.lower()
+        if any(lower_href.endswith(slug) for slug in ["-cat", "-kitten", "-rabbit", "-guinea-pig", "-bird", "-reptile", "-small-furry"]):
+            continue
+            
         numeric_id = get_pet_numeric_id(href)
         if not numeric_id:
             continue

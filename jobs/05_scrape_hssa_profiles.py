@@ -295,6 +295,16 @@ def main() -> int:
                         print(json.dumps({"url": url, "error": f"Failed to delete after HTTP {exc.response.status_code}: {str(del_exc)}"}, ensure_ascii=False), file=sys.stderr)
                 else:
                     print(json.dumps({"url": url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
+            except ValueError as exc:
+                if str(exc) == "NOT_A_DOG":
+                    try:
+                        store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
+                        print(json.dumps({"animal_id": aid, "result": "removed_from_active_dogs_not_a_dog"}, ensure_ascii=False))
+                    except Exception as del_exc:
+                        print(json.dumps({"url": url, "error": f"Failed to delete NOT_A_DOG: {str(del_exc)}"}, ensure_ascii=False), file=sys.stderr)
+                else:
+                    errors += 1
+                    print(json.dumps({"url": url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
             except Exception as exc:
                 errors += 1
                 print(json.dumps({"url": url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)

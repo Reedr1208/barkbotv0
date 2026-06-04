@@ -271,6 +271,12 @@ def pet_id_from_html(html_text: str, pet: Optional[dict[str, Any]] = None) -> st
 
 def build_record(html_text: str, pet_id: Optional[str] = None) -> dict[str, Any]:
     pet = extract_pet_details(html_text)
+    
+    # Ensure this is a dog (petSpeciesId == 1)
+    species_id = pet.get("petSpeciesId")
+    if species_id is not None and species_id != 1:
+        raise ValueError("NOT_A_DOG")
+        
     pet_id = str(pet_id or pet_id_from_html(html_text, pet))
     url = BASE_URL.format(pet_id=pet_id)
 

@@ -1,0 +1,29 @@
+name: One-Time Cleanup HSSA Cats
+
+on:
+  workflow_dispatch: # allow manual triggering
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install Python 3.11
+        run: uv python install 3.11
+
+      - name: Install Dependencies
+        run: |
+          uv venv
+          uv pip install -r requirements.txt
+
+      - name: Run Cleanup Script
+        env:
+          storage_SUPABASE_URL: ${{ secrets.storage_SUPABASE_URL }}
+          storage_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.storage_SUPABASE_SERVICE_ROLE_KEY }}
+        run: uv run python jobs/one_time_cleanup_cats.py
