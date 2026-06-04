@@ -1,0 +1,30 @@
+name: Scrape HSSA Profiles
+
+on:
+  schedule:
+    # Run at minute 45 of every hour
+    - cron: '45 * * * *'
+  workflow_dispatch: # allow manual triggering
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install Python 3.11
+        run: uv python install 3.11
+
+      - name: Install Dependencies
+        run: uv pip install --system -r requirements.txt
+
+      - name: Run Profile Scraper
+        env:
+          storage_SUPABASE_URL: ${{ secrets.storage_SUPABASE_URL }}
+          storage_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.storage_SUPABASE_SERVICE_ROLE_KEY }}
+        run: python jobs/05_scrape_hssa_profiles.py
