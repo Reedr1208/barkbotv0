@@ -19,7 +19,7 @@ def get_supabase_client():
         raise RuntimeError("Missing Supabase environment variables.")
     return create_client(supabase_url, supabase_key)
 
-DEFAULT_OG_IMAGE = f"{CANONICAL_ORIGIN}/og-image.jpg"
+DEFAULT_OG_IMAGE = f"{CANONICAL_ORIGIN}/chattyhound_og.png"
 
 
 def _clean_age(age_str):
