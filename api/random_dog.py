@@ -144,8 +144,10 @@ class handler(BaseHTTPRequestHandler):
                 dist_ny = (user_lat - 40.7128)**2 + (user_lon - (-74.0060))**2
                 closer_shelter = "PIMA" if dist_tucson < dist_ny else "MUDDYPAWS"
 
-            # Add include_hssa flag
+            # Add include_hssa flag. HSSA is currently only available for testing by reedr1208@gmail.com
             include_hssa = query_params.get("include_hssa", ["false"])[0].strip().lower() == "true"
+            if email == "reedr1208@gmail.com":
+                include_hssa = True
             
             # Fetch all dog IDs, names, and filterable fields from active_dogs
             active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").execute()
