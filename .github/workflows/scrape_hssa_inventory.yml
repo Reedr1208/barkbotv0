@@ -21,13 +21,15 @@ jobs:
         run: uv python install 3.11
 
       - name: Install Dependencies
-        run: uv pip install --system -r requirements.txt
+        run: |
+          uv venv
+          uv pip install -r requirements.txt
 
       - name: Install Playwright Browsers
-        run: python -m playwright install chromium
+        run: uv run python -m playwright install chromium
 
       - name: Run Inventory Scraper
         env:
           storage_SUPABASE_URL: ${{ secrets.storage_SUPABASE_URL }}
           storage_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.storage_SUPABASE_SERVICE_ROLE_KEY }}
-        run: python jobs/04_scrape_hssa_inventory.py
+        run: uv run python jobs/04_scrape_hssa_inventory.py
