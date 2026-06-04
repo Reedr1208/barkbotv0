@@ -28,6 +28,14 @@
     {
       "path": "/api/scrape_muddypaws",
       "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/scrape_hssa_inventory",
+      "schedule": "30 */4 * * *"
+    },
+    {
+      "path": "/api/scrape_hssa_profiles",
+      "schedule": "45 * * * *"
     }
   ]
 }

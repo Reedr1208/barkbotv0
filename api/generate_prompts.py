@@ -56,8 +56,8 @@ class handler(BaseHTTPRequestHandler):
                 self._send_response(200, {"message": "No active dogs found"})
                 return
 
-            # 2. Fetch all animals with bio length checking
-            animals_res = sb_client.table("animals").select("animal_id, bio").execute()
+            # 2. Fetch all animals with bio/description length checking
+            animals_res = sb_client.table("animals").select("animal_id, bio, description").execute()
             
             eligible_animal_ids = []
             for row in animals_res.data:
@@ -69,6 +69,14 @@ class handler(BaseHTTPRequestHandler):
                     # PIMA requires bio > 1000. MuddyPaws has no restriction.
                     if shelter_id == "PIMA" and len(bio) <= 1000:
                         continue
+                        
+                    # HSSA requires a minimum description length parameter
+                    if shelter_id == "HSSA":
+                        desc = row.get("description") or ""
+                        min_desc_len = int(os.environ.get("MIN_HSSA_DESC_LENGTH", "500"))
+                        if len(desc) <= min_desc_len:
+                            continue
+                            
                     eligible_animal_ids.append(aid)
 
             if not eligible_animal_ids:
