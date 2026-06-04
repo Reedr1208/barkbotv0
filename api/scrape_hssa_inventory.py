@@ -50,6 +50,20 @@ class handler(BaseHTTPRequestHandler):
             )
             statusCode = 200 if proc.returncode == 0 else 500
             
+            if proc.returncode != 0:
+                logging.error(f"Subprocess failed with returncode {proc.returncode}")
+            else:
+                logging.info(f"Subprocess succeeded (returncode 0)")
+            
+            if proc.stdout:
+                logging.info("--- STDOUT ---")
+                for line in proc.stdout.splitlines()[-50:]:
+                    logging.info(line)
+            if proc.stderr:
+                logging.error("--- STDERR ---")
+                for line in proc.stderr.splitlines()[-50:]:
+                    logging.error(line)
+            
             body = {
                 "ok": proc.returncode == 0,
                 "returncode": proc.returncode,
@@ -58,6 +72,7 @@ class handler(BaseHTTPRequestHandler):
             }
         except subprocess.TimeoutExpired as e:
             statusCode = 504
+            logging.error("Subprocess timed out.")
             stdout_str = e.stdout.decode('utf-8', errors='ignore') if isinstance(e.stdout, bytes) else (e.stdout or "")
             stderr_str = e.stderr.decode('utf-8', errors='ignore') if isinstance(e.stderr, bytes) else (e.stderr or "")
             body = {
@@ -69,8 +84,10 @@ class handler(BaseHTTPRequestHandler):
             }
         except Exception as e:
             statusCode = 500
+            logging.exception("An unexpected error occurred while executing the subprocess.")
             body = {"ok": False, "error": str(e)}
 
+        logging.info(f"Returning HTTP {statusCode}")
         self.send_response(statusCode)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
