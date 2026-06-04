@@ -71,10 +71,6 @@ class handler(BaseHTTPRequestHandler):
                     max_len = max(len(bio), len(desc))
                     if max_len <= 400:
                         continue
-                        
-                    # PIMA requires bio > 1000.
-                    if shelter_id == "PIMA" and len(bio) <= 1000:
-                        continue
                             
                     eligible_animal_ids.append(aid)
 
