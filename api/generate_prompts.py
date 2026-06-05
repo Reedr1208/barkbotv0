@@ -117,7 +117,11 @@ class handler(BaseHTTPRequestHandler):
             targets.sort(key=lambda x: x[1])
             
             target_ids = [t[0] for t in targets]
-            logging.info(f"Found {len(target_ids)} dogs requiring prompt generation.")
+            logging.info(f"Found {len(target_ids)} dogs requiring prompt generation (queue size: {len(target_ids)}).")
+            logging.info("Queue details (animal_id: last_updated):")
+            for aid, dt in targets:
+                dt_str = "missing" if dt == datetime.min.replace(tzinfo=timezone.utc) else dt.isoformat()
+                logging.info(f"  - {aid}: {dt_str}")
 
             processed_count = 0
             
