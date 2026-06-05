@@ -2345,7 +2345,8 @@ start with prompts">
                 currentDogName = dog.name || 'this dog';
                 dogName.textContent = dog.name || 'Unknown';
                 chatTitleName.textContent = currentDogName;
-                dogId.textContent = dog.animal_id ? `${dog.animal_id} • PACC` : '';
+                const shortLoc = dog.located_at ? (dog.located_at.includes('Muddy') ? 'MP' : (dog.located_at.includes('Humane') || dog.located_at.includes('HSSA') ? 'HSSA' : (dog.located_at.includes('Animal Care Centers') || dog.located_at.includes('NYC') ? 'NYCACC' : 'PACC'))) : 'PACC';
+                dogId.textContent = dog.animal_id ? `${dog.animal_id} • ${shortLoc}` : '';
                 if (locationTextEl) {
                     locationTextEl.textContent = dog.located_at || 'Pima Animal Care Center';
                 }

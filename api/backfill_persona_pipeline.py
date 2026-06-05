@@ -56,16 +56,25 @@ def main():
         shelter_id = active_dogs_map.get(aid)
         
         if shelter_id:
-            # All dogs must have at least 400 characters of text
-            max_len = max(len(bio), len(desc))
-            if max_len <= 400:
-                continue
+            s_id_upper = shelter_id.upper()
+            bio_len = len(bio)
+            desc_len = len(desc)
+            if s_id_upper in ("NYCACC", "MUDDYPAWS", "PIMA"):
+                if bio_len < 1500 and desc_len < 1500:
+                    continue
+            elif s_id_upper == "HSSA":
+                if bio_len < 500 and desc_len < 500:
+                    continue
+            else:
+                if max(bio_len, desc_len) <= 400:
+                    continue
             
             # Skip dogs that already have prompts
             if aid in existing_prompt_ids:
                 continue
                 
             dogs.append(row)
+
 
     if not dogs:
         logging.info("No eligible dogs found in the database.")

@@ -4111,7 +4111,7 @@
           currentDogName = dog.name || 'this dog';
           dogName.textContent = dog.name || 'Unknown';
           chatTitleName.textContent = currentDogName;
-          const shortLoc = dog.located_at && dog.located_at.includes('Muddy') ? 'MP' : 'PACC';
+          const shortLoc = dog.located_at ? (dog.located_at.includes('Muddy') ? 'MP' : (dog.located_at.includes('Humane') || dog.located_at.includes('HSSA') ? 'HSSA' : (dog.located_at.includes('Animal Care Centers') || dog.located_at.includes('NYC') ? 'NYCACC' : 'PACC'))) : 'PACC';
           dogId.textContent = dog.animal_id ? `${dog.animal_id} • ${shortLoc}` : '';
           if (locationTextEl) {
             locationTextEl.textContent = dog.located_at || 'Pima Animal Care Center';
@@ -6017,7 +6017,7 @@
               <!-- Gender/Age/Weight/Breed mini pills or badges -->
               <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
                 <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.gender || 'Unknown'}</span>
-                <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.located_at ? (d.located_at.includes('Muddy') ? 'MP' : d.located_at.replace('Pima Animal Care Center', 'PACC')) : 'PACC'}</span>
+                <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.located_at ? (d.located_at.includes('Muddy') ? 'MP' : (d.located_at.includes('Humane') || d.located_at.includes('HSSA') ? 'HSSA' : (d.located_at.includes('Animal Care Centers') || d.located_at.includes('NYC') ? 'NYCACC' : d.located_at.replace('Pima Animal Care Center', 'PACC')))) : 'PACC'}</span>
               </div>
             </div>
             <!-- Right side Action Buttons (Share and Heart toggle) -->

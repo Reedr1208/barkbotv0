@@ -159,10 +159,7 @@ class handler(BaseHTTPRequestHandler):
             # Intersect to find valid current dogs that have a persona
             valid_ids = list(set(active_dogs.keys()).intersection(persona_data.keys()))
             
-            # Hide NYCACC from users other than the tester
-            if email != "reedr1208@gmail.com":
-                valid_ids = [aid for aid in valid_ids if active_dogs[aid].get("shelter_id") != "NYCACC"]
-                
+
             if not valid_ids:
                 self._send_response(404, {"error": "No dogs with generated personas found."})
                 return
