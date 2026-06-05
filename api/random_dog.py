@@ -136,13 +136,13 @@ class handler(BaseHTTPRequestHandler):
             except Exception:
                 pass
 
-            closer_shelter = None
+            closer_region = None
             if user_lat is not None and user_lon is not None:
                 # Tucson, AZ coordinates: 32.2226, -110.9747
                 # New York, NY coordinates: 40.7128, -74.0060
                 dist_tucson = (user_lat - 32.2226)**2 + (user_lon - (-110.9747))**2
                 dist_ny = (user_lat - 40.7128)**2 + (user_lon - (-74.0060))**2
-                closer_shelter = "PIMA" if dist_tucson < dist_ny else "MUDDYPAWS"
+                closer_region = "TUCSON" if dist_tucson < dist_ny else "NYC"
 
             # Fetch all dog IDs, names, and filterable fields from active_dogs
             active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").execute()
@@ -158,6 +158,11 @@ class handler(BaseHTTPRequestHandler):
             
             # Intersect to find valid current dogs that have a persona
             valid_ids = list(set(active_dogs.keys()).intersection(persona_data.keys()))
+            
+            # Hide NYCACC from users other than the tester
+            if email != "reedr1208@gmail.com":
+                valid_ids = [aid for aid in valid_ids if active_dogs[aid].get("shelter_id") != "NYCACC"]
+                
             if not valid_ids:
                 self._send_response(404, {"error": "No dogs with generated personas found."})
                 return
@@ -263,13 +268,15 @@ class handler(BaseHTTPRequestHandler):
                                     score += 1
                                     details["location"]["matched"] = True
                             else:
-                                if dog.get("shelter_id") == "MUDDYPAWS":
+                                if dog.get("shelter_id") in ("MUDDYPAWS", "NYCACC"):
                                     score += 1
                                     details["location"]["matched"] = True
                         else:
                             # User has no location preference but coordinates are available
-                            if closer_shelter and dog.get("shelter_id") == closer_shelter:
-                                score += 0.8 # Promoted as closer dog
+                            if closer_region == "NYC" and dog.get("shelter_id") in ("MUDDYPAWS", "NYCACC"):
+                                score += 0.8
+                            elif closer_region == "TUCSON" and dog.get("shelter_id") in ("PIMA", "HSSA"):
+                                score += 0.8
 
                         # Tie-breaker for archetype diversity (layer below preferences)
                         dog_arch = persona_data[aid].get("primary_archetype_key")
@@ -283,8 +290,11 @@ class handler(BaseHTTPRequestHandler):
                 for aid in valid_ids:
                     score = 0
                     dog = active_dogs[aid]
-                    if closer_shelter and dog.get("shelter_id") == closer_shelter:
+                    if closer_region == "NYC" and dog.get("shelter_id") in ("MUDDYPAWS", "NYCACC"):
                         score += 0.8
+                    elif closer_region == "TUCSON" and dog.get("shelter_id") in ("PIMA", "HSSA"):
+                        score += 0.8
+                        
                     dog_arch = persona_data[aid].get("primary_archetype_key")
                     if dog_arch and dog_arch not in last_2_archetypes:
                         score += 0.5
