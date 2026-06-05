@@ -46,9 +46,18 @@ from playwright.async_api import async_playwright, TimeoutError as PlaywrightTim
 
 import os
 import hashlib
+import mimetypes
+from urllib.parse import urlparse
 import requests
 from supabase import create_client
-from typing import Tuple
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    )
+}
 
 TRACKED_FIELDS = [
     "url",
@@ -103,21 +112,28 @@ def get_settings() -> Settings:
         raise RuntimeError(f"Missing required environment variable: {exc.args[0]}") from exc
 
 
+def extension_from_response_or_url(response: requests.Response, image_url: str) -> str:
+    content_type = (response.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+    ext = mimetypes.guess_extension(content_type)
+
+    if not ext:
+        ext = Path(urlparse(image_url).path).suffix
+
+    if not ext:
+        ext = ".jpg"
+
+    if ext == ".jpe":
+        ext = ".jpg"
+
+    return ext
+
+
 def download_image_bytes(image_url: str) -> Tuple[bytes, str]:
     response = requests.get(image_url, headers=HEADERS, timeout=30)
     response.raise_for_status()
     ext = extension_from_response_or_url(response, image_url)
     return response.content, ext
 
-
-def fetch_record(url: str, numeric_id: str) -> Dict[str, Any]:
-    response = requests.get(url, headers=HEADERS, timeout=30)
-    response.raise_for_status()
-    record = build_record(response.text, pet_id=numeric_id)
-    record["data_updated"] = now_iso()
-    record["image_file"] = None
-    record["image_public_url"] = None
-    return record
 
 
 def record_hash(record: Dict[str, Any]) -> str:
