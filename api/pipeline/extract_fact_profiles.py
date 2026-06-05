@@ -8,6 +8,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 class FactProfileExtraction(BaseModel):
     dog_name: str = Field(description="The dog's name.")
+    intro_summary: Optional[str] = Field(description="A ~3 sentence summary of the dog touching on facts or fun facts that are either important or unique.")
     age_summary: Optional[str] = Field(description="Short summary of age.")
     weight_summary: Optional[str] = Field(description="Short summary of weight.")
     breed_or_description: Optional[str] = Field(description="Short summary of breed or visual description.")

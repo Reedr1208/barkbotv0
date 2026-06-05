@@ -979,7 +979,7 @@
           }
 
           // Render Shelter Biography Story
-          const bioText = (dog.description || dog.bio || '').trim();
+          const bioText = (dog.intro_summary || dog.description || dog.bio || '').trim();
           const aboutDogCard = document.getElementById('aboutDogCard');
           const aboutDogName = document.getElementById('aboutDogName');
           const aboutDogText = document.getElementById('aboutDogText');

@@ -9,7 +9,7 @@
   "functions": {
     "api/*.py": {
       "includeFiles": "api/index.html",
-      "maxDuration": 300
+      "maxDuration": 240
     }
   },
   "crons": [
@@ -19,7 +19,7 @@
     },
     {
       "path": "/api/generate_prompts",
-      "schedule": "10 * * * *"
+      "schedule": "*/30 * * * *"
     },
     {
       "path": "/api/scrape",

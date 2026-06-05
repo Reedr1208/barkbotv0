@@ -86,7 +86,7 @@ class handler(BaseHTTPRequestHandler):
             # ── Direct lookup by animal_id (for Saved Dogs / Resume Chat) ──
             if animal_id_override:
                 active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
-                prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
+                prompts_res = client.table("system_prompts_v2").select("animal_id, intro_summary").eq("animal_id", animal_id_override).limit(1).execute()
                 profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
                 fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb").eq("animal_id", animal_id_override).limit(1).execute()
                 
@@ -98,7 +98,9 @@ class handler(BaseHTTPRequestHandler):
                 profile["name"] = active_dog.get("name") or "Unknown"
                 profile["gender"] = active_dog.get("gender") or "Unknown"
                 
+                
                 facts_data = fact_res.data[0] if fact_res.data else {}
+                profile["intro_summary"] = prompts_res.data[0].get("intro_summary") if prompts_res.data else None
                 profile["important_facts"] = facts_data.get("important_facts_jsonb", [])
                 profile["bio"] = facts_data.get("backstory_summary", profile.get("bio", ""))
                 profile["risk_flags"] = facts_data.get("risk_flags_jsonb", [])
@@ -387,6 +389,9 @@ class handler(BaseHTTPRequestHandler):
             
             fact_res = client.table("animal_fact_profiles").select("important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb").eq("animal_id", random_id).limit(1).execute()
             facts_data = fact_res.data[0] if fact_res.data else {}
+            
+            prompts_res = client.table("system_prompts_v2").select("intro_summary").eq("animal_id", random_id).limit(1).execute()
+            profile["intro_summary"] = prompts_res.data[0].get("intro_summary") if prompts_res.data else None
             
             profile["important_facts"] = facts_data.get("important_facts_jsonb", [])
             profile["bio"] = facts_data.get("backstory_summary", profile.get("bio", ""))
