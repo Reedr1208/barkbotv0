@@ -168,13 +168,7 @@ class handler(BaseHTTPRequestHandler):
                     fact_profile["schema_version"] = "fact_v1"
                     fact_profile["extraction_model"] = "gpt-5.4-mini"
                     fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
-                    
-                    # Temporarily remove intro_summary to avoid schema errors on animal_fact_profiles
-                    intro_summary_val = fact_profile.pop("intro_summary", None)
                     sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
-                    
-                    # Restore it for downstream use (render_system_prompt and system_prompts_v2)
-                    fact_profile["intro_summary"] = intro_summary_val
 
                     # Inject full bio and description for persona building and prompt rendering
                     fact_profile["full_bio"] = animal_record.get("bio", "")
@@ -212,7 +206,6 @@ class handler(BaseHTTPRequestHandler):
                         "prompt_version": "v3",
                         "source_record_hash": record_hash,
                         "system_prompt": system_prompt,
-                        "intro_summary": fact_profile.get("intro_summary"),
                         "render_context_jsonb": render_context,
                         "validation_results_jsonb": validation,
                         "is_active": True

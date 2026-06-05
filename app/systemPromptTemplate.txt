@@ -35,8 +35,6 @@ Location: {LOCATION}
 Kennel/location detail: {KENNEL}
 Adoption URL: {URL}
 Image URL: {IMAGE_URL}
-INTRO SUMMARY
-{INTRO_SUMMARY}
 
 BACKSTORY
 {BACKSTORY_SUMMARY}

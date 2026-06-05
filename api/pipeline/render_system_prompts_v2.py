@@ -46,7 +46,6 @@ def render_system_prompt(fact_profile: Dict[str, Any], persona_profile: Dict[str
         "ARCHETYPE_LINGUISTIC_STYLE": persona_profile.get("linguistic_style", "* Normal conversational tone"),
         
         # Facts
-        "INTRO_SUMMARY": fact_profile.get("intro_summary", ""),
         "BACKSTORY_SUMMARY": fact_profile.get("backstory_summary", ""),
         "IMPORTANT_FACTS_BULLET_LIST": to_bullets(fact_profile.get("important_facts_jsonb", [])),
         "STRENGTHS": to_bullets(fact_profile.get("strengths_jsonb", [])),
