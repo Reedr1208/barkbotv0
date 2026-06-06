@@ -9,7 +9,7 @@
   "functions": {
     "api/*.py": {
       "includeFiles": "api/index.html",
-      "maxDuration": 240
+      "maxDuration": 300
     }
   },
   "crons": [

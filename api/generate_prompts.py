@@ -31,8 +31,8 @@ class handler(BaseHTTPRequestHandler):
         start_time = time.time()
         logging.info("Starting generate_prompts job...")
 
-        # Time limit in seconds (230 seconds = 3m 50s) to comfortably avoid 4m Vercel limit
-        MAX_EXECUTION_TIME = 230
+        # Time limit in seconds (240 seconds = 4m 0s) to safely stop looping before 5m Vercel limit
+        MAX_EXECUTION_TIME = 240
         try:
             # Setup clients
             supabase_url = os.environ.get("storage_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
