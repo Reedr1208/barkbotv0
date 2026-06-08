@@ -27,18 +27,19 @@ HEADERS = {
 }
 
 TRACKED_FIELDS = [
-    "url",
+    "shelter_profile_url",
     "animal_id",
-    "located_at",
-    "description",
+    "shelter_name",
     "weight",
     "age",
     "more_info",
     "bio",
-    "data_updated",
-    "image_url",
+    "shelter_image_url",
     "image_file",
     "image_public_url",
+    "city",
+    "state",
+    "shelter_id"
 ]
 
 DOGS_PER_RUN = 30
@@ -90,7 +91,6 @@ def fetch_record(url: str, numeric_id: str) -> Dict[str, Any]:
     response = requests.get(url, headers=HEADERS, timeout=30)
     response.raise_for_status()
     record = build_record(response.text, pet_id=numeric_id)
-    record["data_updated"] = now_iso()
     record["image_file"] = None
     record["image_public_url"] = None
     return record
@@ -179,34 +179,10 @@ class BarkbotStore:
         payload["record_hash"] = record_hash(record)
         payload["last_scrape_run_id"] = run_id
         payload["updated_at"] = now_iso()
-        payload.setdefault("qa_status", "pending")
         if current is None:
             payload["created_at"] = now_iso()
 
-        if change_type in {"inserted", "updated"}:
-            self.client.table("animals").upsert(payload, on_conflict="animal_id").execute()
-            version_no = self.get_next_version_no(record["animal_id"])
-            self.client.table("animal_versions").insert({
-                "animal_id": record["animal_id"],
-                "version_no": version_no,
-                "captured_at": now_iso(),
-                "snapshot": record,
-                "record_hash": payload["record_hash"],
-                "scrape_run_id": run_id,
-            }).execute()
-            self.client.table("animal_change_events").insert({
-                "animal_id": record["animal_id"],
-                "change_type": change_type,
-                "changed_fields": changed_fields,
-                "diff": diff,
-                "scrape_run_id": run_id,
-                "created_at": now_iso(),
-            }).execute()
-        else:
-            self.client.table("animals").update({
-                "last_scrape_run_id": run_id,
-                "updated_at": now_iso(),
-            }).eq("animal_id", record["animal_id"]).execute()
+        self.client.table("animals").upsert(payload, on_conflict="animal_id").execute()
 
         return change_type
     
@@ -228,10 +204,10 @@ class BarkbotStore:
         adoptable_ids.sort(key=get_time)
         top_ids = adoptable_ids[:limit]
         
-        # HSSA animal_id format: hssa-12345
+        # HSSA animal_id format: HSSA-12345
         dogs = []
         for aid in top_ids:
-            numeric_id = aid.replace("hssa-", "")
+            numeric_id = aid.replace("HSSA-", "")
             dogs.append({
                 "animal_id": aid,
                 "numeric_id": numeric_id,

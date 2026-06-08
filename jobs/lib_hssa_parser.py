@@ -31,14 +31,16 @@ LOCATED_AT_DEFAULT = "Humane Society of Southern Arizona"
 
 FIELDNAMES = [
     "animal_id",
-    "url",
-    "located_at",
-    "description",
+    "shelter_profile_url",
+    "shelter_name",
     "weight",
     "age",
     "more_info",
     "bio",
-    "image_url",
+    "shelter_image_url",
+    "city",
+    "state",
+    "shelter_id"
 ]
 
 HEADERS = {
@@ -291,17 +293,26 @@ def build_record(html_text: str, pet_id: Optional[str] = None) -> dict[str, Any]
         pet_name=pet.get("petName"),
         source_photo_id=pet.get("sourcePhotoId"),
     )
+    
+    desc_text = clean_text(pet.get("petStory"))
+    
+    merged_bio = ""
+    if desc_text:
+        merged_bio += desc_text + "\n\n"
+    merged_bio = merged_bio.strip()
 
     return {
-        "animal_id": f"hssa-{pet_id}",
-        "url": url,
-        "located_at": clean_text(pet.get("awoName")) or LOCATED_AT_DEFAULT,
-        "description": clean_text(pet.get("petStory")),
+        "animal_id": f"HSSA-{pet_id}",
+        "shelter_profile_url": url,
+        "shelter_name": clean_text(pet.get("awoName")) or LOCATED_AT_DEFAULT,
         "weight": normalize_weight(attrs.get("weight")),
         "age": title_age(attrs.get("age")),
         "more_info": "",
-        "bio": None,
-        "image_url": image_url,
+        "bio": merged_bio,
+        "shelter_image_url": image_url,
+        "city": "Tucson",
+        "state": "AZ",
+        "shelter_id": "HSSA",
     }
 
 

@@ -14,7 +14,7 @@
   },
   "crons": [
     {
-      "path": "/api/scrape_all",
+      "path": "/api/pacc_inventory",
       "schedule": "0 8 * * *"
     },
     {
@@ -22,12 +22,28 @@
       "schedule": "*/30 * * * *"
     },
     {
-      "path": "/api/scrape",
+      "path": "/api/pacc_profiles",
       "schedule": "5 * * * *"
     },
     {
-      "path": "/api/scrape_muddypaws",
+      "path": "/api/mp_all",
       "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/hssa_inventory",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/hssa_profiles",
+      "schedule": "10 * * * *"
+    },
+    {
+      "path": "/api/nycacc_inventory",
+      "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/nycacc_profiles",
+      "schedule": "15 * * * *"
     }
   ]
 }

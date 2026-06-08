@@ -56,14 +56,14 @@ class handler(BaseHTTPRequestHandler):
                 self._send_response(200, {"message": "No active dogs found"})
                 return
 
-            # 2. Fetch all animals with bio/description length checking
-            animals_res = sb_client.table("animals").select("animal_id, bio, description").execute()
+            # 2. Fetch all animals with bio length checking
+            animals_res = sb_client.table("animals").select("animal_id, bio").execute()
             
             eligible_animal_ids = []
             for row in animals_res.data:
                 aid = row["animal_id"]
                 bio = row.get("bio") or ""
-                desc = row.get("description") or ""
+                desc = row.get("bio") or ""
                 shelter_id = active_dogs_map.get(aid)
                 
                 if shelter_id:
@@ -154,7 +154,7 @@ class handler(BaseHTTPRequestHandler):
                 record_hash = animal_record.get("record_hash", "none")
                 
                 # Strip developer fields before sending to LLM
-                internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id", "data_updated"]
+                internal_keys = ["id", "record_hash", "created_at", "updated_at", "last_scrape_run_id"]
                 for key in internal_keys:
                     animal_record.pop(key, None)
 
@@ -170,9 +170,8 @@ class handler(BaseHTTPRequestHandler):
                     fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
                     sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
 
-                    # Inject full bio and description for persona building and prompt rendering
+                    # Inject full bio for persona building and prompt rendering
                     fact_profile["full_bio"] = animal_record.get("bio", "")
-                    fact_profile["full_description"] = animal_record.get("description", "")
 
                     # 2. Persona Scoring
                     persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)

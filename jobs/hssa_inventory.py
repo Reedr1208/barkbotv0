@@ -154,7 +154,7 @@ def parse_cards_from_html(html: str, scraped_at: str) -> List[Dict[str, Optional
 
         rows.append(
             {
-                "animal_id": f"hssa-{numeric_id}",
+                "animal_id": f"HSSA-{numeric_id}",
                 "name": name,
                 "gender": gender,
                 "age": age,

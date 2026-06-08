@@ -3455,7 +3455,7 @@
           return d.image_base_url + d.image_file;
         }
         if (d?.image_public_url) return d.image_public_url;
-        if (d?.image_url) return d.image_url;
+        if (d?.shelter_image_url) return d.shelter_image_url;
         const imgEl = document.getElementById('dogImage');
         if (imgEl?.src) return imgEl.src;
         return CH_DEFAULT_OG_IMAGE;
@@ -3481,7 +3481,7 @@
       function buildDogSharePayload(dog) {
         const name = dog?.name || currentDogName || 'this dog';
         const age = cleanAgeText(dog?.age || '');
-        const shelter = dog?.located_at || 'Pima Animal Care Center';
+        const shelter = dog?.shelter_name || 'Pima Animal Care Center';
         const pron = pronounForGender(dog?.gender);
         const animalId = dog?.animal_id || currentAnimalId;
         const url = getCanonicalDogUrl(animalId);
@@ -3509,7 +3509,7 @@
       function updateDocumentMetaForDog(dog) {
         if (!dog || !dog.animal_id) return;
         const name = dog.name || 'this dog';
-        const shelter = dog.located_at || 'Pima Animal Care Center';
+        const shelter = dog.shelter_name || 'Pima Animal Care Center';
         const pron = pronounForGender(dog.gender);
         const title = `Meet ${name} | ChattyHound`;
         const description = `${name} is an adoptable rescue dog at ${shelter}. Chat with ${pron} on ChattyHound and continue to the official shelter page.`;
@@ -3617,7 +3617,7 @@
       }
 
       async function copyDogShareLink(payload) {
-        const url = payload.url;
+        const url = payload.shelter_profile_url;
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             await navigator.clipboard.writeText(url);
@@ -3654,7 +3654,7 @@
 
       function shareDogByEmail(payload) {
         const subject = encodeURIComponent(payload.title);
-        const body = encodeURIComponent(`${payload.text}\n\n${payload.url}`);
+        const body = encodeURIComponent(`${payload.text}\n\n${payload.shelter_profile_url}`);
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
         trackEvent('dog_share_completed', {
           animal_id: payload.animal_id,
@@ -3663,7 +3663,7 @@
       }
 
       function shareDogBySms(payload) {
-        const body = encodeURIComponent(`${payload.text} ${payload.url}`);
+        const body = encodeURIComponent(`${payload.text} ${payload.shelter_profile_url}`);
         const sep = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? '&' : '?';
         window.location.href = `sms:${sep}body=${body}`;
         trackEvent('dog_share_completed', {
@@ -3686,7 +3686,7 @@
             const shareData = {
               title: payload.title,
               text: payload.text,
-              url: payload.url
+              url: payload.shelter_profile_url
             };
             await navigator.share(shareData);
             trackEvent('dog_share_completed', {
@@ -3962,7 +3962,25 @@
         if (rotateDogText) rotateDogText.textContent = `This pup is no longer available. Spin your device around to meet other adoptable dogs!`;
       }
 
-      async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
+      
+function formatRelativeTime(isoString) {
+  if (!isoString) return 'Today';
+  const updated = new Date(isoString);
+  const now = new Date();
+  const diffMs = now - updated;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) {
+    return diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
+  } else if (diffHours > 0) {
+    return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+  } else {
+    return 'Just now';
+  }
+}
+
+    async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
         const fetchId = ++activeDogFetchId;
         const isStaleFetch = () => fetchId !== activeDogFetchId;
 
@@ -4116,14 +4134,16 @@
           currentDogName = dog.name || 'this dog';
           dogName.textContent = dog.name || 'Unknown';
           chatTitleName.textContent = currentDogName;
-          const shortLoc = dog.located_at ? (dog.located_at.includes('Muddy') ? 'MP' : (dog.located_at.includes('Humane') || dog.located_at.includes('HSSA') ? 'HSSA' : (dog.located_at.includes('Animal Care Centers') || dog.located_at.includes('NYC') ? 'NYCACC' : 'PACC'))) : 'PACC';
-          dogId.textContent = dog.animal_id ? `${dog.animal_id} • ${shortLoc}` : '';
+          const idParts = dog.animal_id ? dog.animal_id.split('-') : [];
+          const nativeId = idParts.length > 1 ? idParts.slice(1).join('-') : dog.animal_id;
+          const shelterId = idParts.length > 0 ? idParts[0] : '';
+          dogId.textContent = dog.animal_id ? `${nativeId} • ${shelterId}` : '';
           if (locationTextEl) {
-            locationTextEl.textContent = dog.located_at || 'Pima Animal Care Center';
+            locationTextEl.textContent = dog.shelter_name || 'Pima Animal Care Center';
           }
           const lastCheckedEl = document.getElementById('lastCheckedDate');
           if (lastCheckedEl) {
-            lastCheckedEl.textContent = dog.data_updated || 'Today';
+            lastCheckedEl.textContent = formatRelativeTime(dog.updated_at);
           }
 
           // Populate rotate overlay with current dog details
@@ -4131,7 +4151,7 @@
           const rotateDogTitle = document.getElementById('rotateDogTitle');
           const rotateDogText = document.getElementById('rotateDogText');
           if (rotateDogPhoto) {
-            rotateDogPhoto.src = dog.image_public_url || dog.image_url || (dog.image_file ? (dog.image_base_url + dog.image_file) : 'happy_rescue_pup.png');
+            rotateDogPhoto.src = dog.image_public_url || dog.shelter_image_url || (dog.image_file ? (dog.image_base_url + dog.image_file) : 'happy_rescue_pup.png');
           }
           if (rotateDogTitle) {
             rotateDogTitle.innerHTML = `Let's chat with <span style="color:var(--accent-hover);">${currentDogName}</span>! 🐾`;
@@ -4365,8 +4385,8 @@
             }
           }
 
-          if (dog.url) {
-            paccLink.href = dog.url;
+          if (dog.shelter_profile_url) {
+            paccLink.href = dog.shelter_profile_url;
             paccLink.style.display = 'inline-flex';
           }
 
@@ -4377,8 +4397,8 @@
               stickyDogAvatar.src = dog.image_base_url + dog.image_file;
             } else if (dog.image_public_url) {
               stickyDogAvatar.src = dog.image_public_url;
-            } else if (dog.image_url) {
-              stickyDogAvatar.src = dog.image_url;
+            } else if (dog.shelter_image_url) {
+              stickyDogAvatar.src = dog.shelter_image_url;
             } else {
               stickyDogAvatar.src = '';
             }
@@ -4389,18 +4409,18 @@
             dogImage.src = dog.image_base_url + dog.image_file;
           } else if (dog.image_public_url) {
             dogImage.src = dog.image_public_url;
-          } else if (dog.image_url) {
-            dogImage.src = dog.image_url;
+          } else if (dog.shelter_image_url) {
+            dogImage.src = dog.shelter_image_url;
           }
 
           const mobileAdoptBtn = document.getElementById('mobileAdoptBtn');
-          if (mobileAdoptBtn && dog.url) {
-            mobileAdoptBtn.href = dog.url;
+          if (mobileAdoptBtn && dog.shelter_profile_url) {
+            mobileAdoptBtn.href = dog.shelter_profile_url;
           }
 
           const stickyShelterBtn = document.getElementById('stickyShelterBtn');
-          if (stickyShelterBtn && dog.url) {
-            stickyShelterBtn.href = dog.url;
+          if (stickyShelterBtn && dog.shelter_profile_url) {
+            stickyShelterBtn.href = dog.shelter_profile_url;
           }
 
           chatInput.disabled = false;
@@ -5980,9 +6000,9 @@
                     gender: dog.gender || 'Unknown',
                     age: dog.age || 'Unknown',
                     weight: dog.weight || 'Unknown',
-                    located_at: dog.located_at || 'Pima Animal Care Center',
-                    url: dog.url || '',
-                    dog_image_url: dog.image_url || dog.image_public_url || ''
+                    located_at: dog.shelter_name || 'Pima Animal Care Center',
+                    url: dog.shelter_profile_url || '',
+                    dog_image_url: dog.shelter_image_url || dog.image_public_url || ''
                   };
                 }
               } catch (e) {}
@@ -6022,7 +6042,7 @@
               <!-- Gender/Age/Weight/Breed mini pills or badges -->
               <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
                 <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.gender || 'Unknown'}</span>
-                <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.located_at ? (d.located_at.includes('Muddy') ? 'MP' : (d.located_at.includes('Humane') || d.located_at.includes('HSSA') ? 'HSSA' : (d.located_at.includes('Animal Care Centers') || d.located_at.includes('NYC') ? 'NYCACC' : d.located_at.replace('Pima Animal Care Center', 'PACC')))) : 'PACC'}</span>
+                <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.shelter_name ? (d.shelter_name.includes('Muddy') ? 'MP' : (d.shelter_name.includes('Humane') || d.shelter_name.includes('HSSA') ? 'HSSA' : (d.shelter_name.includes('Animal Care Centers') || d.shelter_name.includes('NYC') ? 'NYCACC' : d.shelter_name.replace('Pima Animal Care Center', 'PACC')))) : 'PACC'}</span>
               </div>
             </div>
             <!-- Right side Action Buttons (Share and Heart toggle) -->
@@ -6030,7 +6050,7 @@
               <button type="button" class="modal-unheart-btn" data-animal-id="${d.animal_id}" aria-label="Remove ${d.dog_name || 'dog'} from My Dogs" style="background:transparent; border:none; color:var(--accent); font-size:1.25rem; cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;">
                 ❤️
               </button>
-              <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${d.animal_id}" data-location="${d.located_at || 'Pima Animal Care Center'}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${d.dog_name || 'this dog'}" title="Share" style="width:28px; height:28px;">
+              <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${d.animal_id}" data-location="${d.shelter_name || 'Pima Animal Care Center'}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${d.dog_name || 'this dog'}" title="Share" style="width:28px; height:28px;">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
               </button>
             </div>
@@ -6040,7 +6060,7 @@
             <button type="button" class="modal-chat-cta" data-animal-id="${d.animal_id}" style="padding:8px; border:1px solid var(--accent); border-radius:10px; background:var(--accent); color:var(--accent-text); font-weight:800; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
               Chat 💬
             </button>
-            <a href="${d.url || 'https://www.pima.gov/pacc'}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" style="text-decoration:none; padding:8px; border:1px solid rgba(255,255,255,0.12); border-radius:10px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
+            <a href="${d.shelter_profile_url || 'https://www.pima.gov/pacc'}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" style="text-decoration:none; padding:8px; border:1px solid rgba(255,255,255,0.12); border-radius:10px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
               Shelter Page 🔗
             </a>
           </div>
@@ -6052,7 +6072,7 @@
             const aid = btn.getAttribute('data-animal-id');
             const name = btn.getAttribute('data-dog-name');
             const loc = btn.getAttribute('data-location') || 'Pima Animal Care Center';
-            shareCurrentDog(btn, { animal_id: aid, name, located_at: loc });
+            shareCurrentDog(btn, { animal_id: aid, name, shelter_name: loc });
           });
         });
 
@@ -6189,7 +6209,7 @@
               const aid = btn.getAttribute('data-animal-id');
               const name = btn.getAttribute('data-dog-name');
               const loc = btn.getAttribute('data-location') || 'Pima Animal Care Center';
-              shareCurrentDog(btn, { animal_id: aid, name, located_at: loc });
+              shareCurrentDog(btn, { animal_id: aid, name, shelter_name: loc });
             });
           });
 

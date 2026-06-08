@@ -50,7 +50,7 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"ok": False, "error": "Unauthorized"}).encode('utf-8'))
             return
 
-        script_path = Path(__file__).resolve().parent.parent / "jobs" / "01_scrape_all_dogs.py"
+        script_path = Path(__file__).resolve().parent.parent / "jobs" / "pacc_inventory.py"
         logging.info(f"Target script path: {script_path}")
         logging.info(f"Python executable: {sys.executable}")
         

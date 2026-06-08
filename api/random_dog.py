@@ -116,7 +116,7 @@ class handler(BaseHTTPRequestHandler):
                 profile["preferences_matched"] = False
                 profile["user_has_preferences"] = False
                 profile["match_details"] = {}
-                internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id"]
+                internal_keys = ["id", "record_hash", "created_at", "last_scrape_run_id"]
                 for key in internal_keys:
                     profile.pop(key, None)
                 supabase_url_val = os.environ.get("storage_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
@@ -321,12 +321,11 @@ class handler(BaseHTTPRequestHandler):
                     return candidates[0]
                 
                 try:
-                    res = client.table("animals").select("animal_id, bio, description").in_("animal_id", candidates).execute()
+                    res = client.table("animals").select("animal_id, bio").in_("animal_id", candidates).execute()
                     lengths = {}
                     for row in res.data:
                         b_len = len(row.get("bio") or "")
-                        d_len = len(row.get("description") or "")
-                        lengths[row["animal_id"]] = max(b_len, d_len)
+                        lengths[row["animal_id"]] = b_len
                     
                     weights = []
                     for cid in candidates:
@@ -408,7 +407,7 @@ class handler(BaseHTTPRequestHandler):
             profile["match_details"] = best_match_details.get(random_id, {})
             
             # Clean up internal fields before sending to frontend
-            internal_keys = ["id", "record_hash", "qa_status", "qa_notes", "created_at", "updated_at", "last_scrape_run_id"]
+            internal_keys = ["id", "record_hash", "created_at", "last_scrape_run_id"]
             for key in internal_keys:
                 profile.pop(key, None)
                 

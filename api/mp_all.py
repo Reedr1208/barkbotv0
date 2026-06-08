@@ -22,7 +22,7 @@ class handler(BaseHTTPRequestHandler):
                 self.wfile.write(b"Unauthorized")
                 return
         
-        target_script = Path(__file__).resolve().parent.parent / "jobs" / "03_scrape_muddypaws.py"
+        target_script = Path(__file__).resolve().parent.parent / "jobs" / "mp_all.py"
         python_exe = sys.executable
 
         try:

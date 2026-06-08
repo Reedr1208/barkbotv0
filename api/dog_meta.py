@@ -45,15 +45,15 @@ def _dog_image_url(profile):
         return profile["image_base_url"] + profile["image_file"]
     if profile.get("image_public_url"):
         return profile["image_public_url"]
-    if profile.get("image_url"):
-        return profile["image_url"]
+    if profile.get("shelter_image_url"):
+        return profile["shelter_image_url"]
     return DEFAULT_OG_IMAGE
 
 
 def _build_meta_copy(profile):
     name = profile.get("name") or "This pup"
     age = _clean_age(profile.get("age") or "")
-    shelter = profile.get("located_at") or "Pima Animal Care Center"
+    shelter = profile.get("shelter_name") or "Pima Animal Care Center"
     pron = _pronoun(profile.get("gender"))
 
     title = f"Meet {name} | ChattyHound"

@@ -51,8 +51,8 @@ class handler(BaseHTTPRequestHandler):
             active_res = sb.table("active_dogs").select("animal_id, name, gender, age, weight").in_("animal_id", animal_ids).execute()
             active_map = {p["animal_id"]: p for p in (active_res.data or [])}
 
-            # Fetch from animals to get located_at, url, image_file, image_public_url, image_url
-            animals_res = sb.table("animals").select("animal_id, located_at, url, image_file, image_public_url, image_url").in_("animal_id", animal_ids).execute()
+            # Fetch from animals to get shelter_name, shelter_profile_url, image_file, image_public_url, shelter_image_url
+            animals_res = sb.table("animals").select("animal_id, shelter_name, shelter_profile_url, image_file, image_public_url, shelter_image_url").in_("animal_id", animal_ids).execute()
             animals_map = {a["animal_id"]: a for a in (animals_res.data or [])}
 
             saved_dogs_rich = []
@@ -71,8 +71,8 @@ class handler(BaseHTTPRequestHandler):
                     dog_image_url = image_base_url + animal["image_file"]
                 elif animal.get("image_public_url"):
                     dog_image_url = animal["image_public_url"]
-                elif animal.get("image_url"):
-                    dog_image_url = animal["image_url"]
+                elif animal.get("shelter_image_url"):
+                    dog_image_url = animal["shelter_image_url"]
                 elif active_dog.get("image_url"):
                     dog_image_url = active_dog["image_url"]
 
@@ -83,8 +83,8 @@ class handler(BaseHTTPRequestHandler):
                     "gender": active_dog.get("gender") or "Unknown",
                     "age": active_dog.get("age") or "Unknown",
                     "weight": active_dog.get("weight") or "Unknown",
-                    "located_at": animal.get("located_at") or "Pima Animal Care Center",
-                    "url": animal.get("url") or "",
+                    "shelter_name": animal.get("shelter_name") or "Pima Animal Care Center",
+                    "shelter_profile_url": animal.get("shelter_profile_url") or "",
                     "dog_image_url": dog_image_url
                 })
 

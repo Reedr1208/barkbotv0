@@ -31,13 +31,13 @@ SAFETY_THRESHOLD = 5
 RECOGNIZED_SHELTERS = ["NYCACC", "HSSA", "PIMA", "MUDDYPAWS"]
 
 def get_shelter_id_for_animal(animal_id: str) -> str:
-    if animal_id.startswith("nycacc-"):
+    if animal_id.startswith("NYCACC-"):
         return "NYCACC"
-    elif animal_id.startswith("hssa-"):
+    elif animal_id.startswith("HSSA-"):
         return "HSSA"
-    elif animal_id.startswith("A") and animal_id[1:].isdigit():
+    elif animal_id.startswith("PACC-") or animal_id.startswith("PIMA-"):
         return "PIMA"
-    elif animal_id.isdigit():
+    elif animal_id.startswith("MP-") or animal_id.isdigit():
         return "MUDDYPAWS"
     else:
         return "UNKNOWN"

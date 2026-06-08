@@ -52,7 +52,7 @@ def main():
     for row in res.data:
         aid = row["animal_id"]
         bio = row.get("bio") or ""
-        desc = row.get("description") or ""
+        desc = row.get("bio") or ""
         shelter_id = active_dogs_map.get(aid)
         
         if shelter_id:
@@ -116,9 +116,8 @@ def main():
                 # Upsert
                 sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
 
-            # Inject full bio and description for persona building and prompt rendering
-            fact_profile["full_bio"] = dog.get("bio", "")
-            fact_profile["full_description"] = dog.get("description", "")
+            # Inject full bio for persona building and prompt rendering
+            fact_profile["full_description"] = dog.get("bio", "")
 
             # 2. Persona Scoring
             persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)

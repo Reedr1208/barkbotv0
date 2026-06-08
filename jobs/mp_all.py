@@ -109,8 +109,9 @@ def fetch_dogs():
 
 def record_hash(record: dict) -> str:
     tracked_fields = [
-        "url", "animal_id", "located_at", "description", "weight", "age",
-        "more_info", "bio", "data_updated", "image_url", "image_file", "image_public_url", "raw_data_jsonb"
+        "shelter_profile_url", "animal_id", "shelter_name", "weight", "age",
+        "more_info", "bio", "shelter_image_url", "image_file", "image_public_url", "raw_data_jsonb",
+        "city", "state", "shelter_id"
     ]
     canonical = {k: record.get(k) for k in tracked_fields}
     payload = json.dumps(canonical, sort_keys=True, ensure_ascii=False)
@@ -148,8 +149,8 @@ def save_to_supabase(dogs: list):
     animals_upsert = []
 
     for dog in dogs:
-        animal_id = dog.get("Animal_ID", "")
-        if not animal_id:
+        native_id = dog.get("Animal_ID", "")
+        if not native_id:
             continue
             
         name = dog.get("Name", "Unknown")
@@ -157,9 +158,11 @@ def save_to_supabase(dogs: list):
         age = str(dog.get("Age", ""))
         weight = str(dog.get("CurrentWeightPounds", ""))
         
+        animal_id = f"MP-{native_id}"
+        
         # Build active roster record
         active_dogs.append({
-            "shelter_id": "MUDDYPAWS",
+            "shelter_id": "MP",
             "animal_id": animal_id,
             "name": name,
             "gender": gender,
@@ -175,37 +178,36 @@ def save_to_supabase(dogs: list):
         bio = clean_text(dog.get("Description", ""))
         
         animals_record = {
-            "url": f"{SITE_BASE_URL}/adoptable?dog={animal_id}",
+            "shelter_profile_url": f"{SITE_BASE_URL}/adoptable?dog={native_id}",
             "animal_id": animal_id,
-            "located_at": "MuddyPaws Rescue - NYC",
-            "description": None,
+            "shelter_name": "MuddyPaws Rescue - NYC",
+            "city": "NYC",
+            "state": "NY",
+            "shelter_id": "MP",
             "weight": weight,
             "age": age,
             "more_info": None,
             "bio": bio,
-            "data_updated": now_iso(),
-            "image_url": image_url,
+            "shelter_image_url": image_url,
             "image_file": image_file,
             "image_public_url": image_public_url,
-            "raw_data_jsonb": dog
+            "raw_data_jsonb": dog,
+            "updated_at": now_iso()
         }
         animals_record["record_hash"] = record_hash(animals_record)
-        animals_record["updated_at"] = now_iso()
         
-        # We need to maintain created_at and qa_status
-        existing = client.table("animals").select("created_at, qa_status").eq("animal_id", animal_id).limit(1).execute()
+        # We need to maintain created_at
+        existing = client.table("animals").select("created_at").eq("animal_id", animal_id).limit(1).execute()
         if existing.data:
             animals_record["created_at"] = existing.data[0].get("created_at")
-            animals_record["qa_status"] = existing.data[0].get("qa_status") or "pending"
         else:
             animals_record["created_at"] = now_iso()
-            animals_record["qa_status"] = "pending"
             
         animals_upsert.append(animals_record)
 
-    # 1. Wipe and replace active_dogs for MUDDYPAWS
-    logging.info("Clearing existing active_dogs table data for MUDDYPAWS...")
-    client.table("active_dogs").delete().eq("shelter_id", "MUDDYPAWS").execute()
+    # 1. Wipe and replace active_dogs for MP
+    logging.info("Clearing existing active_dogs table data for MP...")
+    client.table("active_dogs").delete().eq("shelter_id", "MP").execute()
 
     logging.info(f"Inserting {len(active_dogs)} dogs into active_dogs...")
     client.table("active_dogs").insert(active_dogs).execute()

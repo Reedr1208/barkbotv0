@@ -810,7 +810,7 @@ async def main_async(args: argparse.Namespace) -> int:
         db_rows = []
         for r in rows:
             db_rows.append({
-                "animal_id": f"nycacc-{r.get('animal_id')}",
+                "animal_id": f"NYCACC-{r.get('animal_id')}",
                 "name": r.get("name"),
                 "gender": r.get("gender"),
                 "age": r.get("age"),

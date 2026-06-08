@@ -23,18 +23,19 @@ HEADERS = {
 }
 
 TRACKED_FIELDS = [
-    "url",
+    "shelter_profile_url",
     "animal_id",
-    "located_at",
-    "description",
+    "shelter_name",
     "weight",
     "age",
     "more_info",
     "bio",
-    "data_updated",
-    "image_url",
+    "shelter_image_url",
     "image_file",
     "image_public_url",
+    "city",
+    "state",
+    "shelter_id"
 ]
 
 DOGS_PER_RUN = 30
@@ -93,31 +94,42 @@ def extract_image_url(soup: BeautifulSoup) -> Optional[str]:
 
 def extract_profile_from_html(html: str, url: str) -> Dict[str, Any]:
     soup = BeautifulSoup(html, "html.parser")
-    animal_id = get_animal_id_from_url(url)
+    native_id = get_animal_id_from_url(url)
+    animal_id = f"PACC-{native_id}"
 
     description_node = soup.select_one("span.text_Description.details")
     weight_node = soup.select_one("span.text_Weight.details")
     age_node = soup.select_one("span.text_Age.details")
     more_info_node = soup.select_one("span.text_MoreInfo.details")
     bio_node = soup.select_one("div.line_Bio.details span.text_Bio.details")
-    data_updated_node = soup.select_one("span.text_DataUpdated.details")
     located_at_node = soup.select_one("span.text_LocatedAt.details")
 
     image_url = extract_image_url(soup)
+    
+    desc_text = text_or_none(description_node)
+    bio_text = text_or_none(bio_node)
+    
+    merged_bio = ""
+    if desc_text:
+        merged_bio += desc_text + "\n\n"
+    if bio_text:
+        merged_bio += bio_text
+    merged_bio = merged_bio.strip()
 
     return {
-        "url": url,
+        "shelter_profile_url": url,
         "animal_id": animal_id,
-        "located_at": text_or_none(located_at_node),
-        "description": text_or_none(description_node),
+        "shelter_name": text_or_none(located_at_node),
         "weight": text_or_none(weight_node),
         "age": text_or_none(age_node),
         "more_info": text_or_none(more_info_node),
-        "bio": text_or_none(bio_node),
-        "data_updated": text_or_none(data_updated_node),
-        "image_url": image_url,
+        "bio": merged_bio,
+        "shelter_image_url": image_url,
         "image_file": None,
         "image_public_url": None,
+        "city": "Tucson",
+        "state": "AZ",
+        "shelter_id": "PACC"
     }
 
 
@@ -236,40 +248,15 @@ class BarkbotStore:
         payload["record_hash"] = record_hash(record)
         payload["last_scrape_run_id"] = run_id
         payload["updated_at"] = now_iso()
-        payload.setdefault("qa_status", "pending")
         if current is None:
             payload["created_at"] = now_iso()
 
-        if change_type in {"inserted", "updated"}:
-            self.client.table("animals").upsert(payload, on_conflict="animal_id").execute()
-            version_no = self.get_next_version_no(record["animal_id"])
-            self.client.table("animal_versions").insert({
-                "animal_id": record["animal_id"],
-                "version_no": version_no,
-                "captured_at": now_iso(),
-                "snapshot": record,
-                "record_hash": payload["record_hash"],
-                "scrape_run_id": run_id,
-            }).execute()
-            self.client.table("animal_change_events").insert({
-                "animal_id": record["animal_id"],
-                "change_type": change_type,
-                "changed_fields": changed_fields,
-                "diff": diff,
-                "scrape_run_id": run_id,
-                "created_at": now_iso(),
-            }).execute()
-        else:
-            self.client.table("animals").update({
-                "last_scrape_run_id": run_id,
-                "updated_at": now_iso(),
-            }).eq("animal_id", record["animal_id"]).execute()
-
+        self.client.table("animals").upsert(payload, on_conflict="animal_id").execute()
         return change_type
     
     def get_least_recently_updated_urls(self, limit: int = DOGS_PER_RUN) -> List[str]:
-        # Get all currently adoptable dogs for PIMA
-        adoptable_resp = self.client.table("active_dogs").select("animal_id").eq("shelter_id", "PIMA").execute()
+        # Get all currently adoptable dogs for PACC
+        adoptable_resp = self.client.table("active_dogs").select("animal_id").eq("shelter_id", "PACC").execute()
         adoptable_ids = [row["animal_id"] for row in adoptable_resp.data]
 
         if not adoptable_ids:
@@ -288,7 +275,7 @@ class BarkbotStore:
         
         top_ids = adoptable_ids[:limit]
         
-        urls = [f"https://24petconnect.com/PimaAdoptablePets/Details/PIMA/{aid}" for aid in top_ids]
+        urls = [f"https://24petconnect.com/PimaAdoptablePets/Details/PIMA/{aid.replace('PACC-', '')}" for aid in top_ids]
         return urls
 
 
@@ -338,7 +325,8 @@ def main() -> int:
                     # If the server throws a 500 or 404 for this detail page, 
                     # the animal was likely adopted/removed. We delete it from active_dogs 
                     # so we skip it in future update processes.
-                    aid = get_animal_id_from_url(url)
+                    native_id = get_animal_id_from_url(url)
+                    aid = f"PACC-{native_id}"
                     try:
                         store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
                         print(json.dumps({"animal_id": aid, "result": "removed_from_active_dogs_due_to_http_error", "status_code": exc.response.status_code}, ensure_ascii=False))

@@ -84,7 +84,7 @@ def parse_dogs(html: str) -> list[dict]:
         img = card.select_one("img")
 
         dogs.append({
-            "animal_id": field("AnimalID"),
+            "animal_id": f"PACC-{field('AnimalID')}",
             "name": field("Name"),
             "gender": field("Gender"),
             "age": field("Age"),
@@ -161,15 +161,15 @@ def save_to_supabase(dogs: list[dict]):
 
     client = get_supabase_client()
 
-    print("Clearing existing active_dogs table data for PIMA...")
-    # Delete all rows for PIMA.
-    client.table("active_dogs").delete().eq("shelter_id", "PIMA").execute()
+    print("Clearing existing active_dogs table data for PACC...")
+    # Delete all rows for PACC.
+    client.table("active_dogs").delete().eq("shelter_id", "PACC").execute()
 
     print(f"Inserting {len(dogs)} dogs into active_dogs...")
     
     # Ensure shelter_id is set
     for dog in dogs:
-        dog["shelter_id"] = "PIMA"
+        dog["shelter_id"] = "PACC"
         
     # We may need to chunk inserts if there are too many, but Supabase can handle a few hundred fine.
     client.table("active_dogs").insert(dogs).execute()

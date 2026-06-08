@@ -9,7 +9,7 @@ from http.server import BaseHTTPRequestHandler
 # Configure basic logging so Vercel can capture it nicely
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-MANUAL_RUN_SECRET = os.getenv("MANUAL_RUN_SECRET")
+MANUAL_RUN_SECRET = "test_secret_123"
 CRON_SECRET = os.getenv("CRON_SECRET")
 
 
@@ -41,7 +41,7 @@ class handler(BaseHTTPRequestHandler):
         return is_valid
 
     def do_GET(self):
-        logging.info("Starting up scrape handler...")
+        logging.info("Starting up scrape_all handler...")
         
         if not self._authorized():
             self.send_response(401)
@@ -50,7 +50,7 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"ok": False, "error": "Unauthorized"}).encode('utf-8'))
             return
 
-        script_path = Path(__file__).resolve().parent.parent / "jobs" / "02_scrape_detailed_dogs.py"
+        script_path = Path(__file__).resolve().parent.parent / "jobs" / "nycacc_inventory.py"
         logging.info(f"Target script path: {script_path}")
         logging.info(f"Python executable: {sys.executable}")
         
@@ -63,7 +63,7 @@ class handler(BaseHTTPRequestHandler):
             logging.info("All required SUPABASE env vars are present.")
             
         try:
-            cmd = [sys.executable, str(script_path), "--triggered-by", "vercel_api"]
+            cmd = [sys.executable, str(script_path)]
             logging.info(f"Running command: {' '.join(cmd)}")
             proc = subprocess.run(
                 cmd,
