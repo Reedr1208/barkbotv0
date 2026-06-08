@@ -33,24 +33,27 @@ class handler(BaseHTTPRequestHandler):
             gender = body.get("gender", "any").strip().lower()
             age_group = body.get("age_group", "any").strip().lower()
             size = body.get("size", "any").strip().lower()
-            location = body.get("location", "any").strip().lower()
+            location = body.get("location", "any").strip()
             
             if not email:
                 self._send_response(400, {"error": "Email is required."})
                 return
                 
+            client = get_supabase_client()
+            
             # Restrict inputs to known categories
             valid_genders = {"male", "female", "any"}
             valid_ages = {"puppy", "young", "adult", "senior", "any"}
             valid_sizes = {"small", "medium", "large", "any"}
-            valid_locations = {"tucson", "new_york", "any"}
+            
+            shelters_res = client.table("shelters").select("location_display_name").execute()
+            valid_locations = set([s["location_display_name"] for s in shelters_res.data]) if shelters_res.data else set()
+            valid_locations.add("any")
             
             if gender not in valid_genders: gender = "any"
             if age_group not in valid_ages: age_group = "any"
             if size not in valid_sizes: size = "any"
             if location not in valid_locations: location = "any"
-            
-            client = get_supabase_client()
             
             pref_data = {
                 "email": email,

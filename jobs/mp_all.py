@@ -153,7 +153,7 @@ def save_to_supabase(dogs: list):
         if not native_id:
             continue
             
-        name = dog.get("Name", "Unknown")
+        name = dog.get("Name", "Unknown").replace("*", "").strip().title()
         gender = dog.get("Sex", "Unknown")
         age = str(dog.get("Age", ""))
         weight = str(dog.get("CurrentWeightPounds", ""))
@@ -168,6 +168,9 @@ def save_to_supabase(dogs: list):
             "gender": gender,
             "age": age,
             "weight": weight,
+            "city": "New York",
+            "state": "NY",
+            "shelter_name": "Muddy Paws Rescue",
             "scraped_at": now_iso()
         })
         
@@ -180,8 +183,10 @@ def save_to_supabase(dogs: list):
         animals_record = {
             "shelter_profile_url": f"{SITE_BASE_URL}/adoptable?dog={native_id}",
             "animal_id": animal_id,
-            "shelter_name": "MuddyPaws Rescue - NYC",
-            "city": "NYC",
+            "name": name,
+            "gender": gender,
+            "shelter_name": "Muddy Paws Rescue",
+            "city": "New York",
             "state": "NY",
             "shelter_id": "MP",
             "weight": weight,

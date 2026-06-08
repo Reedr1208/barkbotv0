@@ -153,6 +153,10 @@ class handler(BaseHTTPRequestHandler):
                 
             active_dogs = {row["animal_id"]: row for row in active_res.data}
             
+            # Fetch shelters
+            shelters_res = client.table("shelters").select("*").execute()
+            shelters_map = {s["shelter_id"]: s for s in shelters_res.data} if shelters_res.data else {}
+            
             # Fetch from animal_persona_profiles to get archetype data and freshness
             persona_res = client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at").execute()
             persona_data = {row["animal_id"]: row for row in persona_res.data}
@@ -225,7 +229,7 @@ class handler(BaseHTTPRequestHandler):
                             "gender": {"active": has_gender, "preferred": pref_gender, "actual": dog.get("gender") or "Unknown", "matched": False},
                             "age": {"active": has_age, "preferred": pref_age, "actual": dog.get("age") or "Unknown", "matched": False},
                             "size": {"active": has_size, "preferred": pref_size, "actual": dog.get("weight") or "Unknown", "matched": False},
-                            "location": {"active": has_location, "preferred": pref_location, "actual": "Tucson, AZ" if dog.get("shelter_id") in ("PIMA", "HSSA") else "New York, NY", "matched": False}
+                            "location": {"active": has_location, "preferred": pref_location, "actual": shelters_map.get(dog.get("shelter_id"), {}).get("location_display_name", "Unknown"), "matched": False}
                         }
                         
                         # 1. Gender Filter
@@ -261,19 +265,14 @@ class handler(BaseHTTPRequestHandler):
                             
                         # 4. Location Filter
                         if has_location:
-                            if pref_location == "tucson":
-                                if dog.get("shelter_id") in ("PIMA", "HSSA"):
-                                    score += 1
-                                    details["location"]["matched"] = True
-                            else:
-                                if dog.get("shelter_id") in ("MUDDYPAWS", "NYCACC"):
-                                    score += 1
-                                    details["location"]["matched"] = True
+                            dog_loc = shelters_map.get(dog.get("shelter_id"), {}).get("location_display_name", "")
+                            if pref_location == dog_loc:
+                                score += 1
+                                details["location"]["matched"] = True
                         else:
                             # User has no location preference but coordinates are available
-                            if closer_region == "NYC" and dog.get("shelter_id") in ("MUDDYPAWS", "NYCACC"):
-                                score += 0.8
-                            elif closer_region == "TUCSON" and dog.get("shelter_id") in ("PIMA", "HSSA"):
+                            dog_city = shelters_map.get(dog.get("shelter_id"), {}).get("city", "").upper()
+                            if closer_region and dog_city == closer_region:
                                 score += 0.8
 
                         # Tie-breaker for archetype diversity (layer below preferences)
@@ -288,9 +287,8 @@ class handler(BaseHTTPRequestHandler):
                 for aid in valid_ids:
                     score = 0
                     dog = active_dogs[aid]
-                    if closer_region == "NYC" and dog.get("shelter_id") in ("MUDDYPAWS", "NYCACC"):
-                        score += 0.8
-                    elif closer_region == "TUCSON" and dog.get("shelter_id") in ("PIMA", "HSSA"):
+                    dog_city = shelters_map.get(dog.get("shelter_id"), {}).get("city", "").upper()
+                    if closer_region and dog_city == closer_region:
                         score += 0.8
                         
                     dog_arch = persona_data[aid].get("primary_archetype_key")

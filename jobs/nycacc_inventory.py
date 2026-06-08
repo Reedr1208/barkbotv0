@@ -809,12 +809,19 @@ async def main_async(args: argparse.Namespace) -> int:
         # animal_id, name, gender, age, weight, scraped_at, shelter_id
         db_rows = []
         for r in rows:
+            name = r.get("name")
+            if name:
+                name = name.replace("*", "").strip().title()
+
             db_rows.append({
                 "animal_id": f"NYCACC-{r.get('animal_id')}",
-                "name": r.get("name"),
+                "name": name,
                 "gender": r.get("gender"),
                 "age": r.get("age"),
                 "weight": r.get("weight"),
+                "city": "New York",
+                "state": "NY",
+                "shelter_name": "Animal Care Centers of NYC",
                 "scraped_at": now_iso(),
                 "shelter_id": "NYCACC",
             })

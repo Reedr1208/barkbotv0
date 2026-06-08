@@ -85,19 +85,7 @@ def get_pet_numeric_id(href: str) -> Optional[str]:
     return match.group(1) if match else None
 
 
-def best_image_url(img_tag) -> Optional[str]:
-    if not img_tag:
-        return None
-    for attr in ("src", "data-src"):
-        value = img_tag.get(attr)
-        if value:
-            return value
-    srcset = img_tag.get("srcset") or img_tag.get("data-srcset")
-    if srcset:
-        candidates = [part.strip().split(" ")[0] for part in srcset.split(",") if part.strip()]
-        if candidates:
-            return candidates[-1]
-    return None
+
 
 
 def parse_gender_age(text: Optional[str]) -> tuple[Optional[str], Optional[str]]:
@@ -149,8 +137,8 @@ def parse_cards_from_html(html: str, scraped_at: str) -> List[Dict[str, Optional
         # We store weight as empty string in active_dogs if unknown
         weight = ""
 
-        img = card.select_one("img.pet-image, img[alt^='Photo of'], img")
-        image_url = best_image_url(img)
+        if name:
+            name = name.replace("*", "").strip().title()
 
         rows.append(
             {
@@ -159,6 +147,9 @@ def parse_cards_from_html(html: str, scraped_at: str) -> List[Dict[str, Optional
                 "gender": gender,
                 "age": age,
                 "weight": weight,
+                "city": "Tucson",
+                "state": "AZ",
+                "shelter_name": "Humane Society of Southern Arizona",
                 "scraped_at": scraped_at,
                 "shelter_id": DB_SHELTER_ID,
             }

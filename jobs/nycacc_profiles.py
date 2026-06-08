@@ -62,6 +62,8 @@ HEADERS = {
 TRACKED_FIELDS = [
     "shelter_profile_url",
     "animal_id",
+    "name",
+    "gender",
     "shelter_name",
     "weight",
     "age",
@@ -227,9 +229,10 @@ class BarkbotStore:
         return change_type
     
     def get_least_recently_updated_nycacc_dogs(self, limit: int = DOGS_PER_RUN) -> List[Dict[str, str]]:
-        # Get all currently adoptable dogs for HSSA
-        adoptable_resp = self.client.table("active_dogs").select("animal_id").eq("shelter_id", "NYCACC").execute()
-        adoptable_ids = [row["animal_id"] for row in adoptable_resp.data]
+        # Get all currently adoptable dogs for NYCACC
+        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender").eq("shelter_id", "NYCACC").execute()
+        adoptable_dogs = {row["animal_id"]: row for row in adoptable_resp.data}
+        adoptable_ids = list(adoptable_dogs.keys())
 
         if not adoptable_ids:
             return []
@@ -251,7 +254,9 @@ class BarkbotStore:
             dogs.append({
                 "animal_id": aid,
                 "numeric_id": numeric_id,
-                "url": f"https://nycacc.app/#/browse/{numeric_id}"
+                "url": f"https://nycacc.app/#/browse/{numeric_id}",
+                "name": adoptable_dogs[aid].get("name"),
+                "gender": adoptable_dogs[aid].get("gender")
             })
         return dogs
 
@@ -1036,7 +1041,8 @@ async def main_async(args: argparse.Namespace) -> int:
         print("No adoptable NYCACC dogs found to scrape.")
         return 0
 
-    native_ids = [d["numeric_id"] for d in dogs]
+    dog_info = {d["numeric_id"]: d for d in dogs}
+    native_ids = list(dog_info.keys())
 
     print(f"Scraping {len(native_ids)} NYCACC dogs.")
 
@@ -1123,15 +1129,18 @@ async def main_async(args: argparse.Namespace) -> int:
                     include_photo_urls=args.include_photo_urls,
                 )
                 
+                dog_meta = dog_info.get(native_id, {})
                 record = {
                     "animal_id": raw_row["animal_id"],
                     "url": raw_row["url"],
+                    "name": dog_meta.get("name", "Unknown"),
+                    "gender": dog_meta.get("gender", "Unknown"),
                     "located_at": raw_row["located_at"],
                     "weight": raw_row["weight"],
                     "age": raw_row["age"],
                     "description": raw_row["description"],
                     "data_updated": now_iso(),
-                    "image_url": first_image_from_pet(pet), # Need to implement this
+                    "shelter_image_url": first_image_from_pet(pet), # Need to implement this
                     "bio": html_to_text(pet.get("summaryHtml")), # fallback bio
                     "more_info": "",
                 }
@@ -1139,9 +1148,10 @@ async def main_async(args: argparse.Namespace) -> int:
                 try:
                     import urllib.request
                     # Upload image
-                    image_file, image_public_url = store.upload_image(record["animal_id"], record.get("image_url"))
-                    record["image_file"] = image_file
-                    record["image_public_url"] = image_public_url
+                    image_file, image_public_url = store.upload_image(record["animal_id"], record.get("shelter_image_url"))
+                    if image_file and image_public_url:
+                        record["image_file"] = image_file
+                        record["image_public_url"] = image_public_url
                     
                     result = store.save_record(run_id, record)
                     if result == "inserted":

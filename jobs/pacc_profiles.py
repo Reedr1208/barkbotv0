@@ -25,6 +25,8 @@ HEADERS = {
 TRACKED_FIELDS = [
     "shelter_profile_url",
     "animal_id",
+    "name",
+    "gender",
     "shelter_name",
     "weight",
     "age",
@@ -254,10 +256,11 @@ class BarkbotStore:
         self.client.table("animals").upsert(payload, on_conflict="animal_id").execute()
         return change_type
     
-    def get_least_recently_updated_urls(self, limit: int = DOGS_PER_RUN) -> List[str]:
+    def get_least_recently_updated_urls(self, limit: int = DOGS_PER_RUN) -> List[Dict[str, str]]:
         # Get all currently adoptable dogs for PACC
-        adoptable_resp = self.client.table("active_dogs").select("animal_id").eq("shelter_id", "PACC").execute()
-        adoptable_ids = [row["animal_id"] for row in adoptable_resp.data]
+        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender").eq("shelter_id", "PACC").execute()
+        adoptable_dogs = {row["animal_id"]: row for row in adoptable_resp.data}
+        adoptable_ids = list(adoptable_dogs.keys())
 
         if not adoptable_ids:
             return []
@@ -275,8 +278,14 @@ class BarkbotStore:
         
         top_ids = adoptable_ids[:limit]
         
-        urls = [f"https://24petconnect.com/PimaAdoptablePets/Details/PIMA/{aid.replace('PACC-', '')}" for aid in top_ids]
-        return urls
+        results = []
+        for aid in top_ids:
+            results.append({
+                "url": f"https://24petconnect.com/PimaAdoptablePets/Details/PIMA/{aid.replace('PACC-', '')}",
+                "name": adoptable_dogs[aid].get("name"),
+                "gender": adoptable_dogs[aid].get("gender")
+            })
+        return results
 
 
 def parse_args() -> argparse.Namespace:
@@ -290,27 +299,36 @@ def main() -> int:
     settings = get_settings()
     store = BarkbotStore(settings)
     
-    urls = store.get_least_recently_updated_urls(limit=DOGS_PER_RUN)
+    targets = store.get_least_recently_updated_urls(limit=DOGS_PER_RUN)
     
-    if not urls:
+    if not targets:
         print("No adoptable dogs found to scrape.")
         return 0
     
-    print(f"Scraping the following {len(urls)} URLs:")
-    for u in urls:
-        print(f" - {u}")
+    print(f"Scraping the following {len(targets)} URLs:")
+    for t in targets:
+        print(f" - {t['url']}")
 
     processed = inserted = updated = unchanged = errors = 0
-    run_id = store.begin_run(args.triggered_by, len(urls))
+    run_id = store.begin_run(args.triggered_by, len(targets))
 
     try:
-        for url in urls:
+        for target in targets:
+            url = target["url"]
             processed += 1
             try:
                 record = fetch_record(url)
-                image_file, image_public_url = store.upload_image(record["animal_id"], record.get("image_url"))
-                record["image_file"] = image_file
-                record["image_public_url"] = image_public_url
+                record["name"] = target["name"]
+                record["gender"] = target["gender"]
+                
+                try:
+                    image_file, image_public_url = store.upload_image(record["animal_id"], record.get("shelter_image_url"))
+                    if image_file and image_public_url:
+                        record["image_file"] = image_file
+                        record["image_public_url"] = image_public_url
+                except Exception as img_exc:
+                    print(f"Failed to upload image for {record['animal_id']}: {img_exc}", file=sys.stderr)
+                    
                 result = store.save_record(run_id, record)
                 if result == "inserted":
                     inserted += 1

@@ -81,17 +81,15 @@ def parse_dogs(html: str) -> list[dict]:
             el = card.select_one(f".text_{name}")
             return clean(el.get_text(" ", strip=True)) if el else ""
 
-        img = card.select_one("img")
-
         dogs.append({
             "animal_id": f"PACC-{field('AnimalID')}",
-            "name": field("Name"),
+            "name": field("Name").replace("*", "").strip().title(),
             "gender": field("Gender"),
             "age": field("Age"),
             "weight": field("Weight"),
-            "location": field("Location"),
-            "view_type": field("ViewType"),
-            "image_url": img.get("src", "") if img else "",
+            "city": "Tucson",
+            "state": "AZ",
+            "shelter_name": "Pima Animal Care Center",
             "scraped_at": now_iso()
         })
 

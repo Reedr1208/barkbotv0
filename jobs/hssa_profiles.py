@@ -29,6 +29,8 @@ HEADERS = {
 TRACKED_FIELDS = [
     "shelter_profile_url",
     "animal_id",
+    "name",
+    "gender",
     "shelter_name",
     "weight",
     "age",
@@ -188,8 +190,9 @@ class BarkbotStore:
     
     def get_least_recently_updated_hssa_dogs(self, limit: int = DOGS_PER_RUN) -> List[Dict[str, str]]:
         # Get all currently adoptable dogs for HSSA
-        adoptable_resp = self.client.table("active_dogs").select("animal_id").eq("shelter_id", "HSSA").execute()
-        adoptable_ids = [row["animal_id"] for row in adoptable_resp.data]
+        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender").eq("shelter_id", "HSSA").execute()
+        adoptable_dogs = {row["animal_id"]: row for row in adoptable_resp.data}
+        adoptable_ids = list(adoptable_dogs.keys())
 
         if not adoptable_ids:
             return []
@@ -211,7 +214,9 @@ class BarkbotStore:
             dogs.append({
                 "animal_id": aid,
                 "numeric_id": numeric_id,
-                "url": f"https://www.adoptapet.com/pet/{numeric_id}"
+                "url": f"https://www.adoptapet.com/pet/{numeric_id}",
+                "name": adoptable_dogs[aid].get("name"),
+                "gender": adoptable_dogs[aid].get("gender")
             })
         return dogs
 
@@ -248,9 +253,17 @@ def main() -> int:
             numeric_id = d["numeric_id"]
             try:
                 record = fetch_record(url, numeric_id)
-                image_file, image_public_url = store.upload_image(record["animal_id"], record.get("image_url"))
-                record["image_file"] = image_file
-                record["image_public_url"] = image_public_url
+                record["name"] = d["name"]
+                record["gender"] = d["gender"]
+                
+                try:
+                    image_file, image_public_url = store.upload_image(record["animal_id"], record.get("shelter_image_url"))
+                    if image_file and image_public_url:
+                        record["image_file"] = image_file
+                        record["image_public_url"] = image_public_url
+                except Exception as img_exc:
+                    print(f"Failed to upload image for {record['animal_id']}: {img_exc}", file=sys.stderr)
+                    
                 result = store.save_record(run_id, record)
                 if result == "inserted":
                     inserted += 1

@@ -73,8 +73,6 @@ class handler(BaseHTTPRequestHandler):
                     dog_image_url = animal["image_public_url"]
                 elif animal.get("shelter_image_url"):
                     dog_image_url = animal["shelter_image_url"]
-                elif active_dog.get("image_url"):
-                    dog_image_url = active_dog["image_url"]
 
                 saved_dogs_rich.append({
                     "animal_id": aid,
