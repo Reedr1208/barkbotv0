@@ -2,8 +2,11 @@ import json
 import os
 import re
 import sys
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 from urllib.parse import urlparse, unquote
 import hashlib
 import mimetypes
@@ -130,12 +133,12 @@ def upload_image(client, bucket: str, animal_id: str, image_url: str):
         public_url = client.storage.from_(bucket).get_public_url(object_path)
         return object_path, public_url
     except Exception as e:
-        print(f"Failed to upload image for {animal_id}: {e}", file=sys.stderr)
+        logging.error(f"Failed to upload image for {animal_id}: {e}")
         return None, None
 
 def save_to_supabase(dogs: list):
     if not dogs:
-        print("No dogs to save.")
+        logging.info("No dogs to save.")
         return
 
     client = get_supabase_client()
@@ -201,21 +204,22 @@ def save_to_supabase(dogs: list):
         animals_upsert.append(animals_record)
 
     # 1. Wipe and replace active_dogs for MUDDYPAWS
-    print("Clearing existing active_dogs table data for MUDDYPAWS...")
+    logging.info("Clearing existing active_dogs table data for MUDDYPAWS...")
     client.table("active_dogs").delete().eq("shelter_id", "MUDDYPAWS").execute()
 
-    print(f"Inserting {len(active_dogs)} dogs into active_dogs...")
+    logging.info(f"Inserting {len(active_dogs)} dogs into active_dogs...")
     client.table("active_dogs").insert(active_dogs).execute()
 
     # 2. Upsert detailed animals
-    print(f"Upserting {len(animals_upsert)} dogs into animals...")
+    logging.info(f"Upserting {len(animals_upsert)} dogs into animals...")
     # Supabase bulk upsert
     for chunk_start in range(0, len(animals_upsert), 50):
         chunk = animals_upsert[chunk_start:chunk_start + 50]
         client.table("animals").upsert(chunk, on_conflict="animal_id").execute()
 
 if __name__ == "__main__":
+    logging.info("Starting scrape...")
     dogs = fetch_dogs()
-    print(f"Fetched {len(dogs)} dogs from MuddyPaws.")
+    logging.info(f"Fetched {len(dogs)} dogs from MuddyPaws.")
     save_to_supabase(dogs)
-    print("Done.")
+    logging.info("Scrape completed successfully.")

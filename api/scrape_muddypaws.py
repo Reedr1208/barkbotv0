@@ -27,12 +27,21 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             logging.info(f"Running command: {python_exe} {target_script}")
-            subprocess.Popen([python_exe, str(target_script)], env=os.environ.copy())
-            logging.info("Subprocess spawned successfully. Returning 200 to Vercel.")
+            result = subprocess.run([python_exe, str(target_script)], env=os.environ.copy(), capture_output=True, text=True)
             
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b"Job started in background")
+            if result.returncode == 0:
+                logging.info(f"Subprocess completed successfully.\nStdout: {result.stdout}")
+                if result.stderr:
+                    logging.warning(f"Stderr: {result.stderr}")
+                
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"Job completed successfully")
+            else:
+                logging.error(f"Subprocess failed with code {result.returncode}.\nStdout: {result.stdout}\nStderr: {result.stderr}")
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b"Job failed")
         except Exception as e:
             logging.error(f"Failed to spawn subprocess: {e}")
             self.send_response(500)
