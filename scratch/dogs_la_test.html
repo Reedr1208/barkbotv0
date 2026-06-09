@@ -27,29 +27,27 @@
   }(window,document,window._fs_namespace,"script",window._fs_script);
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChattyHound – Chat With Adoptable Shelter Dogs 🐾</title>
-  <meta name="description"
-    content="🐶 Chat with adoptable shelter dogs! Discover their quirks, personality, and needs in real-time, build your match profile, and find your new best friend who fits your life.">
-  <link rel="canonical" href="https://chattyhound.com/" />
+  <title>ChattyHound</title>
+  <meta name="description" content="Meet adoptable rescue dogs.">
+  <link rel="canonical" href="https://chattyhound.com/dogs/la" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://chattyhound.com/">
-  <meta property="og:title" content="ChattyHound – Chat With Adoptable Shelter Dogs 🐾">
-  <meta property="og:description"
-    content="🐶 Chat with adoptable shelter dogs! Discover their quirks, personality, and needs in real-time, build your match profile, and find your new best friend who fits your life.">
+  <meta property="og:url" content="https://chattyhound.com/dogs/la">
+  <meta property="og:title" content="ChattyHound">
+  <meta property="og:description" content="Meet adoptable rescue dogs.">
   <meta property="og:image" content="https://chattyhound.com/chattyhound_og.png">
   <meta property="og:image:secure_url" content="https://chattyhound.com/chattyhound_og.png">
-  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:alt" content="ChattyHound">
+  <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1024">
   <meta property="og:image:height" content="1024">
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://chattyhound.com/">
-  <meta property="twitter:title" content="ChattyHound – Chat With Adoptable Shelter Dogs 🐾">
-  <meta property="twitter:description"
-    content="🐶 Chat with adoptable shelter dogs! Discover their quirks, personality, and needs in real-time, build your match profile, and find your new best friend who fits your life.">
+  <meta property="twitter:url" content="https://chattyhound.com/dogs/la">
+  <meta property="twitter:title" content="ChattyHound">
+  <meta property="twitter:description" content="Meet adoptable rescue dogs.">
   <meta property="twitter:image" content="https://chattyhound.com/chattyhound_og.png">
   
   <link rel="icon" href="/favicon_dog.png" type="image/png">
@@ -2637,6 +2635,8 @@
 </head>
 
 <body>
+<script>window.__CH_INITIAL_LOCATION__="/la";window.__CH_INITIAL_DOG_ID__="";window.__CH_PAGE_META__={"title": "ChattyHound", "og_title": "ChattyHound", "description": "Meet adoptable rescue dogs.", "share_text": ""};</script>
+
 
   <div class="app-container" id="profilePanel">
     <span class="loader" id="loader"></span>
@@ -3422,7 +3422,7 @@
       }
 
       window.__CH_LOCATIONS_DATA__ = [];
-      window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
+      async function populateLocations() {
         try {
           const res = await fetch('/api/locations');
           if (res.ok) {
@@ -3481,15 +3481,7 @@
                   currentPrefs.location = newLocName;
                   setupSelectorButtons('prefLocationGroup', newLocName);
                   if (userEmail) {
-                    try {
-                      await fetch('/api/save_preferences', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: userEmail, preferences: currentPrefs })
-                      });
-                    } catch (e) {
-                      console.error('Failed to save location preference', e);
-                    }
+                    await saveUserPreferences(userEmail);
                   } else {
                     savePreferencesLocally(currentPrefs, lifestylePrefs);
                   }
@@ -3520,7 +3512,9 @@
         } catch (e) {
           console.error("Error fetching locations:", e);
         }
-      })();
+      }
+      // Populate locations as soon as script starts
+      populateLocations();
 
       const CH_CANONICAL_ORIGIN = 'https://chattyhound.com';
       const CH_DEFAULT_OG_IMAGE = CH_CANONICAL_ORIGIN + '/chattyhound_og.png';
@@ -3530,12 +3524,7 @@
         const matchWithLoc = path.match(/^\/dogs\/[^/]+\/([^/?#]+)\/?$/);
         if (matchWithLoc) return decodeURIComponent(matchWithLoc[1]);
         const match = path.match(/^\/dogs\/([^/?#]+)\/?$/);
-        if (match) {
-          const val = decodeURIComponent(match[1]);
-          if (window.__CH_INITIAL_LOCATION__ === '/' + val) return null;
-          return val;
-        }
-        return null;
+        return match ? decodeURIComponent(match[1]) : null;
       }
 
       function getCanonicalDogUrl(animalId) {
@@ -5911,11 +5900,7 @@ function formatRelativeTime(isoString) {
         }
       });
 
-      async function startAppAfterPreferences(loaderFn) {
-        if (window.__CH_LOCATIONS_PROMISE__) {
-          await window.__CH_LOCATIONS_PROMISE__;
-        }
-        
+      function startAppAfterPreferences(loaderFn) {
         if (userEmail) {
           (async function fetchPreferencesOnLoad() {
             try {
@@ -5926,22 +5911,12 @@ function formatRelativeTime(isoString) {
               });
               if (response.ok) {
                 const profile = await response.json();
-                const urlLocation = (window.__CH_INITIAL_LOCATION__ && currentPrefs.location !== 'any') ? currentPrefs.location : null;
-                
                 currentPrefs = {
                   gender: profile.gender || 'any',
                   age_group: profile.age_group || 'any',
                   size: profile.size || 'any',
-                  location: urlLocation || profile.location || 'any'
+                  location: profile.location || 'any'
                 };
-
-                // Sync header visual with loaded preference
-                if (window.__CH_LOCATIONS_DATA__ && currentPrefs.location !== 'any') {
-                  const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === currentPrefs.location);
-                  if (locObj && document.getElementById('headerLocationSelect')) {
-                    document.getElementById('headerLocationSelect').value = locObj.relative_path;
-                  }
-                }
               }
             } catch (err) {
               console.error('Error restoring preferences:', err);
@@ -5962,9 +5937,8 @@ function formatRelativeTime(isoString) {
 
       if (routeDogId) {
         startAppAfterPreferences(() => openSharedDogFromRoute(routeDogId));
-      } else if (hasVisited === 'true' || window.__CH_INITIAL_LOCATION__) {
+      } else if (hasVisited === 'true') {
         switchView('app');
-        localStorage.setItem('chattyhound_visited', 'true');
         startAppAfterPreferences(() => fetchRandomDog());
       } else {
         switchView('landing');

@@ -29,11 +29,12 @@ class handler(BaseHTTPRequestHandler):
             post_data = self.rfile.read(content_length)
             body = json.loads(post_data.decode('utf-8'))
             
+            pref_obj = body.get("preferences", body)
             email = body.get("email", "").strip().lower()
-            gender = body.get("gender", "any").strip().lower()
-            age_group = body.get("age_group", "any").strip().lower()
-            size = body.get("size", "any").strip().lower()
-            location = body.get("location", "any").strip()
+            gender = pref_obj.get("gender", "any").strip().lower()
+            age_group = pref_obj.get("age_group", "any").strip().lower()
+            size = pref_obj.get("size", "any").strip().lower()
+            location = pref_obj.get("location", "any").strip()
             
             if not email:
                 self._send_response(400, {"error": "Email is required."})

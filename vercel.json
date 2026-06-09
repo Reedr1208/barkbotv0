@@ -1,9 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/dogs/:dogId",
-      "destination": "/api/dog_meta?dogId=:dogId"
+      "source": "/dogs/:path1/:path2",
+      "destination": "/api/dog_meta?path1=:path1&path2=:path2"
+    },
+    {
+      "source": "/dogs/:path1",
+      "destination": "/api/dog_meta?path1=:path1"
     }
   ],
   "functions": {

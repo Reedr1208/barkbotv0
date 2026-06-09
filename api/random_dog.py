@@ -226,6 +226,17 @@ class handler(BaseHTTPRequestHandler):
                 pref_size = preferences.get("size", "any")
                 pref_location = preferences.get("location", "any")
                 
+                # Make location a HARD filter
+                if pref_location != "any":
+                    new_valid_ids = []
+                    for aid in valid_ids:
+                        dog_loc = shelters_map.get(active_dogs[aid].get("shelter_id"), {}).get("location_display_name", "")
+                        if pref_location.lower() == dog_loc.lower():
+                            new_valid_ids.append(aid)
+                    # Only apply hard filter if there are actually dogs in that location
+                    if new_valid_ids:
+                        valid_ids = new_valid_ids
+
                 # Triggers for active categories
                 has_gender = (pref_gender != "any")
                 has_age = (pref_age != "any")
@@ -271,7 +282,7 @@ class handler(BaseHTTPRequestHandler):
                         # 4. Location Filter
                         if has_location:
                             dog_loc = shelters_map.get(dog.get("shelter_id"), {}).get("location_display_name", "")
-                            if pref_location == dog_loc:
+                            if pref_location.lower() == dog_loc.lower():
                                 score += 1
                                 details["location"]["matched"] = True
                         else:
@@ -332,9 +343,10 @@ class handler(BaseHTTPRequestHandler):
                     
                     weights = []
                     for cid in candidates:
-                        # Add a baseline weight so even empty bios have a non-zero chance,
-                        # but longer bios are significantly more likely to be chosen.
-                        weights.append(lengths.get(cid, 0) + 10)
+                        # Add a baseline weight so even empty bios have a non-zero chance.
+                        # Cap bio length weight so shelters with huge bios don't dominate completely.
+                        w = min(lengths.get(cid, 0), 800) / 10.0 + 10
+                        weights.append(w)
                         
                     return random.choices(candidates, weights=weights, k=1)[0]
                 except Exception as e:

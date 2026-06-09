@@ -1,7 +1,7 @@
-import sys
 import os
+import sys
 from pathlib import Path
-sys.path.insert(0, 'api')
+import subprocess
 
 env_local = Path('.env.development.local')
 if env_local.exists():
@@ -12,12 +12,18 @@ if env_local.exists():
                 k, v = line.split("=", 1)
                 os.environ[k] = v.strip().strip('"').strip("'")
 
-from random_dog import handler
+code = """
+import sys
+sys.path.insert(0, 'api')
+from dog_meta import handler
 
 class MockRequest:
-    def makefile(self, *args, **kwargs): pass
-    def sendall(self, *args, **kwargs): pass
-class MockServer: pass
+    def makefile(self, *args, **kwargs):
+        pass
+    def sendall(self, *args, **kwargs):
+        pass
+class MockServer:
+    pass
 
 class TestHandler(handler):
     def __init__(self, path):
@@ -31,7 +37,15 @@ class TestHandler(handler):
     def send_header(self, *args): pass
     def end_headers(self): pass
 
-print("Testing /api/random_dog?location=Tucson,%20AZ%20🌵")
-h = TestHandler('/api/random_dog?location=Tucson,%20AZ%20%F0%9F%8C%B5')
+print("Testing /dogs/la")
+h = TestHandler('/?path1=la')
 h.do_GET()
 print()
+
+print("Testing /dogs/la/WWLA-123 (fake id)")
+h = TestHandler('/?path1=la&path2=WWLA-123')
+h.do_GET()
+print()
+"""
+with open("scratch/mock_meta.py", "w") as f: f.write(code)
+subprocess.run([sys.executable, 'scratch/mock_meta.py'], env=os.environ.copy())

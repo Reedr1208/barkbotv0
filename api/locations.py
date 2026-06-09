@@ -17,9 +17,23 @@ class handler(BaseHTTPRequestHandler):
                 
             client = create_client(supabase_url, supabase_key)
             
-            res = client.table("shelters").select("location_display_name").execute()
-            locations = list({row["location_display_name"] for row in res.data if row.get("location_display_name")})
-            locations.sort()
+            res = client.table("shelters").select("shelter_id, location_display_name, relative_path").execute()
+            
+            locations_map = {}
+            for row in res.data:
+                disp = row.get("location_display_name")
+                if not disp:
+                    continue
+                if disp not in locations_map:
+                    locations_map[disp] = {
+                        "display_name": disp,
+                        "relative_path": row.get("relative_path") or "",
+                        "shelter_ids": []
+                    }
+                locations_map[disp]["shelter_ids"].append(row.get("shelter_id"))
+                
+            locations = list(locations_map.values())
+            locations.sort(key=lambda x: x["display_name"])
             
             self.send_response(200)
             self.send_header('Content-type', 'application/json')

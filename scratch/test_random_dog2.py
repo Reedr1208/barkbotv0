@@ -27,11 +27,9 @@ class TestHandler(handler):
         self.server = MockServer()
         self.wfile = open('/dev/stdout', 'wb')
     def setup(self): pass
-    def send_response(self, code, *args): print(f"[{code}]", end=" ")
+    def send_response(self, code, *args): print(f"\n[{code}]", end=" ")
     def send_header(self, *args): pass
     def end_headers(self): pass
 
-print("Testing /api/random_dog?location=Tucson,%20AZ%20🌵")
 h = TestHandler('/api/random_dog?location=Tucson,%20AZ%20%F0%9F%8C%B5')
 h.do_GET()
-print()

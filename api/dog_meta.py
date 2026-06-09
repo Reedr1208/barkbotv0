@@ -112,8 +112,15 @@ def _fetch_dog_profile(animal_id):
     return profile
 
 
-def _inject_head(html_text, meta, dog_id, image_url):
-    canonical = f"{CANONICAL_ORIGIN}/dogs/{dog_id}"
+def _inject_head(html_text, meta, dog_id, image_url, location_path=None):
+    if location_path and dog_id:
+        canonical = f"{CANONICAL_ORIGIN}/dogs{location_path}/{dog_id}"
+    elif location_path:
+        canonical = f"{CANONICAL_ORIGIN}/dogs{location_path}"
+    elif dog_id:
+        canonical = f"{CANONICAL_ORIGIN}/dogs/{dog_id}"
+    else:
+        canonical = CANONICAL_ORIGIN
     esc = html.escape
     desc = esc(meta["description"])
     title = esc(meta["title"])
@@ -194,8 +201,9 @@ def _inject_head(html_text, meta, dog_id, image_url):
     )
 
     extra = "window.__CH_DOG_UNAVAILABLE__=true;" if meta.get("unavailable") else ""
+    loc_js = f"window.__CH_INITIAL_LOCATION__={json_dumps(location_path)};" if location_path else ""
     bootstrap = (
-        f'<script>{extra}window.__CH_INITIAL_DOG_ID__={json_dumps(dog_id)};'
+        f'<script>{extra}{loc_js}window.__CH_INITIAL_DOG_ID__={json_dumps(dog_id)};'
         f'window.__CH_PAGE_META__={json_dumps(meta)};</script>\n'
     )
     out = out.replace("<body>", f"<body>\n{bootstrap}", 1)
@@ -287,11 +295,39 @@ class handler(BaseHTTPRequestHandler):
         try:
             parsed = urlparse(self.path)
             params = parse_qs(parsed.query)
+            
+            path1 = (params.get("path1") or [""])[0].strip()
+            path2 = (params.get("path2") or [""])[0].strip()
             dog_id = (params.get("dogId") or params.get("dog_id") or [""])[0].strip()
-            if not dog_id:
+            location_path = None
+            
+            client = get_supabase_client()
+            
+            if path1:
+                shelters_res = client.table("shelters").select("relative_path").eq("relative_path", "/" + path1).limit(1).execute()
+                if shelters_res.data:
+                    location_path = "/" + path1
+                    if path2:
+                        dog_id = path2
+                else:
+                    if not dog_id:
+                        dog_id = path1
+            else:
                 path_parts = [p for p in parsed.path.split("/") if p]
                 if len(path_parts) >= 2 and path_parts[-2] == "dogs":
                     dog_id = path_parts[-1]
+
+            if location_path and not dog_id:
+                html_text = _load_index_html()
+                meta = {
+                    "title": "ChattyHound",
+                    "og_title": "ChattyHound",
+                    "description": "Meet adoptable rescue dogs.",
+                    "share_text": "",
+                }
+                html_out = _inject_head(html_text, meta, "", DEFAULT_OG_IMAGE, location_path)
+                self._send_html(html_out)
+                return
 
             if not dog_id:
                 self._redirect_home()
@@ -308,13 +344,13 @@ class handler(BaseHTTPRequestHandler):
                     "share_text": "",
                     "unavailable": True,
                 }
-                html_out = _inject_head(html_text, unavailable_meta, dog_id, DEFAULT_OG_IMAGE)
+                html_out = _inject_head(html_text, unavailable_meta, dog_id, DEFAULT_OG_IMAGE, location_path)
                 self._send_html(html_out)
                 return
 
             meta = _build_meta_copy(profile)
             image_url = _dog_image_url(profile)
-            html_out = _inject_head(html_text, meta, dog_id, image_url)
+            html_out = _inject_head(html_text, meta, dog_id, image_url, location_path)
             self._send_html(html_out)
 
         except Exception as e:
