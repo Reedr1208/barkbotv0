@@ -112,6 +112,13 @@ class handler(BaseHTTPRequestHandler):
                 profile["medical_notes"] = facts_data.get("medical_notes")
                 profile["adoption_process_notes"] = facts_data.get("adoption_process_notes")
                 profile["unknowns"] = facts_data.get("unknowns_jsonb", [])
+                profile["info_refreshed_at"] = facts_data.get("info_refreshed_at")
+                profile["sex"] = facts_data.get("sex", active_dogs[animal_id_override].get("gender") if "active_dogs" in locals() else active_dog.get("gender"))
+                profile["age_summary"] = facts_data.get("age_summary")
+                profile["weight_summary"] = facts_data.get("weight_summary")
+                profile["age_bucket"] = facts_data.get("age_bucket")
+                profile["weight_class"] = facts_data.get("weight_class")
+                profile["altered_status"] = facts_data.get("altered_status")
                 
                 profile["preferences_matched"] = False
                 profile["user_has_preferences"] = False
