@@ -4186,9 +4186,9 @@ function formatRelativeTime(isoString) {
 
           // Fill actual values in the stats panel (using compact cleaning functions)
           const genderEl = document.getElementById('dogGender');
-          if (genderEl) genderEl.textContent = cleanGenderText(dog.gender || 'Unknown');
-          dogAge.textContent = cleanAgeText(dog.age || 'Unknown');
-          dogWeight.textContent = cleanWeightText(dog.weight || 'Unknown');
+          if (genderEl) genderEl.textContent = dog.sex || cleanGenderText(dog.gender || 'Unknown');
+          dogAge.textContent = dog.age_summary || cleanAgeText(dog.age || 'Unknown');
+          dogWeight.textContent = dog.weight_summary || cleanWeightText(dog.weight || 'Unknown');
 
           // Restore action overlays on successful load
           const mobileActionBar = document.getElementById('mobileActionBar');

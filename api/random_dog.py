@@ -88,7 +88,7 @@ class handler(BaseHTTPRequestHandler):
                 active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
                 prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
                 profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
-                fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status").eq("animal_id", animal_id_override).limit(1).execute()
+                fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", animal_id_override).limit(1).execute()
                 
                 if not active_res.data or not profile_res.data:
                     self._send_response(404, {"error": "Dog not found."})
@@ -381,7 +381,7 @@ class handler(BaseHTTPRequestHandler):
             profile["name"] = active_dogs[random_id].get("name") or "Unknown"
             profile["gender"] = active_dogs[random_id].get("gender") or "Unknown"
             
-            fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status").eq("animal_id", random_id).limit(1).execute()
+            fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", random_id).limit(1).execute()
             facts_data = fact_res.data[0] if fact_res.data else {}
             
             profile["intro_summary"] = facts_data.get("intro_summary")
@@ -399,7 +399,9 @@ class handler(BaseHTTPRequestHandler):
             profile["adoption_process_notes"] = facts_data.get("adoption_process_notes")
             profile["unknowns"] = facts_data.get("unknowns_jsonb", [])
             profile["info_refreshed_at"] = facts_data.get("info_refreshed_at")
-            profile["sex"] = facts_data.get("sex")
+            profile["sex"] = facts_data.get("sex", active_dogs[random_id].get("gender"))
+            profile["age_summary"] = facts_data.get("age_summary")
+            profile["weight_summary"] = facts_data.get("weight_summary")
             profile["age_bucket"] = facts_data.get("age_bucket")
             profile["weight_class"] = facts_data.get("weight_class")
             profile["altered_status"] = facts_data.get("altered_status")
