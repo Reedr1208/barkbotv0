@@ -3284,8 +3284,6 @@
                 </div>
                 <div class="pref-selector-group" id="prefLocationGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
                   <button class="pref-btn" data-value="any">Any Location 🌎</button>
-                  <button class="pref-btn" data-value="Tucson, AZ 🌵">Tucson, AZ 🌵</button>
-                  <button class="pref-btn" data-value="New York, NY 🗽">New York, NY 🗽</button>
                 </div>
               </div>
             </div>
@@ -3417,6 +3415,34 @@
           );
         }
       }
+
+      async function populateLocations() {
+        try {
+          const res = await fetch('/api/locations');
+          if (res.ok) {
+            const data = await res.json();
+            const group = document.getElementById('prefLocationGroup');
+            if (group && data.locations) {
+              group.innerHTML = '<button class="pref-btn" data-value="any">Any Location 🌎</button>';
+              data.locations.forEach(loc => {
+                const btn = document.createElement('button');
+                btn.className = 'pref-btn';
+                btn.dataset.value = loc;
+                btn.textContent = loc;
+                group.appendChild(btn);
+              });
+              // Ensure selection is correctly set if preferences were already loaded
+              if (currentPrefs && currentPrefs.location) {
+                setupSelectorButtons('prefLocationGroup', currentPrefs.location);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching locations:", e);
+        }
+      }
+      // Populate locations as soon as script starts
+      populateLocations();
 
       const CH_CANONICAL_ORIGIN = 'https://chattyhound.com';
       const CH_DEFAULT_OG_IMAGE = CH_CANONICAL_ORIGIN + '/chattyhound_og.png';

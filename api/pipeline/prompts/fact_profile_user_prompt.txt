@@ -11,7 +11,7 @@ Instructions:
 - `weight_summary`: Format exactly as "x lbs" with no decimal points. No other words like "Approximately". If no info, use "N/A".
 - `weight_class`: Infer from `weight_summary` into exactly one of: "Small (<25lbs)", "Medium (25-60lbs)", "Large (60+lbs)", or "N/A".
 - `breed_or_description`: Extract breed/visual description from anywhere in the record (often in bio). Use proper casing. Remove dashes if extracting from a url. Include words like "Mix" if used. If cannot be inferred, use "Unknown". DO NOT include any color information.
-- `sex`: "Male", "Female", or "N/A".
+- `sex`: "Male", "Female", or "N/A". If the exact sex is not provided, look for hints in the bio (e.g. use of "He/His" implies Male, "She/Her" implies Female).
 - `altered_status`: "Spayed", "Neutered", "Unaltered", or "N/A".
 - `location_detail`: Specific location info beyond the shelter (e.g., NYC borough, foster home, kennel number, room number).
 - `important_facts_jsonb`, `risk_flags_jsonb`, `unknowns_jsonb`, `strengths_jsonb`, `challenges_jsonb`, `ideal_home_jsonb`, and `management_notes_jsonb` should be arrays of short strings.
