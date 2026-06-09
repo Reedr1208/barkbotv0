@@ -1138,7 +1138,6 @@ async def main_async(args: argparse.Namespace) -> int:
                     "shelter_name": raw_row["shelter_name"],
                     "weight": raw_row["weight"],
                     "age": raw_row["age"],
-                    "data_updated": now_iso(),
                     "shelter_image_url": first_image_from_pet(pet), # Need to implement this
                     "bio": raw_row["bio"],
                     "more_info": "",
