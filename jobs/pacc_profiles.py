@@ -121,7 +121,7 @@ def extract_profile_from_html(html: str, url: str) -> Dict[str, Any]:
     return {
         "shelter_profile_url": url,
         "animal_id": animal_id,
-        "shelter_name": text_or_none(located_at_node),
+        "shelter_name": "Pima Animal Care Center",
         "weight": text_or_none(weight_node),
         "age": text_or_none(age_node),
         "more_info": text_or_none(more_info_node),

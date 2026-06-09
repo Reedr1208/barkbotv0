@@ -304,7 +304,7 @@ def build_record(html_text: str, pet_id: Optional[str] = None) -> dict[str, Any]
     return {
         "animal_id": f"HSSA-{pet_id}",
         "shelter_profile_url": url,
-        "shelter_name": clean_text(pet.get("awoName")) or LOCATED_AT_DEFAULT,
+        "shelter_name": "Humane Society of Southern Arizona",
         "weight": normalize_weight(attrs.get("weight")),
         "age": title_age(attrs.get("age")),
         "more_info": "",

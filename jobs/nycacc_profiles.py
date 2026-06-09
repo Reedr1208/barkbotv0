@@ -589,7 +589,7 @@ def build_output_row(pet: Optional[Dict[str, Any]], native_id: str, feed_updated
     return {
         "animal_id": f"NYCACC-{native_id}",
         "shelter_profile_url": profile_url(native_id),
-        "shelter_name": LOCATED_AT,
+        "shelter_name": "Animal Care Centers of NYC",
         "weight": weight,
         "age": age,
         "bio": description,

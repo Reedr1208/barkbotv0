@@ -168,7 +168,7 @@ def save_to_supabase(dogs: list):
             "gender": gender,
             "age": age,
             "weight": weight,
-            "city": "New York",
+            "city": "NYC",
             "state": "NY",
             "shelter_name": "Muddy Paws Rescue",
             "scraped_at": now_iso()
@@ -186,7 +186,7 @@ def save_to_supabase(dogs: list):
             "name": name,
             "gender": gender,
             "shelter_name": "Muddy Paws Rescue",
-            "city": "New York",
+            "city": "NYC",
             "state": "NY",
             "shelter_id": "MP",
             "weight": weight,

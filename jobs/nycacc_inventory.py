@@ -819,7 +819,7 @@ async def main_async(args: argparse.Namespace) -> int:
                 "gender": r.get("gender"),
                 "age": r.get("age"),
                 "weight": r.get("weight"),
-                "city": "New York",
+                "city": "NYC",
                 "state": "NY",
                 "shelter_name": "Animal Care Centers of NYC",
                 "scraped_at": now_iso(),
