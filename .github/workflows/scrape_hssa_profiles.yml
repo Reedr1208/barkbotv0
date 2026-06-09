@@ -29,4 +29,4 @@ jobs:
         env:
           storage_SUPABASE_URL: ${{ secrets.storage_SUPABASE_URL }}
           storage_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.storage_SUPABASE_SERVICE_ROLE_KEY }}
-        run: uv run python jobs/05_scrape_hssa_profiles.py
+        run: uv run python jobs/hssa_profiles.py

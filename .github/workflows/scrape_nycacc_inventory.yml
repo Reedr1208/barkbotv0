@@ -32,4 +32,4 @@ jobs:
         env:
           storage_SUPABASE_URL: ${{ secrets.storage_SUPABASE_URL }}
           storage_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.storage_SUPABASE_SERVICE_ROLE_KEY }}
-        run: uv run python jobs/06_scrape_nycacc_inventory.py
+        run: uv run python jobs/nycacc_inventory.py
