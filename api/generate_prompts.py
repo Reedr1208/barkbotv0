@@ -152,6 +152,9 @@ class handler(BaseHTTPRequestHandler):
                     
                 animal_record = animal_record_res.data[0]
                 record_hash = animal_record.get("record_hash", "none")
+                updated_at = animal_record.get("updated_at")
+                adoption_url = animal_record.get("shelter_profile_url")
+                shelter_name = animal_record.get("shelter_name")
                 
                 # Strip developer fields before sending to LLM
                 internal_keys = ["id", "record_hash", "created_at", "updated_at", "last_scrape_run_id"]
@@ -168,6 +171,9 @@ class handler(BaseHTTPRequestHandler):
                     fact_profile["schema_version"] = "fact_v1"
                     fact_profile["extraction_model"] = "gpt-5.4-mini"
                     fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
+                    fact_profile["info_refreshed_at"] = updated_at
+                    fact_profile["adoption_url"] = adoption_url
+                    fact_profile["shelter_name"] = shelter_name
                     sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
 
                     # Inject full bio for persona building and prompt rendering

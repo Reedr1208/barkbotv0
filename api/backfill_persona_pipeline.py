@@ -112,6 +112,9 @@ def main():
                 fact_profile["schema_version"] = "fact_v1"
                 fact_profile["extraction_model"] = "gpt-4o-mini"
                 fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
+                fact_profile["info_refreshed_at"] = dog.get("updated_at")
+                fact_profile["adoption_url"] = dog.get("shelter_profile_url")
+                fact_profile["shelter_name"] = dog.get("shelter_name")
                 
                 # Upsert
                 sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()

@@ -1,27 +1,23 @@
 Create an `animal_fact_profiles` record from the following raw animal source record.
 
-RAW ANIMAL RECORD
-animal_id: {ANIMAL_ID}
-url: {URL}
-located_at: {LOCATED_AT}
-description: {DESCRIPTION}
-weight: {WEIGHT}
-age: {AGE}
-more_info: {MORE_INFO}
-bio: {BIO}
-data_updated: {DATA_UPDATED}
-image_public_url: {IMAGE_PUBLIC_URL}
-record_hash: {RECORD_HASH}
-qa_status: {QA_STATUS}
-qa_notes: {QA_NOTES}
-raw_data_jsonb: {RAW_DATA}
+RAW ANIMAL RECORD (JSON)
+{RAW_ANIMAL_JSON}
 
 Instructions:
 - Populate all schema fields as completely as the source allows.
-- Evidence snippets should cite short phrases from the input text, not external data.
+- `dog_name`: Must use proper case and should not end in an asterisk. If the root `name` field is missing, infer it from the record text.
+- `age_summary`: Format exactly as "x yr, y mo", "x yr", or "y mo". If given in decimals, convert (e.g. 1.5yr -> "1 yr, 6 mo"). Round if needed. If no age info, use "N/A".
+- `age_bucket`: Infer from `age_summary` into exactly one of: "Puppy (<1yr)", "Young (1-3yrs)", "Adult (3-7yrs)", "Senior (8+yrs)", or "N/A".
+- `weight_summary`: Format exactly as "x lbs" with no decimal points. No other words like "Approximately". If no info, use "N/A".
+- `weight_class`: Infer from `weight_summary` into exactly one of: "Small (<25lbs)", "Medium (25-60lbs)", "Large (60+lbs)", or "N/A".
+- `breed_or_description`: Extract breed/visual description from anywhere in the record (often in bio). Use proper casing. Remove dashes if extracting from a url. Include words like "Mix" if used. If cannot be inferred, use "Unknown". DO NOT include any color information.
+- `sex`: "Male", "Female", or "N/A".
+- `altered_status`: "Spayed", "Neutered", "Unaltered", or "N/A".
+- `location_detail`: Specific location info beyond the shelter (e.g., NYC borough, foster home, kennel number, room number).
 - `important_facts_jsonb`, `risk_flags_jsonb`, `unknowns_jsonb`, `strengths_jsonb`, `challenges_jsonb`, `ideal_home_jsonb`, and `management_notes_jsonb` should be arrays of short strings.
 - Keep `backstory_summary` concise and factual.
 - `other_animals_notes`, `people_notes`, `containment_notes`, `medical_notes`, and `adoption_process_notes` should be plain-language summaries.
-- If something is truly absent, do not guess.
+- Evidence snippets should cite short phrases from the input text, not external data.
+- If something is truly absent, do not guess (use "N/A" for strings if instructed, else leave empty/unknown).
 
 Return only valid JSON matching the schema.

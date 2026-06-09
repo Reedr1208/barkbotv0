@@ -30,10 +30,11 @@ Animal ID: {ANIMAL_ID}
 Age: {AGE}
 Weight: {WEIGHT}
 Breed/description: {BREED_OR_DESCRIPTION}
-Sex/neuter status: {SEX_NEUTER_STATUS}
-Location: {LOCATION}
-Kennel/location detail: {KENNEL}
-Adoption URL: {URL}
+Sex: {SEX}
+Altered status: {ALTERED_STATUS}
+Location: {LOCATION_SUMMARY}
+Kennel/location detail: {LOCATION_DETAIL}
+Adoption URL: {ADOPTION_URL}
 Image URL: {IMAGE_URL}
 
 BACKSTORY

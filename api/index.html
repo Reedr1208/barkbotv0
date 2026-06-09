@@ -3454,7 +3454,7 @@
         if (d?.image_file && d?.image_base_url) {
           return d.image_base_url + d.image_file;
         }
-        if (d?.image_public_url) return d.image_public_url;
+        if (d?.shelter_image_url) return d.shelter_image_url;
         if (d?.shelter_image_url) return d.shelter_image_url;
         const imgEl = document.getElementById('dogImage');
         if (imgEl?.src) return imgEl.src;
@@ -4143,7 +4143,7 @@ function formatRelativeTime(isoString) {
           }
           const lastCheckedEl = document.getElementById('lastCheckedDate');
           if (lastCheckedEl) {
-            lastCheckedEl.textContent = formatRelativeTime(dog.updated_at);
+            lastCheckedEl.textContent = formatRelativeTime(dog.info_refreshed_at);
           }
 
           // Populate rotate overlay with current dog details
@@ -4151,7 +4151,7 @@ function formatRelativeTime(isoString) {
           const rotateDogTitle = document.getElementById('rotateDogTitle');
           const rotateDogText = document.getElementById('rotateDogText');
           if (rotateDogPhoto) {
-            rotateDogPhoto.src = dog.image_public_url || dog.shelter_image_url || (dog.image_file ? (dog.image_base_url + dog.image_file) : 'happy_rescue_pup.png');
+            rotateDogPhoto.src = dog.shelter_image_url || (dog.image_file ? (dog.image_base_url + dog.image_file) : 'happy_rescue_pup.png');
           }
           if (rotateDogTitle) {
             rotateDogTitle.innerHTML = `Let's chat with <span style="color:var(--accent-hover);">${currentDogName}</span>! 🐾`;
@@ -4395,8 +4395,8 @@ function formatRelativeTime(isoString) {
           if (stickyDogAvatar) {
             if (dog.image_file && dog.image_base_url) {
               stickyDogAvatar.src = dog.image_base_url + dog.image_file;
-            } else if (dog.image_public_url) {
-              stickyDogAvatar.src = dog.image_public_url;
+            } else if (dog.shelter_image_url) {
+              stickyDogAvatar.src = dog.shelter_image_url;
             } else if (dog.shelter_image_url) {
               stickyDogAvatar.src = dog.shelter_image_url;
             } else {
@@ -4407,8 +4407,8 @@ function formatRelativeTime(isoString) {
           // Handle Image
           if (dog.image_file && dog.image_base_url) {
             dogImage.src = dog.image_base_url + dog.image_file;
-          } else if (dog.image_public_url) {
-            dogImage.src = dog.image_public_url;
+          } else if (dog.shelter_image_url) {
+            dogImage.src = dog.shelter_image_url;
           } else if (dog.shelter_image_url) {
             dogImage.src = dog.shelter_image_url;
           }
@@ -6002,7 +6002,7 @@ function formatRelativeTime(isoString) {
                     weight: dog.weight || 'Unknown',
                     located_at: dog.shelter_name || 'Pima Animal Care Center',
                     url: dog.shelter_profile_url || '',
-                    dog_image_url: dog.shelter_image_url || dog.image_public_url || ''
+                    dog_image_url: dog.shelter_image_url || ''
                   };
                 }
               } catch (e) {}

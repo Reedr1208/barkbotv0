@@ -35,11 +35,12 @@ def render_system_prompt(fact_profile: Dict[str, Any], persona_profile: Dict[str
         "AGE": fact_profile.get("age_summary", "Unknown age"),
         "WEIGHT": fact_profile.get("weight_summary", "Unknown weight"),
         "BREED_OR_DESCRIPTION": fact_profile.get("breed_or_description", "Mixed breed"),
-        "SEX_NEUTER_STATUS": fact_profile.get("sex_neuter_status", "Unknown"),
-        "LOCATION": fact_profile.get("location_summary", "Shelter"),
-        "KENNEL": fact_profile.get("location_detail", ""),
-        "URL": fact_profile.get("adoption_url", ""),
-        "IMAGE_URL": fact_profile.get("image_public_url", ""),
+        "SEX": fact_profile.get("sex", "Unknown"),
+        "ALTERED_STATUS": fact_profile.get("altered_status", "Unknown"),
+        "LOCATION_SUMMARY": fact_profile.get("shelter_name", "Unknown"),
+        "LOCATION_DETAIL": fact_profile.get("location_detail", "None"),
+        "ADOPTION_URL": fact_profile.get("adoption_url", ""),
+        "IMAGE_URL": fact_profile.get("shelter_image_url", ""),
         
         # Archetype Style Rules
         "ARCHETYPE_CHARACTERS": persona_profile.get("characters", "* A good dog"),

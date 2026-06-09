@@ -10,10 +10,12 @@ class FactProfileExtraction(BaseModel):
     dog_name: str = Field(description="The dog's name.")
     intro_summary: Optional[str] = Field(description="A 5-7 sentence summary that is both informative and fun, highlighting the dog's unique features or fun quirks while also highlighting the most important standout info for the potential adopter to know.")
     age_summary: Optional[str] = Field(description="Short summary of age.")
+    age_bucket: Optional[str] = Field(description="Age bucket category: 'Puppy (<1yr)', 'Young (1-3yrs)', 'Adult (3-7yrs)', 'Senior (8+yrs)', or 'N/A'.")
     weight_summary: Optional[str] = Field(description="Short summary of weight.")
+    weight_class: Optional[str] = Field(description="Weight class category: 'Small (<25lbs)', 'Medium (25-60lbs)', 'Large (60+lbs)', or 'N/A'.")
     breed_or_description: Optional[str] = Field(description="Short summary of breed or visual description.")
-    sex_neuter_status: Optional[str] = Field(description="Sex and neuter/spay status.")
-    location_summary: Optional[str] = Field(description="Summary of location (e.g. shelter, foster).")
+    sex: Optional[str] = Field(description="Sex ('Male', 'Female', or 'N/A').")
+    altered_status: Optional[str] = Field(description="Altered status ('Spayed', 'Neutered', 'Unaltered', or 'N/A').")
     location_detail: Optional[str] = Field(description="Detailed location note.")
     backstory_summary: Optional[str] = Field(description="Concise, factual summary of how they arrived and backstory.")
     important_facts_jsonb: List[str] = Field(description="Array of short strings of confirmed facts.")
@@ -44,20 +46,7 @@ def extract_fact_profile(openai_client: OpenAI, animal_record: dict) -> FactProf
         user_prompt_template = f.read()
 
     user_prompt = user_prompt_template.format(
-        ANIMAL_ID=animal_record.get("animal_id", ""),
-        URL=animal_record.get("url", ""),
-        LOCATED_AT=animal_record.get("located_at", ""),
-        DESCRIPTION=animal_record.get("description", ""),
-        WEIGHT=animal_record.get("weight", ""),
-        AGE=animal_record.get("age", ""),
-        MORE_INFO=animal_record.get("more_info", ""),
-        BIO=animal_record.get("bio", ""),
-        DATA_UPDATED=animal_record.get("data_updated", ""),
-        IMAGE_PUBLIC_URL=animal_record.get("image_public_url", ""),
-        RECORD_HASH=animal_record.get("record_hash", ""),
-        QA_STATUS=animal_record.get("qa_status", ""),
-        QA_NOTES=animal_record.get("qa_notes", ""),
-        RAW_DATA=json.dumps(animal_record.get("raw_data_jsonb") or {}, ensure_ascii=False)
+        RAW_ANIMAL_JSON=json.dumps(animal_record, ensure_ascii=False)
     )
 
     logging.info(f"Extracting facts for {animal_record.get('animal_id')}...")

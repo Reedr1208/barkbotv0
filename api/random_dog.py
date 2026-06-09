@@ -88,7 +88,7 @@ class handler(BaseHTTPRequestHandler):
                 active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
                 prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
                 profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
-                fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb").eq("animal_id", animal_id_override).limit(1).execute()
+                fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status").eq("animal_id", animal_id_override).limit(1).execute()
                 
                 if not active_res.data or not profile_res.data:
                     self._send_response(404, {"error": "Dog not found."})
@@ -160,6 +160,13 @@ class handler(BaseHTTPRequestHandler):
             # Fetch from animal_persona_profiles to get archetype data and freshness
             persona_res = client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at").execute()
             persona_data = {row["animal_id"]: row for row in persona_res.data}
+            
+            # Fetch animal_fact_profiles to get age_bucket and weight_class
+            fact_res = client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class").execute()
+            for row in fact_res.data:
+                if row["animal_id"] in active_dogs:
+                    active_dogs[row["animal_id"]]["age_bucket"] = row.get("age_bucket")
+                    active_dogs[row["animal_id"]]["weight_class"] = row.get("weight_class")
             
             # Intersect to find valid current dogs that have a persona
             valid_ids = list(set(active_dogs.keys()).intersection(persona_data.keys()))
@@ -240,28 +247,19 @@ class handler(BaseHTTPRequestHandler):
                                 
                         # 2. Age Filter
                         if has_age:
-                            dog_age_group = classify_age_group(dog.get("age"))
-                            if dog_age_group == pref_age:
+                            dog_age_group = dog.get("age_bucket", "N/A")
+                            if pref_age.lower() in dog_age_group.lower() and dog_age_group != "N/A":
                                 score += 1
                                 details["age"]["matched"] = True
-                            details["age"]["actual"] = f"{dog.get('age') or 'Unknown'} ({dog_age_group.capitalize()})"
+                            details["age"]["actual"] = dog_age_group
                                 
                         # 3. Size Filter
                         if has_size:
-                            dog_weight = parse_weight_lbs(dog.get("weight"))
-                            dog_size_class = "Unknown"
-                            if dog_weight > 0:
-                                if dog_weight < 25:
-                                    dog_size_class = "small"
-                                elif dog_weight < 60:
-                                    dog_size_class = "medium"
-                                else:
-                                    dog_size_class = "large"
-                                    
-                            if dog_size_class == pref_size:
+                            dog_size_class = dog.get("weight_class", "N/A")
+                            if pref_size.lower() in dog_size_class.lower() and dog_size_class != "N/A":
                                 score += 1
                                 details["size"]["matched"] = True
-                            details["size"]["actual"] = f"{dog.get('weight') or 'Unknown'} ({dog_size_class.capitalize()})"
+                            details["size"]["actual"] = dog_size_class
                             
                         # 4. Location Filter
                         if has_location:
@@ -383,7 +381,7 @@ class handler(BaseHTTPRequestHandler):
             profile["name"] = active_dogs[random_id].get("name") or "Unknown"
             profile["gender"] = active_dogs[random_id].get("gender") or "Unknown"
             
-            fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb").eq("animal_id", random_id).limit(1).execute()
+            fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status").eq("animal_id", random_id).limit(1).execute()
             facts_data = fact_res.data[0] if fact_res.data else {}
             
             profile["intro_summary"] = facts_data.get("intro_summary")
@@ -400,6 +398,11 @@ class handler(BaseHTTPRequestHandler):
             profile["medical_notes"] = facts_data.get("medical_notes")
             profile["adoption_process_notes"] = facts_data.get("adoption_process_notes")
             profile["unknowns"] = facts_data.get("unknowns_jsonb", [])
+            profile["info_refreshed_at"] = facts_data.get("info_refreshed_at")
+            profile["sex"] = facts_data.get("sex")
+            profile["age_bucket"] = facts_data.get("age_bucket")
+            profile["weight_class"] = facts_data.get("weight_class")
+            profile["altered_status"] = facts_data.get("altered_status")
             profile["preferences_matched"] = preferences_matched
             profile["user_has_preferences"] = (preferences is not None)
             profile["match_details"] = best_match_details.get(random_id, {})
