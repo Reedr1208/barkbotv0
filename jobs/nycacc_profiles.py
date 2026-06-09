@@ -1132,16 +1132,15 @@ async def main_async(args: argparse.Namespace) -> int:
                 dog_meta = dog_info.get(native_id, {})
                 record = {
                     "animal_id": raw_row["animal_id"],
-                    "url": raw_row["url"],
+                    "shelter_profile_url": raw_row["shelter_profile_url"],
                     "name": dog_meta.get("name", "Unknown"),
                     "gender": dog_meta.get("gender", "Unknown"),
-                    "located_at": raw_row["located_at"],
+                    "shelter_name": raw_row["shelter_name"],
                     "weight": raw_row["weight"],
                     "age": raw_row["age"],
-                    "description": raw_row["description"],
                     "data_updated": now_iso(),
                     "shelter_image_url": first_image_from_pet(pet), # Need to implement this
-                    "bio": html_to_text(pet.get("summaryHtml")), # fallback bio
+                    "bio": raw_row["bio"],
                     "more_info": "",
                 }
 
