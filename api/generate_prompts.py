@@ -76,6 +76,9 @@ class handler(BaseHTTPRequestHandler):
                     elif s_id_upper == "HSSA":
                         if bio_len < 500 and desc_len < 500:
                             continue
+                    elif s_id_upper == "WWLA":
+                        if bio_len < 1000 and desc_len < 1000:
+                            continue
                     else:
                         if max(bio_len, desc_len) <= 400:
                             continue
