@@ -3617,7 +3617,7 @@
       }
 
       async function copyDogShareLink(payload) {
-        const url = payload.shelter_profile_url;
+        const url = payload.url;
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             await navigator.clipboard.writeText(url);
@@ -3654,7 +3654,7 @@
 
       function shareDogByEmail(payload) {
         const subject = encodeURIComponent(payload.title);
-        const body = encodeURIComponent(`${payload.text}\n\n${payload.shelter_profile_url}`);
+        const body = encodeURIComponent(`${payload.text}\n\n${payload.url}`);
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
         trackEvent('dog_share_completed', {
           animal_id: payload.animal_id,
@@ -3663,7 +3663,7 @@
       }
 
       function shareDogBySms(payload) {
-        const body = encodeURIComponent(`${payload.text} ${payload.shelter_profile_url}`);
+        const body = encodeURIComponent(`${payload.text} ${payload.url}`);
         const sep = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? '&' : '?';
         window.location.href = `sms:${sep}body=${body}`;
         trackEvent('dog_share_completed', {
@@ -3686,7 +3686,7 @@
             const shareData = {
               title: payload.title,
               text: payload.text,
-              url: payload.shelter_profile_url
+              url: payload.url
             };
             await navigator.share(shareData);
             trackEvent('dog_share_completed', {
