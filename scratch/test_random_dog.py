@@ -1,32 +1,59 @@
-import urllib.parse
-from http.server import BaseHTTPRequestHandler
-import sys
+import json
 import os
+import sys
+from urllib.parse import urlparse, parse_qs
+from pathlib import Path
 
-# Mock self and execute random_dog logic roughly
-import api.random_dog
-from api.random_dog import handler
+# Force load .env.development.local if present
+env_local = Path(__file__).resolve().parent.parent / ".env.development.local"
+if env_local.exists():
+    with open(env_local) as f:
+        for line in f:
+            line = line.strip()
+            if "=" in line and not line.startswith("#"):
+                k, v = line.split("=", 1)
+                os.environ[k] = v.strip().strip('"').strip("'")
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'api')))
+from random_dog import handler
 
 class MockRequest:
-    def __init__(self):
-        self.path = "/api/random_dog?location=" + urllib.parse.quote("Tucson, AZ 🌵")
+    def makefile(self, *args, **kwargs):
+        import io
+        return io.BytesIO()
 
 class MockHandler(handler):
-    def __init__(self):
-        self.path = MockRequest().path
-        self.sent_status = None
-        self.sent_body = None
+    def __init__(self, path):
+        self.path = path
+        self.response_code = None
+        self.headers = {}
+        self.body = b""
+        
+        self.requestline = f"GET {path} HTTP/1.1"
+        self.client_address = ("127.0.0.1", 8080)
+        self.request = MockRequest()
 
-    def _send_response(self, code, body):
-        self.sent_status = code
-        self.sent_body = body
+    def send_response(self, code, message=None):
+        self.response_code = code
 
-h = MockHandler()
-h.do_GET()
+    def send_header(self, keyword, value):
+        self.headers[keyword] = value
 
-print(f"Status: {h.sent_status}")
-if h.sent_body and "animal_id" in h.sent_body:
-    print(f"Found dog: {h.sent_body['animal_id']}")
-    print(f"Matched location: {h.sent_body.get('match_details', {}).get('location')}")
-else:
-    print(h.sent_body)
+    def end_headers(self):
+        pass
+
+    def setup(self):
+        self.wfile = __import__('io').BytesIO()
+
+    def handle(self):
+        self.do_GET()
+        self.body = self.wfile.getvalue()
+
+h = MockHandler("/api/random_dog?animal_id=PACC-A865262")
+h.setup()
+h.handle()
+
+try:
+    print(json.dumps(json.loads(h.body.decode()), indent=2))
+except:
+    print(h.body.decode())
