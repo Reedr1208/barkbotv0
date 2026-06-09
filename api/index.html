@@ -279,6 +279,20 @@
       white-space: nowrap;
     }
 
+    .header-location-select {
+      padding: 8px 30px 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.1) url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 4px center;
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+      cursor: pointer;
+      max-width: 200px;
+      text-overflow: ellipsis;
+    }
+
     .shuffle-btn {
       padding: 8px 14px;
       background: var(--accent);
@@ -1373,10 +1387,30 @@
         height: 13px;
       }
 
+      .header-location-select {
+        color: transparent;
+        width: 44px;
+        padding: 8px 24px 8px 12px;
+        background: rgba(255, 255, 255, 0.1) url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center center;
+      }
+      .header-location-select option {
+        color: black;
+      }
+
       .shuffle-btn {
-        padding: 7px 10px;
-        font-size: 0.75rem;
-        gap: 4px;
+        padding: 7px;
+        font-size: 0;
+        gap: 0;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .shuffle-btn svg {
+        margin: 0;
+        width: 18px;
+        height: 18px;
       }
 
       .hide-mobile {
@@ -2727,7 +2761,7 @@
               style="display:none; position:absolute; top:2px; right:2px; width:7px; height:7px; background:var(--accent); border-radius:50%;"></span></button>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <select id="headerLocationSelect" aria-label="Filter by location" style="padding: 8px 30px 8px 12px; font-size: 0.85rem; font-weight: 800; appearance: none; background: rgba(255,255,255,0.1) url('data:image/svg+xml;utf8,<svg fill=%22white%22 height=%2224%22 viewBox=%220 0 24 24%22 width=%2224%22 xmlns=%22http://www.w3.org/2000/svg%22><path d=%22M7 10l5 5 5-5z%22/><path d=%22M0 0h24v24H0z%22 fill=%22none%22/></svg>') no-repeat right 4px center; color: var(--text-main); border: 1px solid rgba(255,255,255,0.15); border-radius: 9999px; cursor: pointer;">
+          <select class="header-location-select" id="headerLocationSelect" aria-label="Filter by location">
             <option value="any" style="color: black;">All Locations 🌎</option>
           </select>
           <button class="shuffle-btn" id="nextBtn" aria-label="Shuffle: Show me another dog">
@@ -2735,7 +2769,7 @@
               stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5m4 4l8 8" />
             </svg>
-            Next<span class="hide-mobile"> Dog</span> 🐶
+            <span class="hide-mobile">Next Dog 🐶</span>
           </button>
         </div>
       </header>
