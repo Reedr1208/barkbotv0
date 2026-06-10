@@ -76,7 +76,10 @@ class handler(BaseHTTPRequestHandler):
             user_message = body.get("message", "")
             conversation_history = body.get("conversation_history", [])
             # Optional persistence fields
-            user_email = (body.get("email") or "").strip().lower() or "anonymous@chattyhound.com"
+            user_email = (body.get("email") or "").strip().lower()
+            if not user_email or user_email.endswith("@guest.chattyhound.com"):
+                user_email = "anonymous@chattyhound.com"
+                
             dog_name = body.get("dog_name") or ""
             dog_image_url = body.get("dog_image_url") or ""
             
@@ -137,8 +140,9 @@ class handler(BaseHTTPRequestHandler):
                 )
                 if conv_id:
                     _save_messages(sb_client, conv_id, user_message, output_text, ip_address, location)
-            except Exception:
-                pass  # Never block the chat reply on persistence errors
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
 
             self._send_response(200, {"reply": output_text})
             
