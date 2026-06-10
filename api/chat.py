@@ -74,7 +74,7 @@ class handler(BaseHTTPRequestHandler):
             user_message = body.get("message", "")
             conversation_history = body.get("conversation_history", [])
             # Optional persistence fields
-            user_email = (body.get("email") or "").strip().lower() or None
+            user_email = (body.get("email") or "").strip().lower() or "anonymous@chattyhound.com"
             dog_name = body.get("dog_name") or ""
             dog_image_url = body.get("dog_image_url") or ""
             
@@ -119,18 +119,17 @@ class handler(BaseHTTPRequestHandler):
                 )
                 output_text = response.output_text
             
-            # Persist conversation if user is logged in (non-blocking)
-            if user_email:
-                try:
-                    conv_id = _upsert_conversation(
-                        sb_client, user_email, animal_id,
-                        dog_name, dog_image_url,
-                        output_text[:200]
-                    )
-                    if conv_id:
-                        _save_messages(sb_client, conv_id, user_message, output_text)
-                except Exception:
-                    pass  # Never block the chat reply on persistence errors
+            # Persist conversation (non-blocking)
+            try:
+                conv_id = _upsert_conversation(
+                    sb_client, user_email, animal_id,
+                    dog_name, dog_image_url,
+                    output_text[:200]
+                )
+                if conv_id:
+                    _save_messages(sb_client, conv_id, user_message, output_text)
+            except Exception:
+                pass  # Never block the chat reply on persistence errors
 
             self._send_response(200, {"reply": output_text})
             
