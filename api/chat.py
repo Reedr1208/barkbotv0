@@ -16,7 +16,7 @@ def get_supabase_client():
     return create_client(supabase_url, supabase_key)
 
 
-def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_preview):
+def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_preview, ip_address="", location=""):
     """Upsert a chat_conversations row and return the conversation id."""
     try:
         row = {
@@ -25,6 +25,8 @@ def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_pre
             "dog_name": dog_name or "",
             "dog_image_url": dog_image_url or "",
             "last_message_preview": last_preview[:200] if last_preview else "",
+            "ip_address": ip_address,
+            "location": location,
             "updated_at": "now()",
         }
         res = sb.table("chat_conversations").upsert(row, on_conflict="email,animal_id").execute()
@@ -41,12 +43,12 @@ def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_pre
         return None
 
 
-def _save_messages(sb, conversation_id, user_message, assistant_reply):
+def _save_messages(sb, conversation_id, user_message, assistant_reply, ip_address="", location=""):
     """Append user + assistant messages to chat_messages."""
     try:
         sb.table("chat_messages").insert([
-            {"conversation_id": conversation_id, "role": "user", "content": user_message},
-            {"conversation_id": conversation_id, "role": "assistant", "content": assistant_reply},
+            {"conversation_id": conversation_id, "role": "user", "content": user_message, "ip_address": ip_address, "location": location},
+            {"conversation_id": conversation_id, "role": "assistant", "content": assistant_reply, "ip_address": ip_address, "location": location},
         ]).execute()
     except Exception:
         pass  # Non-blocking: don't fail the chat if persistence fails
@@ -77,6 +79,12 @@ class handler(BaseHTTPRequestHandler):
             user_email = (body.get("email") or "").strip().lower() or "anonymous@chattyhound.com"
             dog_name = body.get("dog_name") or ""
             dog_image_url = body.get("dog_image_url") or ""
+            
+            # Vercel IP/Location headers
+            ip_address = self.headers.get("x-forwarded-for") or self.headers.get("x-real-ip") or ""
+            city = self.headers.get("x-vercel-ip-city")
+            country = self.headers.get("x-vercel-ip-country")
+            location = f"{city}, {country}" if city and country else (city or country or "")
             
             if not animal_id or not user_message:
                 self._send_response(400, {"error": "animal_id and message are required."})
@@ -124,10 +132,11 @@ class handler(BaseHTTPRequestHandler):
                 conv_id = _upsert_conversation(
                     sb_client, user_email, animal_id,
                     dog_name, dog_image_url,
-                    output_text[:200]
+                    output_text[:200],
+                    ip_address, location
                 )
                 if conv_id:
-                    _save_messages(sb_client, conv_id, user_message, output_text)
+                    _save_messages(sb_client, conv_id, user_message, output_text, ip_address, location)
             except Exception:
                 pass  # Never block the chat reply on persistence errors
 
