@@ -149,11 +149,18 @@ class handler(BaseHTTPRequestHandler):
 
             closer_region = None
             if user_lat is not None and user_lon is not None:
-                # Tucson, AZ coordinates: 32.2226, -110.9747
-                # Chicago, IL coordinates: 41.8781, -87.6298
-                dist_tucson = (user_lat - 32.2226)**2 + (user_lon - (-110.9747))**2
-                dist_chicago = (user_lat - 41.8781)**2 + (user_lon - (-87.6298))**2
-                closer_region = "TUCSON" if dist_tucson < dist_chicago else "CHICAGO"
+                locations = {
+                    "TUCSON": (32.2226, -110.9747),
+                    "CHICAGO": (41.8781, -87.6298),
+                    "NYC": (40.7128, -74.0060),
+                    "LOS ANGELES": (34.0522, -118.2437)
+                }
+                min_dist = float('inf')
+                for region, (lat, lon) in locations.items():
+                    dist = (user_lat - lat)**2 + (user_lon - lon)**2
+                    if dist < min_dist:
+                        min_dist = dist
+                        closer_region = region
 
             # Fetch all dog IDs, names, and filterable fields from active_dogs
             active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").execute()
