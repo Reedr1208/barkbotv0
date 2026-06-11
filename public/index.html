@@ -3476,23 +3476,6 @@
       let activeDogFetchId = 0;
 
       let userCoords = null;
-      function getUserLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              userCoords = {
-                lat: position.coords.latitude,
-                lon: position.coords.longitude
-              };
-              console.log('User coordinates loaded:', userCoords);
-            },
-            (error) => {
-              console.warn('Geolocation failed or blocked:', error);
-            },
-            { timeout: 8000 }
-          );
-        }
-      }
 
       window.__CH_LOCATIONS_DATA__ = [];
       window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
@@ -5115,18 +5098,7 @@ function formatRelativeTime(isoString) {
 
       nextBtn.addEventListener('click', () => {
         trackEvent('dog_shuffled');
-        const nextDogClicks = parseInt(localStorage.getItem('chattyhound_next_dog_clicks') || '0', 10);
-        const hasPromptedLogin = localStorage.getItem('chattyhound_prompted_login');
-        if (!userEmail && hasPromptedLogin !== 'true' && nextDogClicks >= 2) {
-          localStorage.setItem('chattyhound_prompted_login', 'true');
-          window.__CH_INTERRUPTED_NEXT_DOG__ = true;
-          openPrefModal();
-        } else {
-          if (!userEmail) {
-            localStorage.setItem('chattyhound_next_dog_clicks', (nextDogClicks + 1).toString());
-          }
-          fetchRandomDog();
-        }
+        fetchRandomDog();
       });
       sendBtn.addEventListener('click', sendMessage);
       chatInput.addEventListener('keydown', (e) => {
@@ -5488,11 +5460,6 @@ function formatRelativeTime(isoString) {
         document.body.style.overflow = 'hidden';
 
         showWizardStep(1); // Default to Step 1 basics on open
-        
-        // Defer location prompt until preferences are opened
-        if (!userCoords) {
-          getUserLocation();
-        }
 
         if (userEmail) {
           prefLoggedOutState.style.display = 'none';
@@ -5947,18 +5914,7 @@ function formatRelativeTime(isoString) {
       if (mobileShuffleBtn) {
         mobileShuffleBtn.addEventListener('click', () => {
           trackEvent('dog_shuffled');
-          const nextDogClicks = parseInt(localStorage.getItem('chattyhound_next_dog_clicks') || '0', 10);
-          const hasPromptedLogin = localStorage.getItem('chattyhound_prompted_login');
-          if (!userEmail && hasPromptedLogin !== 'true' && nextDogClicks >= 2) {
-            localStorage.setItem('chattyhound_prompted_login', 'true');
-            window.__CH_INTERRUPTED_NEXT_DOG__ = true;
-            openPrefModal();
-          } else {
-            if (!userEmail) {
-              localStorage.setItem('chattyhound_next_dog_clicks', (nextDogClicks + 1).toString());
-            }
-            fetchRandomDog();
-          }
+          fetchRandomDog();
         });
       }
 
