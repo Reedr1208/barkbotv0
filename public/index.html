@@ -6569,6 +6569,47 @@ function formatRelativeTime(isoString) {
       setupFocusTrap('aboutModal');
       setupFocusTrap('prefModal');
       setupFocusTrap('savedModal');
+      // Swipe Navigation Logic
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchEndX = 0;
+      let touchEndY = 0;
+
+      document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, {passive: true});
+
+      document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+      }, {passive: true});
+
+      function handleSwipe() {
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
+        
+        // Ensure swipe is mostly horizontal and meets minimum distance
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
+          if (dx < 0) {
+            // Swiped right-to-left
+            if (!document.body.classList.contains('chat-engaged')) {
+              // Not in chat mode -> Next dog
+              const nextBtn = document.getElementById('nextBtn');
+              if (nextBtn && !nextBtn.disabled) {
+                fetchRandomDog();
+              }
+            }
+          } else {
+            // Swiped left-to-right
+            if (document.body.classList.contains('chat-engaged')) {
+              // In chat mode -> Exit chat mode
+              exitChatMode();
+            }
+          }
+        }
+      }
 
     </script>
   
