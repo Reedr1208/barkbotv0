@@ -35,22 +35,6 @@
       "schedule": "0 */6 * * *"
     },
     {
-      "path": "/api/hssa_inventory",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/hssa_profiles",
-      "schedule": "10 * * * *"
-    },
-    {
-      "path": "/api/nycacc_inventory",
-      "schedule": "0 10 * * *"
-    },
-    {
-      "path": "/api/nycacc_profiles",
-      "schedule": "15 * * * *"
-    },
-    {
       "path": "/api/wwla_all",
       "schedule": "0 */4 * * *"
     },
