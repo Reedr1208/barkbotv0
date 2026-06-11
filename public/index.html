@@ -1037,6 +1037,43 @@
       color: #64748b;
     }
 
+    @keyframes radiate-sparkle {
+      0% { box-shadow: 0 0 0 0 rgba(253, 172, 21, 0.4); border: 1px solid transparent; }
+      50% { box-shadow: 0 0 20px 6px rgba(253, 172, 21, 0.35); border: 1px solid rgba(253, 172, 21, 0.6); }
+      100% { box-shadow: 0 0 0 0 rgba(253, 172, 21, 0); border: 1px solid transparent; }
+    }
+
+    @keyframes sparkle-fade {
+      0% { opacity: 0; transform: scale(0) rotate(0deg); }
+      50% { opacity: 0.8; transform: scale(1) rotate(90deg); }
+      100% { opacity: 0; transform: scale(0) rotate(180deg); }
+    }
+
+    .attention-pulse {
+      animation: radiate-sparkle 2s infinite ease-in-out;
+    }
+
+    .attention-wrapper::before,
+    .attention-wrapper::after {
+      content: "✨";
+      position: absolute;
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 20;
+    }
+    
+    .attention-wrapper::before {
+      top: -12px;
+      right: 15%;
+      animation: sparkle-fade 1.5s infinite ease-in-out;
+    }
+    
+    .attention-wrapper::after {
+      bottom: -10px;
+      left: 10%;
+      animation: sparkle-fade 2s infinite ease-in-out 0.75s;
+    }
+
     .send-btn {
       width: 44px;
       height: 44px;
@@ -3086,8 +3123,10 @@
       <footer class="footer-input-bar">
         <div id="footerOverlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; cursor: pointer;"></div>
         <div class="input-row">
-          <input type="text" class="chat-input" id="chatInput" placeholder="Ask about me..." disabled
-            aria-label="Type your question to the dog here" autocomplete="off" autocorrect="off" spellcheck="false">
+          <div class="chat-input-wrapper" id="chatInputWrapper" style="position: relative; flex: 1; display: flex; min-width: 0;">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask about me!" disabled
+              aria-label="Type your question to the dog here" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
           <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send message">
             <svg viewBox="0 0 24 24">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
@@ -4003,6 +4042,11 @@
       const chatTitleName = document.getElementById('chatTitleName');
       const chatHistory = document.getElementById('chatHistory');
       const chatInput = document.getElementById('chatInput');
+      const chatInputWrapper = document.getElementById('chatInputWrapper');
+      if (chatInput && !localStorage.getItem('has_interacted_with_chat')) {
+        chatInput.classList.add('attention-pulse');
+        if (chatInputWrapper) chatInputWrapper.classList.add('attention-wrapper');
+      }
       const sendBtn = document.getElementById('sendBtn');
 
       const favBtn = document.getElementById('favBtn');
@@ -4321,7 +4365,7 @@ function formatRelativeTime(isoString) {
             paccLink.setAttribute('aria-label', `Open ${currentDogName}'s official shelter page on 24Petconnect`);
           }
           updateShareButtonLabels();
-          if (chatInput) chatInput.placeholder = "Ask about " + currentDogName + "...";
+          if (chatInput) chatInput.placeholder = "Ask about me!";
 
           // Update sticky dog bar
           const stickyDogName = document.getElementById('stickyDogName');
@@ -5088,6 +5132,12 @@ function formatRelativeTime(isoString) {
         }, 150);
       });
       chatInput.addEventListener('focus', () => {
+        if (!localStorage.getItem('has_interacted_with_chat')) {
+          localStorage.setItem('has_interacted_with_chat', 'true');
+          chatInput.classList.remove('attention-pulse');
+          const chatInputWrapper = document.getElementById('chatInputWrapper');
+          if (chatInputWrapper) chatInputWrapper.classList.remove('attention-wrapper');
+        }
         enterChatMode();
         document.body.classList.add('keyboard-active');
         setTimeout(() => {
