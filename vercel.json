@@ -53,6 +53,14 @@
     {
       "path": "/api/wwla_all",
       "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/pawsch_inventory",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/pawsch_profiles",
+      "schedule": "20 * * * *"
     }
   ]
 }
