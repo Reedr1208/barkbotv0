@@ -5224,10 +5224,14 @@ function formatRelativeTime(isoString) {
         askBtn.addEventListener('click', (e) => {
           e.preventDefault();
           trackEvent('ask_cta_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
-          const chatSec = document.getElementById('chatSection');
-          if (chatSec) {
-            chatSec.scrollIntoView({ behavior: 'smooth' });
+          if (window.innerWidth >= 800) {
             enterChatMode();
+          } else {
+            const chatSec = document.getElementById('chatSection');
+            if (chatSec) {
+              chatSec.scrollIntoView({ behavior: 'smooth' });
+              enterChatMode();
+            }
           }
         });
       }
