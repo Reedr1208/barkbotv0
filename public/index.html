@@ -4294,6 +4294,14 @@ function formatRelativeTime(isoString) {
 
           currentDogData = dog;
           updateDocumentMetaForDog(dog);
+          
+          if (!dog.user_has_preferences && dog.suggested_location && window.__CH_LOCATIONS_DATA__) {
+            const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === dog.suggested_location);
+            if (locObj && document.getElementById('headerLocationSelect')) {
+              document.getElementById('headerLocationSelect').value = locObj.relative_path;
+            }
+          }
+
           if (dog.animal_id) {
             updateDogShareUrl(dog.animal_id, true);
           }

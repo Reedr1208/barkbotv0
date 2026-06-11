@@ -132,12 +132,15 @@ class handler(BaseHTTPRequestHandler):
                 self._send_response(200, profile)
                 return
 
-            # Parse user coordinates from query params for proximity matching
+            # Parse user coordinates from query params or Vercel headers for proximity matching
             user_lat = None
             user_lon = None
             try:
                 lat_str = query_params.get("lat", [""])[0].strip()
                 lon_str = query_params.get("lon", [""])[0].strip()
+                if not lat_str and not lon_str:
+                    lat_str = self.headers.get("x-vercel-ip-latitude", "")
+                    lon_str = self.headers.get("x-vercel-ip-longitude", "")
                 if lat_str and lon_str:
                     user_lat = float(lat_str)
                     user_lon = float(lon_str)
@@ -147,10 +150,10 @@ class handler(BaseHTTPRequestHandler):
             closer_region = None
             if user_lat is not None and user_lon is not None:
                 # Tucson, AZ coordinates: 32.2226, -110.9747
-                # New York, NY coordinates: 40.7128, -74.0060
+                # Chicago, IL coordinates: 41.8781, -87.6298
                 dist_tucson = (user_lat - 32.2226)**2 + (user_lon - (-110.9747))**2
-                dist_ny = (user_lat - 40.7128)**2 + (user_lon - (-74.0060))**2
-                closer_region = "TUCSON" if dist_tucson < dist_ny else "NYC"
+                dist_chicago = (user_lat - 41.8781)**2 + (user_lon - (-87.6298))**2
+                closer_region = "TUCSON" if dist_tucson < dist_chicago else "CHICAGO"
 
             # Fetch all dog IDs, names, and filterable fields from active_dogs
             active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").execute()
@@ -427,6 +430,14 @@ class handler(BaseHTTPRequestHandler):
             profile["preferences_matched"] = preferences_matched
             profile["user_has_preferences"] = (preferences is not None)
             profile["match_details"] = best_match_details.get(random_id, {})
+            
+            suggested_location = None
+            if closer_region and not profile["user_has_preferences"]:
+                for s in shelters_map.values():
+                    if s.get("city", "").upper() == closer_region:
+                        suggested_location = s.get("location_display_name")
+                        break
+            profile["suggested_location"] = suggested_location
             
             # Clean up internal fields before sending to frontend
             internal_keys = ["id", "record_hash", "created_at", "last_scrape_run_id"]
