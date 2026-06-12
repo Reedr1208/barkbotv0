@@ -3545,7 +3545,7 @@
               window.__CH_LOCATIONS_DATA__ = data.locations;
               
               if (group) {
-                group.innerHTML = '<button class="pref-btn" data-value="any">Any Location 🌎</button>';
+                group.innerHTML = '<button class="pref-btn" data-value="all">All Locations 🌎</button>';
                 data.locations.forEach(loc => {
                   const btn = document.createElement('button');
                   btn.className = 'pref-btn';
@@ -3556,7 +3556,7 @@
               }
               
               if (headerSelect) {
-                headerSelect.innerHTML = '<option value="any" style="color: black;">All Locations 🌎</option>';
+                headerSelect.innerHTML = '<option value="any" style="display:none;">Detecting Location...</option><option value="all" style="color: black;">All Locations 🌎</option>';
                 data.locations.forEach(loc => {
                   const opt = document.createElement('option');
                   opt.value = loc.relative_path;
@@ -3569,17 +3569,27 @@
               // Determine initial location from injected meta or preferences
               const initLoc = window.__CH_INITIAL_LOCATION__ || null;
               if (initLoc && headerSelect) {
-                headerSelect.value = initLoc;
-                // Also update preferences modal silently
-                const locObj = data.locations.find(l => l.relative_path === initLoc);
-                if (locObj) {
-                  setupSelectorButtons('prefLocationGroup', locObj.display_name);
-                  currentPrefs.location = locObj.display_name;
+                if (initLoc === '/alldogs') {
+                  headerSelect.value = 'all';
+                  setupSelectorButtons('prefLocationGroup', 'all');
+                  currentPrefs.location = 'all';
+                } else {
+                  headerSelect.value = initLoc;
+                  // Also update preferences modal silently
+                  const locObj = data.locations.find(l => l.relative_path === initLoc);
+                  if (locObj) {
+                    setupSelectorButtons('prefLocationGroup', locObj.display_name);
+                    currentPrefs.location = locObj.display_name;
+                  }
                 }
               } else if (currentPrefs && currentPrefs.location) {
                 setupSelectorButtons('prefLocationGroup', currentPrefs.location);
-                const locObj = data.locations.find(l => l.display_name === currentPrefs.location);
-                if (locObj && headerSelect) headerSelect.value = locObj.relative_path;
+                if (currentPrefs.location === 'all' && headerSelect) {
+                  headerSelect.value = 'all';
+                } else {
+                  const locObj = data.locations.find(l => l.display_name === currentPrefs.location);
+                  if (locObj && headerSelect) headerSelect.value = locObj.relative_path;
+                }
               }
 
               // Bind event listener to headerLocationSelect
@@ -3589,7 +3599,7 @@
                   const locObj = data.locations.find(l => l.relative_path === selectedPath);
                   
                   // Update preferences
-                  const newLocName = locObj ? locObj.display_name : 'any';
+                  const newLocName = locObj ? locObj.display_name : (selectedPath === 'all' ? 'all' : 'any');
                   currentPrefs.location = newLocName;
                   setupSelectorButtons('prefLocationGroup', newLocName);
                   if (userEmail) {
@@ -3602,13 +3612,11 @@
                     } catch (e) {
                       console.error('Failed to save location preference', e);
                     }
-                  } else {
-                    savePreferencesLocally(currentPrefs, lifestylePrefs);
                   }
                   
                   // Check if current dog matches new location
                   let shouldKeepDog = false;
-                  if (selectedPath === 'any' && currentDogData) {
+                  if ((selectedPath === 'all' || selectedPath === 'any') && currentDogData) {
                     shouldKeepDog = true;
                   } else if (locObj && currentDogData && currentDogData.shelter_id) {
                     if (locObj.shelter_ids.includes(currentDogData.shelter_id)) {
@@ -3618,11 +3626,15 @@
                   
                   if (shouldKeepDog) {
                     // Just update URL and stay
-                    const targetUrl = selectedPath === 'any' ? `/dogs/${currentDogData.animal_id}` : `/dogs${selectedPath}/${currentDogData.animal_id}`;
+                    let targetUrl = `/dogs/${currentDogData.animal_id}`;
+                    if (selectedPath === 'all') targetUrl = `/dogs/alldogs/${currentDogData.animal_id}`;
+                    else if (selectedPath !== 'any') targetUrl = `/dogs${selectedPath}/${currentDogData.animal_id}`;
                     window.location.href = targetUrl;
                   } else {
                     // Redirect to the new location path (will trigger a new random fetch)
-                    const targetUrl = selectedPath === 'any' ? '/dogs' : `/dogs${selectedPath}`;
+                    let targetUrl = '/dogs';
+                    if (selectedPath === 'all') targetUrl = '/dogs/alldogs';
+                    else if (selectedPath !== 'any') targetUrl = `/dogs${selectedPath}`;
                     window.location.href = targetUrl;
                   }
                 });
@@ -3652,7 +3664,8 @@
 
       function getCanonicalDogUrl(animalId) {
         const sel = document.getElementById('headerLocationSelect');
-        const locPath = sel && sel.value !== 'any' ? sel.value : '';
+        let locPath = sel && sel.value !== 'any' ? sel.value : '';
+        if (locPath === 'all') locPath = '/alldogs';
         if (!animalId) return CH_CANONICAL_ORIGIN + '/';
         return `${CH_CANONICAL_ORIGIN}/dogs${locPath}/${encodeURIComponent(animalId)}`;
       }
@@ -3660,7 +3673,8 @@
       function updateDogShareUrl(animalId, replace) {
         if (!animalId) return;
         const sel = document.getElementById('headerLocationSelect');
-        const locPath = sel && sel.value !== 'any' ? sel.value : '';
+        let locPath = sel && sel.value !== 'any' ? sel.value : '';
+        if (locPath === 'all') locPath = '/alldogs';
         const target = `/dogs${locPath}/${encodeURIComponent(animalId)}`;
         const state = { dogId: animalId, locationPath: locPath };
         if (replace) {
@@ -4334,10 +4348,19 @@ function formatRelativeTime(isoString) {
           currentDogData = dog;
           updateDocumentMetaForDog(dog);
           
-          if (!dog.user_has_preferences && dog.suggested_location && window.__CH_LOCATIONS_DATA__) {
-            const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === dog.suggested_location);
-            if (locObj && document.getElementById('headerLocationSelect')) {
-              document.getElementById('headerLocationSelect').value = locObj.relative_path;
+          if (!dog.user_has_preferences) {
+            const hs = document.getElementById('headerLocationSelect');
+            if (hs && hs.value === 'any') {
+              if (dog.suggested_location && window.__CH_LOCATIONS_DATA__) {
+                const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === dog.suggested_location);
+                if (locObj) {
+                  hs.value = locObj.relative_path;
+                } else {
+                  hs.value = 'all';
+                }
+              } else {
+                hs.value = 'all';
+              }
             }
           }
 

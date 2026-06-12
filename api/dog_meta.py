@@ -242,7 +242,10 @@ def _fetch_index_html_from_origin():
         or CANONICAL_ORIGIN
     )
     if not base.startswith("http"):
-        base = "https://" + base
+        if "localhost" in base or "127.0.0.1" in base:
+            base = "http://" + base
+        else:
+            base = "https://" + base
     url = base.rstrip("/") + "/index.html"
     req = urllib.request.Request(
         url,
@@ -304,14 +307,19 @@ class handler(BaseHTTPRequestHandler):
             client = get_supabase_client()
             
             if path1:
-                shelters_res = client.table("shelters").select("relative_path").eq("relative_path", "/" + path1).limit(1).execute()
-                if shelters_res.data:
-                    location_path = "/" + path1
+                if path1 == "alldogs":
+                    location_path = "/alldogs"
                     if path2:
                         dog_id = path2
                 else:
-                    if not dog_id:
-                        dog_id = path1
+                    shelters_res = client.table("shelters").select("relative_path").eq("relative_path", "/" + path1).limit(1).execute()
+                    if shelters_res.data:
+                        location_path = "/" + path1
+                        if path2:
+                            dog_id = path2
+                    else:
+                        if not dog_id:
+                            dog_id = path1
             else:
                 path_parts = [p for p in parsed.path.split("/") if p]
                 if len(path_parts) >= 2 and path_parts[-2] == "dogs":
