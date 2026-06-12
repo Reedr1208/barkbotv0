@@ -232,10 +232,10 @@ class handler(BaseHTTPRequestHandler):
             preferences_configured = False
             
             if preferences:
-                pref_gender = preferences.get("gender", "any")
-                pref_age = preferences.get("age_group", "any")
-                pref_size = preferences.get("size", "any")
-                pref_location = preferences.get("location", "any")
+                pref_gender = preferences.get("gender") or "any"
+                pref_age = preferences.get("age_group") or "any"
+                pref_size = preferences.get("size") or "any"
+                pref_location = preferences.get("location") or "any"
                 
                 # Make location a HARD filter
                 if pref_location != "any":
@@ -276,7 +276,7 @@ class handler(BaseHTTPRequestHandler):
                                 
                         # 2. Age Filter
                         if has_age:
-                            dog_age_group = dog.get("age_bucket", "N/A")
+                            dog_age_group = dog.get("age_bucket") or "N/A"
                             if pref_age.lower() in dog_age_group.lower() and dog_age_group != "N/A":
                                 score += 1
                                 details["age"]["matched"] = True
@@ -284,7 +284,7 @@ class handler(BaseHTTPRequestHandler):
                                 
                         # 3. Size Filter
                         if has_size:
-                            dog_size_class = dog.get("weight_class", "N/A")
+                            dog_size_class = dog.get("weight_class") or "N/A"
                             if pref_size.lower() in dog_size_class.lower() and dog_size_class != "N/A":
                                 score += 1
                                 details["size"]["matched"] = True
