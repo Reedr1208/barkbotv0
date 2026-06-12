@@ -13,7 +13,7 @@
   ],
   "functions": {
     "api/*.py": {
-      "includeFiles": "api/index.html",
+      "includeFiles": "public/index.html",
       "maxDuration": 300
     }
   },
