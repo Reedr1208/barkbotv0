@@ -181,7 +181,7 @@ class BarkbotStore:
         return change_type
     
     def get_least_recently_updated_urls(self, limit: int = DOGS_PER_RUN) -> List[Dict[str, Any]]:
-        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender, age, shelter_profile_url, public_image_url").eq("shelter_id", "HHS").execute()
+        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender, age").eq("shelter_id", "HHS").execute()
         adoptable_dogs = {row["animal_id"]: row for row in adoptable_resp.data}
         adoptable_ids = list(adoptable_dogs.keys())
 
@@ -201,13 +201,13 @@ class BarkbotStore:
         results = []
         for aid in top_ids:
             dog = adoptable_dogs[aid]
+            numeric_id = aid.replace('HHS-', '')
             results.append({
-                "url": dog.get("shelter_profile_url"),
+                "url": f"https://new.shelterluv.com/embed/animal/HHTX-A-{numeric_id}",
                 "animal_id": aid,
                 "name": dog.get("name"),
                 "gender": dog.get("gender"),
-                "age": dog.get("age"),
-                "public_image_url": dog.get("public_image_url"),
+                "age": dog.get("age")
             })
         return results
 
@@ -218,7 +218,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def extract_bio_with_playwright(page, url: str) -> str:
+def extract_bio_with_playwright(page, url: str) -> Tuple[str, Optional[str]]:
     logging.info(f"Navigating to {url}")
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=30000)
@@ -233,10 +233,17 @@ def extract_bio_with_playwright(page, url: str) -> str:
             if (el) return el.innerText;
             return document.body.innerText;
         }''')
-        return bio_text.strip() if bio_text else ""
+        
+        # Try to find og:image
+        image_url = page.evaluate('''() => {
+            let meta = document.querySelector('meta[property="og:image"]');
+            return meta ? meta.content : null;
+        }''')
+        
+        return (bio_text.strip() if bio_text else ""), image_url
     except Exception as e:
         logging.error(f"Playwright failed to fetch {url}: {e}")
-        return ""
+        return "", None
 
 
 def main() -> int:
@@ -276,7 +283,7 @@ def main() -> int:
 
                 processed += 1
                 try:
-                    bio = extract_bio_with_playwright(page, url)
+                    bio, image_url = extract_bio_with_playwright(page, url)
                     record = {
                         "shelter_profile_url": url,
                         "animal_id": target["animal_id"],
@@ -287,7 +294,7 @@ def main() -> int:
                         "weight": None, # Weight is difficult to parse reliably here, pipeline can extract from bio
                         "more_info": "",
                         "bio": bio,
-                        "shelter_image_url": target["public_image_url"],
+                        "shelter_image_url": image_url,
                         "image_file": None,
                         "image_public_url": None,
                         "city": "Houston",

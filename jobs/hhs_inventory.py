@@ -234,9 +234,6 @@ def normalize_record(raw: Dict[str, Any], page_url: str) -> Optional[Dict[str, s
     row = {
         "name": name,
         "animal_id": animal_id,
-        "shelter_profile_url": shelter_profile_url,
-        "public_image_url": public_image_url,
-        "internal_dog_id": internal_dog_id,
         "gender": gender,
         "age": age,
         "weight": "", # Often not available on tile
