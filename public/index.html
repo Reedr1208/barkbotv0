@@ -2016,11 +2016,11 @@
       max-width: 380px;
       aspect-ratio: 1;
       border-radius: 24px;
-      overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
       background: var(--bg-slate-800);
       transition: transform 0.3s ease;
+      margin-bottom: 60px;
     }
 
     .landing-hero-card:hover {
@@ -2034,11 +2034,12 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      border-radius: 24px;
     }
 
     .landing-mock-bubble {
       position: absolute;
-      bottom: 14px;
+      top: 80%;
       left: 14px;
       right: 14px;
       background: rgba(15, 23, 42, 0.85);
@@ -2756,13 +2757,68 @@
           <!-- Right Hero Showcase Pane -->
           <div class="landing-right-pane">
             <div class="landing-hero-card">
-              <img src="happy_rescue_pup.png" alt="Extremely cute adoptable shelter puppy" class="landing-hero-img">
+              <img src="spike.jpg" alt="Extremely cute adoptable shelter puppy" class="landing-hero-img" id="featuredDogImg">
               <div class="landing-mock-bubble">
                 <span class="bubble-heart">❤️</span>
-                <p>Hi! I'm a friendly, playful cuddle bug who loves treats and warm hugs. Wanna chat with me? 🐾</p>
+                <p id="featuredDogQuote">My foster called me a “dog from another planet” cuz my style is extraooo special, and I’m also a playyyful senior boy who loves zoomies, belly rubs, toys, fetch, tug, and car rides!!</p>
               </div>
             </div>
           </div>
+          
+          <script>
+            document.addEventListener('DOMContentLoaded', () => {
+              // Variations for the featured dog on the landing page
+              const featuredDogs = [
+                {
+                  src: "spike.jpg",
+                  alt: "Spike, a playful senior dog",
+                  quote: "My foster called me a “dog from another planet” cuz my style is extraooo special, and I’m also a playyyful senior boy who loves zoomies, belly rubs, toys, fetch, tug, and car rides!!"
+                },
+                {
+                  src: "lulu.jpg",
+                  alt: "Lulu the dog",
+                  quote: "i think i’m a lot like baloo — easygoing, cozy, and always ready for a good couch snooze after some happy walkies 😌. but i’ve got a lil’ wise old soul too… like, “sometimes the best adventure is a soft bed and a kind hand.”"
+                },
+                {
+                  src: "jack.jpg",
+                  alt: "Jack the dog",
+                  quote: "😎 I’m Jack, 3 yrs old, 64 lbs of pure main-character energy, and I do have a big ol’ personality. I’m best when I get to come to you for pets on my own terms, and I need an experienced adult-only home that goes slow with me and helps me feel safe."
+                }
+              ];
+              
+              if (featuredDogs.length > 0) {
+                const imgEl = document.getElementById("featuredDogImg");
+                const quoteEl = document.getElementById("featuredDogQuote");
+                const cardEl = document.querySelector(".landing-hero-card");
+                
+                let currentIndex = Math.floor(Math.random() * featuredDogs.length);
+                
+                function updateFeaturedDog() {
+                  const selectedDog = featuredDogs[currentIndex];
+                  if (imgEl && quoteEl) {
+                    if (cardEl) cardEl.style.opacity = 0.5;
+                    setTimeout(() => {
+                      imgEl.src = selectedDog.src;
+                      imgEl.alt = selectedDog.alt;
+                      quoteEl.textContent = selectedDog.quote;
+                      if (cardEl) cardEl.style.opacity = 1;
+                    }, 150);
+                  }
+                  currentIndex = (currentIndex + 1) % featuredDogs.length;
+                }
+
+                if (cardEl) {
+                  cardEl.style.transition = "opacity 0.3s ease";
+                }
+                
+                // Set initial dog
+                updateFeaturedDog();
+                
+                // Iterate every 10 seconds
+                setInterval(updateFeaturedDog, 10000);
+              }
+            });
+          </script>
 
         </div>
       </div>
