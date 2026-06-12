@@ -241,7 +241,10 @@ def normalize_record(raw: Dict[str, Any], page_url: str) -> Optional[Dict[str, s
         "state": "TX",
         "shelter_name": "Houston Humane Society",
         "shelter_id": "HHS",
-        "scraped_at": now_iso()
+        "scraped_at": now_iso(),
+        "public_image_url": public_image_url,
+        "shelter_profile_url": shelter_profile_url,
+        "internal_dog_id": internal_dog_id
     }
 
     debug_row = dict(row)
@@ -617,6 +620,8 @@ def main() -> None:
                 # Exclude debug keys before saving to DB
                 db_row = dict(row)
                 db_row.pop("internal_dog_id", None)
+                db_row.pop("public_image_url", None)
+                db_row.pop("shelter_profile_url", None)
                 
                 all_records.append(db_row)
                 logging.info("Added dog: %s | %s", row.get("name"), row.get("animal_id"))
