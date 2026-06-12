@@ -2021,6 +2021,7 @@
       background: var(--bg-slate-800);
       transition: transform 0.3s ease;
       margin-bottom: 60px;
+      cursor: pointer;
     }
 
     .landing-hero-card:hover {
@@ -2792,6 +2793,16 @@
                 const cardEl = document.querySelector(".landing-hero-card");
                 
                 let currentIndex = Math.floor(Math.random() * featuredDogs.length);
+                let typingTimeout = null;
+
+                function typeQuote(text, index, callback) {
+                  if (index < text.length) {
+                    quoteEl.textContent += text.charAt(index);
+                    typingTimeout = setTimeout(() => typeQuote(text, index + 1, callback), 15);
+                  } else {
+                    if (callback) callback();
+                  }
+                }
                 
                 function updateFeaturedDog() {
                   const selectedDog = featuredDogs[currentIndex];
@@ -2800,8 +2811,13 @@
                     setTimeout(() => {
                       imgEl.src = selectedDog.src;
                       imgEl.alt = selectedDog.alt;
-                      quoteEl.textContent = selectedDog.quote;
+                      quoteEl.textContent = '';
                       if (cardEl) cardEl.style.opacity = 1;
+                      
+                      clearTimeout(typingTimeout);
+                      typeQuote(selectedDog.quote, 0, () => {
+                        setTimeout(updateFeaturedDog, 3000);
+                      });
                     }, 150);
                   }
                   currentIndex = (currentIndex + 1) % featuredDogs.length;
@@ -2809,13 +2825,14 @@
 
                 if (cardEl) {
                   cardEl.style.transition = "opacity 0.3s ease";
+                  cardEl.addEventListener("click", () => {
+                    const startBtn = document.getElementById("landingStartBtn");
+                    if (startBtn) startBtn.click();
+                  });
                 }
                 
                 // Set initial dog
                 updateFeaturedDog();
-                
-                // Iterate every 10 seconds
-                setInterval(updateFeaturedDog, 10000);
               }
             });
           </script>
