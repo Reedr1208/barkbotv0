@@ -266,8 +266,14 @@ class BarkbotStore:
             return []
 
         # Get the update times for dogs already in the animals table
-        animals_resp = self.client.table("animals").select("animal_id, updated_at").execute()
-        updated_times = {row["animal_id"]: row["updated_at"] for row in animals_resp.data if row["updated_at"]}
+        # Fetch in chunks to bypass Supabase's default 1000-row limit
+        updated_times = {}
+        for i in range(0, len(adoptable_ids), 100):
+            chunk = adoptable_ids[i:i+100]
+            animals_res = self.client.table("animals").select("animal_id, updated_at").in_("animal_id", chunk).execute()
+            for row in animals_res.data:
+                if row.get("updated_at"):
+                    updated_times[row["animal_id"]] = row["updated_at"]
 
         # Sort adoptable_ids by updated_at (oldest first). 
         # Dogs not in updated_times get an empty string, putting them first (which is good, new dogs scraped first).
