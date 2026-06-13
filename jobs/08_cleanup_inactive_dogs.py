@@ -28,8 +28,6 @@ from supabase import create_client
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 SAFETY_THRESHOLD = 5
-RECOGNIZED_SHELTERS = ["NYCACC", "HSSA", "PACC", "MP", "PAWSCH", "WWLA", "HHS"]
-
 def get_shelter_id_for_animal(animal_id: str) -> str:
     if animal_id.startswith("NYCACC-"):
         return "NYCACC"
@@ -97,43 +95,74 @@ def main() -> int:
 
     bucket_name = os.getenv("SUPABASE_BUCKET", "animal-images")
 
-    # Fetch all currently active dogs
-    try:
-        active_res = client.table("active_dogs").select("animal_id, shelter_id").execute()
-    except Exception as e:
-        logging.error(f"Failed to fetch active_dogs: {e}")
-        return 1
+    # Fetch all currently active dogs (paginated to bypass 1000-row limit)
+    active_data = []
+    start_row = 0
+    while True:
+        try:
+            active_res = client.table("active_dogs").select("animal_id, shelter_id").range(start_row, start_row + 999).execute()
+        except Exception as e:
+            logging.error(f"Failed to fetch active_dogs: {e}")
+            return 1
+            
+        if not active_res.data:
+            break
+            
+        active_data.extend(active_res.data)
+        if len(active_res.data) < 1000:
+            break
+            
+        start_row += 1000
 
     active_by_shelter = {}
-    for row in active_res.data:
+    for row in active_data:
         sid = row.get("shelter_id")
         aid = row.get("animal_id")
         if sid and aid:
             active_by_shelter.setdefault(sid, set()).add(aid)
 
     # Fetch all animals registered in animals database
-    try:
-        animals_res = client.table("animals").select("animal_id, image_file").execute()
-    except Exception as e:
-        logging.error(f"Failed to fetch animals: {e}")
-        return 1
-
+    # Fetch in chunks to bypass Supabase's default 1000-row limit
     db_by_shelter = {}
-    for row in animals_res.data:
-        aid = row.get("animal_id")
-        image_file = row.get("image_file")
-        if aid:
-            sid = get_shelter_id_for_animal(aid)
-            db_by_shelter.setdefault(sid, []).append((aid, image_file))
+    start_row = 0
+    animals_count = 0
+    while True:
+        try:
+            animals_res = client.table("animals").select("animal_id, image_file, shelter_id").range(start_row, start_row + 999).execute()
+        except Exception as e:
+            logging.error(f"Failed to fetch animals: {e}")
+            return 1
+            
+        if not animals_res.data:
+            break
+            
+        animals_count += len(animals_res.data)
+        
+        for row in animals_res.data:
+            aid = row.get("animal_id")
+            image_file = row.get("image_file")
+            sid = row.get("shelter_id")
+            
+            if not sid and aid:
+                sid = get_shelter_id_for_animal(aid)
+                
+            if aid and sid and sid != "UNKNOWN":
+                db_by_shelter.setdefault(sid, []).append((aid, image_file))
+                
+        if len(animals_res.data) < 1000:
+            break
+        start_row += 1000
 
     # Log execution start
-    run_id = begin_run(client, len(animals_res.data))
+    run_id = begin_run(client, animals_count)
 
     total_deleted = 0
     total_errors = 0
     shelter_logs = []
 
-    for shelter in RECOGNIZED_SHELTERS:
+    recognized_shelters = set(active_by_shelter.keys()).union(set(db_by_shelter.keys()))
+
+    for shelter in recognized_shelters:
         active_set = active_by_shelter.get(shelter, set())
         active_count = len(active_set)
 
