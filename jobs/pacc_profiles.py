@@ -322,44 +322,50 @@ def main() -> int:
         for target in targets:
             url = target["url"]
             processed += 1
-            try:
-                record = fetch_record(url)
-                record["name"] = target["name"]
-                record["gender"] = target["gender"]
-                
+            native_id = get_animal_id_from_url(url)
+            
+            urls_to_try = [
+                url,
+                f"https://24petconnect.com/AdoptEPAC/Details/PIMA2/{native_id}"
+            ]
+            
+            success = False
+            for try_url in urls_to_try:
                 try:
-                    image_file, image_public_url = store.upload_image(record["animal_id"], record.get("shelter_image_url"))
-                    if image_file and image_public_url:
-                        record["image_file"] = image_file
-                        record["image_public_url"] = image_public_url
-                except Exception as img_exc:
-                    print(f"Failed to upload image for {record['animal_id']}: {img_exc}", file=sys.stderr)
+                    record = fetch_record(try_url)
+                    record["name"] = target["name"]
+                    record["gender"] = target["gender"]
                     
-                result = store.save_record(run_id, record)
-                if result == "inserted":
-                    inserted += 1
-                elif result == "updated":
-                    updated += 1
-                else:
-                    unchanged += 1
-                print(json.dumps({"animal_id": record["animal_id"], "result": result}, ensure_ascii=False))
-            except requests.exceptions.HTTPError as exc:
-                errors += 1
-                if exc.response.status_code in (404, 500):
-                    # If the server throws a 500 or 404 for this detail page, 
-                    # the animal was likely adopted/removed. We delete it from active_dogs 
-                    # so we skip it in future update processes.
-                    native_id = get_animal_id_from_url(url)
-                    aid = f"PACC-{native_id}"
                     try:
-                        store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
-                        print(json.dumps({"animal_id": aid, "result": "removed_from_active_dogs_due_to_http_error", "status_code": exc.response.status_code}, ensure_ascii=False))
-                    except Exception as del_exc:
-                        print(json.dumps({"url": url, "error": f"Failed to delete after HTTP {exc.response.status_code}: {str(del_exc)}"}, ensure_ascii=False), file=sys.stderr)
-                print(json.dumps({"url": url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
-            except Exception as exc:
+                        image_file, image_public_url = store.upload_image(record["animal_id"], record.get("shelter_image_url"))
+                        if image_file and image_public_url:
+                            record["image_file"] = image_file
+                            record["image_public_url"] = image_public_url
+                    except Exception as img_exc:
+                        print(f"Failed to upload image for {record['animal_id']}: {img_exc}", file=sys.stderr)
+                        
+                    result = store.save_record(run_id, record)
+                    if result == "inserted":
+                        inserted += 1
+                    elif result == "updated":
+                        updated += 1
+                    else:
+                        unchanged += 1
+                    print(json.dumps({"animal_id": record["animal_id"], "result": result, "url_used": try_url}, ensure_ascii=False))
+                    success = True
+                    break # exit the try_url loop on success
+                except requests.exceptions.HTTPError as exc:
+                    if exc.response.status_code in (404, 500):
+                        print(json.dumps({"url": try_url, "warning": f"HTTP {exc.response.status_code}"}, ensure_ascii=False), file=sys.stderr)
+                    else:
+                        print(json.dumps({"url": try_url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
+                except Exception as exc:
+                    print(json.dumps({"url": try_url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
+                    
+            if not success:
                 errors += 1
-                print(json.dumps({"url": url, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
+                print(json.dumps({"animal_id": f"PACC-{native_id}", "error": "All URLs failed. Skipping without deletion."}, ensure_ascii=False), file=sys.stderr)
+                
             time.sleep(settings.scrape_sleep_seconds)
 
         final_status = "success" if errors == 0 else "partial_success"
