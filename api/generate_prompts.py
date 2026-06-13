@@ -63,20 +63,33 @@ class handler(BaseHTTPRequestHandler):
             archetypes_res = sb_client.table("persona_archetypes").select("*").eq("active", True).execute()
             archetypes = archetypes_res.data
 
-            # 1. Fetch active dogs from active_dogs
-            active_res = sb_client.table("active_dogs").select("animal_id, shelter_id").execute()
-            active_dogs_map = {row["animal_id"]: row.get("shelter_id") for row in active_res.data}
+            # 1. Fetch active dogs from active_dogs (paginated to bypass 1000 row limit)
+            active_data = []
+            start_row = 0
+            while True:
+                res = sb_client.table("active_dogs").select("animal_id, shelter_id").range(start_row, start_row + 999).execute()
+                active_data.extend(res.data)
+                if len(res.data) < 1000:
+                    break
+                start_row += 1000
+            
+            active_dogs_map = {row["animal_id"]: row.get("shelter_id") for row in active_data}
             
             if not active_dogs_map:
                 logging.info("No active dogs found in active_dogs.")
                 self._send_response(200, {"message": "No active dogs found"})
                 return
 
-            # 2. Fetch all animals with bio length checking
-            animals_res = sb_client.table("animals").select("animal_id, bio").execute()
+            # 2. Fetch animals data in chunks for active dogs
+            active_ids = list(active_dogs_map.keys())
+            animals_data = []
+            for i in range(0, len(active_ids), 100):
+                chunk = active_ids[i:i+100]
+                res = sb_client.table("animals").select("animal_id, bio").in_("animal_id", chunk).execute()
+                animals_data.extend(res.data)
             
             eligible_animal_ids = []
-            for row in animals_res.data:
+            for row in animals_data:
                 aid = row["animal_id"]
                 bio = row.get("bio") or ""
                 desc = row.get("bio") or ""
@@ -110,9 +123,14 @@ class handler(BaseHTTPRequestHandler):
                 self._send_response(200, {"message": "No eligible dogs found"})
                 return
 
-            # 3. Fetch existing system_prompts
-            prompts_res = sb_client.table("system_prompts_v2").select("animal_id, updated_at").execute()
-            existing_prompts = {row["animal_id"]: row["updated_at"] for row in prompts_res.data}
+            # 3. Fetch existing system_prompts in chunks for eligible dogs
+            prompts_data = []
+            for i in range(0, len(eligible_animal_ids), 100):
+                chunk = eligible_animal_ids[i:i+100]
+                res = sb_client.table("system_prompts_v2").select("animal_id, updated_at").in_("animal_id", chunk).execute()
+                prompts_data.extend(res.data)
+                
+            existing_prompts = {row["animal_id"]: row["updated_at"] for row in prompts_data}
 
             # 4. Filter and sort targets
             three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
