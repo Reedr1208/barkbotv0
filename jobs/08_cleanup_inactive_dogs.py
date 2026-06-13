@@ -28,7 +28,7 @@ from supabase import create_client
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 SAFETY_THRESHOLD = 5
-RECOGNIZED_SHELTERS = ["NYCACC", "HSSA", "PIMA", "MUDDYPAWS"]
+RECOGNIZED_SHELTERS = ["NYCACC", "HSSA", "PACC", "MP", "PAWSCH", "WWLA", "HHS"]
 
 def get_shelter_id_for_animal(animal_id: str) -> str:
     if animal_id.startswith("NYCACC-"):
@@ -36,9 +36,15 @@ def get_shelter_id_for_animal(animal_id: str) -> str:
     elif animal_id.startswith("HSSA-"):
         return "HSSA"
     elif animal_id.startswith("PACC-") or animal_id.startswith("PIMA-"):
-        return "PIMA"
+        return "PACC"
     elif animal_id.startswith("MP-") or animal_id.isdigit():
-        return "MUDDYPAWS"
+        return "MP"
+    elif animal_id.startswith("PAWSCH-"):
+        return "PAWSCH"
+    elif animal_id.startswith("WWLA-"):
+        return "WWLA"
+    elif animal_id.startswith("HHS-"):
+        return "HHS"
     else:
         return "UNKNOWN"
 
