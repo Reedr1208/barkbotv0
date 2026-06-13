@@ -5,6 +5,10 @@ import logging
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler
 
+# Ensure subprocesses inherit the Vercel virtual environment path
+os.environ['PYTHONPATH'] = os.pathsep.join(sys.path)
+
+
 # Force Vercel to bundle required dependencies
 try:
     import requests
