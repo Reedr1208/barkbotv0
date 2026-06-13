@@ -11,6 +11,18 @@ from openai import OpenAI
 from supabase import create_client
 from http.server import BaseHTTPRequestHandler
 
+# Force Vercel to bundle required dependencies
+try:
+    import requests
+    import bs4
+    import supabase
+    import playwright
+    import openai
+    import pydantic
+except ImportError:
+    pass
+
+
 # Ensure the pipeline modules can be imported
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 

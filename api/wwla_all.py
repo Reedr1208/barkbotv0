@@ -5,6 +5,18 @@ import logging
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler
 
+# Force Vercel to bundle required dependencies
+try:
+    import requests
+    import bs4
+    import supabase
+    import playwright
+    import openai
+    import pydantic
+except ImportError:
+    pass
+
+
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 class handler(BaseHTTPRequestHandler):
