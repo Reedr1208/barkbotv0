@@ -27,7 +27,7 @@ USER_AGENT = (
 CARD_SELECTOR = 'section[data-testid="pets-at-awo"] a[data-testid="pet-card-link"][href*="/pet/"]'
 FALLBACK_CARD_SELECTOR = 'a[data-testid="pet-card-link"][href*="/pet/"]'
 
-MAX_EXECUTION_TIME_SECONDS = 200  # Leave 40 seconds buffer for Vercel 4m timeout
+
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -173,17 +173,6 @@ def wait_for_hydrated_page(page, page_num: int, timeout_seconds: float = 18.0) -
         time.sleep(0.5)
 
 
-def get_next_page(client) -> int:
-    try:
-        res = client.table("scrape_runs").select("notes").eq("triggered_by", "cron_hssa_inventory").order("id", desc=True).limit(1).execute()
-        if res.data and res.data[0].get("notes"):
-            notes = json.loads(res.data[0]["notes"])
-            return notes.get("next_page", 1)
-    except Exception as e:
-        print(f"Error reading next_page from scrape_runs: {e}")
-    return 1
-
-
 def record_run_start(client, triggered_by: str) -> int:
     payload = {
         "triggered_by": triggered_by,
@@ -205,12 +194,9 @@ def record_run_finish(client, run_id: int, status: str, notes_dict: dict) -> Non
 
 
 def scrape_inventory() -> None:
-    start_time = time.time()
     client = get_supabase_client()
-    
     run_id = record_run_start(client, "cron_hssa_inventory")
-    start_page = get_next_page(client)
-    print(f"Resuming HSSA inventory scrape from page {start_page}...")
+    print("Starting HSSA inventory scrape...")
 
     # Dynamic install of Playwright Chromium if running in Vercel environment
     import os
@@ -224,8 +210,9 @@ def scrape_inventory() -> None:
     scraped_at = now_iso()
     all_rows = []
     seen_animal_ids = set()
-    current_page = start_page
+    current_page = 1
     status = "success"
+    has_error = False
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -236,12 +223,6 @@ def scrape_inventory() -> None:
         page = context.new_page()
 
         while True:
-            # Time check
-            if time.time() - start_time > MAX_EXECUTION_TIME_SECONDS:
-                print("Approaching max execution time. Pausing scrape.")
-                status = "partial_success"
-                break
-
             url = build_page_url(current_page)
             print(f"Fetching page {current_page}: {url}")
 
@@ -250,7 +231,10 @@ def scrape_inventory() -> None:
                 page.wait_for_selector(CARD_SELECTOR, timeout=15000)
             except PlaywrightTimeoutError:
                 print("No pet cards found or timeout; stopping.")
-                current_page = 1  # Reset to beginning for next run
+                break
+            except Exception as e:
+                print(f"Error loading page: {e}")
+                has_error = True
                 break
 
             try:
@@ -279,8 +263,7 @@ def scrape_inventory() -> None:
                 new_rows_on_page += 1
 
             if new_rows_on_page == 0:
-                print("Page had no new animal IDs; stopping and resetting to page 1.")
-                current_page = 1
+                print("Page had no new animal IDs; stopping.")
                 break
 
             current_page += 1
@@ -291,14 +274,17 @@ def scrape_inventory() -> None:
 
     print(f"Scraped {len(all_rows)} dogs.")
 
-    if all_rows:
-        # Upsert into active_dogs (no delete because this might just be a subset)
+    if all_rows and not has_error:
+        print("Clearing existing active_dogs table data for HSSA...")
+        client.table("active_dogs").delete().eq("shelter_id", "HSSA").execute()
+        
+        print(f"Inserting {len(all_rows)} dogs into active_dogs...")
         for chunk_start in range(0, len(all_rows), 100):
             chunk = all_rows[chunk_start:chunk_start + 100]
-            client.table("active_dogs").upsert(chunk, on_conflict="animal_id").execute()
+            client.table("active_dogs").insert(chunk).execute()
             
-    notes = {"next_page": current_page, "scraped_count": len(all_rows)}
-    record_run_finish(client, run_id, status, notes)
+    notes = {"scraped_count": len(all_rows), "error": has_error}
+    record_run_finish(client, run_id, "success" if not has_error else "error", notes)
     print("Done.")
 
 if __name__ == "__main__":
