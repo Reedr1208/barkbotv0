@@ -3568,6 +3568,7 @@
                   btn.className = 'pref-btn';
                   btn.dataset.value = loc.display_name;
                   btn.textContent = loc.display_name;
+                  if (loc.relative_path === '/newark') btn.style.display = 'none';
                   group.appendChild(btn);
                 });
               }
@@ -3578,6 +3579,7 @@
                   const opt = document.createElement('option');
                   opt.value = loc.relative_path;
                   opt.style.color = 'black';
+                  if (loc.relative_path === '/newark') opt.style.display = 'none';
                   opt.textContent = loc.display_name;
                   headerSelect.appendChild(opt);
                 });

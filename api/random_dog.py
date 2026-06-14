@@ -88,17 +88,17 @@ class handler(BaseHTTPRequestHandler):
                 active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
                 prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
                 profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
-                fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", animal_id_override).limit(1).execute()
+                fact_res = client.table("animal_fact_profiles").select("dog_name, intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", animal_id_override).limit(1).execute()
                 
                 if not active_res.data or not profile_res.data:
                     self._send_response(404, {"error": "Dog not found."})
                     return
                 active_dog = active_res.data[0]
                 profile = profile_res.data[0]
-                profile["name"] = active_dog.get("name") or "Unknown"
-                profile["gender"] = active_dog.get("gender") or "Unknown"
                 
                 facts_data = fact_res.data[0] if fact_res.data else {}
+                profile["name"] = facts_data.get("dog_name") or active_dog.get("name") or "Unknown"
+                profile["gender"] = active_dog.get("gender") or "Unknown"
                 profile["intro_summary"] = facts_data.get("intro_summary")
                 profile["important_facts"] = facts_data.get("important_facts_jsonb", [])
                 profile["bio"] = facts_data.get("backstory_summary", profile.get("bio", ""))
@@ -236,17 +236,32 @@ class handler(BaseHTTPRequestHandler):
                 pref_age = preferences.get("age_group") or "any"
                 pref_size = preferences.get("size") or "any"
                 pref_location = preferences.get("location") or "any"
+            else:
+                pref_gender = "any"
+                pref_age = "any"
+                pref_size = "any"
+                pref_location = "any"
                 
+            # Handle locations and hidden shelters
+            if pref_location == "any":
+                new_valid_ids = []
+                for aid in valid_ids:
+                    if active_dogs[aid].get("shelter_id") != "AHSCN":
+                        new_valid_ids.append(aid)
+                if new_valid_ids:
+                    valid_ids = new_valid_ids
+            else:
                 # Make location a HARD filter
-                if pref_location != "any":
-                    new_valid_ids = []
-                    for aid in valid_ids:
-                        dog_loc = shelters_map.get(active_dogs[aid].get("shelter_id"), {}).get("location_display_name", "")
-                        if pref_location.lower() == dog_loc.lower():
-                            new_valid_ids.append(aid)
-                    # Only apply hard filter if there are actually dogs in that location
-                    if new_valid_ids:
-                        valid_ids = new_valid_ids
+                new_valid_ids = []
+                for aid in valid_ids:
+                    dog_loc = shelters_map.get(active_dogs[aid].get("shelter_id"), {}).get("location_display_name", "")
+                    if pref_location.lower() == dog_loc.lower():
+                        new_valid_ids.append(aid)
+                # Only apply hard filter if there are actually dogs in that location
+                if new_valid_ids:
+                    valid_ids = new_valid_ids
+                    
+            if preferences:
 
                 # Triggers for active categories
                 has_gender = (pref_gender != "any")
@@ -408,11 +423,11 @@ class handler(BaseHTTPRequestHandler):
             profile = profile_res.data[0]
             
             # Add the name, gender and facts
-            profile["name"] = active_dogs[random_id].get("name") or "Unknown"
-            profile["gender"] = active_dogs[random_id].get("gender") or "Unknown"
-            
-            fact_res = client.table("animal_fact_profiles").select("intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", random_id).limit(1).execute()
+            fact_res = client.table("animal_fact_profiles").select("dog_name, intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", random_id).limit(1).execute()
             facts_data = fact_res.data[0] if fact_res.data else {}
+            
+            profile["name"] = facts_data.get("dog_name") or active_dogs[random_id].get("name") or "Unknown"
+            profile["gender"] = active_dogs[random_id].get("gender") or "Unknown"
             
             profile["intro_summary"] = facts_data.get("intro_summary")
             

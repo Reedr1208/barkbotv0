@@ -21,8 +21,6 @@ class handler(BaseHTTPRequestHandler):
             
             locations_map = {}
             for row in res.data:
-                if row.get("shelter_id") == "AHSCN":
-                    continue
                 disp = row.get("location_display_name")
                 if not disp:
                     continue

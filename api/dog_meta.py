@@ -88,7 +88,7 @@ def _fetch_dog_profile(animal_id):
     )
     prompts_res = (
         client.table("animal_fact_profiles")
-        .select("animal_id, important_facts_jsonb")
+        .select("animal_id, dog_name, important_facts_jsonb")
         .eq("animal_id", animal_id)
         .limit(1)
         .execute()
@@ -101,7 +101,8 @@ def _fetch_dog_profile(animal_id):
 
     active_dog = active_res.data[0]
     profile = profile_res.data[0]
-    profile["name"] = active_dog.get("name") or "Unknown"
+    fact_data = prompts_res.data[0] if prompts_res.data else {}
+    profile["name"] = fact_data.get("dog_name") or active_dog.get("name") or "Unknown"
     profile["gender"] = active_dog.get("gender") or "Unknown"
     profile["important_facts"] = (
         prompts_res.data[0].get("important_facts_jsonb", []) if prompts_res.data else []
