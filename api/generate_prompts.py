@@ -99,7 +99,7 @@ class handler(BaseHTTPRequestHandler):
                     s_id_upper = shelter_id.upper()
                     bio_len = len(bio)
                     desc_len = len(desc)
-                    if s_id_upper in ("NYCACC", "MUDDYPAWS", "PIMA"):
+                    if s_id_upper in ("NYCACC", "MUDDYPAWS", "PIMA", "AHSCN"):
                         if bio_len < 1500 and desc_len < 1500:
                             continue
                     elif s_id_upper == "HSSA":

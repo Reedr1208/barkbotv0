@@ -45,6 +45,14 @@
     {
       "path": "/api/pawsch_profiles",
       "schedule": "20 * * * *"
+    },
+    {
+      "path": "/api/ahscn_inventory",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/ahscn_profiles",
+      "schedule": "45 * * * *"
     }
   ]
 }
