@@ -218,10 +218,12 @@ class handler(BaseHTTPRequestHandler):
 
             # Fetch user preferences if logged in
             preferences = None
+            has_real_preferences = False
             if email:
                 pref_res = client.table("user_preferences").select("*").eq("email", email).limit(1).execute()
                 if pref_res.data:
                     preferences = pref_res.data[0]
+                    has_real_preferences = True
             
             if not preferences:
                 preferences = {}
@@ -231,10 +233,10 @@ class handler(BaseHTTPRequestHandler):
             q_size = query_params.get("size", [""])[0].strip().lower()
             q_location = query_params.get("location", [""])[0].strip()
             
-            if q_gender: preferences["gender"] = q_gender
-            if q_age: preferences["age_group"] = q_age
-            if q_size: preferences["size"] = q_size
-            if q_location: preferences["location"] = q_location
+            if q_gender: preferences["gender"] = q_gender; has_real_preferences = True
+            if q_age: preferences["age_group"] = q_age; has_real_preferences = True
+            if q_size: preferences["size"] = q_size; has_real_preferences = True
+            if q_location: preferences["location"] = q_location; has_real_preferences = True
             
             for k in ["gender", "age_group", "size", "location"]:
                 if not preferences.get(k):
@@ -471,11 +473,11 @@ class handler(BaseHTTPRequestHandler):
             profile["weight_class"] = facts_data.get("weight_class")
             profile["altered_status"] = facts_data.get("altered_status")
             profile["preferences_matched"] = preferences_matched
-            profile["user_has_preferences"] = (preferences is not None)
+            profile["user_has_preferences"] = has_real_preferences
             profile["match_details"] = best_match_details.get(random_id, {})
             
             suggested_location = None
-            if closer_region and not profile["user_has_preferences"]:
+            if closer_region and not has_real_preferences:
                 for s in shelters_map.values():
                     if s.get("city", "").upper() == closer_region:
                         suggested_location = s.get("location_display_name")
