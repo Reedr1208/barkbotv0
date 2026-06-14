@@ -154,8 +154,7 @@ class handler(BaseHTTPRequestHandler):
                     "CHICAGO": (41.8781, -87.6298),
                     "NYC": (40.7128, -74.0060),
                     "LOS ANGELES": (34.0522, -118.2437),
-                    "HOUSTON": (29.7604, -95.3698),
-                    "NEWARK": (40.7357, -74.1724)
+                    "HOUSTON": (29.7604, -95.3698)
                 }
                 min_dist = float('inf')
                 for region, (lat, lon) in locations.items():
