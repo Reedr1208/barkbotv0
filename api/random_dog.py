@@ -14,6 +14,18 @@ def get_supabase_client():
         raise RuntimeError("Missing Supabase environment variables.")
     return create_client(supabase_url, supabase_key)
 
+def fetch_all_rows(query_builder, page_size=1000):
+    """Paginate through a Supabase query to fetch all rows (bypasses the 1000-row default cap)."""
+    all_data = []
+    offset = 0
+    while True:
+        res = query_builder.range(offset, offset + page_size - 1).execute()
+        all_data.extend(res.data)
+        if len(res.data) < page_size:
+            break
+        offset += page_size
+    return all_data
+
 def parse_weight_lbs(weight_str):
     if not weight_str:
         return 0.0
@@ -164,24 +176,24 @@ class handler(BaseHTTPRequestHandler):
                         closer_region = region
 
             # Fetch all dog IDs, names, and filterable fields from active_dogs
-            active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").execute()
-            if not active_res.data:
+            active_data = fetch_all_rows(client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id"))
+            if not active_data:
                 self._send_response(404, {"error": "No dogs found in active_dogs."})
                 return
                 
-            active_dogs = {row["animal_id"]: row for row in active_res.data}
+            active_dogs = {row["animal_id"]: row for row in active_data}
             
             # Fetch shelters
             shelters_res = client.table("shelters").select("*").execute()
             shelters_map = {s["shelter_id"]: s for s in shelters_res.data} if shelters_res.data else {}
             
             # Fetch from animal_persona_profiles to get archetype data and freshness
-            persona_res = client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at").execute()
-            persona_data = {row["animal_id"]: row for row in persona_res.data}
+            persona_data_list = fetch_all_rows(client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at"))
+            persona_data = {row["animal_id"]: row for row in persona_data_list}
             
             # Fetch animal_fact_profiles to get age_bucket and weight_class
-            fact_res = client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class").execute()
-            for row in fact_res.data:
+            fact_data_list = fetch_all_rows(client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class"))
+            for row in fact_data_list:
                 if row["animal_id"] in active_dogs:
                     active_dogs[row["animal_id"]]["age_bucket"] = row.get("age_bucket")
                     active_dogs[row["animal_id"]]["weight_class"] = row.get("weight_class")
@@ -212,18 +224,21 @@ class handler(BaseHTTPRequestHandler):
                     preferences = pref_res.data[0]
             
             if not preferences:
-                # Fallback to query params for guest users
-                q_gender = query_params.get("gender", [""])[0].strip().lower()
-                q_age = query_params.get("age_group", [""])[0].strip().lower()
-                q_size = query_params.get("size", [""])[0].strip().lower()
-                q_location = query_params.get("location", [""])[0].strip().lower()
-                if q_gender or q_age or q_size or q_location:
-                    preferences = {
-                        "gender": q_gender or "any",
-                        "age_group": q_age or "any",
-                        "size": q_size or "any",
-                        "location": q_location or "any"
-                    }
+                preferences = {}
+                
+            q_gender = query_params.get("gender", [""])[0].strip().lower()
+            q_age = query_params.get("age_group", [""])[0].strip().lower()
+            q_size = query_params.get("size", [""])[0].strip().lower()
+            q_location = query_params.get("location", [""])[0].strip()
+            
+            if q_gender: preferences["gender"] = q_gender
+            if q_age: preferences["age_group"] = q_age
+            if q_size: preferences["size"] = q_size
+            if q_location: preferences["location"] = q_location
+            
+            for k in ["gender", "age_group", "size", "location"]:
+                if not preferences.get(k):
+                    preferences[k] = "any"
 
             # Apply preferences filtering if preferences are configured
             preferences_matched = False
@@ -243,6 +258,11 @@ class handler(BaseHTTPRequestHandler):
                 pref_location = "any"
                 
             # Handle locations and hidden shelters
+            import re
+            
+            def clean_loc(s):
+                return re.sub(r'[^a-zA-Z0-9]', '', str(s)).lower()
+                
             if pref_location == "any":
                 new_valid_ids = []
                 for aid in valid_ids:
@@ -255,7 +275,7 @@ class handler(BaseHTTPRequestHandler):
                 new_valid_ids = []
                 for aid in valid_ids:
                     dog_loc = shelters_map.get(active_dogs[aid].get("shelter_id"), {}).get("location_display_name", "")
-                    if pref_location.lower() == dog_loc.lower():
+                    if clean_loc(pref_location) == clean_loc(dog_loc):
                         new_valid_ids.append(aid)
                 # Only apply hard filter if there are actually dogs in that location
                 if new_valid_ids:
