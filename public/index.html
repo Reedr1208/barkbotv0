@@ -3564,22 +3564,22 @@
               if (group) {
                 group.innerHTML = '<button class="pref-btn" data-value="all">All Locations 🌎</button>';
                 data.locations.forEach(loc => {
+                  if (loc.relative_path === '/newark') return;
                   const btn = document.createElement('button');
                   btn.className = 'pref-btn';
                   btn.dataset.value = loc.display_name;
                   btn.textContent = loc.display_name;
-                  if (loc.relative_path === '/newark') btn.style.display = 'none';
                   group.appendChild(btn);
                 });
               }
               
               if (headerSelect) {
-                headerSelect.innerHTML = '<option value="any" style="display:none;">Detecting Location...</option><option value="all" style="color: black;">All Locations 🌎</option>';
+                headerSelect.innerHTML = '<option value="any" style="display:none;">Select Location...</option><option value="all" style="color: black;">All Locations 🌎</option>';
                 data.locations.forEach(loc => {
+                  if (loc.relative_path === '/newark') return;
                   const opt = document.createElement('option');
                   opt.value = loc.relative_path;
                   opt.style.color = 'black';
-                  if (loc.relative_path === '/newark') opt.style.display = 'none';
                   opt.textContent = loc.display_name;
                   headerSelect.appendChild(opt);
                 });
