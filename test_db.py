@@ -1,16 +1,10 @@
-import os
+import os, json
 from supabase import create_client
-
-url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-client = create_client(url, key)
-
-res = client.table("chat_conversations").upsert({
-    "email": "test_guest@guest.chattyhound.com",
-    "animal_id": "A1234567",
-    "dog_name": "Test",
-    "dog_image_url": "",
-    "last_message_preview": "test",
-    "updated_at": "now()"
-}).execute()
-print(res.data)
+with open('.env.local') as f:
+    for line in f:
+        line = line.strip()
+        if "=" in line and not line.startswith("#"):
+            k, v = line.split("=", 1)
+            os.environ[k] = v.strip().strip('"').strip("'")
+c = create_client(os.environ["storage_SUPABASE_URL"], os.environ["storage_SUPABASE_SERVICE_ROLE_KEY"])
+print(json.dumps(c.table('active_dogs').select('*').limit(1).execute().data, indent=2))

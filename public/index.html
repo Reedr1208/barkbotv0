@@ -3550,10 +3550,11 @@
 
       let userCoords = null;
 
-      // Kick off browser geolocation immediately as a fallback for non-Vercel
-      // environments (local dev) where geo-IP headers aren't available.
+      // Kick off browser geolocation ONLY on local dev as a fallback.
+      // Production relies on Vercel geo-IP headers — never prompt real users.
+      const _isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
       const _geoCoordsPromise = new Promise((resolve) => {
-        if (!navigator.geolocation) return resolve(null);
+        if (!_isLocalDev || !navigator.geolocation) return resolve(null);
         const timeout = setTimeout(() => resolve(null), 3000);
         navigator.geolocation.getCurrentPosition(
           (pos) => {
