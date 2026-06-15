@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "cp public/index.html api/index.html"
+    "build": "node build.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",
