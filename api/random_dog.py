@@ -347,6 +347,19 @@ class handler(BaseHTTPRequestHandler):
                             
                         scored_dogs[aid] = score
                         best_match_details[aid] = details
+                else:
+                    # No preference filters active — still apply proximity and archetype diversity scoring
+                    for aid in valid_ids:
+                        score = 0
+                        dog = active_dogs[aid]
+                        dog_city = shelters_map.get(dog.get("shelter_id"), {}).get("city", "").upper()
+                        if closer_region and dog_city == closer_region:
+                            score += 0.8
+                        
+                        dog_arch = persona_data[aid].get("primary_archetype_key")
+                        if dog_arch and dog_arch not in last_2_archetypes:
+                            score += 0.5
+                        scored_dogs[aid] = score
             else:
                 # If no preferences configured, score based on closer shelter (if available) and archetype diversity
                 for aid in valid_ids:

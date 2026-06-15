@@ -3550,6 +3550,21 @@
 
       let userCoords = null;
 
+      // Kick off browser geolocation immediately as a fallback for non-Vercel
+      // environments (local dev) where geo-IP headers aren't available.
+      const _geoCoordsPromise = new Promise((resolve) => {
+        if (!navigator.geolocation) return resolve(null);
+        const timeout = setTimeout(() => resolve(null), 3000);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            clearTimeout(timeout);
+            resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+          },
+          () => { clearTimeout(timeout); resolve(null); },
+          { timeout: 3000, maximumAge: 300000 }
+        );
+      });
+
       window.__CH_LOCATIONS_DATA__ = [];
       window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
         try {
@@ -4334,6 +4349,12 @@ function formatRelativeTime(isoString) {
         profilePanel.classList.add('loading');
 
         try {
+          // Ensure browser geolocation has resolved before first fetch
+          if (!userCoords) {
+            const geoResult = await _geoCoordsPromise;
+            if (geoResult) userCoords = geoResult;
+          }
+
           let url = '/api/random_dog?';
           const params = [];
           if (forcedAnimalId) {
