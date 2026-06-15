@@ -2937,7 +2937,7 @@
                     style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
                     <p class="dog-breed"
                       style="font-size: 0.85rem; font-weight: 700; color: var(--accent-hover); display: flex; align-items: center; gap: 4px; margin: 0;">
-                      <span>Rescue Mix 🐾</span>
+                      <span id="dogBreed">Rescue Mix 🐾</span>
                     </p>
                     <p class="dog-location" id="dogLocation"
                       style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin: 0;">
@@ -4272,6 +4272,8 @@ function formatRelativeTime(isoString) {
         dogId.textContent = '';
         const locationTextEl = document.getElementById('dogLocationText');
         if (locationTextEl) locationTextEl.textContent = '';
+        const dogBreedEl = document.getElementById('dogBreed');
+        if (dogBreedEl) dogBreedEl.textContent = 'Rescue Mix 🐾';
         const lastCheckedEl = document.getElementById('lastCheckedDate');
         if (lastCheckedEl) lastCheckedEl.textContent = 'Today';
         dogAge.textContent = '';
@@ -4416,6 +4418,12 @@ function formatRelativeTime(isoString) {
 
           currentDogName = dog.name || 'this dog';
           dogName.textContent = dog.name || 'Unknown';
+          const dogBreedEl = document.getElementById('dogBreed');
+          if (dogBreedEl) {
+            let breedText = dog.breed_or_description || 'Rescue Mix';
+            if (breedText.toLowerCase() === 'unknown') breedText = 'Unknown breed';
+            dogBreedEl.textContent = breedText + ' 🐾';
+          }
           chatTitleName.textContent = currentDogName;
           const idParts = dog.animal_id ? dog.animal_id.split('-') : [];
           const nativeId = idParts.length > 1 ? idParts.slice(1).join('-') : dog.animal_id;

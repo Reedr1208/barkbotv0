@@ -55,6 +55,7 @@ def _build_meta_copy(profile):
     age = _clean_age(profile.get("age") or "")
     shelter = profile.get("shelter_name") or "Pima Animal Care Center"
     pron = _pronoun(profile.get("gender"))
+    breed_label = (profile.get("breed_or_description") or "rescue mix").lower()
 
     title = f"Meet {name} | ChattyHound"
     og_title = f"Meet {name} on ChattyHound"
@@ -65,7 +66,7 @@ def _build_meta_copy(profile):
         f"Chat with {pron} on ChattyHound and continue to the official shelter page."
     )
     share_text = (
-        f"{name} is a sweet {age_part}rescue mix at {shelter}. "
+        f"{name} is a sweet {age_part}{breed_label} at {shelter}. "
         f"Chat with {pron} and learn more on ChattyHound."
     ).replace("  ", " ").strip()
 
@@ -88,7 +89,7 @@ def _fetch_dog_profile(animal_id):
     )
     prompts_res = (
         client.table("animal_fact_profiles")
-        .select("animal_id, dog_name, important_facts_jsonb")
+        .select("animal_id, dog_name, breed_or_description, important_facts_jsonb")
         .eq("animal_id", animal_id)
         .limit(1)
         .execute()
@@ -107,6 +108,7 @@ def _fetch_dog_profile(animal_id):
     profile["important_facts"] = (
         prompts_res.data[0].get("important_facts_jsonb", []) if prompts_res.data else []
     )
+    profile["breed_or_description"] = fact_data.get("breed_or_description") or "Rescue Mix"
     supabase_url_val = os.environ.get("storage_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
     bucket = os.environ.get("SUPABASE_BUCKET", "animal-images")
     profile["image_base_url"] = f"{supabase_url_val}/storage/v1/object/public/{bucket}/"

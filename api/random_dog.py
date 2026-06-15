@@ -100,7 +100,7 @@ class handler(BaseHTTPRequestHandler):
                 active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
                 prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
                 profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
-                fact_res = client.table("animal_fact_profiles").select("dog_name, intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", animal_id_override).limit(1).execute()
+                fact_res = client.table("animal_fact_profiles").select("dog_name, breed_or_description, intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", animal_id_override).limit(1).execute()
                 
                 if not active_res.data or not profile_res.data:
                     self._send_response(404, {"error": "Dog not found."})
@@ -131,6 +131,7 @@ class handler(BaseHTTPRequestHandler):
                 profile["age_bucket"] = facts_data.get("age_bucket")
                 profile["weight_class"] = facts_data.get("weight_class")
                 profile["altered_status"] = facts_data.get("altered_status")
+                profile["breed_or_description"] = facts_data.get("breed_or_description") or "Rescue Mix"
                 
                 profile["preferences_matched"] = False
                 profile["user_has_preferences"] = False
@@ -445,7 +446,7 @@ class handler(BaseHTTPRequestHandler):
             profile = profile_res.data[0]
             
             # Add the name, gender and facts
-            fact_res = client.table("animal_fact_profiles").select("dog_name, intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", random_id).limit(1).execute()
+            fact_res = client.table("animal_fact_profiles").select("dog_name, breed_or_description, intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, strengths_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary").eq("animal_id", random_id).limit(1).execute()
             facts_data = fact_res.data[0] if fact_res.data else {}
             
             profile["name"] = facts_data.get("dog_name") or active_dogs[random_id].get("name") or "Unknown"
@@ -472,6 +473,7 @@ class handler(BaseHTTPRequestHandler):
             profile["age_bucket"] = facts_data.get("age_bucket")
             profile["weight_class"] = facts_data.get("weight_class")
             profile["altered_status"] = facts_data.get("altered_status")
+            profile["breed_or_description"] = facts_data.get("breed_or_description") or "Rescue Mix"
             profile["preferences_matched"] = preferences_matched
             profile["user_has_preferences"] = has_real_preferences
             profile["match_details"] = best_match_details.get(random_id, {})
