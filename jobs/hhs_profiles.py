@@ -182,7 +182,7 @@ class BarkbotStore:
         return change_type
     
     def get_least_recently_updated_urls(self, limit: int = DOGS_PER_RUN) -> List[Dict[str, Any]]:
-        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender, age").eq("shelter_id", "HHS").execute()
+        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender, age, shelter_profile_url").eq("shelter_id", "HHS").execute()
         adoptable_dogs = {row["animal_id"]: row for row in adoptable_resp.data}
         adoptable_ids = list(adoptable_dogs.keys())
 
@@ -202,9 +202,12 @@ class BarkbotStore:
         results = []
         for aid in top_ids:
             dog = adoptable_dogs[aid]
-            numeric_id = aid.replace('HHS-', '')
+            url = dog.get("shelter_profile_url")
+            if not url:
+                numeric_id = aid.replace('HHS-', '')
+                url = f"https://new.shelterluv.com/embed/animal/HHTX-A-{numeric_id}"
             results.append({
-                "url": f"https://new.shelterluv.com/embed/animal/HHTX-A-{numeric_id}",
+                "url": url,
                 "animal_id": aid,
                 "name": dog.get("name"),
                 "gender": dog.get("gender"),

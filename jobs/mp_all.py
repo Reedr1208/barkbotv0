@@ -171,6 +171,7 @@ def save_to_supabase(dogs: list):
             "city": "NYC",
             "state": "NY",
             "shelter_name": "Muddy Paws Rescue",
+            "shelter_profile_url": f"{SITE_BASE_URL}/adoptable?dog={native_id}",
             "scraped_at": now_iso()
         })
         

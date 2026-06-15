@@ -150,6 +150,7 @@ def parse_cards_from_html(html: str, scraped_at: str) -> List[Dict[str, Optional
                 "city": "Tucson",
                 "state": "AZ",
                 "shelter_name": "Humane Society of Southern Arizona",
+                "shelter_profile_url": href,
                 "scraped_at": scraped_at,
                 "shelter_id": DB_SHELTER_ID,
             }

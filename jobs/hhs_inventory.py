@@ -621,7 +621,6 @@ def main() -> None:
                 db_row = dict(row)
                 db_row.pop("internal_dog_id", None)
                 db_row.pop("public_image_url", None)
-                db_row.pop("shelter_profile_url", None)
                 
                 all_records.append(db_row)
                 logging.info("Added dog: %s | %s", row.get("name"), row.get("animal_id"))

@@ -123,6 +123,7 @@ def parse_dogs(soup: BeautifulSoup, base_url: str = BASE_URL) -> list[dict]:
                 "state": "IL",
                 "shelter_name": "PAWS Chicago",
                 "shelter_id": "PAWSCH",
+                "shelter_profile_url": absolute_url(href, base_url),
                 "scraped_at": now_iso()
             })
 

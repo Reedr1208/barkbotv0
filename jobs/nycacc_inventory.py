@@ -822,6 +822,7 @@ async def main_async(args: argparse.Namespace) -> int:
                 "city": "NYC",
                 "state": "NY",
                 "shelter_name": "Animal Care Centers of NYC",
+                "shelter_profile_url": r.get("profile_url"),
                 "scraped_at": now_iso(),
                 "shelter_id": "NYCACC",
             })

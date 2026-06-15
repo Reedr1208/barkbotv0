@@ -190,7 +190,7 @@ class BarkbotStore:
     
     def get_least_recently_updated_hssa_dogs(self, limit: int = DOGS_PER_RUN) -> List[Dict[str, str]]:
         # Get all currently adoptable dogs for HSSA
-        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender").eq("shelter_id", "HSSA").execute()
+        adoptable_resp = self.client.table("active_dogs").select("animal_id, name, gender, shelter_profile_url").eq("shelter_id", "HSSA").execute()
         adoptable_dogs = {row["animal_id"]: row for row in adoptable_resp.data}
         adoptable_ids = list(adoptable_dogs.keys())
 
@@ -211,10 +211,13 @@ class BarkbotStore:
         dogs = []
         for aid in top_ids:
             numeric_id = aid.replace("HSSA-", "")
+            url = adoptable_dogs[aid].get("shelter_profile_url")
+            if not url:
+                url = f"https://www.adoptapet.com/pet/{numeric_id}"
             dogs.append({
                 "animal_id": aid,
                 "numeric_id": numeric_id,
-                "url": f"https://www.adoptapet.com/pet/{numeric_id}",
+                "url": url,
                 "name": adoptable_dogs[aid].get("name"),
                 "gender": adoptable_dogs[aid].get("gender")
             })

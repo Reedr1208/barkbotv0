@@ -81,6 +81,13 @@ def parse_dogs(html: str) -> list[dict]:
             el = card.select_one(f".text_{name}")
             return clean(el.get_text(" ", strip=True)) if el else ""
 
+        onclick = card.get("onclick", "")
+        match = re.search(r"Details\('([^']*)',\s*'([^']*)',\s*'([^']*)'\)", onclick)
+        if match:
+            shelter_profile_url = f"https://24petconnect.com/{match.group(1)}/Details/{match.group(2)}/{match.group(3)}"
+        else:
+            shelter_profile_url = f"https://24petconnect.com/PimaAdoptablePets/Details/PIMA/{field('AnimalID')}"
+
         dogs.append({
             "animal_id": f"PACC-{field('AnimalID')}",
             "name": field("Name").replace("*", "").strip().title(),
@@ -90,6 +97,7 @@ def parse_dogs(html: str) -> list[dict]:
             "city": "Tucson",
             "state": "AZ",
             "shelter_name": "Pima Animal Care Center",
+            "shelter_profile_url": shelter_profile_url,
             "scraped_at": now_iso()
         })
 

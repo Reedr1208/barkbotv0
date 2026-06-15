@@ -249,6 +249,7 @@ def save_to_supabase(dogs: list):
             "city": "Los Angeles",
             "state": "CA",
             "shelter_name": "Wags & Walks LA",
+            "shelter_profile_url": dog["shelter_profile_url"],
             "scraped_at": now_iso()
         })
         
