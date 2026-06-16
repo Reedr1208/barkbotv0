@@ -1,0 +1,1036 @@
+animal_id,weight,age,more_info,bio,image_file,image_public_url,record_hash,created_at,updated_at,last_scrape_run_id,raw_data_jsonb,shelter_profile_url,shelter_name,shelter_image_url,city,state,shelter_id,bio_length,name,gender
+NYCACC-248500,77 lbs,8 Years,,"Name: Maya | Native ID: 248500 | Species: Dog | Gender: Female | Location: In Foster | Room: ε Small Garage | Intake Date: 2026-06-05 | Days in Care: 11 | ACC Feed Updated: 2026-06-15T19:30:54.862344Z | YouTube IDs: RAKgUkKU018 | Photo Count: 5 | Bio/Summary: What my friends at ACC say about me: I can go home today! I lived with children in my previous home. I am a sweet, social, older gentleman, looking for the perfect forever home! I will need daily physical activity to keep me healthy and happy!",animals/NYCACC-248500.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-248500.jpg,15f84c73d7c82352523cf600f788ec7a945470e0d121a3e64039b8d947cd7b93,2026-06-09 16:21:42.432689+00,2026-06-15 19:34:05.088614+00,1718,null,https://nycacc.app/#/browse/248500,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/833963fd70b141cfa7742fbba104f8c7-1781057522-1781057547-jpg/512---n,NYC,NY,NYCACC,503,Maya,Female
+PACC-A899395,I weigh approximately 61.50 lbs.,The shelter staff think I am about 2 years and 1 month old.,"I have been at the shelter since May 02, 2026 and am ready to go home today!
+I am in Kennel DOGISO 69.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Lisa Frank*.
+I am a spayed female, black and white Pit Bull Terrier.",animals/PACC-A899395.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A899395.jpg,a7a0431331e044258be7f8d5c35f1912c4f5bfb2702ddb20d60a1a41686934a2,2026-05-07 08:01:37.192711+00,2026-06-15 21:05:50.014236+00,1726,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A899395,Pima Animal Care Center,https://24Petconnect.com/image/698081726,Tucson,AZ,PACC,79,Lisa Frank,Spayed Female
+PACC-A902671,null,The shelter staff think I am about 15 weeks old.,"I have been at the shelter since Jun 07, 2026.","My name is Eeeney*.
+I am a neutered male, brown Labrador Retriever mix.",animals/PACC-A902671.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902671.jpg,3c8645b18f1ba4db759a367c10e00226f694b58af572b94883eeefc56a50a2b0,2026-06-13 08:49:13.029566+00,2026-06-15 16:05:09.989199+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA2/A902671,Pima Animal Care Center,https://24Petconnect.com/image/697561896,Tucson,AZ,PACC,71,Eeeney,Neutered Male
+PACC-A897551,I weigh approximately 93.00 lbs.,The shelter staff think I am about 10 years old.,"I have been at the shelter since Apr 12, 2026 and am ready to go home today!
+I am in Kennel D130.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Jasper.
+I am a neutered male, gray and white Pit Bull Terrier.",animals/PACC-A897551.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A897551.jpg,6b83674e313f61ce5a0b9b5bfadb50781f9b424e6f8c8e73d9edb597d1c533cb,2026-04-30 12:00:39.58856+00,2026-06-15 20:06:37.418382+00,1723,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A897551,Pima Animal Care Center,https://24Petconnect.com/image/697987847,Tucson,AZ,PACC,73,Jasper,Neutered Male
+PACC-A892381,I weigh approximately 57.00 lbs.,The shelter staff think I am about 3 years old.,"I have been at the shelter since Feb 10, 2026 and am ready to go home today!
+I am in Kennel DOGISO 47.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Monster.
+I am a neutered male, brown German Shepherd Dog and Chow Chow.",animals/PACC-A892381.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A892381.jpg,bd51705c457192a67de9c9b9e0d063626d01a01a0dfcaaccfba95631dc50e480,2026-06-15 08:05:28.380654+00,2026-06-15 18:05:14.727916+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A892381,Pima Animal Care Center,https://24Petconnect.com/image/698086528,Tucson,AZ,PACC,82,Monster,Neutered Male
+PACC-A900511,I weigh approximately 56.00 lbs.,The shelter staff think I am about 4 years old.,"I have been at the shelter since May 16, 2026 and ready for adoption!
+I am in Kennel DOGISO 50.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Chimera*.
+I am a male, tricolor Shetland Sheepdog mix.",animals/PACC-A900511.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A900511.jpg,cf49ea07da260ce23cb40c101b67906377d98cc58f3845ee1b7cb3d22dd4facc,2026-05-22 09:00:50.209021+00,2026-06-15 21:07:01.842088+00,1726,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A900511,Pima Animal Care Center,https://24Petconnect.com/image/698059707,Tucson,AZ,PACC,65,Chimera,Unaltered Male
+PACC-A900399,I weigh approximately 62.00 lbs.,The shelter staff think I am about 2 years and 1 month old.,"I have been at the shelter since May 14, 2026 and ready for adoption!
+I am in Kennel DOGISO 44.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Plum*.
+I am a female, brown brindle Pit Bull Terrier.",animals/PACC-A900399.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A900399.jpg,69a6a2836c0043e278275826f4fc0e6ed3a6d077c51315d54d911523e0fc2c17,2026-06-15 08:05:42.691555+00,2026-06-15 18:05:30.268662+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A900399,Pima Animal Care Center,https://24Petconnect.com/image/698059706,Tucson,AZ,PACC,64,Plum,Unaltered Female
+PACC-A899958,I weigh approximately 83.50 lbs.,The shelter staff think I am about 4 years old.,"I have been at the shelter since May 09, 2026 and am ready to go home today!
+I am currently in foster care but am available for adoption! If you are interested in adopting me, please email
+PACC.AdoptAFoster@pima.gov
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","Currently In Foster
+My name is Yucca*.
+I am a spayed female, yellow brindle Pit Bull Terrier mix.",animals/PACC-A899958.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A899958.jpg,14a60061d835da1f5712704b64bd921157cea94cebe5ef5d8a76a2a440c5dc9d,2026-05-16 08:01:22.241088+00,2026-06-15 21:06:25.946242+00,1726,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A899958,Pima Animal Care Center,https://24Petconnect.com/image/698108302,Tucson,AZ,PACC,97,Yucca,Spayed Female
+AHSCN-48349364,–,"< 1 month old, Puppy","Shelter: Associated Humane Societies - Newark
+
+Adoption process:
+Individuals wishing to adopt an animal from our shelter must complete an adoption application and provide proof of home ownership or, if you are a renter, you must provide a copy of your lease or a notarized letter from your landlord stating pets are permitted. You must be at least 21 years of age to adopt any animal from our shelter. We reserve the right to refuse any adoption. In some instances, a home visit may be required. Our fees vary depending on the age and breed of the animal. Typically, a mix breed is $110.00 and a purebreed is $150.00 and up. There is also an altering charge of $85.00 for a male and $95.00 for a female. All animals receive vaccines, microchip identification, frontline treatments.","Name: Scout
+
+Basic info:
+Breed: Wheaten Terrier
+Color: Brown/Chocolate
+Age: < 1 month old, Puppy
+Size: –
+Weight: –
+Sex: Male
+Pet ID: 120452",null,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/AHSCN-48349364.jpg,cefe817366cb97f011450696ec3f91e59d5afc421145d0dedc1b667afc28c9c9,2026-06-15 04:45:53+00,2026-06-15 04:45:53+00,null,null,https://www.adoptapet.com/pet/48349364-newark-new-jersey-wheaten-terrier-mix,Associated Humane Societies - Newark,https://pet-uploads.adoptapet.com/6/9/0/1312803773.jpg,Newark,NJ,AHSCN,139,Scout,Male
+HHS-20622,null,,,"Item 1 of 5
+Oscar
+ANIMAL ID
+HHTX-A-20622
+BREED
+Carolina Dog
+SEX
+Male
+WEIGHT
+57 lbs
+AGE
+4Y/4M/0W
+LOCATION
+Foster Home
+ADOPTION FEE
+$25.00
+INTAKE DATE
+2/11/2026
+Apply for Adoption
+Donate
+ATTRIBUTES
+
+Good with Dogs
+Good with Kids
+House broken
+This fun loving goofball's name is Oscar. When he isn't curled up taking a long nap he is finding his next adventure. He equally loves to get belly rubs and run outside. He is expressive with his paws and body during playtime. He'll match your energy up until your both running around acting crazy together.
+
+He needs a high energy family or someone with plenty of property for him to explore. If he's left alone too long in a confined space, he gets bored and ends up in a little mischief. But if he can run free and explore he's sure to be the perfect dog.
+
+Meet Oscar and you'll understand how he will be the funniest, friendliest, and wonderful dog you've ever had.",animals/HHS-20622.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HHS-20622.jpg,ce722fe4de0cd742234c20963e171e17d5d96426753ea003ffd3ca33fd18a78a,2026-06-12 06:57:00.862104+00,2026-06-15 14:47:08.627935+00,1699,null,https://new.shelterluv.com/embed/animal/HHTX-A-20622,Houston Humane Society,https://new-s3.shelterluv.com/profile-pictures/251fc790659dfc3ee5573083da07c66f/f03c4fa825f21eb2240f51e2e5c4a5bc.jpg,Houston,TX,HHS,909,Oscar,
+PACC-A879101,null,The shelter staff think I am about 2 years and 10 months old.,"I have been at the shelter since Jan 21, 2026.
+Titan came from a hoarding situation with nearly 100 dogs and was part of the first group to be helped by PACC’s Animal Restoration Kennel facility (ARK). ARK was created for the explicit purpose of addressing hoarding conditions at sites scattered throughout the county, allowing the animals in these situations to get the physical care and socialization that they need. The dogs in this case range in age and size and even include mamas with babies- all are sweet, deserving dogs who dream of a loving home and a chance at a healthy, happy life. These dogs each have a unique personality- some are already vibrant and brave, while others need more TLC and help to build confidence, but all have love to share with their future family.
+Titan has been working incredibly hard to overcome his past with the help of his dedicated volunteer friends- here’s what some of them have said:
+“Titan is making good progress. I was able to coax him out of the kennel and he walked slowly to the yard. Once there he warmed up and allowed petting as I sat on the ground beside him. With patience this adorable boy will be a wonderful companion.”
+“I worked with Titan this morning. He leashed easily and walked pretty well, though with some circling to start. We walked around the big lake with two sitdowns. He is ok with touch and at the second sitdown was able to accept reassurance and remain calm when people walked by. Good walk back and easy unleash”
+“Titan is such a sweet dog. He needs someone patient who can allow him time to decompress. Normally, I opt for a yard so he can enjoy some time with his kennel mate. Today, I opted for a walk. Titan was nervous because the lake was crowded with people. He clung to me bravely while walking. When I sat down, he approached and nestled into me for snuggles. He just needed reassurance and comfort from someone he’s familiar with. He even took treats. Very proud of Titan!”
+Titan shares his kennel with another PACC pup and has been social and easygoing when meeting other dogs in playgroup. He would likely benefit from a confident furry friend in his future home. Ask to meet Titan today!!","My name is Titan*.
+I am a neutered male, black and white Labrador Retriever mix.",animals/PACC-A879101.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A879101.jpg,aea7d93e65d2cbf5bf093a3ee7fb2a6c596d9ce80e516be8ec235a9b05c6a628,2026-04-30 06:01:10.699549+00,2026-06-15 16:05:20.149745+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA2/A879101,Pima Animal Care Center,https://24Petconnect.com/image/697338001,Tucson,AZ,PACC,80,Titan,Neutered Male
+PACC-A902215,I weigh approximately 29.60 lbs.,The shelter staff think I am about 2 years old.,"I have been at the shelter since Jun 02, 2026 and ready for adoption!
+I am in Kennel D093.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Archivald*.
+I am a male, black and white Pug mix.",animals/PACC-A902215.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902215.jpg,62419104af99f984049e8fbe0681b797be330c134de91ca2b33a7057ca2dc33d,2026-06-14 08:05:54.321026+00,2026-06-15 17:06:09.099344+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902215,Pima Animal Care Center,https://24Petconnect.com/image/697848168,Tucson,AZ,PACC,60,Archivald,Unaltered Male
+PACC-A897501,I weigh approximately 52.50 lbs.,The shelter staff think I am about 2 years and 2 months old.,"I have been at the shelter since Apr 11, 2026 and am ready to go home today!
+I am in Kennel D151.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Zeus.
+I am a neutered male, gray and white Pit Bull Terrier.
+
+People come to the shelter looking for all types of dogs. Some are looking for a high energy dog to go for hikes and runs with them, while others are looking for a snuggly BFF to cuddle all day long. If you’re looking for the latter, sweetest boy Zeus would love to come home as your new cuddle buddy!
+Zeus was surrendered to the shelter when his former people were unable to care for him. They told us that he well with children and other dogs and was crate-trained in his former home. Here’s what some of his friends at the shelter have said:
+“Zeus is a sweet little teddy bear!! He loves to be loved and will rest his head on you and look into your eyes while you give him a hug. He walks nicely on leash and is just a sweet, gentle boy with a waggy tail and a loving personality. He gives kisses and is the absolute sweetest!!”
+“I took Zeus to a yard today. What a lover! He snuggled up to me and looked at me adoringly with those big brown eyes. He just wanted so badly to be loved.”
+“Zeus did great on our walk! He’s such a friendly boy and loved cuddling up to me. He was easy to handle.”
+Zeus shares his kennel with another PACC pup and has been social and playful when meeting other dogs in playgroup.  He’d like to meet any resident pups before heading home to ensure a good fit.  If you’re looking for a pup who will equally enjoy leisurely walks and couch snuggles, look no further than Zeus!",animals/PACC-A897501.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A897501.jpg,57d04a5510f96256953d4d28181e72b05fe31b8cee4ff65f845ce9e576ff2b21,2026-06-15 08:05:33.111021+00,2026-06-15 18:05:19.447243+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A897501,Pima Animal Care Center,https://24Petconnect.com/image/697973044,Tucson,AZ,PACC,1477,Zeus,Neutered Male
+PACC-A902106,I weigh approximately 13.40 lbs.,The shelter staff think I am about 15 weeks old.,"I have been at the shelter since Jun 13, 2026 and ready for adoption!
+I am in Kennel D090B.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Battitude*.
+I am a male, white and black Australian Cattle Dog mix.",animals/PACC-A902106.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902106.jpg,e7eb537c6c6319070284a9917ab6dadc278c703c30baa58b0e5d158b03088975,2026-06-15 08:05:47.314107+00,2026-06-15 18:05:35.344799+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902106,Pima Animal Care Center,https://24Petconnect.com/image/698086525,Tucson,AZ,PACC,78,Battitude,Unaltered Male
+WWLA-66219268db48ea4cee511ea2,71 lbs,3 years old,null,"Meet Duke! Breed: Mixed Breed Age: 3 years old Gender: Male Weight: 71 lbs This 3-year-old, 71-lb mixed breed guy is as loyal and loving as they come. Duke was surrendered to us as a puppy, and it’s been a joy to watch him grow into the sweet, spirited dog he is today. With the structure and care provided by his incredible long-term foster, Duke has truly thrived, and after being in our care for over two years, he is more than ready to be settled in a loving forever home. He is the sweetest, mellowest boy who is easy to fall in love with! This gentle, well-behaved guy prefers to spend his day lounging and soaking up lots of attention from his people, preferably snuggled up as close as possible on the couch. He can be hesitant when meeting new friends, but with a proper introduction, he warms up quickly. Duke gets along well with other dogs and enjoys having canine playdates, though he’d prefer to be the only pet in his home so he can soak up all the love. This smart boy is treat-motivated, eager to please, and walks beautifully on a leash. He’s fully potty-trained, crate-trained, and has completed a training program with Whittier Dog Club, where he worked on his foundations and learned to feel more confident and settled. Duke will thrive with a savvy large-breed adopter who can provide the structure and consistent routine that helps him feel safe, as he is happiest when his world is kept predictable. In return, you’ll have an affectionate, loyal companion who’ll bring endless joy and love into your life. If you’re looking for a devoted pup with a huge heart, Duke might be your perfect match. Apply to Adopt",animals/WWLA-66219268db48ea4cee511ea2.webp,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/WWLA-66219268db48ea4cee511ea2.webp,90df07d4b2198740a70ec010a9c8340d566daa1a92346a607fe6cf29f0eccf1d,2026-06-09 07:07:47.117123+00,2026-06-15 20:02:12.690936+00,null,"{""id"":""66219268db48ea4cee511ea2"",""tags"":[],""price"":{""value"":""0.00"",""currency"":""USD""},""title"":""Duke"",""images"":[{""title"":""ACS_1369.jpg"",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/b4f8f11d-8f44-4598-bf8a-b8898dde3244/ACS_1369.jpg"",""originalSize"":""3024x4032"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/1721161882078-DUBCSA5QAS1AW7G7YG21/ACS_1631.JPG"",""originalSize"":""1536x2048"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/9e063cbb-a964-4378-a67e-4ea1ba9f2766/ACS_3008.JPG"",""originalSize"":""1536x2048"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":""ACS_0476(1).jpg"",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/b1f0458d-9f80-404a-b651-afc84bad3984/ACS_0476%281%29.jpg"",""originalSize"":""2707x3850"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":""ACS_0779.JPG"",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/19a656e1-b68b-419f-a364-fe3e4b0bcb90/ACS_0779.JPG"",""originalSize"":""3024x4032"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":""IMG_9005.PNG"",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/95fdcaa5-1e1a-4e94-ba83-360f004970ba/IMG_9005.PNG"",""originalSize"":""1125x1471"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/77404ada-0d2b-40c1-8c69-d8cef244d2fb/ACS_5346+2.JPG"",""originalSize"":""4284x5712"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":""IMG_9084.jpg"",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/7285a772-31fb-4444-be91-0fcb8706e8cc/IMG_9084.jpg"",""originalSize"":""2500x3333"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":""IMG_3574.jpeg"",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/8320fb34-c8bb-4438-94cc-e3a320f0bb14/IMG_3574.jpeg"",""originalSize"":""6048x8064"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/ef3dfb09-a329-437f-89d1-5c1cb365a829/ACS_5345+2.JPG"",""originalSize"":""4284x5712"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/58962158-5a62-4edb-a207-0bed3e48d132/Screen+Shot+2025-05-18+at+10.37.15+PM.png"",""originalSize"":""766x972"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/f7be96a7-0953-45f2-9035-e03f158eb6b6/ACS_3268.jpg"",""originalSize"":""1536x2048"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/1718735868416-IIHQ63IXB44US9CUOWNA/ACS_1161.jpg"",""originalSize"":""1536x2048"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/3e2ac28a-e153-41cc-bb78-6099df4d213f/Screen+Shot+2025-05-18+at+10.37.06+PM.png"",""originalSize"":""752x990"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/bf5ae059-fa81-40e5-945b-060eba026122/ACS_5335+2.JPG"",""originalSize"":""4284x5712"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/68ecab0c-f6b1-4f75-95bf-3f285e28df8c/ACS_2993.jpg"",""originalSize"":""1047x1396"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},{""title"":"""",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/3ea8e39c-01c7-475b-81f9-bb4313b0a9bc/Screen+Shot+2025-05-18+at+10.36.56+PM.png"",""originalSize"":""776x954"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}}],""onSale"":false,""scarce"":true,""fullUrl"":""/available-dogs-la/p/duke"",""soldOut"":false,""urlSlug"":""duke"",""variants"":[{""id"":""c72380e3-618f-46b6-aad9-f44b7f4c7e0a"",""sku"":""SQ0506076"",""price"":{""value"":""0.00"",""currency"":""USD""},""scarce"":true,""soldOut"":false,""unlimited"":false,""attributes"":{},""qtyInStock"":1}],""mainImage"":{""title"":""Duke"",""assetUrl"":""https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/b4f8f11d-8f44-4598-bf8a-b8898dde3244/ACS_1369.jpg"",""originalSize"":""3024x4032"",""mediaFocalPoint"":{""x"":0.5,""y"":0.5,""source"":3}},""published"":true,""qtyInStock"":1,""description"":""<p style=\""white-space:pre-wrap;\"" data-rte-preserve-empty=\""true\"">Meet Duke! </p><p style=\""white-space:pre-wrap;\"" data-rte-preserve-empty=\""true\""><span>Breed: Mixed Breed</span><br /><span>Age: 3 years old</span><br /><span>Gender: Male</span><br /><span>Weight: 71 lbs</span></p><p style=\""white-space:pre-wrap;\"" data-rte-preserve-empty=\""true\"">This 3-year-old, 71-lb mixed breed guy is as loyal and loving as they come. Duke was surrendered to us as a puppy, and it’s been a joy to watch him grow into the sweet, spirited dog he is today. With the structure and care provided by his incredible long-term foster, Duke has truly thrived, and after being in our care for over two years, he is more than ready to be settled in a loving forever home. He is the sweetest, mellowest boy who is easy to fall in love with! This gentle, well-behaved guy prefers to spend his day lounging and soaking up lots of attention from his people, preferably snuggled up as close as possible on the couch. He can be hesitant when meeting new friends, but with a proper introduction, he warms up quickly. Duke gets along well with other dogs and enjoys having canine playdates, though he’d prefer to be the only pet in his home so he can soak up all the love. This smart boy is treat-motivated, eager to please, and walks beautifully on a leash. He’s fully potty-trained, crate-trained, and has completed a training program with Whittier Dog Club, where he worked on his foundations and learned to feel more confident and settled. Duke will thrive with a savvy large-breed adopter who can provide the structure and consistent routine that helps him feel safe, as he is happiest when his world is kept predictable. In return, you’ll have an affectionate, loyal companion who’ll bring endless joy and love into your life. If you’re looking for a devoted pup with a huge heart, Duke might be your perfect match.</p><p style=\""white-space:pre-wrap;\"" data-rte-preserve-empty=\""true\""><a target=\""_blank\"" href=\""https://www.wagsandwalks.org/la-adoption-application\"" rel=\""noopener\"">Apply to Adopt</a></p>"",""productType"":3,""firstInStockVariant"":{""id"":""c72380e3-618f-46b6-aad9-f44b7f4c7e0a"",""sku"":""SQ0506076"",""price"":{""value"":""0.00"",""currency"":""USD""},""scarce"":true,""soldOut"":false,""unlimited"":false,""attributes"":{},""qtyInStock"":1},""mightHavePaymentPlan"":false,""allowMultiplePurchase"":false,""userDefinedVariantOptions"":[]}",https://www.wagsandwalks.org/available-dogs-la/p/duke,Wags & Walks LA,https://images.squarespace-cdn.com/content/v1/5f0e64fa1e037519173207cc/b4f8f11d-8f44-4598-bf8a-b8898dde3244/ACS_1369.jpg,Los Angeles,CA,WWLA,1633,Duke,Male
+PACC-A901247,I weigh approximately 5.38 lbs.,The shelter staff think I am about 9 weeks old.,"I have been at the shelter since Jun 05, 2026 and am ready to go home today!
+I am in Kennel DOGISO 53.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Starburst*.
+I am a spayed female, tricolor Carolina Dog and German Shepherd Dog.",animals/PACC-A901247.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A901247.jpg,c5774e2b853ab19e4fc1989a5d8e60ef58f9c6a6400bbff6dd03837bd0b2586e,2026-06-06 09:06:57.573319+00,2026-06-15 16:06:00.727368+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A901247,Pima Animal Care Center,https://24Petconnect.com/image/697578910,Tucson,AZ,PACC,91,Starburst,Spayed Female
+PACC-A898666,I weigh approximately 54.50 lbs.,The shelter staff think I am about 2 years and 2 months old.,"I have been at the shelter since Apr 27, 2026 and am ready to go home today!
+I am in Kennel DOGISO 44.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Benny*.
+I am a neutered male, black Pit Bull Terrier mix.",animals/PACC-A898666.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A898666.jpg,92ff692d586db0df9d6bcc035b691fe93f74dc908bf8673819c7fc262501667c,2026-06-15 08:05:37.896944+00,2026-06-15 18:05:24.541076+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A898666,Pima Animal Care Center,https://24Petconnect.com/image/698059709,Tucson,AZ,PACC,68,Benny,Neutered Male
+PACC-A900592,I weigh approximately 3.00 lbs.,The shelter staff think I am about 4 years old.,"I have been at the shelter since May 17, 2026 and am ready to go home today!
+I am in Kennel D006.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Mamas.
+I am a spayed female, white and gray Pit Bull Terrier mix.",animals/PACC-A900592.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A900592.jpg,d3c28dd2aa8c43e59f3e5f952a45642c5874dfea22d46afb9e3c305fa16ecbcf,2026-05-20 08:02:08.895906+00,2026-06-15 21:07:31.617602+00,1726,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A900592,Pima Animal Care Center,https://24Petconnect.com/image/697233519,Tucson,AZ,PACC,76,Mamas,Spayed Female
+PACC-A902107,I weigh approximately 12.00 lbs.,The shelter staff think I am about 15 weeks old.,"I have been at the shelter since Jun 13, 2026 and ready for adoption!
+I am in Kennel D090B.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Drollette*.
+I am a female, black and tricolor Australian Cattle Dog.",animals/PACC-A902107.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902107.jpg,826564087f6ccaa7afb728f82be56321495974b5f8e8f13ebedd3beac9d81d82,2026-06-15 08:05:51.945409+00,2026-06-15 18:05:40.366688+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902107,Pima Animal Care Center,https://24Petconnect.com/image/698086526,Tucson,AZ,PACC,79,Drollette,Unaltered Female
+PACC-A902656,I weigh approximately 40.00 lbs.,The shelter staff think I am about 2 years old.,"I have been at the shelter since Jun 10, 2026 and ready for adoption!
+I am in Kennel D032.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Caroline*.
+I am a female, black Labrador Retriever mix.",animals/PACC-A902656.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902656.jpg,3f1b1cb9523f107d53cc98abfb6aa64296f64b080c9bb925d70e5ad70c7708a7,2026-06-15 08:06:06.070223+00,2026-06-15 18:05:55.41427+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902656,Pima Animal Care Center,https://24Petconnect.com/image/697996325,Tucson,AZ,PACC,66,Caroline,Unaltered Female
+NYCACC-246625,46 lbs,1 Year,,"Name: Mercy | Native ID: 246625 | Species: Dog | Gender: Female | Location: In Foster | Room: Q - In Foster | Intake Date: 2026-02-24 | Days in Care: 111 | ACC Feed Updated: 2026-06-15T14:30:49.951578Z | Photo Count: 11 | Bio/Summary: Since I'm a long stay pup, my adoption fee has been reduced! Visit me today to find out my favorite treats and how you can take me home! My foster writes: Mercy is a spunky and loving dog that will melt your heart the minute she enters your home. She loves cuddles, belly scratches, and when you call her with kissing sounds. Be ready to have your heart stolen with this precious girl. Mercy has a lot of energy, that stems from her being home alone while I'm at work, so she needs to go on several walks through out the day. If you can squeeze a long walk than even better! At home she takes long naps, plays with her toys, or goes back and forth with the puzzles I leave her. She's a sucker for Greek yogurt and peanut butter, so make sure to have extra jars on hand! She's indifferent to cars and bikes, which is great when going on walks, but can get excited when spotting another dog and/or bird. Mercy is a curious pup, so make sure you have a good grip on her leash or your walk will turn into a spontaneous run. She loves to sniff around and occasionally will sit and enjoy the view while on walks. What my friends at ACC say about me: I'm ready to learn! I need a patient person who has the time to work on training with me. I love getting pets and - you guessed it - snuggles! I am excitable and energetic! I will need positive outlets for my energy! I don't always like to share my food, toys or bedding with other animals. I would do best in a home with only adult humans. Not only do I pull at heart strings, but I also pull on leash! I will need someone to help me with my leash manners.",animals/NYCACC-246625.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-246625.jpg,60cec3052c5b8210d4c77e514ed563aad36c668fb7a96294bcdb64a6d3a68129,2026-06-05 22:06:39.479791+00,2026-06-15 14:48:57.703861+00,1700,null,https://nycacc.app/#/browse/246625,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/69d85acccedf427d9ef5bbae41dd8f71-1770041966-1770042001-jpg/512---n,NYC,NY,NYCACC,1836,Mercy,Female
+HSSA-48152684,61Lbs,"2 Years Old, Adult",,"Phineas is a happy-go-lucky boy with a heart full of love and a tail that never seems to stop wagging! He’s always ready for an adventure, whether that’s a walk around the neighborhood or curling up beside his favorite people for cuddle time. This handsome pup brings goofy charm and sweet energy everywhere he goes. Phineas is ready to be someone’s loyal best friend for life!",animals/HSSA-48152684.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-48152684.jpg,44c37d7b0136ea8864a8729774812a3a0889c2731d50da2279cc8771d546ff39,2026-06-04 13:57:05.697093+00,2026-06-15 14:50:45.456822+00,1701,null,https://www.adoptapet.com/pet/48152684,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1308494456",Tucson,AZ,HSSA,377,Phineas,Male
+PACC-A899178,null,The shelter staff think I am about 3 years old.,"I have been at the shelter since May 01, 2026.","My name is Chiquita.
+I am a spayed female, blue and white Pit Bull Terrier.",animals/PACC-A899178.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A899178.jpg,7e7caf4a1e0749a4f4035c0f8123fa424cbb46f12afc19501e6d8a906f6ff2c5,2026-06-13 08:48:20.937009+00,2026-06-15 15:07:46.182142+00,1702,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA2/A899178,Pima Animal Care Center,https://24Petconnect.com/image/697581285,Tucson,AZ,PACC,75,Chiquita,Spayed Female
+PACC-A895439,null,The shelter staff think I am about 2 years and 9 months old.,"I have been at the shelter since Mar 16, 2026.
+If you love a good glow up, Chase is ready to deliver!  He has a bit of hair loss but is looking better every day and will soon be the most gorgeous boy ever!  And, in addition to a physical makeover, Chase has also been working on a different kind of transformation.  While he arrived at the shelter a bit scared and overwhelmed, that’s all in the past- this little love bug is as wiggly, friendly and silly as they come!  Here’s what one volunteer said:
+“Chase is my favorite little werewolf!  He came to PACC a little patchy, but he’ll look great in no time with some healthy food and a better environment.  This boy is SO incredibly sweet and affectionate- he loves to snuggle and give kisses, is super friendly, and is completely hard to resist.  I love him!!”
+Chase shares his kennel with another PACC pup and has been social and tolerant when meeting other dogs in playgroup.  Come see Chase’s total makeover for yourself!!","My name is Chase.
+I am a neutered male, brown and black German Shepherd Dog.",animals/PACC-A895439.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A895439.jpg,3d900e6d669b76a95380d248501d957f9745921f7c4148dbfb41915605de1dfb,2026-04-30 09:01:05.567805+00,2026-06-15 16:05:35.422337+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA2/A895439,Pima Animal Care Center,https://24Petconnect.com/image/697338003,Tucson,AZ,PACC,76,Chase,Neutered Male
+PACC-A896343,I weigh approximately 32.20 lbs.,The shelter staff think I am about 2 years and 9 months old.,"I have been at the shelter since May 31, 2026 and ready for adoption!
+I am in Kennel D051.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Carla.
+I am a female, tan and fawn Black Mouth Cur mix.",animals/PACC-A896343.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A896343.jpg,294331a281e69696814df20546c258f317ff07807b2d12a2c84222f8bdbe5e1b,2026-06-07 08:07:06.18175+00,2026-06-15 16:05:50.417606+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A896343,Pima Animal Care Center,https://24Petconnect.com/image/697062156,Tucson,AZ,PACC,66,Carla,Unaltered Female
+PACC-A902274,I weigh approximately 54.80 lbs.,The shelter staff think I am about 6 years old.,"I have been at the shelter since Jun 03, 2026 and am ready to go home today!
+I am in Kennel RETAIL 01.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Rooster Aka King.
+I am a neutered male, tan German Shepherd Dog mix.",animals/PACC-A902274.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902274.jpg,a50db8a6a9daf3ce5ab2c69e9038e34d2392ddfd77fa2e2eb38622bc1182982c,2026-06-15 08:05:56.645464+00,2026-06-15 18:05:45.091135+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902274,Pima Animal Care Center,https://24Petconnect.com/image/697965076,Tucson,AZ,PACC,79,Rooster Aka King,Neutered Male
+PACC-A901060,I weigh approximately 39.20 lbs.,The shelter staff think I am about 1 year and 1 month old.,"I have been at the shelter since May 30, 2026 and ready for adoption!
+I am in Kennel D113.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Fudge*.
+I am a female, black Pit Bull Terrier.",animals/PACC-A901060.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A901060.jpg,d026a98ad64b059bac0c4f4877b761274090aeefd6f20c1fe6be76279da506df,2026-06-13 08:09:07.680571+00,2026-06-15 14:07:19.292712+00,1693,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A901060,Pima Animal Care Center,https://24Petconnect.com/image/697757726,Tucson,AZ,PACC,57,Fudge,Unaltered Female
+HHS-20826,null,,,"Item 1 of 5
+Turbo
+ANIMAL ID
+HHTX-A-20826
+BREED
+Terrier, American Pit Bull
+SEX
+Male
+WEIGHT
+69.5 lbs
+AGE
+2Y/3M/2W
+LOCATION
+Orange Cabana, O14
+INTAKE DATE
+2/25/2026
+Apply for Adoption
+Donate
+
+
+Turbo is a 1-year-old male mixed-breed dog with a playful personality and a sweet, kind heart. He lives up to his name and loves to run, play, and enjoy life to the fullest.
+This happy boy is friendly, fun, and always excited to spend time with people. Whether he’s playing with toys, exploring outside, or just hanging out by your side, Turbo brings joy wherever he goes.",animals/HHS-20826.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HHS-20826.jpg,2a58f2ecd5593ed6d51a754a751c1a5c5d284830d23d6160b8f426c214ef6f4f,2026-06-12 06:57:10.876791+00,2026-06-15 14:47:15.218905+00,1699,null,https://new.shelterluv.com/embed/animal/HHTX-A-20826,Houston Humane Society,https://new-s3.shelterluv.com/profile-pictures/a060556ea606275f50db06fc0822bcf6/6f5f4c3c5da90837bb248c6e56469772.jpeg,Houston,TX,HHS,562,Turbo,
+PACC-A890928,null,The shelter staff think I am about 2 years and 5 months old.,"I have been at the shelter since Jan 19, 2026.
+Dwight is a gentle boy who finds the shelter environment a bit overwhelming.  Who wouldn’t?! Despite this though, his sweet personality shines through.  Dwight is friendly, a nice walking companion, and a fun boy to spend time with.  Here’s what one volunteer at the shelter said:
+“Dwight is a sweet boy who’s nervous in the loud shelter. He’s easy to leash, not reactive, and walks well on leash. We were hanging out in a yard and he was showing off his tricks. He took treats gently and we cuddled some.”
+Dwight would love to find a quiet home where he can decompress and be spoiled by a family of his own.  He shares his kennel with another PACC pup and has been tolerant and independent when meeting other dogs in playgroup.  Ask to meet Dwight today!!","My name is Dwight*.
+I am a neutered male, brown and white Labrador Retriever mix.",animals/PACC-A890928.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A890928.jpg,f43ed4fc1a27ab33e64ab3edc6d5514d6290dfc3ece529316b061ab5c1dbba21,2026-06-13 08:47:53.61549+00,2026-06-15 15:07:21.376956+00,1702,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA2/A890928,Pima Animal Care Center,https://24Petconnect.com/image/697626636,Tucson,AZ,PACC,81,Dwight,Neutered Male
+PACC-A887915,I weigh approximately 63.20 lbs.,The shelter staff think I am about 2 years and 6 months old.,"I have been at the shelter since Dec 11, 2025 and am ready to go home today!
+I am in Kennel D129.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Mariposa*.
+I am a spayed female, gray and white Pit Bull Terrier.
+
+Mariposa is the Spanish word for butterfly, symbolizing transformation, change and hope.  We’d love to introduce you to a stunning girl named Mariposa who sure is hopeful that her furever family is waiting in the wings to change her status from “single” to “taken for good”! One of her volunteer friends shared:
+“Mariposa is a great walking companion! We had a nice walk around the lake and had an easy return. She did a perfect ‘sit’ in the kennel for her treat.”
+Mariposa has been social, tolerant and easygoing when meeting other dogs in playgroup. She’s looking for a family who will give her a little time to decompress from the stress of living in the shelter.  Just like a butterfly emerging from its chrysalis, Mariposa will show her true, beautiful colors! Be a part of a very smart, good girl’s transformation into a beloved family member- come meet lovely Mariposa today!",animals/PACC-A887915.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A887915.jpg,4473e927431262886d30a92675d15a43c3033e45b45b1abec40d50bdee6c3907,2026-04-30 07:00:34.023243+00,2026-06-15 16:06:54.70262+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A887915,Pima Animal Care Center,https://24Petconnect.com/image/697450601,Tucson,AZ,PACC,960,Mariposa,Spayed Female
+PACC-A902370,I weigh approximately 15.60 lbs.,The shelter staff think I am about 3 years old.,"I have been at the shelter since Jun 03, 2026 and ready for adoption!
+I am in Kennel AD03.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Vaqueta.
+I am a female, tricolor Terrier mix.",animals/PACC-A902370.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902370.jpg,3cdd868aae35e1a00bfa62ac8facdc04784f58b592648a4d35030197f3e2b9b3,2026-06-15 08:06:01.420374+00,2026-06-15 18:05:50.629562+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA1/A902370,Pima Animal Care Center,https://24Petconnect.com/image/697850269,Tucson,AZ,PACC,56,Vaqueta,Unaltered Female
+PACC-A899370,null,The shelter staff think I am about 9 weeks old.,"I have been at the shelter since May 02, 2026.","My name is Highland*.
+I am a neutered male, black and white Pit Bull Terrier mix.",animals/PACC-A899370.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A899370.jpg,c0f37f7871164f9a23a2f8bd9c3976ca0c73e275b9601337cf38c2070fcefffd,2026-06-13 08:48:31.708128+00,2026-06-15 15:07:51.186546+00,1702,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA2/A899370,Pima Animal Care Center,https://24Petconnect.com/image/697561891,Tucson,AZ,PACC,81,Highland,Neutered Male
+PACC-A837256,I weigh approximately 69.50 lbs.,The shelter staff think I am about 5 years old.,"I have been at the shelter since Nov 29, 2025 and am ready to go home today!
+I am in Kennel D002.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Sky.
+I am a spayed female, blue Pit Bull Terrier mix.
+
+Some dogs have a heart of gold that shines so brightly it radiates through their entire being! Sunshine-in-a-bottle Sky is one such pup! Despite spending her days and nights in the shelter, Sky retains her enthusiastic joyfulness, which is evident to everyone she meets!
+Sky was found by a member of the public who kept her for two days and stated she is very mellow and loving, likes
+attention and pets, and is a cuddlebug and a sweetheart. Here’s what her volunteer friends have said:
+“Sky is a sweet girl and her tail is always wagging. Every time I walk by her kennel, she's wiggling her butt with the biggest smile. She is easy to leash and not reactive to other dogs. She loves roughhousing with her kennelmate and it's fun to watch them. She listens well and knows many tricks.”
+“Sky is a spunky, chunky land seal! (Look at her sweet face: she looks EXACTLY like a seal!!) She was calm and friendly when I went to her kennel to take her out. In the yard she was snuggalicious and also super playful! I tossed a toy around and she would bounce and bound after it and bring it back to me, engaging in a game of tug. What a cutie!! We had so much fun together. I know she will bring endless joy and laughter into her future home!”
+Sky shares her kennel with another PACC pup and would like to meet any resident dogs before heading home to ensure a good fit.
+Sky is a girl who is guaranteed to turn your grey skies blue every single day of her life. Could you use a little more sunshine in your life? If so, come meet her today!",animals/PACC-A837256.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A837256.jpg,92ff54dae6158860ade882216ebeb4b3e7f14bba3b9a6e5aa67d70275615bd9a,2026-04-30 05:49:45.967925+00,2026-06-15 18:06:15.772327+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A837256,Pima Animal Care Center,https://24Petconnect.com/image/696535130,Tucson,AZ,PACC,1597,Sky,Spayed Female
+NYCACC-255377,40 lbs,1 Year,,"Name: Aries | Native ID: 255377 | Species: Dog | Gender: Male | Location: Staten Island | Room: S - Dog Adoptions | Intake Date: 2026-05-26 | Days in Care: 19 | ACC Feed Updated: 2026-06-14T12:00:48.782041Z | YouTube IDs: a9Wf6WxWM1g | Photo Count: 6 | Bio/Summary: My Boroughbreaker writes: Aries & I had a blast! We ran into so many people and he was extremely friendly and excited. We also ran into 2 dogs that I tried to keep him away from, but failed lol. He was friendly with them and calm!!! If I told him to come or stay, most of the time he responded extremely well. Aries came to the care center as a stray and is now looking for a loving home to call his own. Since arriving, he has been sweet, social, and friendly with staff, enjoying attention and companionship from the people around him. Like many dogs adjusting to a new environment, Aries does appear a bit anxious at times, which is completely understandable given all the recent changes in his life. Despite this, he continues to show a gentle and affectionate personality. With patience, consistency, and a supportive home, Aries will likely continue to build confidence and settle into a routine.",animals/NYCACC-255377.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255377.jpg,132d6105dca45c88df792c6ff73f53c9b267cdc65dcaaeca77d66721579b06e8,2026-06-06 07:40:48.244559+00,2026-06-14 12:29:43.795754+00,1583,null,https://nycacc.app/#/browse/255377,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/f9a4d008aa9f413bb8165dc0e791cf28-1780228797-1780228833-jpeg/512---n,NYC,NY,NYCACC,1168,Aries,Male
+PACC-A888929,I weigh approximately 54.00 lbs.,The shelter staff think I am about 5 years old.,"I have been at the shelter since Dec 24, 2025 and am ready to go home today!
+I am in Kennel D024.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Mama Smurf.
+I am a spayed female, brown Labrador Retriever mix.
+
+Mama Smurf is a resilient and happy lady who originally arrived at the shelter with her puppies.  She tested positive for canine distemper, so she headed to a foster home where she could receive treatment.  Mama Smurf has a clean bill of health now and is ready to find her forever home! Here’s what her foster said:
+“This girl is a morning dog and loves to play fetch and run (and bounce!) around for a while each morning. Then she settles in for a nap. She prefers that her evenings be spent on the couch next to her human or outside on the patio chewing on her tennis ball and watching the sun go down. Mama loves all the toys, but particularly rope toys, balls, and a bone to chew on. She is very treat motivated and is learning commands like a champ. She has “sit” and “down” perfected and is working on “stay”. Mama is house trained and is a joy around the house. She settles down well when left home alone and usually uses that away time to nap some more.”
+Mama Smurf would like to meet any resident dogs before heading home to ensure a good fit. Ask to meet Mama Smurf today!!",animals/PACC-A888929.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A888929.jpg,adef760998d5d4f9b9bcfd7703d6528405e1f1567ffa88b4f6a1f7d1edc4b4e8,2026-04-30 07:00:50.043804+00,2026-06-15 16:06:59.421128+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A888929,Pima Animal Care Center,https://24Petconnect.com/image/697458429,Tucson,AZ,PACC,1160,Mama Smurf,Spayed Female
+HHS-21914,null,,,"Item 1 of 5
+Raven
+ANIMAL ID
+HHTX-A-21914
+BREED
+Shepherd
+SEX
+Male
+WEIGHT
+73 lbs
+AGE
+5Y/3M/3W
+LOCATION
+Green Cabana, G9
+INTAKE DATE
+6/4/2026
+Apply for Adoption
+Donate
+ATTRIBUTES
+
+Good with Kids
+Housetrained
+House broken",animals/HHS-21914.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HHS-21914.jpg,7e554b8adb4ac69dc1e4fd2792f77e499f74f383ca922961cde87b5417405821,2026-06-12 19:34:09.120002+00,2026-06-15 02:05:27.544036+00,1648,null,https://new.shelterluv.com/embed/animal/HHTX-A-21914,Houston Humane Society,https://new-s3.shelterluv.com/profile-pictures/3c3309741033268c1395efe3c81072a0/e051d8dda4fb319441f2362e6c1dbddc.jpeg,Houston,TX,HHS,217,Raven,
+HSSA-43091804,64Lbs,"1 Year Old, Adult",,"Doc is a joyful one-year-old Lab mix who brings sunshine wherever he goes. He absolutely loves other dogs and is a natural fit for a playful, social home. Doc is also great with kids and thrives on being part of a family’s everyday adventures. With his friendly personality and boundless enthusiasm, he’s ready to fill a home with laughter and love. This happy boy can't wait to meet his forever family",animals/HSSA-43091804.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-43091804.jpg,b619e84421da336845fa93997eec1dedb0ccbd6b746218a3499cc400560daba0,2026-06-13 06:42:11.527024+00,2026-06-15 14:49:46.040821+00,1701,null,https://www.adoptapet.com/pet/43091804,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1310725280",Tucson,AZ,HSSA,402,Doc,Male
+PACC-A902658,I weigh approximately 14.00 lbs.,The shelter staff think I am about 2 years old.,"I have been at the shelter since Jun 10, 2026 and ready for adoption!
+I am in Kennel D085.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Cassie*.
+I am a female, white and brown Chihuahua - Smooth Coated.",animals/PACC-A902658.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902658.jpg,b4b0cc39d20fcdb109078f9e399ec7126d21d35785b02d06e3dc5c4a70488d6c,2026-06-15 08:06:11.094621+00,2026-06-15 18:06:00.386373+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902658,Pima Animal Care Center,https://24Petconnect.com/image/698012917,Tucson,AZ,PACC,77,Cassie,Unaltered Female
+NYCACC-255412,60.6 lbs,4 Years,,Name: Foxxy | Native ID: 255412 | Species: Dog | Gender: Female | Location: Manhattan | Room: Cat Isolation Room #2 | Intake Date: 2026-05-26 | Days in Care: 19 | ACC Feed Updated: 2026-06-14T12:00:48.782041Z | YouTube IDs: hkFC6JID2LI | Photo Count: 4 | Bio/Summary: What my friends at ACC say about me: My history is a mystery and my friends here do not know much about me yet! I would appreciate slow introductions to new people and places to help me feel safe. I would do best in a home with only adult humans. I prefer to call the shots and enjoy coming to you when I'm ready for pets.,animals/NYCACC-255412.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255412.jpg,a6339c3d1ec3416388002f2adb2a7ff3581b72dbb73dd378e006a15cca3b4ead,2026-06-06 07:40:50.949511+00,2026-06-14 12:29:45.203626+00,1583,null,https://nycacc.app/#/browse/255412,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/95f626a51fde4e0ca90c1b6574113eae-1781391251-1781391260-jpg/512---n,NYC,NY,NYCACC,590,Foxxy,Female
+NYCACC-255469,49.8 lbs,2 Years,,"Name: Spike The Great | Native ID: 255469 | Species: Dog | Gender: Male | Location: Manhattan | Room: Dog Isolation Room | Intake Date: 2026-05-27 | Days in Care: 19 | ACC Feed Updated: 2026-06-14T12:00:48.782041Z | YouTube IDs: ohiarxPId7s | Photo Count: 6 | Bio/Summary: I'm available for adoption at ACC's Mobile Adoption Event on Sunday, June 14 from 12PM - 4PM with Assembly Member Rebecca A. Seawright, at Carl Schurz Park, East End Avenue @ East 86 Street. Adoptions are in-person and first come, first served, so make sure to get there early. You can apply for me now, but it will not put me on hold for you. I can't wait to meet you! What my friends at ACC say about me: My history is a mystery and my friends here do not know much about me yet! I would appreciate slow introductions to new people and places to help me feel safe. I will need daily physical activity to keep me healthy and happy!",animals/NYCACC-255469.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255469.jpg,06bf648472152410b2b8dffc4168e767e5b26f11773e28d60c08d6e2833026af,2026-06-06 07:40:54.793322+00,2026-06-14 12:29:49.070964+00,1583,null,https://nycacc.app/#/browse/255469,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/193b69cb8d1e44f5865702ed8ae9c7bc-1780256304-1780256370-jpeg/512---n,NYC,NY,NYCACC,905,Spike The Great,Male
+NYCACC-223905,79 lbs,11 Years,,"Name: Doug | Native ID: 223905 | Species: Dog | Gender: Male | Location: In Foster | Room: Q - In Foster | Intake Date: 2025-04-04 | Days in Care: 436 | ACC Feed Updated: 2026-06-14T17:00:50.223116Z | YouTube IDs: dXQHN7wPD5M | Photo Count: 12 | Bio/Summary: Since I'm a long stay pup, my adoption fee has been reduced! Visit me today to find out my favorite treats and how you can take me home! My foster writes: Doug is curious and enjoys long walk. At home, he loves snuggle, naps and dog tv. He is calm, potty-trained and never barks. He is a sweet boy and a very good company. What my friends at ACC say about me: I am a sweet, social, older gentleman, looking for the perfect forever home! I love getting pets and - you guessed it - snuggles! I'll need daily interaction with you as I get used to my new life. A volunteer writes: If there's one thing we hate to see it's seniors in the shelter. 10 year old Doug deserves all the luxuries that come with a life long lived: warm beds, delicious treats, and naps in the sunshine, amongst many other things. Each time we pass his kennel, Doug is laying on his bed, a humble guy, not too noisy, not too pushy. He's a leisurely walker, a gentle treat taker, and a cuddly boy in an unassuming way. His giant ears may not be as in tune as they have in the past, his gait a little slower, his muzzle a bit whiter. He's walkable by our newest volunteers which means he's a very good and easy boy. Our behavior team has even deemed him adoptable by even novice families. Doug has been mostly aloof and avoidant of other dogs. If there's one thing we love to see, it's seniors leaving the shelter. So come to Queens ACC to meet him today!",animals/NYCACC-223905.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-223905.jpg,37fdfbd8a666480704bcbd0910caaaa40f5f486c488d29f23f4252a28193a97b,2026-06-05 20:27:48.776676+00,2026-06-14 17:03:06.938507+00,1604,null,https://nycacc.app/#/browse/223905,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/292e2bdd570849a5b89d8ab4b99cf089-1744113280-1777823872-jpg/512---n,NYC,NY,NYCACC,1682,Doug,Male
+PACC-A900959,I weigh approximately 53.00 lbs.,The shelter staff think I am about 2 years and 1 month old.,"I have been at the shelter since May 21, 2026 and ready for adoption!
+I am in Kennel D111.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Delia*.
+I am a female, red and white Alaskan Husky mix.",animals/PACC-A900959.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A900959.jpg,c376570944444f5c6ab68af01fb3666d8b5d169424ab06f8c1b8aaf38790518d,2026-06-08 23:57:48.879072+00,2026-06-15 16:07:14.149667+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A900959,Pima Animal Care Center,https://24Petconnect.com/image/697155986,Tucson,AZ,PACC,66,Delia,Unaltered Female
+PACC-A898427,null,The shelter staff think I am about 1 year and 2 months old.,"I have been at the shelter since Apr 23, 2026.","My name is Balin*.
+I am a neutered male, white and brown Pit Bull Terrier mix.",animals/PACC-A898427.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A898427.jpg,f0aa2c663010cedffc47a6887b302d2d5587a759a979252d56e2032345c9952b,2026-06-13 08:48:15.516266+00,2026-06-15 15:07:41.097922+00,1702,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA2/A898427,Pima Animal Care Center,https://24Petconnect.com/image/696531008,Tucson,AZ,PACC,78,Balin,Neutered Male
+PACC-A902682,I weigh approximately 46.00 lbs.,The shelter staff think I am about 1 year old.,"I have been at the shelter since Jun 07, 2026 and ready for adoption!
+I am in Kennel D170.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Spotty.
+I am a male, white and black Pit Bull Terrier mix.",animals/PACC-A902682.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902682.jpg,44d4942799d62acc1a4953f1e0447c2a0d9054d18637e802dae71f6f1a98bb53,2026-06-09 00:05:54.081878+00,2026-06-15 16:07:28.774128+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902682,Pima Animal Care Center,https://24Petconnect.com/image/697446243,Tucson,AZ,PACC,69,Spotty,Unaltered Male
+PACC-A903119,I weigh approximately 49.60 lbs.,The shelter staff think I am about 2 years and 1 month old.,"I have been at the shelter since Jun 12, 2026 and ready for adoption!
+I am in Kennel AD05.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Rugar.
+I am a male, black and tan German Shepherd Dog mix.",animals/PACC-A903119.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A903119.jpg,d091d6169a30fc40c05e753b60226ecdd91e680b0a737bb007de292ebbf39c1f,2026-06-15 08:06:15.775046+00,2026-06-15 18:06:05.424239+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA1/A903119,Pima Animal Care Center,https://24Petconnect.com/image/697722418,Tucson,AZ,PACC,69,Rugar,Unaltered Male
+NYCACC-255483,52 lbs,4 Years,,"Name: Cardinal | Native ID: 255483 | Species: Dog | Gender: Male | Location: Queens | Room: 125 - Dog ISO C | Intake Date: 2026-05-27 | Days in Care: 18 | ACC Feed Updated: 2026-06-14T12:00:48.782041Z | Photo Count: 4 | Bio/Summary: This pet is available only through ACC New Hope partners. To adopt or foster, please complete the pre-screener form below. Inquiries sent directly to ACC will not receive a response. Pre-Screener Form Cardinal came into the care center as a stray; due to this, his behavioral history in a n home environment is unknown. Cardinal has not acclimated well to the kennel environment and has allowed only minimal handling from selective handlers since intake. We recommend placement with a New Hope partner who can provide any necessary behavior modification (force-free, positive reinforcement-based) and re-evaluate behavior in a stable home environment before placement into a permanent home.",animals/NYCACC-255483.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255483.jpg,36b55f154c18ed8462e116d43fc1e31e6a75b7d828b0cd4334ea58640a6c506e,2026-06-06 14:20:58.008996+00,2026-06-14 12:29:51.80402+00,1583,null,https://nycacc.app/#/browse/255483,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/fde5c9770c8b4042917d2f0862771975-1780837035-1780837049-jpg/512---n,NYC,NY,NYCACC,923,Cardinal,Male
+NYCACC-255914,50 lbs,3 Years,,Name: Rocko | Native ID: 255914 | Species: Dog | Gender: Male | Location: Manhattan | Room: PAC - Dog Room | Intake Date: 2026-05-31 | Days in Care: 14 | ACC Feed Updated: 2026-06-14T12:00:48.782041Z | YouTube IDs: zHyKF_dO1F4 | Photo Count: 10 | Bio/Summary: What my friends at ACC say about me: My history is a mystery and my friends here do not know much about me yet! It is unknown if I have ever lived with other animals or children. I am playful and cute! I will need appropriate toys and positive outlets for my energy.,animals/NYCACC-255914.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255914.jpg,deefbb38e1ecf040c54ac5693e7c231fc778de52de58002f84acde0c41880eaa,2026-06-06 07:43:01.479132+00,2026-06-14 12:30:10.644522+00,1583,null,https://nycacc.app/#/browse/255914,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/f4cfd3b75f6f41d491aeaac8038d1f68-1780784757-1780784772-jpeg/512---n,NYC,NY,NYCACC,526,Rocko,Male
+PACC-A901113,I weigh approximately 12.80 lbs.,The shelter staff think I am about 14 weeks old.,"I have been at the shelter since Jun 09, 2026 and ready for adoption!
+I am in Kennel D094.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Caramel*.
+I am a female, tan Pit Bull Terrier.",animals/PACC-A901113.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A901113.jpg,086f1dac881b2201b8ef2914eb4981c623e8e46b1648b485425b6e03f21a9771,2026-06-14 08:06:28.339398+00,2026-06-15 17:06:38.944277+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A901113,Pima Animal Care Center,https://24Petconnect.com/image/697830939,Tucson,AZ,PACC,57,Caramel,Unaltered Female
+PACC-A902021,I weigh approximately 48.20 lbs.,The shelter staff think I am about 3 years old.,"I have been at the shelter since May 31, 2026 and ready for adoption!
+I am in Kennel D227.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Seneca*.
+I am a female, white and black Pit Bull Terrier.",animals/PACC-A902021.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902021.jpg,b6b78962d32eac86b42e5db0c202a9e2c50cb0ac5a79057e356f77aefccbc3f9,2026-06-14 08:06:44.002755+00,2026-06-15 17:06:53.415524+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902021,Pima Animal Care Center,https://24Petconnect.com/image/697834425,Tucson,AZ,PACC,68,Seneca,Unaltered Female
+PACC-A902719,I weigh approximately 114.00 lbs.,My age is unknown.,"I have been at the shelter since Jun 08, 2026 and am ready to go home today!
+I am in Kennel D173.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Rome*.
+I am a neutered male, black Mastiff.",animals/PACC-A902719.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902719.jpg,557b0512798828363a2bffa79a059757d8d14de0fc5526d9dc54333a1ac14583,2026-06-14 08:06:58.519504+00,2026-06-15 17:07:07.868721+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902719,Pima Animal Care Center,https://24Petconnect.com/image/697957538,Tucson,AZ,PACC,54,Rome,Neutered Male
+PACC-A903132,I weigh approximately 26.80 lbs.,The shelter staff think I am about 1 year old.,"I have been at the shelter since Jun 12, 2026 and ready for adoption!
+I am in Kennel AD04.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Luna.
+I am a female, tricolor German Shepherd Dog mix.",animals/PACC-A903132.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A903132.jpg,d78bd6c110fb7fc716377e29dbb6b5cbd3d894326fda91c14b44cb5a2eabfce8,2026-06-15 08:06:20.795626+00,2026-06-15 18:06:10.791444+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA1/A903132,Pima Animal Care Center,https://24Petconnect.com/image/697736668,Tucson,AZ,PACC,65,Luna,Unaltered Female
+HSSA-48320438,36Lbs,"6 Months Old, Young",,"Meet Moonstone, a 6-month-old Aussie x Anatolian mix with a bright, thoughtful spirit and a heart that’s just starting to blossom. She’s still very much a puppy, taking in the world one new sight, sound, and experience at a time. With her mix of smarts and gentle curiosity, she’s the kind of young dog who notices everything and is eager to learn what life with people is all about. Moonstone will thrive in a home that can offer her patience, consistency, and positive guidance as she grows into herself. She’ll benefit from continued socialization, enrichment, and plenty of opportunities to build confidence through calm, encouraging experiences. In return, she’s poised to grow into a deeply loyal and devoted companion—one who forms a strong bond with her people and brings a steady, comforting presence alongside her playful puppy side.",animals/HSSA-48320438.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-48320438.jpg,886e4efc4f589176aec88a43a72c095f48f391ab5878335ccce6da61347bbd8d,2026-06-12 05:20:44.342131+00,2026-06-15 19:33:11.74541+00,1716,null,https://www.adoptapet.com/pet/48320438,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1312180174",Tucson,AZ,HSSA,843,Moonstone,Female
+NYCACC-255817,60.4 lbs,3 Years,,"Name: Mishka | Native ID: 255817 | Species: Dog | Gender: Female | Location: Manhattan | Room: Medical ISO | Intake Date: 2026-05-29 | Days in Care: 16 | ACC Feed Updated: 2026-06-14T12:00:48.782041Z | YouTube IDs: W9nFn3Z6B3s | Photo Count: 8 | Bio/Summary: This pet is available only through ACC New Hope partners. To adopt or foster, please complete the pre-screener form below. Inquiries sent directly to ACC will not receive a response. Pre-Screener Form Mishka arrived at MACC as a stray with no history. Mishka's previous owners reported that she was displaying aggressive behavior in the home. Noted to play roughly and growling at the resident children. While in care, Mishka has been observed to be fearful. Noted to growl at handlers and thrash on leash during intake. When handlers approach her kennel, Mishka has been observed to hard bark and lunge at the kennel door. Due to the detailed behavior we recommend an experieced adult only home.",animals/NYCACC-255817.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255817.jpg,5133e8b16d9f383a91d5e8876b9194b9261c7138d3912878b757761b29eea0a6,2026-06-06 07:42:57.690979+00,2026-06-14 12:30:05.427712+00,1583,null,https://nycacc.app/#/browse/255817,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/ae04008d45fa4fc48fa1bef4ebdcd748-1781191595-1781191613-jpeg/512---n,NYC,NY,NYCACC,955,Mishka,Female
+PACC-A901376,I weigh approximately 65.00 lbs.,The shelter staff think I am about 4 years old.,"I have been at the shelter since Jun 09, 2026 and ready for adoption!
+I am in Kennel D117.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Theo.
+I am a male, black and brown German Shepherd Dog.
+
+EMERGENCY PLACEMENT DEADLINE
+CLOSE OF BUSINESS TUESDAY 06/16/26
+AVAILABLE FOR ADOPTION ONLY THROUGH PACC
+Name: Theo
+Animal ID: A901376
+Age: 4 years
+Weight: 62.2lbs
+Web Link: 24petconnect.com/PimaAdoptablePets/Details/PIMA/A901376
+About: You might remember Theo from a few weeks ago, and if you thought you missed out on this amazing dog, here is your chance! Theo recently went home with a new adopter who reported that things were going great, that Theo was settling in very well, and that they were just about to start formal training together. Unfortunately, his new owner suddenly developed a concerning heart condition that left him physically unable to care for a dog, bringing Theo back to us through no fault of his own. Now, this drop-dead handsome German Shepherd is once again searching for an experienced adventure companion who understands the breed and can tap into the deep loyalty these dogs possess.
+Since arriving back at the shelter, Theo has remained incredibly friendly, easy to leash, and an absolute pleasure to walk. He is deeply people-oriented and much prefers interacting with humans over other animals. While out in our play yards, he focuses his attention entirely on the people present, demonstrating just how much he craves human companionship and affection. We have no doubt that Theo will thrive and excel in the right, structured environment.
+Because we prioritize safety and full transparency, it is important for potential adopters to know his full history. Before his original arrival at the shelter, Theo was surrendered due to fatally injuring another dog in a previous home. We have limited details on that event, but during his shelter playgroup assessments, he has shown to be highly selective with other dogs, displays stiff body language during greetings, and can be quite barrier reactive. He would much rather be the king of the castle and receive all of your love to himself.
+For these reasons, we are strictly requiring that Theo goes to a home with no other animals, including dogs, cats, or small pets. He needs a secure, well-managed environment where he can be your sole companion. Theo is waiting here to show you what a truly good boy he can be—come meet him and give him the dedicated forever home he deserves!
+Available for adoption ONLY through PACC.
+Interested parties:
+Must visit PACC before the COB TUESDAY June 16th 2026 deadline to meet with a counselor who will review notes and introduce you to the dog to ensure that it’s a good fit. Some dogs may also require an introduction to any dogs they may potentially live with.
+Home Management Plan
+Fatally Injured Another Animal:
+• Theo has a documented history of fatally injuring another animal.
+• Incident Details: Theo was fence fighting with the other dog in the home, when he jumped the pool fence, fatally injuring the other dog
+No Other Dogs:
+• Theo is not suitable for a home with other dogs.
+• Reason: fatally injured another dog
+• Management: They should be the only dog in the household. Avoid dog parks, group walks, or introductions to unfamiliar dogs to maintain safety and reduce stress.
+• Behaviors could improve with proper management and/or professional training.
+Possible Containment Issues:
+• Theo has a known history of escaping enclosed spaces or roaming when unsupervised.
+• Escape Method: jumped pool fence
+• Supervision and Safety: Keep them on leash until fully acclimated to the home and routine. Do not leave unattended outdoors or in unsecured areas.
+• Preventative Measures: Ensure fences are secure and at an appropriate height. Regularly check gates, latches, and weak points for damage or loose areas.
+• Longline Use: When spending time outdoors in an enclosed yard, use a longline to give them extra space to explore while keeping them safe and under control. Do NOT use tie-outs; the leash should be always held and maintained by the handler. Should NOT be used in unenclosed or public spaces.",animals/PACC-A901376.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A901376.jpg,bf0b6d9026cfe48517060ff300545d415fbe726947d3468897eee27e10dd02a5,2026-06-14 08:06:34.233378+00,2026-06-15 17:06:43.942165+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A901376,Pima Animal Care Center,https://24Petconnect.com/image/697850281,Tucson,AZ,PACC,4006,Theo,Unaltered Male
+HHS-72,null,,,"Item 1 of 2
+KIZZY
+ANIMAL ID
+HHTX-A-72
+BREED
+Mixed Breed (Medium) / Mix
+SEX
+Female
+WEIGHT
+65.4 lbs
+AGE
+2Y/6M/0W
+LOCATION
+Red Cabana, R4
+INTAKE DATE
+5/21/2026
+Apply for Adoption
+Donate
+ATTRIBUTES
+
+Good with Dogs
+Good with Kids
+Crate Trained
+Housetrained
+Hi, I'm Kizzy — a 2-year-old chocolate and white girl ready to bring joy to your home! 🐕 I'm already spayed, crate trained, and housetrained, so settling into family life will be a breeze. I'm friendly and playful with other dogs and kids alike, which means I'll fit right into the action wherever you are. Whether you're looking for a cuddle buddy or a adventure companion, I'm your gal — come meet me and let's start our story together! ❤️",animals/HHS-72.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HHS-72.jpg,03b2f4f29d8d711db7d18395e33938cd9097e6c4fa864e4a0b1c969686e1ee19,2026-06-12 07:00:52.757309+00,2026-06-15 19:33:34.64546+00,1717,null,https://new.shelterluv.com/embed/animal/HHTX-A-72,Houston Humane Society,https://new-s3.shelterluv.com/profile-pictures/cdd9ca7d4b8bba42715dca59dc9148c4/6238560bcf68fc8c48e6f08283bd6f4b.jpg,Houston,TX,HHS,693,KIZZY,
+PACC-A840174,I weigh approximately 40.60 lbs.,The shelter staff think I am about 2 years and 7 months old.,"I have been at the shelter since May 30, 2026 and am ready to go home today!
+I am in Kennel D176.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Rolli.
+I am a neutered male, black and white Labrador Retriever.",animals/PACC-A840174.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A840174.jpg,25dc061b0974475d9332c4163b2c1016ac00ab5a704f808d5189ae67ad579852,2026-05-31 08:05:19.887757+00,2026-06-15 18:06:20.631021+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A840174,Pima Animal Care Center,https://24Petconnect.com/image/697144339,Tucson,AZ,PACC,75,Rolli,Neutered Male
+HSSA-47956480,49Lbs,"10 Years Old, Senior",,"Meet MooMoo, a sweet senior mama who’s finally ready for her “me time” era. After raising a litter of puppies, this gentle girl is looking forward to soft beds, belly rubs, and being spoiled like she deserves in her golden years. MooMoo gets along well with other dogs and has a loving heart, but she’ll need a patient family to help her learn the ropes of indoor life, including leash walking and house training. She’s ready to trade outdoor living for a cozy home and a family who will show her just how good retirement can be.",animals/HSSA-47956480.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-47956480.jpg,648413e68399816814deae12001e0fc945da6f1be311bb8fd752e532f04396c5,2026-06-13 06:42:23.441122+00,2026-06-15 14:49:59.656292+00,1701,null,https://www.adoptapet.com/pet/47956480,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1306709962",Tucson,AZ,HSSA,529,Moomoo,Female
+NYCACC-243561,44.5 lbs,1 Year,,"Name: Hercules | Native ID: 243561 | Species: Dog | Gender: Male | Location: In Foster | Room: M - In Foster | Intake Date: 2025-12-18 | Days in Care: 178 | ACC Feed Updated: 2026-06-14T17:00:50.223116Z | YouTube IDs: 8Wh_IKbGRNs | 4vL79SUP5oQ | Ow-HINFwGiE | Photo Count: 11 | Bio/Summary: Since I'm a long stay pup, my adoption fee has been reduced! Visit me today to find out my favorite treats and how you can take me home! My foster writes: I'm a super snuggly pup who loves nothing more than being close to my favorite humans. I'm very food motivated (treats are definitely the way to my heart!), which can make training a fun and rewarding experience for both of us. I'll be honest, I sometimes have accidents and I'm not a fan of being alone, so I'll need a patient, understanding home that can help me continue learning and building confidence. I do best as the only pet, since I'm reactive around other dogs and I'm not comfortable with cats or other animals. Right now, it's unknown how I do with children, so a calmer household may be the best fit while we figure that out. What I really need is someone with a big heart and lots of patience who's willing to help me grow at my own pace. In return, I promise endless snuggles, loyalty, and love. 💛 Meet Hercules! Hercules came to us as an owner surrender after his family member became unable to care for him. This young, energetic pup may be small in stature, but he has a big personality and a lot of curiosity about the world around him. In the shelter, Hercules can feel overwhelmed at first, but once he settles in, he enjoys walks, treats, and spending time with people he trusts. My Ideal Home Hercules would thrive in a calm, adult-only home with an experienced adopter who understands fearful or sensitive dogs. He benefits from routine, patience, and positive reinforcement to help him build confidence and feel secure. A home that can provide daily mental and physical enrichment will help him channel his energy in a healthy way. Good with Kids? No. Due to his sensitivity and mouthiness with treats, Hercules is best suited for a home without children. Good with Other Pets? Hercules has lived with another dog in the past, but he can be reactive toward unfamiliar dogs, especially on leash. Slow, thoughtful introductions and guidance from an experienced handler will be important if there are other pets in the home. Leash Manners Hercules can walk nicely and enjoys sniffing along the way, though he may pull at times and react to dogs or busy surroundings. He does best with steady handling, distance from triggers, and reward-based training to help him stay focused and calm. Behavior Determination Level 3 - Hercules needs an experienced, adult-only home that can support him as he works through fear-based behaviors and builds confidence using force-free training. Other Fun Facts Hercules enjoys exploring on walks, accepts treats eagerly (sometimes a little too eagerly!), and has shown that with patience and consistency, he can relax and show his sweet side.",animals/NYCACC-243561.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-243561.jpg,a922cadb9a97a2dc6c1bb2079e7d5c8159b897c64a30e6d113014ff1c4a91f40,2026-06-09 01:29:05.181105+00,2026-06-14 17:03:16.254799+00,1604,null,https://nycacc.app/#/browse/243561,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/816f3a43b371488d82055929f435269d-1766329525-1767699515-jpg/512---n,NYC,NY,NYCACC,3044,Hercules,Male
+AHSCN-47064140,46 lbs (current),"2 years 4 months old, Adult","Shelter: Associated Humane Societies - Newark
+
+Adoption process:
+Individuals wishing to adopt an animal from our shelter must complete an adoption application and provide proof of home ownership or, if you are a renter, you must provide a copy of your lease or a notarized letter from your landlord stating pets are permitted. You must be at least 21 years of age to adopt any animal from our shelter. We reserve the right to refuse any adoption. In some instances, a home visit may be required. Our fees vary depending on the age and breed of the animal. Typically, a mix breed is $110.00 and a purebreed is $150.00 and up. There is also an altering charge of $85.00 for a male and $95.00 for a female. All animals receive vaccines, microchip identification, frontline treatments.","Name: Harry Styles
+
+Basic info:
+Breed: American Pit Bull Terrier
+Color: Brown/Chocolate/White
+Age: 2 years 4 months old, Adult
+Size: Med. 26-60 lbs (12-27 kg) (when grown)
+Weight: 46 lbs (current)
+Sex: Male
+Pet ID: 44547
+
+Traits:
+- Spayed/neutered
+
+My story:
+$35",null,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/AHSCN-47064140.jpg,1dbac49852349194f3a0196b1c4eb042fd25da24663866ed97046f85fffd3059,2026-06-14 02:02:55+00,2026-06-14 03:46:31.167209+00,null,null,https://www.adoptapet.com/pet/47064140-newark-american-pit-bull-terrier-mix,Associated Humane Societies - Newark,https://pet-uploads.adoptapet.com/c/0/4/1284882559.jpg,Newark,NJ,AHSCN,262,Harry Styles,Male
+HHS-309,null,,,"Item 1 of 2
+MIKEY
+ANIMAL ID
+HHTX-A-309
+BREED
+Terrier, Pit Bull / Mix
+SEX
+Male
+WEIGHT
+45 lbs
+AGE
+2Y/10M/2W
+LOCATION
+Orange Cabana, O15
+ADOPTION FEE
+$50.00
+INTAKE DATE
+5/8/2026
+Apply for Adoption
+Donate
+ATTRIBUTES
+
+Good with Dogs
+Mikey is the total package: sweet, smart, and hilariously goofy. This medium-to-high energy guy is always ready for an adventure, a game of fetch, or just some quality zoomie time in the yard. He’s got a heart of gold and a personality that’ll keep you smiling every single day. He’d thrive as the only pup in the home where he can soak up all the love and attention (and maybe sneak in a few extra treats while he’s at it). He’s super smart and eager to learn, which makes him a blast to train—and even more fun to live with.",animals/HHS-309.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HHS-309.jpg,ccd4e554b016e9842090df8590013b6b5fdfc7482166da10825bc215f69aab08,2026-06-12 07:00:20.90124+00,2026-06-15 19:33:12.009056+00,1717,null,https://new.shelterluv.com/embed/animal/HHTX-A-309,Houston Humane Society,https://new-s3.shelterluv.com/profile-pictures/0e6e3741aef1bda1de404937375da803/03892b28585cfd482d3d6e198ecf1d3f.jpg,Houston,TX,HHS,754,MIKEY,
+HHS-20982,null,,,"Item 1 of 5
+Axel
+ANIMAL ID
+HHTX-A-20982
+BREED
+Boxer / Mastiff
+SEX
+Male
+WEIGHT
+73 lbs
+AGE
+1Y/5M/0W
+LOCATION
+Green Cabana, G10
+ADOPTION FEE
+$50.00
+INTAKE DATE
+6/5/2026
+Apply for Adoption
+Donate
+ATTRIBUTES
+
+Good with Dogs
+Good with Kids
+Crate Trained
+Housetrained
+
+
+Hi, I'm Axel — a 1-year-old Boxer-Mastiff mix with a tan coat, boundless energy, and a heart ready for adventure! 🐕 I'm already neutered, housetrained, and crate trained, so I'm prepared to slide right into your home. I love playing with other dogs and kids, which means I'm perfect for active families who can keep up with my spirited personality. At 68 pounds of solid fun, I'm your guy for hikes, playdates, and everything in between. My adoption fee is just $50 — come meet me and let's start our adventure together! 💪✨",animals/HHS-20982.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HHS-20982.jpg,55a0ba6c381fa3da9b6e956c6f3e28161155efbe0f52f412b8591b5312df781c,2026-06-12 07:02:50.278625+00,2026-06-15 02:04:36.446134+00,1648,null,https://new.shelterluv.com/embed/animal/HHTX-A-20982,Houston Humane Society,https://new-s3.shelterluv.com/profile-pictures/5becbe4ae409f9c0eda6b73455f7cdae/fa66636d3db794e04e16e194282dede5.jpg,Houston,TX,HHS,786,Axel,
+NYCACC-255774,104 lbs,1 Year,,"Name: Taurus | Native ID: 255774 | Species: Dog | Gender: Male | Location: Staten Island | Room: S - Dog Holding | Intake Date: 2026-05-29 | Days in Care: 16 | ACC Feed Updated: 2026-06-14T12:00:48.782041Z | YouTube IDs: 5i-LSSUvWqg | Photo Count: 5 | Bio/Summary: This pet is available only through ACC New Hope partners. To adopt or foster, please complete the pre-screener form below. Inquiries sent directly to ACC will not receive a response. Pre-Screener Form Taurus is a stray Rottweiler who came into our care with very little known about his past. Understandably, he was initially fearful and unsure of his new surroundings. With patience, consistency, and a slow approach, Taurus has begun to warm up and show his softer side to the people he trusts. Taurus is still learning to navigate the world and can become easily aroused or overstimulated in certain situations. Because of this, he will need an experienced adopter who understands canine body language and is committed to providing structure, training, and ongoing support. Taurus is looking for a single-pet home where he can be the center of attention and continue building confidence at his own pace. He will do best with an adopter who is willing to take things slowly, respect his boundaries, and help him succeed. While Taurus may require extra patience and understanding, he has already shown that he is capable of making progress and forming positive connections.",animals/NYCACC-255774.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255774.jpg,754b2837752497034b7fa0da7f795a978df6e82f8d3025d7af5f0a0840e06dff,2026-06-06 07:42:57.154117+00,2026-06-14 12:30:04.112217+00,1583,null,https://nycacc.app/#/browse/255774,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/cae5b6108eac4a989472bc65314a3b63-1780662986-1780663022-jpeg/512---n,NYC,NY,NYCACC,1438,Taurus,Male
+PACC-A793391,null,The shelter staff think I am about 7 years old.,"I have been at the shelter since Mar 13, 2026.
+Anny is a sweet and sensitive senior who lived in one home her whole life before being surrendered to PACC when her family could no longer care for her.  She did well with other dogs in her former home and came to the shelter with several other dogs.  While here, Anny has been a perfectly behaved girl- here’s what one volunteer said:
+“Anny is a senior sweetheart who was easy to leash and easy to walk. In the yard she sniffed around and explored a bit. Anny is on the shy side but warmed up over time. She enjoys petting and did not seem bothered when her kennelmate wanted to hog the attention for herself. Anny just needs a loving home where she can enjoy her senior years.”
+Anny shares her kennel politely with another PACC pup and has been tolerant and independent when meeting other dogs.  She is looking for a home without small dogs or cats.  If you can offer this deserving senior girl a safe and loving retirement home, please ask to meet her today!","My name is Anny.
+I am a spayed female, white and brown Australian Cattle Dog mix.",animals/PACC-A793391.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A793391.jpg,5f343e88548b545332d4f49bc63d50790bfdb9ddd7d6eea3c1db8b956b82bdba,2026-04-30 05:44:59.100215+00,2026-06-15 16:05:45.559023+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA2/A793391,Pima Animal Care Center,https://24Petconnect.com/image/697757737,Tucson,AZ,PACC,81,Anny,Spayed Female
+PACC-A901246,I weigh approximately 4.76 lbs.,The shelter staff think I am about 9 weeks old.,"I have been at the shelter since Jun 05, 2026 and am ready to go home today!
+I am in Kennel DOGISO 53.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Riesen*.
+I am a neutered male, tan and white Carolina Dog and German Shepherd Dog.",animals/PACC-A901246.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A901246.jpg,9dd5431e1d0892ad1c0b2fd6025cc3445d7c0b6bf53d2575558ec67e0219a039,2026-06-06 09:06:52.629963+00,2026-06-15 16:05:55.21143+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A901246,Pima Animal Care Center,https://24Petconnect.com/image/697578909,Tucson,AZ,PACC,93,Riesen,Neutered Male
+HSSA-48317724,12Lbs,"2 Months Old, Puppy",,"Meet Trout! This adorable 7.5-week-old German Shepherd puppy is ready to reel in a family of his very own. Like any young pup, Trout is full of curiosity, playful energy, and endless potential. He loves exploring new things, soaking up attention, and charming everyone he meets with his sweet puppy personality. If you're looking for a loyal best friend to grow up alongside you, Trout is ready to make a splash in your home!",animals/HSSA-48317724.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-48317724.jpg,111bb208a4e64f70c5671beb51c095ea3a47a76fc2ecfeb1edb10fe894368196,2026-06-13 22:46:50.319251+00,2026-06-15 19:33:16.958639+00,1716,null,https://www.adoptapet.com/pet/48317724,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1312131398",Tucson,AZ,HSSA,425,Trout,Male
+HSSA-48261744,6Lbs,"2 Months Old, Puppy",,"Jhené is a darling Pit Bull mix puppy with a sweet face and an even sweeter personality! This little lady is ready to take on the world one pawstep at a time, discovering new sights, sounds, and adventures along the way. Like any puppy, she's eager to learn and would love a family to help her grow into the amazing dog she's meant to be. Jhené can't wait to find a forever home where she can share a lifetime of love, fun, and cuddles. 🐾💕",animals/HSSA-48261744.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-48261744.jpg,03a490a81968703bb571257898d60adc546e4d39b9fa7aa1823a2f907f9dfa49,2026-06-06 21:45:51.376972+00,2026-06-15 19:33:58.065626+00,1716,null,https://www.adoptapet.com/pet/48261744,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1312595430",Tucson,AZ,HSSA,439,Jhené,Female
+PACC-A902703,I weigh approximately 40.00 lbs.,The shelter staff think I am about 3 years old.,"I have been at the shelter since Jun 08, 2026 and ready for adoption!
+I am in Kennel D120.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is June*.
+I am a female, brown Terrier mix.",animals/PACC-A902703.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902703.jpg,720d05bc00a8b9f9b3854c7246d9bd407e9bfdd316ced9d910ba536463c5af91,2026-06-14 08:06:53.385264+00,2026-06-15 17:07:02.933567+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902703,Pima Animal Care Center,https://24Petconnect.com/image/697826072,Tucson,AZ,PACC,51,June,Unaltered Female
+NYCACC-255891,96.2 lbs,2 Years,,"Name: Atlas Axel | Native ID: 255891 | Species: Dog | Gender: Male | Location: Queens | Room: 129 - Dog Holding D-2 | Intake Date: 2026-05-30 | Days in Care: 16 | ACC Feed Updated: 2026-06-15T19:30:54.862344Z | Photo Count: 2 | Bio/Summary: This pet is available only through ACC New Hope partners. To adopt or foster, please complete the pre-screener form below. Inquiries sent directly to ACC will not receive a response. Pre-Screener Form Atlas Axel was surrendered into care as a stray, so his past behavior in a home environment is unknown. He has escalated to higher-level warnings when handlers attempted to remove him from the kennel. Once out of the kennel, he remains avoidant. Due to all noted concerns displayed in the care center, the behavior department recommends that Atlas be placed with a New Hope placement partner who is able to provide an experienced adult-only foster home. A period of decompression is recommended to allow Atlas to acclimate comfortably to his new environment; force-free, reward-based training only is advised when introducing him to new and unfamiliar situations. Consultation with a professional trainer/behaviorist is highly recommended for guidance to safely manage/modify any behavior Atlas Axel presents with outside of the care centers.",animals/NYCACC-255891.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255891.jpg,056df43c38f783e6eaaf0280c031e439e8aa9f1f625bc08de229363deced0ee5,2026-06-12 19:35:10.220162+00,2026-06-15 19:34:09.692889+00,1718,null,https://nycacc.app/#/browse/255891,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/4d96a4f4714b47509e030415d9b742f6-1781462994-1781463004-jpg/512---n,NYC,NY,NYCACC,1284,Atlas Axel,Male
+NYCACC-255903,62.4 lbs,2 Years,,Name: Ducky | Native ID: 255903 | Species: Dog | Gender: Male | Location: Queens | Room: 128 - Dog Holding D | Intake Date: 2026-05-30 | Days in Care: 15 | ACC Feed Updated: 2026-06-14T12:00:48.782041Z | Photo Count: 1 | Bio/Summary: What my friends at ACC say about me: My history is a mystery and my friends here do not know much about me yet! It is unknown if I have ever lived with other animals or children. I am not one to sit still! I will flourish in a home with someone that will keep me mentally and physically active! I need a home where there are no other dogs. I would do best in a home with only adult humans.,animals/NYCACC-255903.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255903.jpg,2abd7865e7376c3bad9564d79cc72d3c4e4f889b59301e8be152082add287239,2026-06-06 07:42:59.814856+00,2026-06-14 12:30:08.006127+00,1583,null,https://nycacc.app/#/browse/255903,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/3c609de9c17e4b358c0aeba39ffedb52-1780176635-1780176635-jpeg/512---n,NYC,NY,NYCACC,623,Ducky,Male
+HSSA-47168379,68Lbs,"6 Years Old, Adult",,"Meet Kratos, a handsome bulldog mix with a big personality and an even bigger love for tennis balls! If you toss it, he's ready to chase it (though bringing it back is entirely optional in his book). Kratos also enjoys spending time outdoors and would be thrilled to have a yard where he can bird and lizard-watch to his heart's content. This sweet guy appreciates taking things at his own pace and enjoys building trust with his people. Once he's comfortable, you'll discover a loyal companion who enjoys the simple pleasures in life, especially cheese, tasty snacks, and playtime. Kratos has shared space with other dogs and tends to enjoy calm canine companions who can read his cues and match his style. If you're looking for a unique dog with a love for fetch, a charming bulldog smile, and plenty of character, Kratos may be the perfect addition to your family.",animals/HSSA-47168379.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-47168379.jpg,eb39475d5faac670cad3743f00bbba747ceba3eada8afea737ad67bfa5670461,2026-06-04 13:56:01.435862+00,2026-06-15 19:33:28.824578+00,1716,null,https://www.adoptapet.com/pet/47168379,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1292835544",Tucson,AZ,HSSA,867,Kratos,Male
+HHS-21798,null,,,"Item 1 of 2
+Gemma
+ANIMAL ID
+HHTX-A-21798
+BREED
+Mixed Breed (Medium)
+SEX
+Female
+WEIGHT
+25 lbs
+AGE
+0Y/4M/3W
+LOCATION
+Dog Condos, Condo 2
+ADOPTION FEE
+$100.00
+INTAKE DATE
+5/28/2026
+Apply for Adoption
+Donate
+
+
+Hi there — I'm Gemma, a 4-month-old spotted beauty with a white coat and brown patches! 🐾 I'm already spayed and ready to grow into my forever home, and at 25 pounds, I'm the perfect petite size for a family or individual looking for an active companion. With all the energy and playfulness of puppyhood, I'm here to bring joy and fun into your life every single day! 🎾 My adoption fee is $100, so come meet me and let's start an amazing adventure together! ✨",animals/HHS-21798.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HHS-21798.jpg,1d11f53e3c910fb49078476798b7e2038f5acbb556048c2f885cf6b1d3612051,2026-06-12 07:02:25.210819+00,2026-06-15 19:34:02.210567+00,1717,null,https://new.shelterluv.com/embed/animal/HHTX-A-21798,Houston Humane Society,https://new-s3.shelterluv.com/profile-pictures/581dcb118a8ebab0b3cb6dc8358dd56f/2f24fadd07bd6b5e2be3f2c498bd5fb0.jpeg,Houston,TX,HHS,665,Gemma,
+PACC-A897786,I weigh approximately 49.00 lbs.,The shelter staff think I am about 2 years and 2 months old.,"I have been at the shelter since Apr 15, 2026 and ready for adoption!
+I am in Kennel D028.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Mesquite*.
+I am a female, tan and black German Shepherd Dog mix.
+
+Mesquites are shrubby trees native to arid regions of the Americas, known for their valuable hardwood, edible sweet pods, and role in desert ecosystems. Tucson just wouldn’t be the same without them, and we think you’ll never be the same after meeting our fantastic girl, Mesquite! She sure makes an impact on her volunteer friends- here’s what one of her fans said:
+“Mesquite is very sweet and affectionate!! I take she and her kennelmate to a play yard fairly often and she loves to stick close to your side, lean into you for pets, and give kisses. She knows sit and takes treats gently with her long snoot. She's smart and treat-motivated, so probably has great potential to learn new tricks! What a fun girl!!”
+Mesquite shares her kennel with another PACC pup and has been independent and easygoing when meeting other dogs in playgroup.  She has valley fever and is looking for a family who will maintain her treatment with inexpensive and readily available medication. She has gained weight since arriving at PACC, is feeling good, and is ready to settle into a loving furever home! If you know anything about German Shepherds, you know that they’re highly intelligent and loyal pups who love their families with their whole hearts! Mesquite is ready to give you her whole heart!!",animals/PACC-A897786.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A897786.jpg,c4475fdc6994813a57729b821209462d00fdff4c701fb53c31c4a549bef2e96f,2026-04-30 12:01:56.157396+00,2026-06-15 16:06:10.301708+00,1705,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A897786,Pima Animal Care Center,https://24Petconnect.com/image/697856440,Tucson,AZ,PACC,1363,Mesquite,Unaltered Female
+PAWSCH-83127,61.73lbs,6 Years,"Meet Humberto
+Humberto can’t wait to meet you!
+If you’re interested in adopting this pet, there are few steps you must complete before scheduling an appointment at our Lincoln Park Adoption Center:
+1. Please start by taking our ComPETibility Quiz to make sure they’re a good fit for your home. Your ComPETibility Score will help you compare your home to their needs!
+2. After completing your ComPETibility Quiz, you will be emailed a link to complete your Adoption Application.
+3. Finally, schedule an appointment at our Lincoln Park Adoption Center! During your appointment, you’ll be able to meet all currently adoptable animals at our Lincoln Park Adoption Center and walk through the adoption process with our staff and volunteers. Appointments are not required but encouraged for a more efficient visit.
+Please note that while we can’t place holds on adoptable animals for your scheduled appointment, there are always plenty of homeless pets looking for a home! If you don’t meet the perfect pet during your first visit to the Adoption Center, please feel free to schedule another appointment.
+Want another way to spend time with our adoptable (or soon-to-be-adoptable) pets? Consider fostering.
+
+First Time Fostering? Learn More
+There are many animals that need us today. Each foster family allow us to save more homeless pets by opening their home to a pet or litter in need of love and care for a few weeks. When we are able to send a pet or litter to foster, it frees up space in our Medical Center to bring in more pets in need.
+Last year, our foster families took in 1,921 pets. Some needed a peaceful place to recover from illness or injury. Puppies and kittens just needed a bit of time in a home environment with good socialization so they could grow big enough to have their spay/neuter surgery before adoption. Other pets needed a calm and relaxing break from the stress of shelter life.
+Consider joining them in lifesaving. Sign up to become a foster today.
+Questions about Humberto?
+Contact Us
+
+PAWS Rating Scale Definitions:
+Children:
+  1: Adults only, please! I prefer a mature crowd.
+  2: I’ll do best in a home with children aged 12 and up.
+  3: I’ll do best in a home with children aged 8 and up.
+  4: I’ll do best in a home with children aged 5 and up.
+  5: I love people! Chances are, I’ll love your kids too!
+Dogs:
+  1: I do best with no interaction with other dogs.
+  2: I’m picky with whom I socialize. I may improve with time and management!
+  3: I’m selective. I don’t dislike dogs, but I do best when I have time to adjust.
+  4: I’m a social butterfly with few restrictions in pairings!
+  5: I like dogs! Big dogs. Little dogs. Bring ‘em on.
+Cats:
+  0: I’ve never met a cat as far as PAWS knows!
+  1: I’ll do best in a house with no cats.
+  2: I’m still testing the waters with cats. I’ll do best with time and management.
+  3: I would love some feline friends, but I’ll do best with some supervision at first.
+  4: I’ve lived with cats and have had no known issues.
+  5: I love my cat friends and have a proven history of positive sociability!
+Home Alone:
+  1: I’ll do best in a home where I won’t be left alone.
+  2: I prefer not being alone for longer than an hour, but I’ll likely improve with training.
+  3: I can be home alone for two to three hours. A dogwalker or daycare are great options!
+  4: I can be home alone for four to six hours. A dogwalker or daycare are great options!
+  5: I can be home alone for six to eight hours. A dogwalker or daycare are great options!
+Activity:
+  1: I’m high energy! I’ll do best with an active owner who likes to run, hike, play, etc.
+  2: I have a higher amount of energy. I’ll do best with long walks or play sessions.
+  3: I have moderate energy. I’ll do best with daily exercise plus longer walks or runs a few days each week.
+  4: I’ll do best with a few laps around the block or a few romps in the yard.
+  5: I’m a couch potato! I only need a few short walks per day.
+Environment:
+  1: I need a fenced-in yard where I can run and play in privacy.
+  3: I’ll do best in a building with a private entrance to my home.
+  5: I’m happy to live anywhere as long as you’re there.","Profile Facts:
+- Breed: Mixed Breed (Medium)
+- Location: Lincoln Park Adoption Center
+- Status: Available for Adoption/Fostering
+
+Humberto's Story
+Humberto is an incredibly sweet, people-oriented pup who has so much love to give! His former foster family gave him a glowing report, describing him as a cuddly companion and a playful sibling to their dog. He handles life in the city like a champ: he’s happy on walks, eager to make new friends, and unfazed by loud noises (he reportedly slept through an entire evening of fireworks!). Humberto may take some time to adjust to new spaces, but before long, he’ll fit right into your life! He has never met a stranger and loves to meet new human friends.
+Humberto is a very smart guy who knows his basic commands like ""sit,"" ""down,"" ""stay,"" ""come,"" and ""off."" He is highly motivated by treats and chews to continue his training—with the assistance of his favorite snacks, he’d love to keep learning! Humberto is housetrained and is comfortable staying home for a few hours, although he’ll miss you while you’re gone! Expect an enthusiastic greeting and a demand for hugs and cuddles when you return!
+Humberto is more than ready to find his people. His ideal home would have adults or teenage children who can continue his training and support him as he adjusts. While Humberto would love to have a playful and tolerant doggie friend that matches his activity level, he would be just as successful as the only dog in your home. If you are looking to add a wonderful dog to your family, come in and meet Humberto—this Very Good Boy cannot wait to meet you!
+Thinking about adopting Humberto? Set up an adoption appointment via the link below, or send your questions to [email protected] .
+
+PAWS Rating:
+- Children: 2/5 - I’ll do best in a home with children aged 12 and up.
+- Dogs: 1/5 - I do best with no interaction with other dogs.
+- Cats: 1/5 - I’ll do best in a house with no cats.
+- Home Alone: 3/5 - I can be home alone for two to three hours. A dogwalker or daycare are great options!
+- Activity: 3/5 - I have moderate energy. I’ll do best with daily exercise plus longer walks or runs a few days each week.
+- Environment: 3/5 - I’ll do best in a building with a private entrance to my home.",animals/PAWSCH-83127.png,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PAWSCH-83127.png,3e21b466699b36765e9312531728f1d406e5a5c1c0610465ab2cd176ca488db1,2026-06-11 05:57:11.661365+00,2026-06-15 20:22:05.836644+00,1724,null,https://www.pawschicago.org/pet-available-for-adoption/showdog/83127,PAWS Chicago,https://pawschicago.canto.com/direct/image/086cn4nrad0pp0jka6seh9k53f/0gakDQacy68g-jAGjYiRjwRtHkE/original?content-type=image%2Fpng&name=Humberto_83127_S1.png,Chicago,IL,PAWSCH,2243,Humberto,null
+NYCACC-248418,54 lbs,2 Years,,"Name: Truffle | Native ID: 248418 | Species: Dog | Gender: Male | Location: In Foster | Room: Q - In Foster | Intake Date: 2026-02-26 | Days in Care: 109 | ACC Feed Updated: 2026-06-15T02:00:48.519651Z | Photo Count: 15 | Bio/Summary: Since I'm a long stay pup, my adoption fee has been reduced! Visit me today to find out my favorite treats and how you can take me home! My foster writes: Truffle is the happiest and most loving dog! He is amazing with all humans and would make a great family dog. He loves to give kisses, enjoys belly scratches, playing tug-of-war and fetch while also being able to lay and watch a movie with you. He's great in his crate during the day and very polite at home. He will follow you around like he's your shadow. With a routine and consistent positive reinforcement he will thrive! Truffle is a super loving and happy dog. He wants nothing more than to be by your side. He loves attention and lots of belly rubs. He's happiest even being in the same room with you while he plays with his toys. He's your perfect work from home companion. He would do best in a home with an outdoor space to let out some of his energy, but can also do well with someone who has an active lifestyle and can give him the exercise and stimulation he needs. He gets very excited when heading for a walk and is on full alert of his surroundings when outside. When he sees another dog he gets excited, but a quick tug will get his attention again. He needs structure and consistency, but with positive reinforcement and training he'll continue to learn and do great. His sweet face will completely steal your heart!",animals/NYCACC-248418.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-248418.jpg,54073fd7470e22dc5f332836afdaeb036b30f46d2f1cb0e46c15839c1d2a20b5,2026-06-05 22:06:57.635884+00,2026-06-15 02:05:21.474659+00,1649,null,https://nycacc.app/#/browse/248418,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/5ade86607ac04a60b9d702167f98d48f-1772461035-1772461066-jpg/512---n,NYC,NY,NYCACC,1626,Truffle,Male
+PACC-A902067,I weigh approximately 74.00 lbs.,The shelter staff think I am about 1 year and 5 months old.,"I have been at the shelter since Jun 01, 2026 and am ready to go home today!
+For more information about this pet please email
+PACC.Rescue@pima.gov
+with questions.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Walker.
+I am a neutered male, gold Golden Retriever and Rottweiler.
+
+RESCUE-ONLY DEADLINE
+CLOSE OF BUSINESS Thursday June 18th
+Must be pulled by a partnered rescue
+Name: Walker
+Animal ID: A902067
+Age: 1 year and 5 months
+Weight: 74lbs
+Web Link: 24petconnect.com/PimaAdoptablePets/Details/PIMA/A902067
+About: Meet Walker, a beautiful, fluffy Golden Retriever mix who is looking for a dedicated, dog-savvy owner to help him thrive. In the shelter environment, Walker has been incredibly friendly, easy to leash, and an absolute joy to be around. He has a few adorable habits, including doing a nice ""sploot"" on cool surfaces to relax, and he absolutely loves playing and rolling around in the dirt. According to his previous owner, Walker is already fully potty trained, knows his basic commands, is crate-trained, loves car rides, and is a loyal companion who will happily follow you from room to room around the house.
+While Walker did well in shelter playgroups and corrected other dogs appropriately, he must be the only pet in his new home due to a history of resource guarding. He is also not suitable for a home with cats, as his previous owner noted several attempts to chase, bark, and growl at them. Additionally, Walker requires an adults-only household, as he is uncomfortable around children and will growl to express his discomfort.
+Because we want to ensure Walker and his new family are set up for success, there are a few important handling and behavioral notes to keep in mind. Walker has a moderate bite on his record from an incident where he was actively chasing the resident cat; when his previous owner attempted to grab him by the scruff to stop him, he turned and redirected onto her arm. Because his previous owner frequently grabbed him by the neck and collar as a form of discipline, he has developed negative, defensive reactions to being handled that way.
+Walker has also shown some signs of separation anxiety and will benefit from a predictable routine. With an experienced owner who can establish clear boundaries, use alternative management tools instead of collar-grabbing, and provide structured, positive-reinforcement training, we believe Walker has all the potential to be a wonderful, loyal companion.
+Adoption Process:
+All interested parties must meet the dog at PACC before their deadline. Some dogs may also require an introduction to any dogs they may potentially live with. Once introductions are complete and if the IP has decided this dog may be a good fit, the process is as follows:
+Interested parties:
+•	Must visit PACC before the COB THURSDAY JUNE 18TH  deadline to meet with an adoption counselor who will go over notes and introduce you to the dog.
+•	Are encouraged to reach out to a rescue group ASAP (even before coming to PACC), to start the rescue approval process. Please have the rescue contact PACC at PACC.UrgentDogs@pima.gov if approved to pull.
+•	If an IP has not already contacted a rescue, PACC will notify all partnered rescue groups of an interested party and request their assistance. Once you have come to PACC to meet with the dog and determined that you’d like to move forward, your information will be sent to partnered rescue groups. If a rescue group is interested and feels they may be able to pull, they will then reach out to IPs.
+Collaboration with Rescue Groups:
+•	Rescue groups are encouraged to reach out to PACC immediately if they will pull this animal into their rescue (and if there are requirements: Interested adoptive party, spay/neuter if not already completed, etc.)
+•	Rescue groups are encouraged to start their adoption process with any interested parties who have contacted them directly and email PACC at PACC.UrgentDogs@pima.gov.
+Please note that it is ultimately up to the rescue group's discretion to decide whether to proceed with adoption.
+HOME MANAGEMENT PLAN:
+Bite History:
+• Incident Details: “Walker was going to attack her cat, she put her arm out to stop him, grabbed his scruff and he redirected on her”
+No Other Dogs:
+• Walker is not suitable for a home with other dogs.
+• Reason: selective, issues in previous home with other dogs, resource guarding
+• Management: They should be the only dog in the household. Avoid dog parks, group walks, or introductions to unfamiliar dogs to maintain safety and reduce stress.
+• Behaviors could improve with proper management and/or professional training.
+No Kids:
+• Walker is not suitable for a home with children.
+• Reason: previous bite to 15 year old, previous owner stated growling at young children
+• Management: For safety and comfort, they should be in an adult-only home where interaction can be calm, predictable, and structured.
+Prey Drive:
+• Walker may display chasing behaviors or pull toward small animals such as cats, rabbits, or wildlife while on walks. A confident, strong handler is recommended for safe management.
+• Prey drive can be instinctual, breed-related, or a learned behavior reinforced by past experiences.
+• Training and Management: Use a secure martingale collar or properly fitted harness during walks. Avoid off-leash areas where small animals may be present.
+No Cats:
+• Walker is not suitable for a home with cats.
+• Reason: growling, chasing
+Resource Guards Items or Food:
+• Circumstances: seen in previous home
+• Walker may guard valued items such as food, toys, bones, or resting spaces.
+• Management: Do not attempt to take items directly from their mouth or reach into their food bowl. Instead, trade with a high-value treat or toy to encourage voluntary release or when picking up a food bowl, call the dog away from the bowl into another room before picking up.
+• Feeding Protocol: Feed them separately from other pets and in a quiet, low-traffic area. Allow them to eat undisturbed. Remove food bowls only after they have finished and moved away.
+• Muzzle Training: Conditioning them to wear a muzzle can be beneficial during resource-handling practice or when introducing high-value items around people or other animals.
+• Professional Support: Work with a qualified trainer or behaviorist to develop safe management and counterconditioning techniques.
+• Recognize Warning Signals: Be aware of early signs of guarding behavior, such as stiffening, hovering over items, growling, or showing teeth. Respect these signals by calmly creating distance and redirecting their focus.
+Handling Issues:
+• Decompression Period - Allow Walker a minimum of 2 weeks to settle. They must be allowed to go at their own pace. Allow them to approach you for attention and pets. DO NOT force interactions.
+• No Forced Handling - Avoid all handling that Walker cannot consent to. This includes:
+• Petting them while they are sleeping
+• Grabbing their collar or body.
+• Picking them up.
+• Forcing grooming (bathing, clipping nails, cleaning ears) during the decompression period. Use positive reinforcements and conditioning only.
+• Positive Reinforcement: Use high-value treats and praise to reward all desired behaviors.
+• Recognize Warning Signals - the adopter/foster must be intensely aware of Walker’s body language signals, which indicate stress and potential snap or bite:
+• Lifting of the lips/showing teeth
+• Low growls
+• Stiffening of the body (freezing)
+These warnings must be respected immediately by creating distance and di",animals/PACC-A902067.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902067.jpg,120d32b491bcff35423d365a7cb8fb73461ebbe1032372d7e36e3ce9002846bd,2026-06-14 08:06:48.622435+00,2026-06-15 17:06:58.136875+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902067,Pima Animal Care Center,https://24Petconnect.com/image/697880383,Tucson,AZ,PACC,7315,Walker,Neutered Male
+HSSA-48226143,84Lbs,"7 Years Old, Senior",,"Oso is a 7 year-old shepherd who enjoys a good play session. This playful guy was originally found with his friend Hazel on an abandoned property until a good Samaritan saved them both! Although his rescuer was not able to keep him, he still has high hopes in finding a new family. He is neutered, vaccinated, microchipped and ready to find a new home occupied with people.",animals/HSSA-48226143.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-48226143.jpg,d2352ad777015cd4b918952522ecd63ad44e159ab3e0dc0ae7eb4327fb6ba7fc,2026-06-13 06:42:02.866069+00,2026-06-15 14:49:40.848731+00,1701,null,https://www.adoptapet.com/pet/48226143,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1310119279",Tucson,AZ,HSSA,373,Oso,Male
+MP-009742,55,9 years,null,"Meet Taz! A true New Yorker, borough-born and bred, Taz is a 9+ year-old gentleman who fully embraces a calm, unbothered approach to life. At home, you’ll often find him snoozing (and snoring… loudly), or following you around in hopes for some extra scritches or some table scraps. Everyone who has met Taz has immediately fallen in love with his lopsided ears and silly eyes that give him a bit of a chameleon vibe. He may take a couple days to open up and trust new people, but once he’s yours and you are his, he opens up into a goofy, affectionate, and loving good boy. 
+
+He’s a mellow, low-key guy who enjoys his space and appreciates a calm, predictable environment. While he’s mostly chill, he’ll occasionally show off a playful side with a quick burst of tail-chasing energy or trotting around for a home inspection before returning to his regularly scheduled lounging.
+
+On walks, Taz generally moves at an easy pace on a loose leash and is happiest when the world around him stays respectful of his personal bubble. He doesn’t love when people rush into his space or other dogs get too close, so a home that can advocate for him and his space will help him feel most comfortable. 
+
+He’s wonderfully house-trained, taking care of business promptly outside. He’s also very well crate-trained, sometimes even strolling into his crate himself for some nap time. Even when left home alone, he’s able to settle quickly. 
+
+If you’re looking for an independent but affectionate companion with a touch of grumpy charm (think Carl from Up!), Taz might just be your guy!
+
+﻿Taz is approximately 9y 2m 18d old and is fully grown at 55 pounds. They are microchipped and up to date on all age-appropriate medical care. Their breed is unknown as we have not had a DNA test done.
+
+Although our dogs are listed as unknown breed, buildings with specific dog restrictions typically enforce their rules based on what breeds a dog appears to resemble. It's always important to keep that in mind and know your building's policies before adopting a dog.
+
+This dog is available for adoption through Muddy Paws Rescue. If you're interested in adopting, the first thing you should do is begin the registration process at www.muddypawsrescue.org. If you are already a registered adopter with Muddy Paws Rescue, please email us at adoptionmeetings@muddypawsrescue.org.",animals/MP-009742.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/MP-009742.jpg,4d9a92d7220b26f124d429d0272baf59f951beb6cd31bdc47aa031e258b6ed87,2026-05-29 19:33:46.883952+00,2026-06-15 18:01:38.082227+00,null,"{""Age"":""9 years"",""Fee"":150,""Sex"":""Male"",""Name"":""Taz"",""Breed"":""Unknown"",""NYCDog"":true,""Photos"":[""https://photos.smugmug.com/Adoption-Events/Regular-Adoption-Events/2026-Events/20260502-Petsmart-Flatiron-Alex-Lloyd/i-dkctfHr/0/M3MJfWnrR7QDQsMHTqcP9FpFVTJt3hQ58gmTfGxNB/XL/DSC_7372-XL.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-vNFkmwc/0/KbzTMXQkb4Pg2pF85F9k8KzwgjmQVzWxcmpwj7NV9/XL/PXL_20260417_160928786_Original-XL.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-Qf6x6jH/0/LfqfzqGdDBqXPP2n7XgCCJvXB6cJthsw7vNZZCwrb/X2/IMG_3075-X2.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-8T8Nz8k/0/NJcC47KrqSNx7GVv7mWKXVpZ98ggzxZ3xw5hLfX53/XL/IMG_6983-XL.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-S5j4tHK/0/LFSnQxFGdWK6sNq2WdXCRzvfCXKc2swfH7bS8VqSH/4K/IMG_7151-4K.jpg"",""https://photos.smugmug.com/Adoption-Events/Regular-Adoption-Events/2026-Events/20260502-Petsmart-Flatiron-Alex-Lloyd/i-sTjM4bz/0/NS9xDPN6gM9kQLSF5GhVwjwg39zs4Z8Dfzjs6ZLqL/XL/DSC_7383-XL.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-d8wjGKB/0/Lpmwx34rg9x3x6M796fjNTHphjdnFhBZCHpFPGgKL/XL/IMG_7010-XL.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-grKVGT9/0/KZWqZNHQwJScwVfMdXNSHdDBS2JtSFrd8B7mCr4NJ/X2/IMG_7036-X2.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-RpXcVC5/0/K5d57GZrpRSgdXjtTFZkR9ZSNzBXdBpHXZVLFSR49/X2/IMG_7023-X2.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-Kb9tmGj/0/NR4cZpdm4wcwk6MCc9rrvQJwNBSk8SMXNPFgpV7Nx/X2/3800EEDC-5305-4F9E-B999-73182203A580-X2.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-L6D3SC8/0/NRZL6GCTbnght8nSQ5KwW3QkpTsXWctWnScVMdCPr/X2/IMG_7024-X2.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-rzQGgt4/0/LSKf27cvjcxPFDzBh7crfcxFJmdR8crk6VXzfMf92/XL/IMG_7149-XL.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-3s5p4p6/0/KwVFTm7FjW6cB8gFK55vdjnkrDqC2m57j4tVGT6BK/XL/IMG_7162-XL.jpg"",""https://photos.smugmug.com/Adoption-Events/Regular-Adoption-Events/2026-Events/20260502-Petsmart-Flatiron-Alex-Lloyd/i-Vcp3kqd/0/LgxppMX23XCHhKBxbprpZ56TmjMkFVc2ZDjkRwB5k/XL/DSC_7367-XL.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-XrpKcWp/0/KP8TrtRVSnmWvdMfqB5jNxM7xBz6xjBdNG4xdqcT7/M/IMG_3077-M.jpg"",""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-pwrdtGf/0/MBnQtxncgL5frK9RHjp3NZwGFjqr52MH5kL4bLbNN/X2/IMG_3079-X2.jpg""],""Status"":""Available"",""Videos"":[{""Uri"":""/api/v2/video/KvztQHc-0!embed"",""Compact"":""<iframe allow=\""fullscreen\"" allowfullscreen=\""true\"" frameborder=\""0\"" scrolling=\""no\"" width=\""360\"" height=\""640\"" src=\""https://api.smugmug.com/services/embed/18414587395_KvztQHc?width=360&height=640&albumId=484028107&albumKey=K8f6FR\""></iframe>"",""EmbedLink"":""<iframe allow=\""fullscreen\"" allowfullscreen=\""true\"" frameborder=\""0\"" scrolling=\""no\"" width=\""360\"" height=\""640\"" src=\""https://api.smugmug.com/services/embed/18414587395_KvztQHc?width=360&height=640&albumId=484028107&albumKey=K8f6FR\""></iframe>"",""VideoLink"":""https://photos.smugmug.com/Individual-Dog-Assets/T/TazSFCreateDate20260409/i-KvztQHc/0/NdCkTwjXThRqBFLnPFF3P6RpCcgMWk4h9QSz3PLb7/1280/fef457205b2049a898a89917fe4813a3-1280.mp4"",""EmbedSize1280"":""<iframe allow=\""fullscreen\"" allowfullscreen=\""true\"" frameborder=\""0\"" scrolling=\""no\"" width=\""360\"" height=\""640\"" src=\""https://api.smugmug.com/services/embed/18414587395_KvztQHc?width=360&height=640&albumId=484028107&albumKey=K8f6FR\""></iframe>"",""UriDescription"":""Embed link for video""}],""Altered"":true,""Animal_ID"":""009742"",""Attributes"":[],""CoverPhoto"":""https://photos.smugmug.com/Adoption-Events/Regular-Adoption-Events/2026-Events/20260502-Petsmart-Flatiron-Alex-Lloyd/i-dkctfHr/0/M3MJfWnrR7QDQsMHTqcP9FpFVTJt3hQ58gmTfGxNB/XL/DSC_7372-XL.jpg"",""Description"":""Meet Taz! A true New Yorker, borough-born and bred, Taz is a 9+ year-old gentleman who fully embraces a calm, unbothered approach to life. At home, you’ll often find him snoozing (and snoring… loudly), or following you around in hopes for some extra scritches or some table scraps. Everyone who has met Taz has immediately fallen in love with his lopsided ears and silly eyes that give him a bit of a chameleon vibe. He may take a couple days to open up and trust new people, but once he’s yours and you are his, he opens up into a goofy, affectionate, and loving good boy. \n\nHe’s a mellow, low-key guy who enjoys his space and appreciates a calm, predictable environment. While he’s mostly chill, he’ll occasionally show off a playful side with a quick burst of tail-chasing energy or trotting around for a home inspection before returning to his regularly scheduled lounging.\n\nOn walks, Taz generally moves at an easy pace on a loose leash and is happiest when the world around him stays respectful of his personal bubble. He doesn’t love when people rush into his space or other dogs get too close, so a home that can advocate for him and his space will help him feel most comfortable. \n\nHe’s wonderfully house-trained, taking care of business promptly outside. He’s also very well crate-trained, sometimes even strolling into his crate himself for some nap time. Even when left home alone, he’s able to settle quickly. \n\nIf you’re looking for an independent but affectionate companion with a touch of grumpy charm (think Carl from Up!), Taz might just be your guy!\n\n﻿Taz is approximately 9y 2m 18d old and is fully grown at 55 pounds. They are microchipped and up to date on all age-appropriate medical care. Their breed is unknown as we have not had a DNA test done.\n\nAlthough our dogs are listed as unknown breed, buildings with specific dog restrictions typically enforce their rules based on what breeds a dog appears to resemble. It's always important to keep that in mind and know your building's policies before adopting a dog.\n\nThis dog is available for adoption through Muddy Paws Rescue. If you're interested in adopting, the first thing you should do is begin the registration process at www.muddypawsrescue.org. If you are already a registered adopter with Muddy Paws Rescue, please email us at adoptionmeetings@muddypawsrescue.org."",""SalesforceId"":""a1NPP000003WZVZ2A4"",""AttributeData"":[],""ShowOnWebsite"":true,""WalkingDevice"":""Regular leash and martingale collar"",""WalkingStatus"":""Yes"",""RelatedAnimalGroup"":null,""CurrentWeightPounds"":55,""RelatedAnimalGroupType"":null,""DiscountWebsiteBannerText"":""Reduced Fee 🍎 Native New Yorker"",""NextConfirmedAdoptionEventDate"":null,""DisplayReducedFeeBannerOnWebsite"":true}",https://www.muddypawsrescue.org/adoptable?dog=009742,Muddy Paws Rescue,https://photos.smugmug.com/Adoption-Events/Regular-Adoption-Events/2026-Events/20260502-Petsmart-Flatiron-Alex-Lloyd/i-dkctfHr/0/M3MJfWnrR7QDQsMHTqcP9FpFVTJt3hQ58gmTfGxNB/XL/DSC_7372-XL.jpg,NYC,NY,MP,2348,Taz,Male
+NYCACC-255904,49 lbs,5 Years,,"Name: Skyla | Native ID: 255904 | Species: Dog | Gender: Female | Location: Queens | Room: 117 - Dog Adoptions B-1 | Intake Date: 2026-06-04 | Days in Care: 12 | ACC Feed Updated: 2026-06-15T19:30:54.862344Z | Photo Count: 2 | Bio/Summary: This pet is available only through ACC New Hope partners. To adopt or foster, please complete the pre-screener form below. Inquiries sent directly to ACC will not receive a response. Pre-Screener Form Skyla was surrendered into care by her previous owner due to their housing situation. Skyla was described as a low-energy dog who was social, affectionate, quiet couch potato. She preferred spending her time wherever her people were in the home. She is reported to love toys, chew toys, and almost any snacks, specifically blueberries. During her stay in care, Skyla has been highly fearful and avoidant of most forms of handling and interaction. She did escalate during her medical exam to higher-level warnings. Due to these concerns, we recommend placement with a New Hope partner who can provide any necessary behavior modification (force-free, positive reinforcement-based) and re-evaluate behavior in a stable home environment before placement into a permanent home.",animals/NYCACC-255904.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-255904.jpg,9b295fa60e516afdafd2f655e452345afe48a677f35176a0548560b2dc8fb25c,2026-06-12 17:28:20.291189+00,2026-06-15 19:33:50.111499+00,1718,null,https://nycacc.app/#/browse/255904,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/17a8d0e32df24682b895071e47d418a1-1781208143-1781208146-jpg/512---n,NYC,NY,NYCACC,1213,Skyla,Female
+NYCACC-251826,53 lbs,6 Years,,"Name: Dipity | Native ID: 251826 | Species: Dog | Gender: Male | Location: Manhattan | Room: PAC - Dog Room | Intake Date: 2026-04-12 | Days in Care: 65 | ACC Feed Updated: 2026-06-15T14:30:49.951578Z | YouTube IDs: Mg9kj_2dP0Y | WqAatybiMxo | hN0NU6bW24E | Photo Count: 33 | Bio/Summary: This pet needs emergency placement. Please click here to go to our emergency placement page for more information. Dipity is on the at-risk list due to medical concerns. Since arriving into care Dipity was suspected to have hematuria, which means there was noted blood in his urine. This may be caused by prostate hyperplasia. His recent urine analysis supports that this is still unresolved. This may resolve over time, but if not, he will require further diagnostics we cannot provide in the care center. Meet Dipity! Dipity is a male dog who was found alone in a park and brought to the shelter as a stray. He is still adjusting to new environments and benefits from time and space to feel comfortable. Once settled, he is able to move through his surroundings calmly with a steady, neutral presence. Personality Dipity is quiet and observant in new situations. He may not seek attention right away and can appear reserved when first approached. With gentle handling and patience, he is able to relax and tolerate interaction. My Ideal Home Dipity would do best in a calm, low-traffic home with a consistent routine. He will need patient adopters who can let him adjust at his own pace without pressure. A quiet environment will help him feel more secure over time. Good with Other Pets? Dipity's behavior around other dogs is still unclear. Slow, structured introductions and careful management would be needed in a home with other pets. Good with Kids? Dipity is recommended for a home without young children under 5 due to his fearful behavior. Older, respectful children may be considered after slow introductions. Things to Know Dipity walks well on leash and follows his handler with a calm, neutral body. He does best with slow introductions and a gentle, consistent approach. He benefits from patience as he continues to build confidence in new environments. Fun Fact Dipity is a quiet, thoughtful boy who takes his time to settle in, but shows a steady, calm presence once he feels comfortable. My #BoroughBreak Buddy writes: Dipity is a very happy boy. He is also the perfect walking buddy. He has great leash manners, is interested and friendly with other dogs without being aggressive, and has a huge smile and a tail that never stops wagging--especially when being offered treats! We walked for hours through the park and he never pulled, never barked, and never chased after any animals. He was so happy to meet other people and soaked up all attention and skritches. After hours of walking, we sat on a bench where he calmly fell asleep for a long time, just happy to have company outside in the shade. He's a very sweet boy. My #BoroughBreak Buddy writes: I had such an amazing day with Dipity today. We walked to Central Park, he did a great job on the leash and was completely non reactive towards other dogs (he just looked at them, but never pulled or barked). We then spent some time at my apartment, where he loved playing with a toy and got some good rest. It was also great that he was fully housebroken, after a little bit I didn't even have to worry about him having an accident. We then went to the Barking Dog around lunchtime- and again he kept to himself and I and only interacted with other people when they wanted to say hi. He got plenty of compliments there for his good behavior and relaxed nature. He loved getting scratches and used any surface (usually me) as a scratching post. Dipity is an amazing, lovable dog who will easily adapt to whatever environment he is in.",animals/NYCACC-251826.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-251826.jpg,f98d4eea7acfce77d3a9c4f8fa4b16d79dfd89ee01d6d8fc8008ace6b4032b03,2026-06-06 07:31:07.766388+00,2026-06-15 14:49:13.457639+00,1700,null,https://nycacc.app/#/browse/251826,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/c818c09f6e14454597ec5865f6768dda-1781199223-1781199388-jpeg/512---n,NYC,NY,NYCACC,3797,Dipity,Male
+NYCACC-251907,58 lbs,3 Years,,"Name: Ace Of Hearts | Native ID: 251907 | Species: Dog | Gender: Male | Location: In Foster | Room: M - In Foster | Intake Date: 2026-04-12 | Days in Care: 64 | ACC Feed Updated: 2026-06-15T14:30:49.951578Z | YouTube IDs: 4g3TQSLmyKg | Photo Count: 13 | Bio/Summary: My foster writes: Meet your new cuddle buddy! This sweet, affectionate boy loves being close to his people and is known for giving actual hugs-he'll wrap his front legs around you and rest his head while soaking up the attention. He gets so excited for mealtime that he jumps and spins, loves car rides and playing in the sprinklers, and will happily curl up next to you on the couch for movie night. He even watches TV and tries to follow the ball during basketball games! With his funny personality and loving nature, he's sure to bring plenty of smiles and snuggles to his future home. Meet Ace of Hearts! Ace of Hearts was surrendered when his owner could no longer care for him. He previously lived with adults, and is described as a highly social, wiggly, and affectionate dog who loves interacting with people. He comes over readily for attention, leans into touch, and enjoys playtime, often offering play bows and engaging happily with toys. My Ideal Home Ace would do best in a calm, patient home that can support him as he settles in and builds confidence. He can be anxious at times and may pace or have trouble settling, especially in new environments, so a consistent routine and a quiet space will help him feel more secure. Good with Other Pets? Ace has shown neutral behavior around dogs at the shelter, but he is not a match for homes with cats due to lunging toward them on walks. Continued positive reinforcement training and management will be important when navigating environments with other animals. Good with Kids? A home without young children under 5 is recommended due to his sensitivity to handling and tendency to become fearful when startled. Things to Know Ace is a sweet and people-oriented dog who enjoys affection and play, but he can be sensitive to loud noises, sudden movements, and handling around his paws. He may also feel anxious when left alone. He responds best to gentle, choice-based interactions and should never be forced into situations that make him uncomfortable. With time, structure, and positive reinforcement, he has great potential to feel more confident and settled in a home. Fun Fact Ace of Hearts lives up to his name, he is all heart when it comes to his people and loves being right by your side soaking up attention.",animals/NYCACC-251907.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-251907.jpg,941c0415b31dcbfe42deaa7a3f20a4d61fd893e75d0a9c92c6a84a0d7b528774,2026-06-06 07:31:10.784187+00,2026-06-15 14:49:15.206344+00,1700,null,https://nycacc.app/#/browse/251907,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/9ba93e2533c148538e7c132fae8c64e0-1778203538-1778724140-jpg/512---n,NYC,NY,NYCACC,2546,Ace Of Hearts,Male
+NYCACC-252075,44 lbs,1 Year,,"Name: Philly Cheese | Native ID: 252075 | Species: Dog | Gender: Male | Location: Manhattan | Room: ε Manager's Office | Intake Date: 2026-04-14 | Days in Care: 63 | ACC Feed Updated: 2026-06-15T19:30:54.862344Z | YouTube IDs: hdUCuxjMlvo | Photo Count: 19 | Bio/Summary: What my friends at ACC say about me: My history is a mystery and my friends here do not know much about me yet! I am excitable and energetic! I will need positive outlets for my energy! I'm ready to learn! I need a patient person who has the time to work on training with me. I love to be loved, but on my own terms! Let's brush up on some canine body language together! I would do best in a home with only adult humans. My #BoroughBreaker writes: Philly cheese is so lovable. He was a great walker and I think could've walked all day long! He got excited and jumpy with the first 3-4 dogs we saw, but then the rest after that he was a good boy and was able to sit and just watch (got some treats for doing so). He played with a monkey and some rope in the apartment and the park. He likes to run and jump after them. He is also very social and seems to love everyone. He does tend to put his mouth on hands, but not actually bite, just to play or say hi.",animals/NYCACC-252075.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-252075.jpg,fcee826179c55651669aa75afcfb3243f48892c078dd972b95276052536cdfc1,2026-06-06 07:31:16.859544+00,2026-06-15 19:33:54.086734+00,1718,null,https://nycacc.app/#/browse/252075,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/6cc85cd676f14a5cbbde3793a266bf24-1780691488-1780691497-jpeg/512---n,NYC,NY,NYCACC,1227,Philly Cheese,Male
+HSSA-48261507,44Lbs,"3 Years Old, Adult",,"Sade is a sweet Pit Bull mix with a gentle soul and a quiet charm all her own. Found as a stray, she's still learning that the world can be a safe and loving place, so she may be a little shy when meeting new people. With patience, kindness, and a cozy spot to call her own, Sade is sure to blossom at her own pace. This lovely girl is looking for a family who will give her the time and understanding she deserves. 🐾💖",animals/HSSA-48261507.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-48261507.jpg,192a3fa1da06725afc9f2ae0145c462fe4adea509c3216c0fdd6de8006816631,2026-06-06 21:45:57.657643+00,2026-06-15 19:34:03.648722+00,1716,null,https://www.adoptapet.com/pet/48261507,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1310874980",Tucson,AZ,HSSA,418,Sade,Female
+PACC-A902947,I weigh approximately 60.00 lbs.,The shelter staff think I am about 8 years old.,"I have been at the shelter since Jun 10, 2026 and am ready to go home today!
+I am in Kennel D052.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Bruce.
+I am a neutered male, fawn and white Pit Bull Terrier.",animals/PACC-A902947.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902947.jpg,5ab9590022fdc6256ff318c1311f7942732b5cd33f582750ff03c9cba65cf142,2026-06-14 08:07:32.831425+00,2026-06-15 17:07:32.444802+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902947,Pima Animal Care Center,https://24Petconnect.com/image/697864997,Tucson,AZ,PACC,72,Bruce,Neutered Male
+NYCACC-118683,78.4 lbs,6 Years,,"Name: Kobe | Native ID: 118683 | Species: Dog | Gender: Male | Location: Queens | Room: 118 - Dog Adoptions B | Intake Date: 2026-02-13 | Days in Care: 121 | ACC Feed Updated: 2026-06-14T14:30:47.218247Z | YouTube IDs: v4d9Lz3ByDU | cM0kilD4iMM | Photo Count: 6 | Bio/Summary: Since I'm a long stay pup, my adoption fee has been reduced! Visit me today to find out my favorite treats and how you can take me home! What my friends at ACC say about me: I'm ready to learn! I need a patient person who has the time to work on training with me. I don't always like to share my food, toys or bedding with other animals. I love getting pets and - you guessed it - snuggles! I would do best in a home with only adult humans. A volunteer writes: We met Kobe the day before the big blizzard. But it wasn't our first time. We also met him 5 years ago, when he was just a baby with his whole life ahead of him. At that time he was only 43lbs, and he looks adorably scrawny in our old videos and photos, standing on my lap. Now 78lbs and 5 years old, I'd like to think Kobe and a lucky home still have a whole life ahead of them. Just over a month ago Kobe ran up to someone and their two small dogs seeking help. He was friendly and brought to the shelter where he's been ever since, and hopefully for the last time. In spite of his grown up looks, Kobe is much the same as the first go around. He sidles up to us for cuddles. I don't remember if he was brave enough 5 years ago to play, but this time we learn he loves toys as well. While we always hope adoptions are forever, Kobe's story is not unique. Coming back to the shelter is not rare. But it's not easy being an adult dog in a shelter in a world that values puppies. I could go on and on about the myriad reasons to adopt an adult, but perhaps you can come meet Kobe and see for yourself.",animals/NYCACC-118683.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-118683.jpg,4e1ec21f50a69cec8c507d0e7a1ba3bf2560451a3e69f325a2b3fb98ea7181ab,2026-06-05 20:23:53.531346+00,2026-06-14 14:59:26.257254+00,1595,null,https://nycacc.app/#/browse/118683,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/39a755d2e2bc40959559784d30ffefb3-1771948597-1771948606-jpeg/512---n,NYC,NY,NYCACC,1838,Kobe,Male
+NYCACC-145118,75.4 lbs,7 Years,,"Name: Mika | Native ID: 145118 | Species: Dog | Gender: Female | Location: In Foster | Room: Q - In Foster | Intake Date: 2022-06-07 | Days in Care: 1468 | ACC Feed Updated: 2026-06-14T14:30:47.218247Z | YouTube IDs: 4O_NhSRn8to | Photo Count: 21 | Bio/Summary: Hi! My name is Mika! Since I'm a long stay pup, my adoption fee has been reduced! Apply for me today to find out my favorite treats and how you can take me home! Here's what my friends at ACC say about me: My foster writes: Mika is a very loving and sweet dog. She wants nothing more than to lay with you on the couch or bed and snuggle up to you or to bring her ball to you and play. She has been learning to walk nicely on the leash and absolutely loves being outside. She is friendly to people and kids and greets everyone with her tail wagging. Mika does snore when she sleeps and can even snore when she's awake! She takes treats very gently and knows how to sit, stay or give paw for treats. She will benefit from plenty of exercise, food puzzles and interaction with you. She should be the only pet in the home and, because of her strength and excitability, a home with no small children. My foster writes: If I had to describe Mika in a single word, it would be exuberant! She is a joyful and loving companion who wants to become friends with every living creature she meets. While she is certainly energetic she is also equally cuddly, and is happy following a good round of exercise with cuddling close on the sofa to watch a show. She's also so eager to please that she learns quickly, having picked up several new commands with minimal effort. She would be certain to brighten any home she enters! Mika is a fun-loving pup who loves to explore her surroundings. She is still adjusting to being around other dogs, cats, and squirrels, and is working on her leash manners. Mika has a lot of energy and would benefit from a patient, experienced owner who can help her reach her full potential. With the right home, Mika could thrive and become a loyal companion My ideal home: Mika will succeed in an experienced home without tiny humans or other animals.",animals/NYCACC-145118.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-145118.jpg,3503f806dae87aed9e99dd08e4d1a8c6acfbd18795248eed1453c58470b0992f,2026-06-05 20:23:58.870919+00,2026-06-14 14:59:28.029605+00,1595,null,https://nycacc.app/#/browse/145118,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/bc4c4ce283ad48fa9cdab256ce853898-1685636356-1685636494-jpg/512---n,NYC,NY,NYCACC,2126,Mika,Female
+PACC-A902756,I weigh approximately 12.40 lbs.,The shelter staff think I am about 2 years old.,"I have been at the shelter since Jun 08, 2026 and ready for adoption!
+I am in Kennel FOS001.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","I am a female, black and brown Chihuahua - Smooth Coated.",animals/PACC-A902756.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902756.jpg,a9bc4b4a2cf8149aab1df9fb7507a6d02f760927a637e9ae4d7878e2361d1590,2026-06-14 08:07:13.075972+00,2026-06-15 17:07:22.753995+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902756,Pima Animal Care Center,https://24Petconnect.com/image/697826075,Tucson,AZ,PACC,57,,Unaltered Female
+NYCACC-187906,67 lbs,4 Years,,"Name: Obie | Native ID: 187906 | Species: Dog | Gender: Male | Location: In Foster | Room: M - In Foster | Intake Date: 2023-11-23 | Days in Care: 935 | ACC Feed Updated: 2026-06-14T17:00:50.223116Z | YouTube IDs: B__aPm5Uqjs | Photo Count: 13 | Bio/Summary: Since I'm a long stay pup, my adoption fee has been reduced! Visit me today to find out my favorite treats and how you can take me home! What my friends at ACC say about me: I love getting pets and - you guessed it - snuggles! Not only do I pull at heart strings, but I also pull on leash! I will need someone to help me with my leash manners. I'm ready to learn! I need a patient person who has the time to work on training with me. I would do best in a home without very tiny humans, although I could be open to older human children once I meet them. Please check here for updated adoption hours. My foster writes: I am the puppiest pup in world. most excited about... well. everything. everywhere. always. I am fantastically curious and determined to explore. When not focused on strategic sniffing I might get carried away chatting awkwardly right at other dogs to unsuccessfully explain how much I would like to play though I do not understand societal rules. I am the most excellent lounging buddy and also easily excitable with loads of energy. My sudden jolts of wonder could be challenging for those unfamiliar with spastic strong and sneakily quick pups. I love to run together and chase after those taunting squirrels... and shadows. and suspicious inanimate objects. I am very interested in learning games and tricks. I could use someone with a quickness and strength who is able to sense my moves and catch me right away and someone active and into taking me everywhere. I am the perfect adventurous best friend.",animals/NYCACC-187906.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-187906.jpg,56fa70ed90ce1b9aefc229e901497347340fdedbb25a8b091a9acfd331dd23aa,2026-06-05 20:24:12.462314+00,2026-06-14 17:02:39.999709+00,1604,null,https://nycacc.app/#/browse/187906,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/9f976dd49b304e5ea095c71b7c55211d-1706111264-1706111283-jpg/512---n,NYC,NY,NYCACC,1784,Obie,Male
+PACC-A899813,I weigh approximately 53.00 lbs.,The shelter staff think I am about 3 years old.,"I have been at the shelter since May 07, 2026 and am ready to go home today!
+I am in Kennel D084.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Ivy*.
+I am a spayed female, tricolor Carolina Dog mix.",animals/PACC-A899813.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A899813.jpg,84c54aace405d60b4c256f0f190dfb5196ab0ca657afdcb4a0e59741bae1728c,2026-05-12 08:02:39.083718+00,2026-06-15 21:06:10.616273+00,1726,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A899813,Pima Animal Care Center,https://24Petconnect.com/image/696934233,Tucson,AZ,PACC,65,Ivy,Spayed Female
+PACC-A902877,I weigh approximately 56.00 lbs.,The shelter staff think I am about 3 years old.,"I have been at the shelter since Jun 09, 2026 and ready for adoption!
+I am in Kennel D054.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Aurora*.
+I am a female, black Labrador Retriever mix.",animals/PACC-A902877.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A902877.jpg,49362f5564877ef14005c85394b7e233801303032528809569e7afb2e17f81e8,2026-06-14 08:07:28.07791+00,2026-06-15 17:07:27.503392+00,1708,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A902877,Pima Animal Care Center,https://24Petconnect.com/image/697830944,Tucson,AZ,PACC,64,Aurora,Unaltered Female
+NYCACC-163999,68 lbs,9 Years,,"Name: Dakota | Native ID: 163999 | Species: Dog | Gender: Female | Location: In Foster | Room: Q - In Foster | Intake Date: 2023-02-03 | Days in Care: 1227 | ACC Feed Updated: 2026-06-14T14:30:47.218247Z | YouTube IDs: Tgk1JvZ6dig | De0PGOjx3yg | Photo Count: 17 | Bio/Summary: Since I'm a long stay pup, my adoption fee has been reduced! Apply for me today to find out my favorite treats and how you can take me home! My foster writes: Affectionate, curious and caring, Dakota has it all. Fully housetrained, Dakota can be left alone for several hours on her own without any risk of incident. Dakota loves everyone. She came to ACC after getting glowing reviews from her previous home, one that included multiple adults, children and other dogs. She has also done well when subsequently being introduced to cats in a foster setting. She wants to know what you're thinking and will cutely tilt her head when you speak. And she will attentively play with various toys, while also listening to commands like ""sit"", ""paw"" and ""down"". She will let you know when she wants to receive some affection with gentle pawing or resting her head nearby or on your knee. On walks, she can be excitable on leash when passing larger dogs within tight settings because of her loyalty, but the rest of the time she's as docile as can be. She is excellent in the open space of the dog park, and even comes to the defense of other dogs when they are being bullied. While she has high energy when outside, she is very relaxed inside the home. If you're looking for a jogging companion, Dakota is happy to run alongside you. You can see in her profile she enjoys running along the water and even on NYC bridges. She also is great in a car and loves a good hiking experience for outdoor recreation. Dakota is super cute and happy to get dressed up in various outfits. She is a big fan of the Giants, Yankees, Knicks and Rangers, and she doesn't hate the Jets and Mets. She's allegiant but would be open to adopting a new team. She's also happy to wear festive holiday attire. Even without the outfits, she gets lots of compliments while on walks just for being who she is. She may take a small amount of time to warm up to new people, but once she does, she will love you forever. While she was living with children in her previous home, she has yet to be introduced to children in a household setting since being fostered. She of course loves to be pet and encouraged, but Dakota also really enjoys a ""spa day"" in the bathtub and getting belly rubs. And she appreciates her beauty sleep (and it's been working!). On a typical day, Dakota will sleep in until being woken up, sometimes even late into the morning. She is typically curled up on the couch and happy to be pet as she is waking up. Then she is patient as her caretaker is getting ready themselves while waiting to be given breakfast and go out for her first walk. Dakota is truly ready to breathe life into a fresh home and can't wait to be a great addition to her new family!",animals/NYCACC-163999.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-163999.jpg,87635eef937a3c32e9c87652a911270f195e3694f73e476aa6d6dca000308539,2026-06-05 20:24:01.656438+00,2026-06-14 14:59:29.427698+00,1595,null,https://nycacc.app/#/browse/163999,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/02f0751e3f2f495aabfec242c655c0b0-1712674791-1712674891-jpg/512---n,NYC,NY,NYCACC,3015,Dakota,Female
+PACC-A876268,I weigh approximately 64.00 lbs.,The shelter staff think I am about 1 year and 2 months old.,"I have been at the shelter since Apr 28, 2026 and am ready to go home today!
+I am in Kennel D150.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Chewy.
+I am a neutered male, brown brindle Mastiff.",animals/PACC-A876268.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A876268.jpg,89ca1e4ea800a3bf316149012b2ff53417e492445936bc48152b15e6efee8bc3,2026-05-05 08:01:01.319902+00,2026-06-15 18:07:24.885727+00,1711,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A876268,Pima Animal Care Center,https://24Petconnect.com/image/694330280,Tucson,AZ,PACC,62,Chewy,Neutered Male
+NYCACC-256446,59 lbs,2 Years,,Name: Brownie | Native ID: 256446 | Species: Dog | Gender: Male | Location: Queens | Room: 119 - Dog Adoptions B-2 | Intake Date: 2026-06-06 | Days in Care: 9 | ACC Feed Updated: 2026-06-14T20:30:52.411673Z | Photo Count: 4 | Bio/Summary: What my friends at ACC say about me: My history is a mystery and my friends here do not know much about me yet! It is unknown if I have ever lived with other animals or children. I am playful and cute! I am excitable and energetic! I will need positive outlets for my energy!,animals/NYCACC-256446.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-256446.jpg,8de2d6eff1e62c51e16036203c8f2fd5668e3c7200913ca6f33c6e47a9f6e19c,2026-06-13 14:53:49.160761+00,2026-06-14 20:51:44.362613+00,1625,null,https://nycacc.app/#/browse/256446,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/b0e35a674b0144b5a50083302d2a4464-1781439765-1781439782-jpg/512---n,NYC,NY,NYCACC,514,Brownie,Male
+NYCACC-199009,52 lbs,5 Years,,"Name: Velvet | Native ID: 199009 | Species: Dog | Gender: Female | Location: In Foster | Room: M - In Foster | Intake Date: 2025-02-17 | Days in Care: 482 | ACC Feed Updated: 2026-06-14T17:00:50.223116Z | YouTube IDs: qP1aWwYAPug | efc9pCqRfII | Photo Count: 18 | Bio/Summary: Since I'm a long stay pup, my adoption fee has been reduced! Visit me today to find out my favorite treats and how you can take me home! My foster writes: In her notes, Velvet's veterinarian noted how polite she is, and SHE IS. In addition to being the sweetest and most loving pup, and she knows how to be patient with people who want to give her attention and with me when I'm preparing her food. The only thing she is not patient about it is when she sees there's a chance that we might be heading toward the park. Then the excited puppy energy takes over. Velvet loves tennis balls, soccer balls, squeaky toys (she is a very efficient squeaker-remover), fetch, and tug of war. Her tail is powerful and she wags it with gusto when she is happy. Velvet loves to run but she is also happy as a work-from-companion, having attended many zoom meetings with me and listened in on countless work phone calls. She lounges about during the day for a surprising number of hours. She cuddles me at night (yes, of course, she sleeps in my bed and gets her hair everywhere), and sometimes snores (it's adorable), and has little dreams where she is apparently paddling her paws in a wide ocean or something like that. Velvet is not a picky eater and takes her meds in half-vienna-sausages with no problems at all. I've only been in two ubers with her and no city buses, but she is making great strides with the subway where she is peaceful and patient and never tires of the public attention her brindle coat guarantees. She knows perhaps 20 commands and we're working on ""privacy"" (so a human can use the bathroom in peace) and ""slow"" when going down stairs. I love her a lot. She has quickly become my best friend. I am sure you will love her, too. What my friends at ACC say about me: I'm ready to learn! I need a patient person who has the time to work on training with me. I would appreciate slow introductions to new people and places to help me feel safe. I love getting pets and - you guessed it - snuggles! I will need daily physical activity to keep me healthy and happy!",animals/NYCACC-199009.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-199009.jpg,ac0b0956194f12101c36aa63a5c1f0e4747f94ff608c7397adb01a457657685e,2026-06-05 20:24:18.159004+00,2026-06-14 17:02:46.741426+00,1604,null,https://nycacc.app/#/browse/199009,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/916c22ad56904c02b2d8f3d5b84d1afb-1743954920-1767183415-jpg/512---n,NYC,NY,NYCACC,2348,Velvet,Female
+PACC-A901039,I weigh approximately 55.00 lbs.,The shelter staff think I am about 2 years and 1 month old.,"I have been at the shelter since May 28, 2026 and ready for adoption!
+I am in Kennel D111.
+If you are interested in adopting this pet, visit us during
+regular business hours
+. 
+	Please email
+pacc.adopt@pima.gov
+for any questions regarding the adoption process.
+If you believe this is your lost pet, come down during regular business hours to reclaim or email
+pacclostandfound@pima.gov
+with any questions.","My name is Daniel*.
+I am a male, tan and white Chow Chow mix.",animals/PACC-A901039.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PACC-A901039.jpg,98863399ecb7bbc47bf9aa6419d1d55647d87660e9adcbde9dc3f5498c048297,2026-06-02 08:06:07.344906+00,2026-06-15 12:05:38.537046+00,1687,null,https://24petconnect.com/PimaAdoptablePets/Details/PIMA/A901039,Pima Animal Care Center,https://24Petconnect.com/image/697312566,Tucson,AZ,PACC,61,Daniel,Unaltered Male
+NYCACC-256526,49 lbs,2 Years,,"Name: Julep | Native ID: 256526 | Species: Dog | Gender: Female | Location: Queens | Room: 120 - Dog Meet & Greet | Intake Date: 2026-06-07 | Days in Care: 9 | ACC Feed Updated: 2026-06-15T19:30:54.862344Z | Photo Count: 5 | Bio/Summary: What my friends at ACC say about me: My history is a mystery and my friends here do not know much about me yet! It is unknown if I have ever lived with other animals or children. I am playful and cute! I will need appropriate toys and positive outlets for my energy. I would do best in a home without very tiny humans, although I could be open to older human children once I meet them.",animals/NYCACC-256526.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-256526.jpg,3261211dfaebcddd9efdba22f8dcb7fc429000eac17aefdad815f45c06f10f70,2026-06-12 17:28:21.564366+00,2026-06-15 19:33:51.012916+00,1718,null,https://nycacc.app/#/browse/256526,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/c02284b9d9a645d590325b148874ae49-1781439952-1781439969-jpg/512---n,NYC,NY,NYCACC,623,Julep,Female
+NYCACC-250931,51.4 lbs,6 Years,,"Name: Mack | Native ID: 250931 | Species: Dog | Gender: Male | Location: Queens | Room: 119 - Dog Adoptions B-2 | Intake Date: 2026-04-13 | Days in Care: 63 | ACC Feed Updated: 2026-06-15T08:30:51.505837Z | YouTube IDs: bCVhpkjVBmg | aRHrIgYqbRA | Photo Count: 8 | Bio/Summary: What my friends at ACC say about me: I love to play and will need appropriate toys and positive outlets for my energy. I would do best in a home without very tiny humans, although I could be open to older human children once I meet them. I would appreciate slow introductions to new people and places to help me feel safe.",animals/NYCACC-250931.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-250931.jpg,acce411134f6cdaf18db06b7415c100ed9f203e2f45a343f011aa9fab3b1f18d,2026-06-05 23:50:45.131058+00,2026-06-15 08:41:40.74753+00,1675,null,https://nycacc.app/#/browse/250931,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/057491aeed414e48acf748c204cbdcff-1777315266-1777315303-jpeg/512---n,NYC,NY,NYCACC,600,Mack,Male
+HSSA-47380318,49Lbs,"11 Months Old, Young",,"Billy is an 11-month-old bundle of joy with a heart full of love and a serious case of the zoomies! This sweet and rambunctious boy is always ready for playtime, adventures, and making everyone around him smile. He’s still very much a puppy, which means he’ll thrive with continued training, structure, and lots of positive outlets for his energy. After a good romp, Billy is more than happy to soak up affection and remind you just how cuddly he can be. If you’re looking for a fun-loving best friend to grow up with, Billy is your guy!",animals/HSSA-47380318.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/HSSA-47380318.jpg,3e0cd74efa141c52024bffb3e1779c00d621029b7d0a015534ece1cc988054b1,2026-06-04 13:55:33.708988+00,2026-06-15 19:34:15.160214+00,1716,null,https://www.adoptapet.com/pet/47380318,Humane Society of Southern Arizona,"https://media.adoptapet.com/image/upload/d_Fallback-Photo_Dog-v3.png/c_fit,h_523,dpr_2/f_auto,q_auto/1291917712",Tucson,AZ,HSSA,537,Billy,Male
+NYCACC-256452,66 lbs,2 Years,,Name: Lion | Native ID: 256452 | Species: Dog | Gender: Male | Location: Queens | Room: 128 - Dog Holding D | Intake Date: 2026-06-06 | Days in Care: 9 | ACC Feed Updated: 2026-06-14T20:30:52.411673Z | Photo Count: 2 | Bio/Summary: What my friends at ACC say about me: My history is a mystery and my friends here do not know much about me yet! It is unknown if I have ever lived with other animals or children. I would do best in a home with only adult humans. I'm sensitive and shy. I'll need extra help from you.,animals/NYCACC-256452.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-256452.jpg,4e03accbf1b6fabad39198f7dbe8aa6b82454ef8c36afb5eaadb2cb537de0b67,2026-06-13 14:53:51.058338+00,2026-06-14 20:51:45.587658+00,1625,null,https://nycacc.app/#/browse/256452,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/94caf1dc1ed440b480d70fc7e2a30a32-1781198260-1781198267-jpg/512---n,NYC,NY,NYCACC,514,Lion,Male
+PAWSCH-158287,14.53lbs,2 Months,"Meet Harlow
+Harlow can’t wait to meet you!
+If you’re interested in adopting this pet, there are few steps you must complete before scheduling an appointment at our Lincoln Park Adoption Center:
+1. Please start by taking our ComPETibility Quiz to make sure they’re a good fit for your home. Your ComPETibility Score will help you compare your home to their needs!
+2. After completing your ComPETibility Quiz, you will be emailed a link to complete your Adoption Application.
+3. Finally, schedule an appointment at our Lincoln Park Adoption Center! During your appointment, you’ll be able to meet all currently adoptable animals at our Lincoln Park Adoption Center and walk through the adoption process with our staff and volunteers. Appointments are not required but encouraged for a more efficient visit.
+Please note that while we can’t place holds on adoptable animals for your scheduled appointment, there are always plenty of homeless pets looking for a home! If you don’t meet the perfect pet during your first visit to the Adoption Center, please feel free to schedule another appointment.
+Want another way to spend time with our adoptable (or soon-to-be-adoptable) pets? Consider fostering.
+
+Adoption Process
+All PAWS Chicago dogs and cats are spayed/neutered, microchipped, and have up-to-date shots based on age and arrival date.
+Next Steps for Harlow?
+
+PAWS Rating Scale Definitions:
+Children:
+  1: Adults only, please! I prefer a mature crowd.
+  2: I’ll do best in a home with children aged 12 and up.
+  3: I’ll do best in a home with children aged 8 and up.
+  4: I’ll do best in a home with children aged 5 and up.
+  5: I love people! Chances are, I’ll love your kids too!
+Dogs:
+  1: I do best with no interaction with other dogs.
+  2: I’m picky with whom I socialize. I may improve with time and management!
+  3: I’m selective. I don’t dislike dogs, but I do best when I have time to adjust.
+  4: I’m a social butterfly with few restrictions in pairings!
+  5: I like dogs! Big dogs. Little dogs. Bring ‘em on.
+Cats:
+  0: I’ve never met a cat as far as PAWS knows!
+  1: I’ll do best in a house with no cats.
+  2: I’m still testing the waters with cats. I’ll do best with time and management.
+  3: I would love some feline friends, but I’ll do best with some supervision at first.
+  4: I’ve lived with cats and have had no known issues.
+  5: I love my cat friends and have a proven history of positive sociability!
+Home Alone:
+  1: I’ll do best in a home where I won’t be left alone.
+  2: I prefer not being alone for longer than an hour, but I’ll likely improve with training.
+  3: I can be home alone for two to three hours. A dogwalker or daycare are great options!
+  4: I can be home alone for four to six hours. A dogwalker or daycare are great options!
+  5: I can be home alone for six to eight hours. A dogwalker or daycare are great options!
+Activity:
+  1: I’m high energy! I’ll do best with an active owner who likes to run, hike, play, etc.
+  2: I have a higher amount of energy. I’ll do best with long walks or play sessions.
+  3: I have moderate energy. I’ll do best with daily exercise plus longer walks or runs a few days each week.
+  4: I’ll do best with a few laps around the block or a few romps in the yard.
+  5: I’m a couch potato! I only need a few short walks per day.
+Environment:
+  1: I need a fenced-in yard where I can run and play in privacy.
+  3: I’ll do best in a building with a private entrance to my home.
+  5: I’m happy to live anywhere as long as you’re there.","Profile Facts:
+- Breed: Coonhound, Hound, Plott
+- Location: Lincoln Park Adoption Center
+- Status: Available for Adoption
+
+Harlow's Story
+If days full of puppy dog eyes, constant entertainment, and just a little bit of mischief sound like a plan to you, a puppy might be your perfect match! You’ll get to see them enjoy all of the new things that the world has to offer and build a lifelong bond with them through training and adventure. Puppies need time, energy, and patience to help them become the best family pets they can be, so if you’re up for a bit of a challenge—and a lot of fun—a puppy is the one for you!
+
+PAWS Rating:
+- Children: 5/5 - I love people! Chances are, I’ll love your kids too!
+- Dogs: 5/5 - I like dogs! Big dogs. Little dogs. Bring ‘em on.
+- Cats: UNKNOWN
+- Home Alone: 3/5 - I can be home alone for two to three hours. A dogwalker or daycare are great options!
+- Activity: 2/5 - I have a higher amount of energy. I’ll do best with long walks or play sessions.
+- Environment: 5/5 - I’m happy to live anywhere as long as you’re there.",animals/PAWSCH-158287.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/PAWSCH-158287.jpg,b3a282c59ab458850f9ce29dade4ed3ecee11d1253315fe6c32d2b65db5d2343,2026-06-14 20:20:18.55518+00,2026-06-15 21:20:45.084064+00,1727,null,https://www.pawschicago.org/pet-available-for-adoption/showdog/158287,PAWS Chicago,https://pawschicago.canto.com/direct/image/u5tkckq80t5jvao67emi91a100/Z-dRWJ9MxGhaM6gsWrBVztwV7nQ/original?content-type=image%2Fjpeg&name=harlow_158287_slide.jpg,Chicago,IL,PAWSCH,1060,Harlow,null
+NYCACC-254544,40 lbs,10 Months,,"Name: Pepa | Native ID: 254544 | Species: Dog | Gender: Female | Location: Manhattan | Room: 110 Dog Adoptions | Intake Date: 2026-06-02 | Days in Care: 14 | ACC Feed Updated: 2026-06-15T19:30:54.862344Z | Photo Count: 14 | Bio/Summary: What my friends at ACC say about me: I will need daily physical activity to keep me healthy and happy! I am playful and cute! I would do best in a home without very tiny humans, although I could be open to older human children once I meet them. My #BoroughBreak Buddy Writes: We took a short walk up to the park and spent most of our time learning to play fetch! Pepa's a sweet, high-energy baby girl, and is still learning to play and to be patient. After a few repetitions and lots of praise, she started to pick up how fetch works. It went pretty quickly, as she's super treat motivated, and eager to perform for them (still learning to take them gently). We also played a little tug-of-war, which she loved, and she finally took a little nap after spending all of that energy. She didn't care much about any other dogs or people around. She pulls hard on a shorter leash because she's so excited to see everything, but with a little give she walks fine and checks in regularly. Once she warms up to you she's super affectionate, will curl up in your lap and give you all the kisses you'll allow.",animals/NYCACC-254544.jpg,https://yiqiotjoyiedrwznmhgh.supabase.co/storage/v1/object/public/animal-images/animals/NYCACC-254544.jpg,74eeb5cdd9f44550b5290c9533c203ccfd7abcf2bb77e7430d1dc557f1ac51a0,2026-06-09 16:21:46.922994+00,2026-06-15 19:34:06.060855+00,1718,null,https://nycacc.app/#/browse/254544,Animal Care Centers of NYC,https://nycacc.shelterbuddy.com/storage/image/c5c936d7876b47b9986ea4a5b0b8fe18-1781382474-1781382486-jpg/512---n,NYC,NY,NYCACC,1336,Pepa,Female

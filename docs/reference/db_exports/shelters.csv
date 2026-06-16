@@ -1,0 +1,9 @@
+shelter_id,shelter_name,city,state,location_name,location_display_name,relative_path
+HSSA,Humane Society of Southern Arizona,Tucson,AZ,"Tucson, AZ","Tucson, AZ 🌵",/tucson
+MP,Muddy Paws Rescue,NYC,NY,"NYC, NY","New York, NY 🗽",/nyc
+NYCACC,Animal Care Centers of NYC,NYC,NY,"NYC, NY","New York, NY 🗽",/nyc
+PACC,Pima Animal Care Center,Tucson,AZ,"Tucson, AZ","Tucson, AZ 🌵",/tucson
+WWLA,Wags & Walks LA,Los Angeles,CA,"Los Angeles, CA","Los Angeles, CA 🌴",/la
+PAWSCH,Paws Chicago,Chicago,IL,"Chicago, IL","Chicago, IL 🫘",/chicago
+HHS,Houston Humane Society,Houston,Texas,"Houston, TX","Houston, TX 🤠",/houston
+AHSCN,Associated Humane Societies - Newark,Newark,NJ,"Newark, NJ","Newark, NJ ✈️",/newark
