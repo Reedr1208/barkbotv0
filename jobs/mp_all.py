@@ -1,8 +1,13 @@
 """Legacy entrypoint — delegates to jobs.shelters.mp.all."""
+import sys
 import logging
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from jobs.shelters.mp.all import fetch_dogs, save_to_supabase
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     logging.info("Starting scrape...")
     dogs = fetch_dogs()
     logging.info(f"Fetched {len(dogs)} dogs from MuddyPaws.")

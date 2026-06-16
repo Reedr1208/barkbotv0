@@ -1,4 +1,8 @@
 """Legacy entrypoint — delegates to jobs.shelters.nycacc.inventory."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import asyncio
 from jobs.shelters.nycacc.inventory import main_async, build_arg_parser
 

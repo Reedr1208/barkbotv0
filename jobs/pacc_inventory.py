@@ -1,4 +1,8 @@
 """Legacy entrypoint — delegates to jobs.shelters.pacc.inventory."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from jobs.shelters.pacc.inventory import scrape_all_dogs, save_to_supabase
 
 if __name__ == "__main__":
