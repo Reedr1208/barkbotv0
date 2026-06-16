@@ -4,7 +4,8 @@
 // ─── Locations Data Population ───────────────────────────────────────────
 window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
   try {
-    const res = await fetch('/api/locations');
+    const locUrl = userEmail ? '/api/locations?email=' + encodeURIComponent(userEmail) : '/api/locations';
+    const res = await fetch(locUrl);
     if (res.ok) {
       const data = await res.json();
       const group = document.getElementById('prefLocationGroup');

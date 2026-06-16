@@ -1,0 +1,35 @@
+name: Scrape PHP Inventory
+
+on:
+  schedule:
+    # Run every 4 hours at minute 30
+    - cron: '30 */4 * * *'
+  workflow_dispatch: # allow manual triggering
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install Python 3.11
+        run: uv python install 3.11
+
+      - name: Install Dependencies
+        run: |
+          uv venv
+          uv pip install -r requirements.txt
+
+      - name: Install Playwright Browsers
+        run: uv run python -m playwright install chromium
+
+      - name: Run Inventory Scraper
+        env:
+          storage_SUPABASE_URL: ${{ secrets.storage_SUPABASE_URL }}
+          storage_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.storage_SUPABASE_SERVICE_ROLE_KEY }}
+        run: uv run python jobs/php_inventory.py
