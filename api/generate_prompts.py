@@ -108,8 +108,11 @@ class handler(BaseHTTPRequestHandler):
                     elif s_id_upper == "PAWSCH":
                         if bio_len < 1200 and desc_len < 1200:
                             continue
-                    elif s_id_upper in ("WWLA", "HHS", "PHP", "MCACC"):
+                    elif s_id_upper in ("WWLA", "HHS", "PHP"):
                         if bio_len < 1000 and desc_len < 1000:
+                            continue
+                    elif s_id_upper == "MCACC":
+                        if bio_len < 6000 and desc_len < 6000:
                             continue
                     else:
                         if max(bio_len, desc_len) <= 400:
