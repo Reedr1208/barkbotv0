@@ -105,6 +105,14 @@
     {
       "path": "/api/mv_profiles",
       "schedule": "45 * * * *"
+    },
+    {
+      "path": "/api/rdr_inventory",
+      "schedule": "5 */4 * * *"
+    },
+    {
+      "path": "/api/rdr_profiles",
+      "schedule": "15 * * * *"
     }
   ]
 }
