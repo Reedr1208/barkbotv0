@@ -73,6 +73,14 @@
     {
       "path": "/api/rchs_profiles",
       "schedule": "10 * * * *"
+    },
+    {
+      "path": "/api/dpa_inventory",
+      "schedule": "40 */4 * * *"
+    },
+    {
+      "path": "/api/dpa_profiles",
+      "schedule": "25 * * * *"
     }
   ]
 }
