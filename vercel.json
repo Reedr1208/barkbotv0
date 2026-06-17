@@ -65,6 +65,14 @@
     {
       "path": "/api/mcacc_profiles",
       "schedule": "50 * * * *"
+    },
+    {
+      "path": "/api/rchs_inventory",
+      "schedule": "30 */4 * * *"
+    },
+    {
+      "path": "/api/rchs_profiles",
+      "schedule": "10 * * * *"
     }
   ]
 }
