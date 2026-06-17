@@ -44,7 +44,20 @@ HEADERS = {
 
 # JavaScript to extract profile data from the rendered Shelterluv page
 EXTRACT_PROFILE_JS = '''() => {
-    const result = {bio: '', image_url: null, name: '', breed: '', age: '', gender: '', weight: ''};
+    const result = {bio: '', image_url: null, name: '', breed: '', age: '', gender: '', weight: '', species: ''};
+    
+    // Extract species from the :animal JSON attribute (available in server-side HTML)
+    const animalEl = document.querySelector('[\\:animal]');
+    if (animalEl) {
+        try {
+            const raw = animalEl.getAttribute(':animal');
+            if (raw) {
+                let decoded = raw.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+                const parsed = JSON.parse(decoded);
+                if (parsed.species) result.species = parsed.species;
+            }
+        } catch(e) {}
+    }
     
     // Try og:image first for best quality photo
     const ogImage = document.querySelector('meta[property="og:image"]');
@@ -234,6 +247,12 @@ def main() -> int:
                 try:
                     profile_data, image_url = extract_bio_with_playwright(page, url)
                     
+                    # Filter out non-dogs (cats, rabbits, etc.)
+                    species = (profile_data.get("species") or "").strip().lower()
+                    if species and species != "dog":
+                        logging.info(f"Skipping {target['animal_id']} — species: {species}")
+                        raise ValueError("NOT_A_DOG")
+                    
                     bio = profile_data.get("bio", "")
                     
                     record = {
@@ -282,9 +301,16 @@ def main() -> int:
                         except Exception as del_exc:
                             print(json.dumps({"animal_id": aid, "error": f"Failed to delete: {str(del_exc)}"}), file=sys.stderr)
                         errors += 1
-                    else:
-                        errors += 1
-                        print(json.dumps({"url": url, "error": str(ve)}), file=sys.stderr)
+                    elif str(ve) == "NOT_A_DOG":
+                        # Non-dog animal — remove from active_dogs and animals
+                        aid = target.get("animal_id", "")
+                        try:
+                            store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
+                            store.client.table("animals").delete().eq("animal_id", aid).execute()
+                            store.client.table("system_prompts_v2").delete().eq("animal_id", aid).execute()
+                            print(json.dumps({"animal_id": aid, "result": "removed_not_a_dog"}))
+                        except Exception as del_exc:
+                            print(json.dumps({"animal_id": aid, "error": f"Failed to delete NOT_A_DOG: {str(del_exc)}"}), file=sys.stderr)
                 except Exception as exc:
                     errors += 1
                     print(json.dumps({"url": url, "error": str(exc)}), file=sys.stderr)
