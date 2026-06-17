@@ -57,6 +57,14 @@
     {
       "path": "/api/ahscn_profiles",
       "schedule": "45 * * * *"
+    },
+    {
+      "path": "/api/mcacc_inventory",
+      "schedule": "15 */4 * * *"
+    },
+    {
+      "path": "/api/mcacc_profiles",
+      "schedule": "50 * * * *"
     }
   ]
 }
