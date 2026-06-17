@@ -132,11 +132,15 @@ def run_profiles_scrape(
 
             except ValueError as exc:
                 if str(exc) == "NOT_A_DOG":
-                    # Remove non-dogs from active_dogs
+                    # Remove non-dogs from all tables
                     aid = target.get("animal_id", "")
                     try:
                         store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
-                        print(json.dumps({"animal_id": aid, "result": "removed_from_active_dogs_not_a_dog"}, ensure_ascii=False))
+                        store.client.table("animals").delete().eq("animal_id", aid).execute()
+                        store.client.table("system_prompts_v2").delete().eq("animal_id", aid).execute()
+                        store.client.table("animal_fact_profiles").delete().eq("animal_id", aid).execute()
+                        store.client.table("animal_persona_profiles").delete().eq("animal_id", aid).execute()
+                        print(json.dumps({"animal_id": aid, "result": "removed_not_a_dog"}, ensure_ascii=False))
                     except Exception as del_exc:
                         print(json.dumps({"url": url, "error": f"Failed to delete NOT_A_DOG: {str(del_exc)}"}, ensure_ascii=False), file=sys.stderr)
                 else:

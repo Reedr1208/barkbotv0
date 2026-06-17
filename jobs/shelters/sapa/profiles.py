@@ -302,12 +302,14 @@ def main() -> int:
                             print(json.dumps({"animal_id": aid, "error": f"Failed to delete: {str(del_exc)}"}), file=sys.stderr)
                         errors += 1
                     elif str(ve) == "NOT_A_DOG":
-                        # Non-dog animal — remove from active_dogs and animals
+                        # Non-dog animal — remove from all tables
                         aid = target.get("animal_id", "")
                         try:
                             store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
                             store.client.table("animals").delete().eq("animal_id", aid).execute()
                             store.client.table("system_prompts_v2").delete().eq("animal_id", aid).execute()
+                            store.client.table("animal_fact_profiles").delete().eq("animal_id", aid).execute()
+                            store.client.table("animal_persona_profiles").delete().eq("animal_id", aid).execute()
                             print(json.dumps({"animal_id": aid, "result": "removed_not_a_dog"}))
                         except Exception as del_exc:
                             print(json.dumps({"animal_id": aid, "error": f"Failed to delete NOT_A_DOG: {str(del_exc)}"}), file=sys.stderr)
