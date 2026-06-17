@@ -81,6 +81,14 @@
     {
       "path": "/api/dpa_profiles",
       "schedule": "25 * * * *"
+    },
+    {
+      "path": "/api/nhs_inventory",
+      "schedule": "45 */4 * * *"
+    },
+    {
+      "path": "/api/nhs_profiles",
+      "schedule": "55 * * * *"
     }
   ]
 }
