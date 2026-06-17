@@ -111,7 +111,7 @@ class handler(BaseHTTPRequestHandler):
                     elif s_id_upper in ("WWLA", "HHS", "PHP", "SAPA"):
                         if bio_len < 1000 and desc_len < 1000:
                             continue
-                    elif s_id_upper in ("RCHS", "DPA", "NHS"):
+                    elif s_id_upper in ("RCHS", "DPA", "NHS", "EHR"):
                         if bio_len < 500 and desc_len < 500:
                             continue
                     elif s_id_upper == "MCACC":

@@ -89,6 +89,14 @@
     {
       "path": "/api/nhs_profiles",
       "schedule": "55 * * * *"
+    },
+    {
+      "path": "/api/ehr_inventory",
+      "schedule": "50 */4 * * *"
+    },
+    {
+      "path": "/api/ehr_profiles",
+      "schedule": "35 * * * *"
     }
   ]
 }
