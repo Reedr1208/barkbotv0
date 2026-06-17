@@ -97,6 +97,14 @@
     {
       "path": "/api/ehr_profiles",
       "schedule": "35 * * * *"
+    },
+    {
+      "path": "/api/mv_inventory",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/mv_profiles",
+      "schedule": "45 * * * *"
     }
   ]
 }

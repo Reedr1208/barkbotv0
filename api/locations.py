@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 # ── Beta location restriction ─────────────────────────────────────────
 # Shelter IDs listed here are only visible to the allowed emails.
 # To make a shelter public, remove it from BETA_SHELTER_IDS.
-BETA_SHELTER_IDS = set()
+BETA_SHELTER_IDS = {"MV"}
 BETA_ALLOWED_EMAILS = {"reedr1208@gmail.com"}
 
 class handler(BaseHTTPRequestHandler):
