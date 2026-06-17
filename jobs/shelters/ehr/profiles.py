@@ -196,6 +196,12 @@ def fetch_record(url: str, target: Dict[str, Any]) -> Dict[str, Any]:
     if title:
         raw = title.get_text(strip=True)
         name = re.sub(r"'s Web Page$", "", raw).strip()
+        
+    # Check for cats
+    species = struct.get("Species", "").lower()
+    breed = header.get("breed", "").lower()
+    if "cat" in species or "feline" in species or "cat" in breed or "feline" in breed or "domestic" in breed or "kitten" in name.lower():
+        raise ValueError("NOT_A_DOG")
     
     # Build bio
     bio_parts = []

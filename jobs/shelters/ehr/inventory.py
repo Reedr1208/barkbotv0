@@ -117,6 +117,13 @@ def parse_listing_page(html_content: str) -> List[Dict]:
                         gender = normalize_gender(val)
                 break
         
+        # Filter out cats
+        if "kitten" in name.lower():
+            continue
+        breed_lower = breed.lower()
+        if "cat" in breed_lower or "feline" in breed_lower or "domestic" in breed_lower:
+            continue
+        
         rows.append({
             "raw_id": raw_id,
             "animal_id": animal_id,
