@@ -141,6 +141,7 @@ class handler(BaseHTTPRequestHandler):
             # 4. Filter and sort targets
             three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
             
+            # Priority 1: eligible dogs missing prompts or with stale prompts
             targets = []
             for aid in eligible_animal_ids:
                 if aid not in existing_prompts:
@@ -158,6 +159,30 @@ class handler(BaseHTTPRequestHandler):
                         
                     if updated_at < three_days_ago:
                         targets.append((aid, updated_at))
+
+            # Priority 2: active dogs with stale prompts that are no longer eligible
+            # (e.g., bio shortened since prompt was first generated)
+            eligible_set = set(eligible_animal_ids)
+            all_active_ids = list(active_dogs_map.keys())
+            stale_prompts_data = []
+            for i in range(0, len(all_active_ids), 100):
+                chunk = all_active_ids[i:i+100]
+                res = sb_client.table("system_prompts_v2").select("animal_id, updated_at").in_("animal_id", chunk).execute()
+                stale_prompts_data.extend(res.data)
+            
+            for row in stale_prompts_data:
+                aid = row["animal_id"]
+                if aid in eligible_set:
+                    continue  # Already handled above
+                dt_str = row["updated_at"]
+                try:
+                    if dt_str.endswith("Z"):
+                        dt_str = dt_str[:-1] + "+00:00"
+                    updated_at = datetime.fromisoformat(dt_str)
+                except ValueError:
+                    updated_at = datetime.min.replace(tzinfo=timezone.utc)
+                if updated_at < three_days_ago:
+                    targets.append((aid, updated_at))
 
             # Sort by updated_at ascending (oldest/missing first)
             targets.sort(key=lambda x: x[1])
@@ -177,9 +202,16 @@ class handler(BaseHTTPRequestHandler):
             from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
 
             # Fetch current distribution to prevent skewed archetype assignment
-            dist_res = sb_client.table("animal_persona_profiles").select("primary_archetype_key").execute()
+            dist_data = []
+            dist_offset = 0
+            while True:
+                dist_res = sb_client.table("animal_persona_profiles").select("primary_archetype_key").range(dist_offset, dist_offset + 999).execute()
+                dist_data.extend(dist_res.data)
+                if len(dist_res.data) < 1000:
+                    break
+                dist_offset += 1000
             distribution = {}
-            for row in dist_res.data:
+            for row in dist_data:
                 k = row.get("primary_archetype_key")
                 if k:
                     distribution[k] = distribution.get(k, 0) + 1
