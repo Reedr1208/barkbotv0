@@ -85,14 +85,14 @@ class handler(BaseHTTPRequestHandler):
             animals_data = []
             for i in range(0, len(active_ids), 100):
                 chunk = active_ids[i:i+100]
-                res = sb_client.table("animals").select("animal_id, bio, more_info").in_("animal_id", chunk).execute()
+                res = sb_client.table("animals").select("animal_id, bio").in_("animal_id", chunk).execute()
                 animals_data.extend(res.data)
             
             eligible_animal_ids = []
             for row in animals_data:
                 aid = row["animal_id"]
                 bio = row.get("bio") or ""
-                desc = row.get("more_info") or ""
+                desc = row.get("bio") or ""
                 shelter_id = active_dogs_map.get(aid)
                 
                 if shelter_id:
@@ -177,16 +177,9 @@ class handler(BaseHTTPRequestHandler):
             from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
 
             # Fetch current distribution to prevent skewed archetype assignment
-            dist_data = []
-            dist_offset = 0
-            while True:
-                dist_res = sb_client.table("animal_persona_profiles").select("primary_archetype_key").range(dist_offset, dist_offset + 999).execute()
-                dist_data.extend(dist_res.data)
-                if len(dist_res.data) < 1000:
-                    break
-                dist_offset += 1000
+            dist_res = sb_client.table("animal_persona_profiles").select("primary_archetype_key").execute()
             distribution = {}
-            for row in dist_data:
+            for row in dist_res.data:
                 k = row.get("primary_archetype_key")
                 if k:
                     distribution[k] = distribution.get(k, 0) + 1
