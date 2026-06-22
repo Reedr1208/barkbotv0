@@ -20,4 +20,22 @@ Instructions:
 - Evidence snippets should cite short phrases from the input text, not external data.
 - If something is truly absent, do not guess (use "N/A" for strings if instructed, else leave empty/unknown).
 
+- `sugg_specific`: Generate up to 5 short, clickbait-style suggested prompts that are specifically tailored to unique or interesting details found in this dog's profile/bio. These are leading questions designed like conversation hooks — things a potential adopter might be curious about after reading the bio. They should be answerable using information available in the dog's record.
+  Rules for sugg_specific:
+  - Keep them SHORT (under 10 words each is ideal) to conserve display space.
+  - They can be fun/quirky (e.g., "What do you have against the garbage truck?") or serious/informative (e.g., "Tell me about your eye condition").
+  - They must reference SPECIFIC details from this dog's profile — not generic questions.
+  - If the bio is very short or lacks interesting details, produce fewer than 5. Quality over quantity. Never invent details or make up unanswerable questions.
+  - They must NOT duplicate or closely overlap with ANY of the following Informative category questions:
+    * "What's your rescue story?"
+    * "Are you good with other dogs or cats?"
+    * "Are you good with kids or strangers?"
+    * "Do you have any medical needs?"
+    * "What should my human know?"
+    * "What makes you unique?"
+    * "What are your strengths?"
+    * "What does your ideal home look like?"
+    * "What is your energy level?"
+    * "What is your adoption process?"
+
 Return only valid JSON matching the schema.

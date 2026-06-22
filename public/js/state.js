@@ -52,3 +52,21 @@ let favoritesList = JSON.parse(localStorage.getItem('chattyhound_favorites') || 
 
 // Saved modal tab state
 let savedActiveTab = 'dogs';
+
+// ─── Suggestion System State ────────────────────────────────────────────────
+// Cached from /api/suggested_prompts (fetched once, persisted across dogs)
+let suggestedPromptsCache = null; // { informative: [...], whimsical: [...] }
+
+// Per-dog suggestion state (reset on each new dog)
+let suggestionState = {
+  pools: { informative: [], whimsical: [], profile: [] },
+  usedPrompts: new Set(),
+  current: {
+    informative: { text: null, turnsShown: 0 },
+    whimsical:   { text: null, turnsShown: 0 },
+    profile:     { text: null, turnsShown: 0 },
+  },
+};
+
+// The 3 suggestions currently displayed to the user (populated by updateSuggestions)
+let activeSuggestions = [];

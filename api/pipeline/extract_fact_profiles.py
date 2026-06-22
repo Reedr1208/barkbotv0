@@ -31,6 +31,7 @@ class FactProfileExtraction(BaseModel):
     medical_notes: Optional[str] = Field(description="Plain-language summary of medical needs or status.")
     adoption_process_notes: Optional[str] = Field(description="Plain-language summary of adoption rules or deadlines.")
     evidence_jsonb: List[str] = Field(description="List of exact short quotes used as evidence.")
+    sugg_specific: List[str] = Field(description="Up to 5 short, clickbait-style suggested prompts specifically tailored to unique details in this dog's profile. These are leading questions designed like conversation hooks that are answerable from the dog's bio. Fewer than 5 is acceptable if the bio is short — quality over quantity. Never make up unanswerable questions.")
 
 def extract_fact_profile(openai_client: OpenAI, animal_record: dict) -> FactProfileExtraction:
     """

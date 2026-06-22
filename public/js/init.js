@@ -124,9 +124,10 @@ const landingHowBtn = document.getElementById('landingHowBtn');
 const loginSkipBtn = document.getElementById('loginSkipBtn');
 
 if (landingStartBtn) {
-  landingStartBtn.addEventListener('click', () => {
+  landingStartBtn.addEventListener('click', async () => {
     trackEvent('start_sniffing_clicked');
     switchView('app');
+    await fetchSuggestedPromptsIfNeeded();
     fetchRandomDog();
   });
 }
@@ -222,6 +223,9 @@ async function startAppAfterPreferences(loaderFn) {
   if (window.__CH_LOCATIONS_PROMISE__) {
     await window.__CH_LOCATIONS_PROMISE__;
   }
+
+  // Pre-fetch suggested prompts pool (Informative/Whimsical) before first dog loads
+  await fetchSuggestedPromptsIfNeeded();
   
   if (userEmail) {
     (async function fetchPreferencesOnLoad() {

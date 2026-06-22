@@ -117,3 +117,15 @@ create table if not exists chat_messages (
 );
 create index if not exists idx_chat_msg_conversation_id on chat_messages(conversation_id, created_at asc);
 
+-- 4. suggested_prompts table (Informative / Whimsical prompt catalog)
+create table if not exists suggested_prompts (
+  id bigint generated always as identity primary key,
+  category text not null check (category in ('Informative', 'Whimsical')),
+  prompt_text text not null,
+  created_at timestamptz not null default now()
+);
+
+-- Additional columns on existing tables:
+--   animal_fact_profiles.sugg_specific text[]  -- up to 5 profile-specific clickbait prompts
+--   chat_messages.sugg_prompts text[]          -- the 3 suggestions shown before user responded
+--   chat_messages.chosen_prompt text            -- the clicked suggestion (null if custom typed)

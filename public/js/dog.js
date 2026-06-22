@@ -594,7 +594,8 @@ if (matchBadgeContainer) {
   matchBadgeContainer.innerHTML = fitBadgeHtml + matchBadgeContainer.innerHTML;
 }
 
-// Initialize dynamic, context-aware prompt suggestions
+// Initialize category-based prompt suggestions for this dog
+initSuggestionsForDog(dog);
 updateSuggestions();
 
 // Build the Chat Intro Welcome Card

@@ -43,11 +43,16 @@ def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_pre
         return None
 
 
-def _save_messages(sb, conversation_id, user_message, assistant_reply, ip_address="", location=""):
+def _save_messages(sb, conversation_id, user_message, assistant_reply, ip_address="", location="", sugg_prompts=None, chosen_prompt=None):
     """Append user + assistant messages to chat_messages."""
     try:
+        user_row = {"conversation_id": conversation_id, "role": "user", "content": user_message, "ip_address": ip_address, "location": location}
+        if sugg_prompts is not None:
+            user_row["sugg_prompts"] = sugg_prompts
+        if chosen_prompt is not None:
+            user_row["chosen_prompt"] = chosen_prompt
         sb.table("chat_messages").insert([
-            {"conversation_id": conversation_id, "role": "user", "content": user_message, "ip_address": ip_address, "location": location},
+            user_row,
             {"conversation_id": conversation_id, "role": "assistant", "content": assistant_reply, "ip_address": ip_address, "location": location},
         ]).execute()
     except Exception:
@@ -88,6 +93,10 @@ class handler(BaseHTTPRequestHandler):
             city = self.headers.get("x-vercel-ip-city")
             country = self.headers.get("x-vercel-ip-country")
             location = f"{city}, {country}" if city and country else (city or country or "")
+            
+            # Suggested prompts tracking
+            sugg_prompts = body.get("sugg_prompts")  # array of text or None
+            chosen_prompt = body.get("chosen_prompt")  # text or None
             
             if not animal_id or not user_message:
                 self._send_response(400, {"error": "animal_id and message are required."})
@@ -139,7 +148,7 @@ class handler(BaseHTTPRequestHandler):
                     ip_address, location
                 )
                 if conv_id:
-                    _save_messages(sb_client, conv_id, user_message, output_text, ip_address, location)
+                    _save_messages(sb_client, conv_id, user_message, output_text, ip_address, location, sugg_prompts, chosen_prompt)
             except Exception as e:
                 import traceback
                 traceback.print_exc()
