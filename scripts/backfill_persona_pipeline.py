@@ -2,6 +2,10 @@ import os
 import sys
 import json
 import logging
+
+# Ensure pipeline modules can be imported (from api/ directory)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'api'))
+
 from supabase import create_client
 from openai import OpenAI
 

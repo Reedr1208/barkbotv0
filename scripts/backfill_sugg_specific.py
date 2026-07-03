@@ -14,8 +14,8 @@ from pathlib import Path
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-# Ensure pipeline modules can be imported
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Ensure pipeline modules can be imported (from api/ directory)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'api'))
 
 # Load env
 env_file = Path(__file__).resolve().parent.parent / ".env.development.local"
