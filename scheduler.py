@@ -8,7 +8,9 @@ underlying Python functions directly — no subprocess spawning.
 
 import asyncio
 import logging
+import sys
 import threading
+from contextlib import contextmanager
 from datetime import datetime, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -16,6 +18,19 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 
 logger = logging.getLogger("barkbot.scheduler")
+
+
+@contextmanager
+def _clean_argv():
+    """Temporarily replace sys.argv so argparse inside job functions
+    doesn't pick up uvicorn's CLI arguments."""
+    saved = sys.argv
+    sys.argv = ["scheduler"]
+    try:
+        yield
+    finally:
+        sys.argv = saved
+
 
 # Global scheduler instance
 scheduler = BackgroundScheduler(timezone="UTC")
@@ -185,7 +200,8 @@ def _run_hhs_inventory():
 
 def _run_hhs_profiles():
     from jobs.shelters.hhs.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_nycacc_inventory():
@@ -206,7 +222,8 @@ def _run_sapa_inventory():
 
 def _run_sapa_profiles():
     from jobs.shelters.sapa.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_generate_prompts():
