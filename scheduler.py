@@ -58,144 +58,171 @@ scheduler.add_listener(_job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
 def _run_pacc_inventory():
     from jobs.shelters.pacc.inventory import scrape_all_dogs, save_to_supabase
-    dogs = scrape_all_dogs()
-    save_to_supabase(dogs)
+    with _clean_argv():
+        dogs = scrape_all_dogs()
+        save_to_supabase(dogs)
     logger.info(f"pacc_inventory: Wrote {len(dogs)} dogs.")
 
 
 def _run_pacc_profiles():
     from jobs.shelters.pacc.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_ahscn_inventory():
     from jobs.shelters.ahscn.inventory import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_ahscn_profiles():
     from jobs.shelters.ahscn.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_pawsch_inventory():
     from jobs.shelters.pawsch.inventory import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_pawsch_profiles():
     from jobs.shelters.pawsch.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_mcacc_inventory():
     from jobs.shelters.mcacc.inventory import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_mcacc_profiles():
     from jobs.shelters.mcacc.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_rchs_inventory():
     from jobs.shelters.rchs.inventory import scrape_inventory
-    scrape_inventory()
+    with _clean_argv():
+        scrape_inventory()
 
 
 def _run_rchs_profiles():
     from jobs.shelters.rchs.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_dpa_inventory():
     from jobs.shelters.dpa.inventory import scrape_inventory
-    scrape_inventory()
+    with _clean_argv():
+        scrape_inventory()
 
 
 def _run_dpa_profiles():
     from jobs.shelters.dpa.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_nhs_inventory():
     from jobs.shelters.nhs.inventory import scrape_inventory
-    scrape_inventory()
+    with _clean_argv():
+        scrape_inventory()
 
 
 def _run_nhs_profiles():
     from jobs.shelters.nhs.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_ehr_inventory():
     from jobs.shelters.ehr.inventory import scrape_inventory
-    scrape_inventory()
+    with _clean_argv():
+        scrape_inventory()
 
 
 def _run_ehr_profiles():
     from jobs.shelters.ehr.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_mv_inventory():
     from jobs.shelters.mv.inventory import scrape_inventory
-    scrape_inventory()
+    with _clean_argv():
+        scrape_inventory()
 
 
 def _run_mv_profiles():
     from jobs.shelters.mv.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_rdr_inventory():
     from jobs.shelters.rdr.inventory import scrape_inventory
-    scrape_inventory()
+    with _clean_argv():
+        scrape_inventory()
 
 
 def _run_rdr_profiles():
     from jobs.shelters.rdr.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_mp_all():
     from jobs.shelters.mp.all import fetch_dogs, save_to_supabase
-    dogs = fetch_dogs()
-    save_to_supabase(dogs)
+    with _clean_argv():
+        dogs = fetch_dogs()
+        save_to_supabase(dogs)
     logger.info(f"mp_all: Wrote {len(dogs)} dogs.")
 
 
 def _run_wwla_all():
     from jobs.shelters.wwla.all import fetch_html, parse_records, save_to_supabase, LISTING_URL
-    html = fetch_html(LISTING_URL)
-    dogs = parse_records(html)
-    save_to_supabase(dogs)
+    with _clean_argv():
+        html = fetch_html(LISTING_URL)
+        dogs = parse_records(html)
+        save_to_supabase(dogs)
     logger.info(f"wwla_all: Wrote {len(dogs)} dogs.")
 
 
 def _run_php_inventory():
     from jobs.shelters.php.inventory import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_php_profiles():
     from jobs.shelters.php.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_hssa_inventory():
     from jobs.shelters.hssa.inventory import scrape_inventory
-    scrape_inventory()
+    with _clean_argv():
+        scrape_inventory()
 
 
 def _run_hssa_profiles():
     from jobs.shelters.hssa.profiles import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_hhs_inventory():
     from jobs.shelters.hhs.inventory import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_hhs_profiles():
@@ -206,18 +233,21 @@ def _run_hhs_profiles():
 
 def _run_nycacc_inventory():
     from jobs.shelters.nycacc.inventory import main_async, build_arg_parser
-    parsed_args = build_arg_parser().parse_args([])
-    asyncio.run(main_async(parsed_args))
+    with _clean_argv():
+        parsed_args = build_arg_parser().parse_args([])
+        asyncio.run(main_async(parsed_args))
 
 
 def _run_nycacc_profiles():
     from jobs.shelters.nycacc.profiles import main_async, build_arg_parser
-    asyncio.run(main_async(build_arg_parser().parse_args([])))
+    with _clean_argv():
+        asyncio.run(main_async(build_arg_parser().parse_args([])))
 
 
 def _run_sapa_inventory():
     from jobs.shelters.sapa.inventory import main
-    main()
+    with _clean_argv():
+        main()
 
 
 def _run_sapa_profiles():
@@ -228,20 +258,22 @@ def _run_sapa_profiles():
 
 def _run_generate_prompts():
     from jobs.generate_prompts_job import run
-    run()
+    with _clean_argv():
+        run()
 
 
 def _run_cleanup_inactive_dogs():
-    from jobs import __path__ as jobs_path
-    import importlib
-    # Use importlib to avoid issues with the '08_' prefix
+    import importlib.util
+    import os
+    # Use importlib to avoid issues with the '08_' prefix in the filename
     spec = importlib.util.spec_from_file_location(
         "cleanup_inactive_dogs",
-        __import__("os").path.join(__import__("os").path.dirname(__file__), "jobs", "08_cleanup_inactive_dogs.py")
+        os.path.join(os.path.dirname(__file__), "jobs", "08_cleanup_inactive_dogs.py")
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    mod.main()
+    with _clean_argv():
+        mod.main()
 
 
 # ──────────────────────────────────────────────────────────────────────
