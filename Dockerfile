@@ -46,4 +46,5 @@ RUN node build.js 2>/dev/null || true
 
 EXPOSE 8000
 
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+# Railway sets PORT env var — app must listen on it
+CMD uvicorn server:app --host 0.0.0.0 --port ${PORT:-8000}
