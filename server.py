@@ -68,10 +68,12 @@ app.add_middleware(
 from routes.api_routes import router as api_router
 from routes.dog_meta_routes import router as dog_meta_router
 from routes.cron_routes import router as cron_router
+from routes.admin_routes import router as admin_router
 
 app.include_router(api_router)
 app.include_router(dog_meta_router)
 app.include_router(cron_router)
+app.include_router(admin_router)
 
 # ── Static files ────────────────────────────────────────────────────
 # Mount public/ directory for CSS, JS, images. This must come AFTER

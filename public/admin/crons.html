@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarkBot Cron Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-card: rgba(18, 18, 28, 0.9);
+      --bg-card-hover: rgba(25, 25, 40, 0.95);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --text-primary: #e8e8ef;
+      --text-secondary: #8888a0;
+      --text-dim: #555570;
+      --accent: #7c5cfc;
+      --accent-glow: rgba(124, 92, 252, 0.25);
+      --success: #34d399;
+      --success-bg: rgba(52, 211, 153, 0.1);
+      --error: #f87171;
+      --error-bg: rgba(248, 113, 113, 0.1);
+      --warning: #fbbf24;
+      --warning-bg: rgba(251, 191, 36, 0.1);
+      --running: #60a5fa;
+      --running-bg: rgba(96, 165, 250, 0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(124, 92, 252, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 90%, rgba(248, 113, 113, 0.04) 0%, transparent 50%);
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-left h1 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .header-left h1 span { color: var(--text-dim); font-weight: 400; }
+
+    .header-stats {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .stat {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      font-size: 13px;
+    }
+
+    .stat-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .stat-dot.green { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .stat-dot.red { background: var(--error); box-shadow: 0 0 6px var(--error); }
+
+    .logout-btn {
+      font-size: 12px;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover { color: var(--text-secondary); border-color: var(--border-hover); }
+
+    /* ── Controls bar ───────────────────────────────── */
+    .controls {
+      padding: 16px 28px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .search-input {
+      margin-left: auto;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: rgba(124, 92, 252, 0.4); }
+    .search-input::placeholder { color: var(--text-dim); }
+
+    .refresh-info {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: 8px;
+    }
+
+    /* ── Main grid ──────────────────────────────────── */
+    .main { padding: 0 28px 40px; }
+
+    .shelter-group {
+      margin-bottom: 24px;
+    }
+
+    .shelter-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .shelter-header h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+    }
+
+    .shelter-header .chevron {
+      font-size: 10px;
+      color: var(--text-dim);
+      transition: transform 0.2s;
+    }
+
+    .shelter-header.collapsed .chevron { transform: rotate(-90deg); }
+
+    .shelter-header .shelter-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text-dim);
+    }
+
+    .job-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 4px;
+    }
+
+    .job-table th {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .job-table td {
+      padding: 11px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      vertical-align: middle;
+    }
+
+    .job-row {
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .job-row:hover { background: var(--bg-card-hover); }
+
+    .job-name {
+      font-weight: 500;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .job-schedule {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .job-time {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Status badges ──────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge.success { background: var(--success-bg); color: var(--success); }
+    .badge.failed { background: var(--error-bg); color: var(--error); }
+    .badge.running { background: var(--running-bg); color: var(--running); animation: pulse-badge 2s infinite; }
+    .badge.idle { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* ── Run button ─────────────────────────────────── */
+    .run-btn {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .run-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(124, 92, 252, 0.08);
+    }
+
+    .run-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* ── History Modal ──────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #12121e;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
+    .modal-body {
+      padding: 16px 24px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .history-table th {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: #12121e;
+    }
+
+    .history-table td {
+      padding: 10px 10px;
+      font-size: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--text-secondary);
+    }
+
+    .history-table td.mono {
+      font-family: var(--font-mono);
+    }
+
+    .error-text {
+      color: var(--error);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    /* ── Toast ──────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      animation: toast-in 0.3s ease-out;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .toast.success { background: #1a3a2a; color: var(--success); border: 1px solid rgba(52,211,153,0.2); }
+    .toast.error { background: #3a1a1a; color: var(--error); border: 1px solid rgba(248,113,113,0.2); }
+    .toast.info { background: #1a2a3a; color: var(--running); border: 1px solid rgba(96,165,250,0.2); }
+
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Loading ─────────────────────────────────────── */
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 768px) {
+      .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+      .header-stats { gap: 12px; }
+      .controls { padding: 12px 16px; }
+      .main { padding: 0 16px 30px; }
+      .search-input { width: 100%; margin-left: 0; margin-top: 6px; }
+      .job-table th:nth-child(3),
+      .job-table td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>🐕 BarkBot <span>/ Cron Dashboard</span></h1>
+    </div>
+    <div class="header-stats" id="headerStats">
+      <div class="stat">
+        <span class="stat-dot green" id="schedulerDot"></span>
+        <span>Scheduler</span>
+      </div>
+      <div class="stat">
+        Uptime <span class="stat-value" id="uptimeValue">—</span>
+      </div>
+      <div class="stat">
+        Jobs <span class="stat-value" id="totalJobsValue">—</span>
+      </div>
+      <div class="stat">
+        Running <span class="stat-value" id="runningCount">0</span>
+      </div>
+      <form action="/admin/logout" method="post" style="display:inline">
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="failed">❌ Failed</button>
+    <button class="filter-btn" data-filter="running">🔄 Running</button>
+    <button class="filter-btn" data-filter="idle">⚪ No Runs Yet</button>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search jobs...">
+    <span class="refresh-info" id="refreshInfo">Auto-refresh: 30s</span>
+  </div>
+
+  <!-- Job list -->
+  <div class="main" id="jobContainer">
+    <div class="empty-state">
+      <div class="loading-spinner"></div>
+      <p style="margin-top: 12px;">Loading jobs...</p>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="historyJobId">—</h2>
+        <button class="modal-close" onclick="closeHistoryModal()">✕</button>
+      </div>
+      <div class="modal-body" id="historyBody">
+        <div class="empty-state"><div class="loading-spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ── State ──────────────────────────────────────────
+    let allJobs = [];
+    let activeFilter = 'all';
+    let refreshTimer = null;
+
+    // ── API helpers ───────────────────────────────────
+    async function apiFetch(url, opts = {}) {
+      const res = await fetch(url, { credentials: 'same-origin', ...opts });
+      if (res.status === 401) {
+        window.location.href = '/admin/login';
+        throw new Error('Unauthorized');
+      }
+      return res;
+    }
+
+    // ── Load jobs ─────────────────────────────────────
+    async function loadJobs() {
+      try {
+        const res = await apiFetch('/admin/api/jobs');
+        const data = await res.json();
+
+        allJobs = data.jobs;
+
+        // Update header stats
+        document.getElementById('uptimeValue').textContent = formatDuration(data.uptime_seconds);
+        document.getElementById('totalJobsValue').textContent = data.total_jobs;
+
+        const runningCount = allJobs.filter(j => j.is_running).length;
+        document.getElementById('runningCount').textContent = runningCount;
+
+        const dot = document.getElementById('schedulerDot');
+        if (data.scheduler_running) {
+          dot.className = 'stat-dot green';
+        } else {
+          dot.className = 'stat-dot red';
+        }
+
+        renderJobs();
+      } catch (err) {
+        console.error('Failed to load jobs:', err);
+      }
+    }
+
+    // ── Render ────────────────────────────────────────
+    function renderJobs() {
+      const container = document.getElementById('jobContainer');
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+      // Filter jobs
+      let filtered = allJobs;
+      if (activeFilter === 'failed') {
+        filtered = filtered.filter(j => j.last_status === 'failed');
+      } else if (activeFilter === 'running') {
+        filtered = filtered.filter(j => j.is_running);
+      } else if (activeFilter === 'idle') {
+        filtered = filtered.filter(j => !j.last_status);
+      }
+
+      if (searchTerm) {
+        filtered = filtered.filter(j =>
+          j.id.toLowerCase().includes(searchTerm) ||
+          j.shelter.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // Group by shelter
+      const groups = {};
+      filtered.forEach(job => {
+        const group = job.shelter.toUpperCase();
+        if (!groups[group]) groups[group] = [];
+        groups[group].push(job);
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state">No jobs match the current filter.</div>';
+        return;
+      }
+
+      let html = '';
+      const sortedGroups = Object.keys(groups).sort();
+
+      for (const group of sortedGroups) {
+        const jobs = groups[group];
+        const hasFailure = jobs.some(j => j.last_status === 'failed');
+        const hasRunning = jobs.some(j => j.is_running);
+
+        html += `
+          <div class="shelter-group" data-group="${group}">
+            <div class="shelter-header" onclick="toggleGroup('${group}')">
+              <span class="chevron" id="chevron-${group}">▼</span>
+              <h2>${group}</h2>
+              <span class="shelter-badge">${jobs.length} job${jobs.length > 1 ? 's' : ''}</span>
+              ${hasFailure ? '<span class="badge failed" style="font-size:9px">HAS FAILURES</span>' : ''}
+              ${hasRunning ? '<span class="badge running" style="font-size:9px">RUNNING</span>' : ''}
+            </div>
+            <div class="shelter-jobs" id="jobs-${group}">
+              <table class="job-table">
+                <thead>
+                  <tr>
+                    <th>Job</th>
+                    <th>Status</th>
+                    <th>Schedule</th>
+                    <th>Last Run</th>
+                    <th>Duration</th>
+                    <th>Next Run</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>`;
+
+        for (const job of jobs) {
+          const statusBadge = getStatusBadge(job);
+          const lastRun = job.last_run ? formatTimeAgo(job.last_run) : '—';
+          const nextRun = job.next_run ? formatTimeAgo(job.next_run) : '—';
+          const duration = job.last_duration_s != null ? `${job.last_duration_s}s` : '—';
+          const scheduleDisplay = extractCron(job.trigger);
+
+          html += `
+                  <tr class="job-row" onclick="showHistory('${job.id}')">
+                    <td class="job-name">${job.id}</td>
+                    <td>${statusBadge}</td>
+                    <td class="job-schedule">${scheduleDisplay}</td>
+                    <td class="job-time">${lastRun}</td>
+                    <td class="job-time" style="font-family:var(--font-mono)">${duration}</td>
+                    <td class="job-time">${nextRun}</td>
+                    <td>
+                      <button class="run-btn" onclick="event.stopPropagation(); triggerJob('${job.id}')"
+                              ${job.is_running ? 'disabled' : ''}>
+                        ${job.is_running ? '⏳ Running...' : '▶ Run'}
+                      </button>
+                    </td>
+                  </tr>`;
+        }
+
+        html += `
+                </tbody>
+              </table>
+            </div>
+          </div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ── Status badge ──────────────────────────────────
+    function getStatusBadge(job) {
+      if (job.is_running) {
+        const elapsed = job.running_since
+          ? Math.round((Date.now() - new Date(job.running_since).getTime()) / 1000)
+          : 0;
+        return `<span class="badge running">● Running ${elapsed}s</span>`;
+      }
+      if (!job.last_status) {
+        return '<span class="badge idle">No runs</span>';
+      }
+      if (job.last_status === 'success') {
+        return '<span class="badge success">✓ Success</span>';
+      }
+      return '<span class="badge failed">✕ Failed</span>';
+    }
+
+    // ── Extract cron expression ───────────────────────
+    function extractCron(triggerStr) {
+      // The trigger string looks like: cron[month='*', day='*', ...]
+      // Just return a cleaned-up version
+      if (!triggerStr) return '—';
+      return triggerStr.replace('cron[', '').replace(']', '').replace(/'/g, '');
+    }
+
+    // ── Time formatting ───────────────────────────────
+    function formatTimeAgo(isoStr) {
+      if (!isoStr) return '—';
+      const d = new Date(isoStr);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffS = Math.round(diffMs / 1000);
+
+      // Future dates
+      if (diffS < 0) {
+        const absDiffS = Math.abs(diffS);
+        if (absDiffS < 60) return `in ${absDiffS}s`;
+        if (absDiffS < 3600) return `in ${Math.round(absDiffS / 60)}m`;
+        return `in ${Math.round(absDiffS / 3600)}h`;
+      }
+
+      if (diffS < 60) return `${diffS}s ago`;
+      if (diffS < 3600) return `${Math.round(diffS / 60)}m ago`;
+      if (diffS < 86400) return `${Math.round(diffS / 3600)}h ago`;
+      return `${Math.round(diffS / 86400)}d ago`;
+    }
+
+    function formatDuration(seconds) {
+      if (!seconds && seconds !== 0) return '—';
+      const d = Math.floor(seconds / 86400);
+      const h = Math.floor((seconds % 86400) / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      if (d > 0) return `${d}d ${h}h`;
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m}m`;
+    }
+
+    function formatTimestamp(isoStr) {
+      if (!isoStr) return '—';
+      const d = new Date(isoStr);
+      return d.toLocaleString('en-US', {
+        month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      });
+    }
+
+    // ── Toggle shelter groups ─────────────────────────
+    function toggleGroup(group) {
+      const el = document.getElementById(`jobs-${group}`);
+      const chev = document.getElementById(`chevron-${group}`);
+      if (el.style.display === 'none') {
+        el.style.display = '';
+        chev.textContent = '▼';
+      } else {
+        el.style.display = 'none';
+        chev.textContent = '▶';
+      }
+    }
+
+    // ── Trigger manual job ────────────────────────────
+    async function triggerJob(jobId) {
+      if (!confirm(`Run "${jobId}" now?`)) return;
+
+      try {
+        const res = await apiFetch(`/admin/api/jobs/${jobId}/run`, { method: 'POST' });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast(`Started: ${jobId}`, 'info');
+          // Refresh after a short delay to show running state
+          setTimeout(loadJobs, 1000);
+        } else {
+          showToast(data.error || 'Failed to trigger', 'error');
+        }
+      } catch (err) {
+        showToast('Network error', 'error');
+      }
+    }
+
+    // ── History modal ─────────────────────────────────
+    async function showHistory(jobId) {
+      const modal = document.getElementById('historyModal');
+      const body = document.getElementById('historyBody');
+      document.getElementById('historyJobId').textContent = jobId;
+
+      modal.classList.add('open');
+      body.innerHTML = '<div class="empty-state"><div class="loading-spinner"></div></div>';
+
+      try {
+        const res = await apiFetch(`/admin/api/jobs/${jobId}/history`);
+        const data = await res.json();
+
+        if (!data.runs || data.runs.length === 0) {
+          body.innerHTML = '<div class="empty-state">No run history for this job yet.<br><small style="color:var(--text-dim)">History is recorded after the first execution on Railway.</small></div>';
+          return;
+        }
+
+        let html = `
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Started</th>
+                <th>Finished</th>
+                <th>Duration</th>
+                <th>Triggered By</th>
+                <th>Processed</th>
+                <th>Inserted</th>
+                <th>Updated</th>
+                <th>Errors</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+        for (const run of data.runs) {
+          const status = run.status === 'success'
+            ? '<span class="badge success">✓</span>'
+            : run.status === 'running'
+            ? '<span class="badge running">●</span>'
+            : '<span class="badge failed">✕</span>';
+
+          const started = formatTimestamp(run.started_at);
+          const finished = formatTimestamp(run.finished_at);
+
+          let duration = '—';
+          if (run.started_at && run.finished_at) {
+            const ms = new Date(run.finished_at) - new Date(run.started_at);
+            duration = `${(ms / 1000).toFixed(1)}s`;
+          }
+
+          html += `
+              <tr>
+                <td>${status}</td>
+                <td class="mono">${started}</td>
+                <td class="mono">${finished}</td>
+                <td class="mono">${duration}</td>
+                <td>${run.triggered_by || '—'}</td>
+                <td class="mono">${run.processed_count ?? '—'}</td>
+                <td class="mono">${run.inserted_count ?? '—'}</td>
+                <td class="mono">${run.updated_count ?? '—'}</td>
+                <td class="mono">${run.error_count ?? '—'}</td>
+                <td>${run.notes ? `<span class="error-text" title="${escapeHtml(run.notes)}">${escapeHtml(run.notes)}</span>` : '—'}</td>
+              </tr>`;
+        }
+
+        html += '</tbody></table>';
+        body.innerHTML = html;
+      } catch (err) {
+        body.innerHTML = '<div class="empty-state">Failed to load history.</div>';
+      }
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.remove('open');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('historyModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('historyModal')) closeHistoryModal();
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeHistoryModal();
+    });
+
+    // ── Toasts ────────────────────────────────────────
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // ── Utility ───────────────────────────────────────
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ── Filters ───────────────────────────────────────
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.filter;
+        renderJobs();
+      });
+    });
+
+    // ── Search ────────────────────────────────────────
+    document.getElementById('searchInput').addEventListener('input', () => {
+      renderJobs();
+    });
+
+    // ── Init ──────────────────────────────────────────
+    loadJobs();
+    refreshTimer = setInterval(loadJobs, 30000);
+  </script>
+</body>
+</html>
