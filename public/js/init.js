@@ -16,7 +16,6 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
         if (group) {
           group.innerHTML = '<button class="pref-btn" data-value="all">All Locations 🌎</button>';
           data.locations.forEach(loc => {
-            if (loc.relative_path === '/newark') return;
             const btn = document.createElement('button');
             btn.className = 'pref-btn';
             btn.dataset.value = loc.display_name;
@@ -28,7 +27,6 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
         if (headerSelect) {
           headerSelect.innerHTML = '<option value="any" style="display:none;">Select Location...</option><option value="all" style="color: black;">All Locations 🌎</option>';
           data.locations.forEach(loc => {
-            if (loc.relative_path === '/newark') return;
             const opt = document.createElement('option');
             opt.value = loc.relative_path;
             opt.style.color = 'black';

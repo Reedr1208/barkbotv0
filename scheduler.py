@@ -151,16 +151,6 @@ def _run_pacc_profiles():
         main()
 
 
-def _run_ahscn_inventory():
-    from jobs.shelters.ahscn.inventory import main
-    with _clean_argv():
-        main()
-
-
-def _run_ahscn_profiles():
-    from jobs.shelters.ahscn.profiles import main
-    with _clean_argv():
-        main()
 
 
 def _run_pawsch_inventory():
@@ -365,8 +355,7 @@ def _run_cleanup_inactive_dogs():
 JOB_REGISTRY = {
     "pacc_inventory": _run_pacc_inventory,
     "pacc_profiles": _run_pacc_profiles,
-    "ahscn_inventory": _run_ahscn_inventory,
-    "ahscn_profiles": _run_ahscn_profiles,
+
     "pawsch_inventory": _run_pawsch_inventory,
     "pawsch_profiles": _run_pawsch_profiles,
     "mcacc_inventory": _run_mcacc_inventory,
@@ -423,9 +412,7 @@ def setup_schedules():
     scheduler.add_job(_run_pacc_inventory, CronTrigger.from_crontab("0 8 * * *"), id="pacc_inventory", replace_existing=True)
     scheduler.add_job(_run_pacc_profiles, CronTrigger.from_crontab("5 * * * *"), id="pacc_profiles", replace_existing=True)
 
-    # AHSCN
-    scheduler.add_job(_run_ahscn_inventory, CronTrigger.from_crontab("0 */4 * * *"), id="ahscn_inventory", replace_existing=True)
-    scheduler.add_job(_run_ahscn_profiles, CronTrigger.from_crontab("45 * * * *"), id="ahscn_profiles", replace_existing=True)
+
 
     # PAWSCH
     scheduler.add_job(_run_pawsch_inventory, CronTrigger.from_crontab("0 */4 * * *"), id="pawsch_inventory", replace_existing=True)

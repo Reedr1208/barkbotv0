@@ -268,12 +268,7 @@ class handler(BaseHTTPRequestHandler):
                 return re.sub(r'[^a-zA-Z0-9]', '', str(s)).lower()
                 
             if pref_location == "any":
-                new_valid_ids = []
-                for aid in valid_ids:
-                    if active_dogs[aid].get("shelter_id") != "AHSCN":
-                        new_valid_ids.append(aid)
-                if new_valid_ids:
-                    valid_ids = new_valid_ids
+                pass  # include all locations
             else:
                 # Make location a HARD filter
                 new_valid_ids = []

@@ -381,9 +381,7 @@ async def random_dog(request: Request):
             return re.sub(r'[^a-zA-Z0-9]', '', str(s)).lower()
 
         if pref_location == "any":
-            new_valid_ids = [aid for aid in valid_ids if active_dogs[aid].get("shelter_id") != "AHSCN"]
-            if new_valid_ids:
-                valid_ids = new_valid_ids
+            pass  # include all locations
         else:
             new_valid_ids = []
             for aid in valid_ids:

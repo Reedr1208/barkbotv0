@@ -46,18 +46,12 @@
       "path": "/api/pawsch_profiles",
       "schedule": "20 * * * *"
     },
-    {
-      "path": "/api/ahscn_inventory",
-      "schedule": "0 */4 * * *"
-    },
+
     {
       "path": "/api/php_profiles",
       "schedule": "35 * * * *"
     },
-    {
-      "path": "/api/ahscn_profiles",
-      "schedule": "45 * * * *"
-    },
+
     {
       "path": "/api/mcacc_inventory",
       "schedule": "15 */4 * * *"
