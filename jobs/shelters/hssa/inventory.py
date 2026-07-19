@@ -156,10 +156,10 @@ def scrape_inventory() -> None:
     run_id = record_run_start(client, "cron_hssa_inventory")
     print("Starting HSSA inventory scrape...")
 
-    # Dynamic install of Playwright Chromium if running in Vercel environment
-    if "VERCEL" in os.environ or "storage_SUPABASE_URL" in os.environ:
-        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/tmp/ms-playwright"
-        os.system("python -m playwright install chromium")
+    # Ensure Playwright uses the Dockerfile-installed Chromium, not a stale
+    # /tmp path that may have been set by legacy code in a prior run.
+    if os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "").startswith("/tmp"):
+        del os.environ["PLAYWRIGHT_BROWSERS_PATH"]
 
     from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
     from playwright.sync_api import sync_playwright

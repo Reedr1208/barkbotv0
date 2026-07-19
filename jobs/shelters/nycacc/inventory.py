@@ -645,6 +645,10 @@ async def main_async(args: argparse.Namespace) -> int:
     run_id = record_run_start(client, "cron_nycacc_inventory")
     status = "success"
 
+    # Ensure Playwright uses the Dockerfile-installed Chromium, not a stale
+    # /tmp path that may have been set by legacy code in a prior run.
+    if os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "").startswith("/tmp"):
+        del os.environ["PLAYWRIGHT_BROWSERS_PATH"]
 
     out_path = Path(args.out)
     debug_dir = Path(args.debug_dir)

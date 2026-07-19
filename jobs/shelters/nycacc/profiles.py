@@ -862,6 +862,10 @@ async def main_async(args: argparse.Namespace) -> int:
 
     print(f"Scraping {len(native_ids)} NYCACC dogs.")
 
+    # Ensure Playwright uses the Dockerfile-installed Chromium, not a stale
+    # /tmp path that may have been set by legacy code in a prior run.
+    if os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "").startswith("/tmp"):
+        del os.environ["PLAYWRIGHT_BROWSERS_PATH"]
 
     debug_dir = Path(args.debug_dir)
     debug_dir.mkdir(parents=True, exist_ok=True)
