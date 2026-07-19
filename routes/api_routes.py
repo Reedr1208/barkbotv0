@@ -366,8 +366,12 @@ async def random_dog(request: Request):
                 active_dogs[row["animal_id"]]["age_bucket"] = row.get("age_bucket")
                 active_dogs[row["animal_id"]]["weight_class"] = row.get("weight_class")
 
-        # Intersect to find valid current dogs that have a persona
-        valid_ids = list(set(active_dogs.keys()).intersection(persona_data.keys()))
+        # Fetch system_prompts_v2 to ensure only dogs with a prompt template are served
+        prompts_data_list = fetch_all_rows(client.table("system_prompts_v2").select("animal_id"))
+        prompt_ids = {row["animal_id"] for row in prompts_data_list}
+
+        # Intersect: dog must be active, have a persona, AND have a prompt template
+        valid_ids = list(set(active_dogs.keys()) & set(persona_data.keys()) & prompt_ids)
 
         if not valid_ids:
             return JSONResponse(status_code=404, content={"error": "No dogs with generated personas found."})
