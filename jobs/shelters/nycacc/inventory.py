@@ -645,9 +645,6 @@ async def main_async(args: argparse.Namespace) -> int:
     run_id = record_run_start(client, "cron_nycacc_inventory")
     status = "success"
 
-    if "VERCEL" in os.environ or "storage_SUPABASE_URL" in os.environ:
-        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/tmp/ms-playwright"
-        os.system("python -m playwright install chromium")
 
     out_path = Path(args.out)
     debug_dir = Path(args.debug_dir)

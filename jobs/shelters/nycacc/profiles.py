@@ -862,9 +862,6 @@ async def main_async(args: argparse.Namespace) -> int:
 
     print(f"Scraping {len(native_ids)} NYCACC dogs.")
 
-    if "VERCEL" in os.environ or "storage_SUPABASE_URL" in os.environ:
-        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/tmp/ms-playwright"
-        os.system("python -m playwright install chromium")
 
     debug_dir = Path(args.debug_dir)
     debug_dir.mkdir(parents=True, exist_ok=True)
