@@ -20,8 +20,41 @@ from fastapi.responses import JSONResponse
 
 from routes.deps import get_supabase_client, get_image_base_url
 
+import requests as _requests
+
 router = APIRouter()
 logger = logging.getLogger("barkbot.api")
+
+# ── Server-side IP geolocation (replaces Vercel geo-IP headers) ─────
+_geoip_cache = {}  # key: IP /24 prefix, value: (timestamp, lat, lon)
+_GEOIP_TTL = 3600  # 1 hour
+
+def _geoip_lookup(ip: str):
+    """Look up lat/lon for an IP address using ip-api.com. Returns (lat, lon) or (None, None).
+    Results are cached by /24 subnet for 1 hour to minimise external calls."""
+    if not ip or ip.startswith("127.") or ip.startswith("10.") or ip == "::1":
+        return None, None
+    # Cache key: first 3 octets of IPv4
+    parts = ip.split(".")
+    cache_key = ".".join(parts[:3]) if len(parts) == 4 else ip
+    cached = _geoip_cache.get(cache_key)
+    if cached:
+        ts, lat, lon = cached
+        if time.time() - ts < _GEOIP_TTL:
+            return lat, lon
+    try:
+        resp = _requests.get(
+            f"http://ip-api.com/json/{ip}?fields=status,lat,lon",
+            timeout=2,
+        )
+        data = resp.json()
+        if data.get("status") == "success":
+            lat, lon = float(data["lat"]), float(data["lon"])
+            _geoip_cache[cache_key] = (time.time(), lat, lon)
+            return lat, lon
+    except Exception:
+        pass
+    return None, None
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -285,6 +318,15 @@ async def random_dog(request: Request):
                 user_lon = float(lon_str)
         except Exception:
             pass
+
+        # Fallback: server-side IP geolocation when client didn't send coords
+        if user_lat is None or user_lon is None:
+            client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or \
+                        request.headers.get("x-real-ip", "") or \
+                        (request.client.host if request.client else "")
+            geo_lat, geo_lon = _geoip_lookup(client_ip)
+            if geo_lat is not None:
+                user_lat, user_lon = geo_lat, geo_lon
 
         closer_region = None
         if user_lat is not None and user_lon is not None:
