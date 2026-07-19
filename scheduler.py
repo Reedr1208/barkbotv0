@@ -309,9 +309,9 @@ def _run_nycacc_inventory():
 
 
 def _run_nycacc_profiles():
-    from jobs.shelters.nycacc.profiles import main_async, build_arg_parser
+    from jobs.shelters.nycacc.profiles import main
     with _clean_argv():
-        asyncio.run(main_async(build_arg_parser().parse_args([])))
+        main()
 
 
 def _run_sapa_inventory():

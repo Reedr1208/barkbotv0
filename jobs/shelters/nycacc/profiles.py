@@ -832,10 +832,23 @@ def read_urls_file(path: str) -> List[str]:
     return items
 
 
-async def main_async(args: argparse.Namespace) -> int:
+def first_image_from_pet(pet: dict) -> str:
+    photos = pet.get("photos")
+    if isinstance(photos, list) and photos:
+        for p in photos:
+            if isinstance(p, str) and p.startswith("http"):
+                return p
+    return ""
+
+
+def main():
+    """Direct API-based profile scraper for NYCACC."""
+    # Import the token/feed functions from the inventory module
+    from jobs.shelters.nycacc.inventory import fetch_acc_token, fetch_acc_feed
+
     settings = get_settings()
     store = BarkbotStore(settings)
-    
+
     def nycacc_fallback_url(animal_id: str) -> str:
         numeric_id = animal_id.replace("NYCACC-", "")
         return f"https://nycacc.app/#/browse/{numeric_id}"
@@ -860,174 +873,113 @@ async def main_async(args: argparse.Namespace) -> int:
     dog_info = {d["numeric_id"]: d for d in dogs}
     native_ids = list(dog_info.keys())
 
-    print(f"Scraping {len(native_ids)} NYCACC dogs.")
-
-    # Ensure Playwright uses the Dockerfile-installed Chromium, not a stale
-    # /tmp path that may have been set by legacy code in a prior run.
-    if os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "").startswith("/tmp"):
-        del os.environ["PLAYWRIGHT_BROWSERS_PATH"]
-
-    debug_dir = Path(args.debug_dir)
-    debug_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Scraping {len(native_ids)} NYCACC profiles via direct API.")
 
     processed = inserted = updated = unchanged = errors = 0
     run_id = store.begin_run("cron_nycacc_profiles", len(dogs))
 
-    start_time = time.time()
-    max_time = 230  # 4 mins limit, leave some buffer
+    try:
+        # Fetch the full feed via direct API (no Playwright needed)
+        print("Fetching ACC API token...")
+        token = fetch_acc_token()
+        print("Fetching ACC feed...")
+        all_pets = fetch_acc_feed(token)
 
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=True,
-            args=[
-                f"--window-size={args.width},{args.height}",
-                "--start-maximized",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-dev-shm-usage",
-                "--no-sandbox",
-            ],
-        )
+        # Build a lookup by pet ID
+        pet_lookup = {}
+        feed_updated = ""
+        for pet in all_pets:
+            pid = clean(pet.get("id"))
+            if pid:
+                pet_lookup[pid] = pet
 
-        context = await browser.new_context(
-            viewport={"width": args.width, "height": args.height},
-            screen={"width": args.width, "height": args.height},
-            device_scale_factor=1,
-            service_workers="block",
-            user_agent=(
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0.0.0 Safari/537.36"
-            ),
-        )
+        # Try to get feed_updated from the feed response
+        # (We already have all_pets; the inventory module returns just pets,
+        #  but we can approximate feed_updated with now)
+        feed_updated = now_iso()
 
-        await context.add_init_script(FETCH_INTERCEPTOR_JS)
-        await context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
+        print(f"Feed contains {len(pet_lookup)} pets. Processing {len(native_ids)} profiles...")
 
-        page = await context.new_page()
+        for native_id in native_ids:
+            processed += 1
+            pet = pet_lookup.get(native_id)
 
-        collector = NetworkCollector()
-        collector.attach(page)
-
-        try:
-            logs, payloads = await load_app_and_collect_feed(page, collector, native_ids[0], args)
-
-            for native_id in native_ids:
-                if time.time() - start_time > max_time:
-                    print("Reached 4-minute limit, breaking early.")
-                    break
-                    
-                processed += 1
-                pet, feed_updated = find_pet_in_payloads(payloads, native_id)
-                adopets_link = ""
-                if args.include_adopets_link:
-                    try:
-                        adopets_link = await collect_adopets_status(page, native_id, logs)
-                    except Exception as e:
-                        print(f"  WARNING: could not fetch adopets link for {native_id}: {e}")
-
-                if pet is None:
-                    print(f"  WARNING: no matching pet found for {native_id}")
-                    errors += 1
-                    # Remove from active_dogs if not found
-                    aid = f"NYCACC-{native_id}"
-                    try:
-                        store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
-                        print(json.dumps({"animal_id": aid, "result": "removed_from_active_dogs_not_found"}, ensure_ascii=False))
-                    except Exception as e:
-                        pass
-                    continue
-                
-                # Format into Barkbot structure
-                raw_row = build_output_row(
-                    pet,
-                    native_id,
-                    feed_updated=feed_updated,
-                    adopets_link=adopets_link,
-                    include_photo_urls=args.include_photo_urls,
-                )
-                
-                dog_meta = dog_info.get(native_id, {})
-                record = {
-                    "animal_id": raw_row["animal_id"],
-                    "shelter_id": raw_row["shelter_id"],
-                    "shelter_profile_url": raw_row["shelter_profile_url"],
-                    "name": dog_meta.get("name", "Unknown"),
-                    "gender": dog_meta.get("gender", "Unknown"),
-                    "shelter_name": raw_row["shelter_name"],
-                    "city": raw_row["city"],
-                    "state": raw_row["state"],
-                    "weight": raw_row["weight"],
-                    "age": raw_row["age"],
-                    "shelter_image_url": first_image_from_pet(pet), # Need to implement this
-                    "bio": raw_row["bio"],
-                    "more_info": "",
-                }
-
+            if pet is None:
+                print(f"  WARNING: no matching pet found for {native_id}")
+                errors += 1
+                # Remove from active_dogs if not found in feed
+                aid = f"NYCACC-{native_id}"
                 try:
-                    import urllib.request
-                    # Upload image
-                    image_file, image_public_url = store.upload_image(record["animal_id"], record.get("shelter_image_url"))
-                    if image_file and image_public_url:
-                        record["image_file"] = image_file
-                        record["image_public_url"] = image_public_url
-                    
-                    result = store.save_record(run_id, record)
-                    if result == "inserted":
-                        inserted += 1
-                    elif result == "updated":
-                        updated += 1
-                    else:
-                        unchanged += 1
-                    print(json.dumps({"animal_id": record["animal_id"], "result": result}, ensure_ascii=False))
-                except Exception as exc:
-                    errors += 1
-                    print(json.dumps({"animal_id": record["animal_id"], "error": str(exc)}, ensure_ascii=False))
-                    
-        finally:
-            await browser.close()
-            
-        if processed > 0 and errors == processed:
-            final_status = "failed"
-        else:
-            final_status = "success" if errors == 0 else "partial_success"
-        store.finish_run(run_id, final_status, processed, inserted, updated, unchanged, errors)
-        if processed > 0 and errors == processed:
-            raise RuntimeError(
-                f"NYCACC profiles: All {processed} profile scrapes failed."
+                    store.client.table("active_dogs").delete().eq("animal_id", aid).execute()
+                    print(json.dumps({"animal_id": aid, "result": "removed_from_active_dogs_not_found"}, ensure_ascii=False))
+                except Exception:
+                    pass
+                continue
+
+            # Build the profile record using existing helper functions
+            raw_row = build_output_row(
+                pet,
+                native_id,
+                feed_updated=feed_updated,
+                include_photo_urls=False,
             )
 
-    return 0
+            dog_meta = dog_info.get(native_id, {})
+            record = {
+                "animal_id": raw_row["animal_id"],
+                "shelter_id": raw_row["shelter_id"],
+                "shelter_profile_url": raw_row["shelter_profile_url"],
+                "name": dog_meta.get("name", "Unknown"),
+                "gender": dog_meta.get("gender", "Unknown"),
+                "shelter_name": raw_row["shelter_name"],
+                "city": raw_row["city"],
+                "state": raw_row["state"],
+                "weight": raw_row["weight"],
+                "age": raw_row["age"],
+                "shelter_image_url": first_image_from_pet(pet),
+                "bio": raw_row["bio"],
+                "more_info": "",
+            }
 
-def first_image_from_pet(pet: dict) -> str:
-    photos = pet.get("photos")
-    if isinstance(photos, list) and photos:
-        for p in photos:
-            if isinstance(p, str) and p.startswith("http"):
-                return p
-    return ""
+            try:
+                # Upload image
+                image_file, image_public_url = store.upload_image(record["animal_id"], record.get("shelter_image_url"))
+                if image_file and image_public_url:
+                    record["image_file"] = image_file
+                    record["image_public_url"] = image_public_url
 
-def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--url", action="append", help="Profile URL. Can be passed multiple times.")
-    parser.add_argument("--id", action="append", help="Native NYC ACC numeric animal ID. Can be passed multiple times.")
-    parser.add_argument("--urls-file", help="Text file with one profile URL or native ID per line.")
-    parser.add_argument("--out", default="nycacc_profiles.csv")
-    parser.add_argument("--debug-dir", default="nycacc_profile_debug_v2")
-    parser.add_argument("--headed", action="store_true", help="Show browser window.")
-    parser.add_argument("--verbose", action="store_true")
-    parser.add_argument("--include-photo-urls", action="store_true", help="Put all photo URLs in the description field.")
-    parser.add_argument("--include-adopets-link", action="store_true", help="Also fetch and include the Adoptets application link.")
-    parser.add_argument("--width", type=int, default=1920)
-    parser.add_argument("--height", type=int, default=1200)
-    parser.add_argument("--nav-timeout-ms", type=int, default=90000)
-    parser.add_argument("--networkidle-timeout-ms", type=int, default=10000)
-    parser.add_argument("--initial-wait-ms", type=int, default=7000)
-    parser.add_argument("--api-wait-ms", type=int, default=15000)
-    parser.add_argument("--scroll-rounds", type=int, default=1)
-    parser.add_argument("--scroll-px", type=int, default=900)
-    parser.add_argument("--scroll-pause-ms", type=int, default=1200)
-    return parser
+                result = store.save_record(run_id, record)
+                if result == "inserted":
+                    inserted += 1
+                elif result == "updated":
+                    updated += 1
+                else:
+                    unchanged += 1
+                print(json.dumps({"animal_id": record["animal_id"], "result": result}, ensure_ascii=False))
+            except Exception as exc:
+                errors += 1
+                print(json.dumps({"animal_id": record["animal_id"], "error": str(exc)}, ensure_ascii=False))
+
+    except RuntimeError:
+        raise
+    except Exception as exc:
+        # Record the run as failed if something unexpected happened
+        store.finish_run(run_id, "failed", processed, inserted, updated, unchanged, errors, notes=str(exc))
+        raise
+
+    if processed > 0 and errors == processed:
+        final_status = "failed"
+    else:
+        final_status = "success" if errors == 0 else "partial_success"
+    store.finish_run(run_id, final_status, processed, inserted, updated, unchanged, errors)
+    print(f"Done. processed={processed} inserted={inserted} updated={updated} unchanged={unchanged} errors={errors}")
+
+    if processed > 0 and errors == processed:
+        raise RuntimeError(
+            f"NYCACC profiles: All {processed} profile scrapes failed."
+        )
 
 
 if __name__ == "__main__":
-    raise SystemExit(asyncio.run(main_async(build_arg_parser().parse_args())))
+    main()
+
