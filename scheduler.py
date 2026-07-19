@@ -303,10 +303,9 @@ def _run_hhs_profiles():
 
 
 def _run_nycacc_inventory():
-    from jobs.shelters.nycacc.inventory import main_async, build_arg_parser
+    from jobs.shelters.nycacc.inventory import main
     with _clean_argv():
-        parsed_args = build_arg_parser().parse_args([])
-        asyncio.run(main_async(parsed_args))
+        main()
 
 
 def _run_nycacc_profiles():

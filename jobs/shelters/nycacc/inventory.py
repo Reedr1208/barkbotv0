@@ -641,199 +641,145 @@ async def scroll_page(page, pixels: int) -> None:
 
 
 async def main_async(args: argparse.Namespace) -> int:
+    """Legacy Playwright-based scraper. Kept for manual/debug use with --headed."""
+    raise NotImplementedError(
+        "The Playwright-based inventory scraper has been replaced by main(). "
+        "Use main() for production. Run with --headed for manual debugging only."
+    )
+
+
+# ── Direct API-based inventory (production path) ────────────────────
+
+import requests
+import uuid
+
+GRAPHQL_URL = "https://pets.mcgilldevtech.com/graphql"
+TOKEN_URL = "https://pets.mcgilldevtech.com/token"
+API_KEY = "jKbOSNYtJn5qhYbsv9IKL6OEt7etN6jcALlerH82"
+PROFILE_URL_TEMPLATE_V2 = "https://nycacc.app/#/browse/{native_id}"
+
+ACC_FEED_QUERY = """
+query ACCGetFeed {
+  feed {
+    __typename
+    updated
+    pets {
+      id name age type species link gender weight location locationInShelter photos intakeDate
+    }
+  }
+}
+""".strip()
+
+
+def fetch_acc_token() -> str:
+    """Get a bearer token from the ACC API."""
+    resp = requests.post(
+        TOKEN_URL,
+        headers={
+            "Content-Type": "application/json; charset=UTF-8",
+            "x-api-key": API_KEY,
+        },
+        json={
+            "deviceId": str(uuid.uuid4()),
+            "organization": "nycacc",
+        },
+        timeout=30,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    token = data.get("access_token") or data.get("token") or ""
+    if not token:
+        raise RuntimeError(f"No token in response: {list(data.keys())}")
+    return token
+
+
+def fetch_acc_feed(token: str) -> list[dict]:
+    """Fetch all pets from the ACC GraphQL feed."""
+    resp = requests.post(
+        GRAPHQL_URL,
+        headers={
+            "Content-Type": "application/json; charset=UTF-8",
+            "Accept": "application/json; charset=UTF-8",
+            "apollographql-client-name": "ACC Web",
+            "x-api-key": API_KEY,
+            "authorization": f"Bearer {token}",
+        },
+        json={"query": ACC_FEED_QUERY},
+        timeout=60,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    feed = data.get("data", {}).get("feed", {})
+    pets = feed.get("pets", [])
+    if not isinstance(pets, list):
+        raise RuntimeError(f"Unexpected feed shape: {list(data.keys())}")
+    return pets
+
+
+def main():
+    """Direct API-based inventory scraper for NYCACC."""
     client = get_supabase_client()
     run_id = record_run_start(client, "cron_nycacc_inventory")
-    status = "success"
 
-    # Ensure Playwright uses the Dockerfile-installed Chromium, not a stale
-    # /tmp path that may have been set by legacy code in a prior run.
-    if os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "").startswith("/tmp"):
-        del os.environ["PLAYWRIGHT_BROWSERS_PATH"]
+    try:
+        print("Fetching ACC API token...")
+        token = fetch_acc_token()
 
-    out_path = Path(args.out)
-    debug_dir = Path(args.debug_dir)
-    debug_dir.mkdir(parents=True, exist_ok=True)
+        print("Fetching ACC feed...")
+        all_pets = fetch_acc_feed(token)
+        dogs = [
+            p for p in all_pets
+            if (p.get("species") or p.get("type") or "").lower() == "dog"
+        ]
+        print(f"Total pets: {len(all_pets)}, Dogs: {len(dogs)}")
 
-    width = int(args.width)
-    height = int(args.height)
+        if len(dogs) == 0:
+            notes = {"scraped_count": 0, "total_pets": len(all_pets)}
+            record_run_finish(client, run_id, "failed", notes)
+            raise RuntimeError(
+                f"NYCACC inventory: API returned {len(all_pets)} total pets but 0 dogs. "
+                f"This likely indicates a site/API change."
+            )
 
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=not args.headed,
-            args=[
-                f"--window-size={width},{height}",
-                "--start-maximized",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-dev-shm-usage",
-                "--no-sandbox",
-            ],
-        )
-
-        context = await browser.new_context(
-            viewport={"width": width, "height": height},
-            screen={"width": width, "height": height},
-            device_scale_factor=1,
-            user_agent=(
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0.0.0 Safari/537.36"
-            ),
-        )
-
-        await context.add_init_script(FETCH_INTERCEPTOR_JS)
-        await context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
-
-        page = await context.new_page()
-
-        if args.verbose:
-            page.on("console", lambda msg: print(f"BROWSER {msg.type}: {msg.text[:250]}"))
-            page.on("pageerror", lambda exc: print(f"BROWSER PAGE ERROR: {exc}"))
-
-        print(f"Opening {args.url}")
-        await page.goto(args.url, wait_until="domcontentloaded", timeout=90000)
-        await wait_quietly(page, 10000)
-        await page.wait_for_timeout(args.initial_wait_ms)
-
-        filter_succeeded = False
-        if not args.skip_dog_filter:
-            print("Trying to apply Dog filter automatically...")
-            filter_succeeded = await try_apply_dog_filter(page, width, height)
-            print(f"Dog filter attempted; likely_success={filter_succeeded}")
-            await wait_quietly(page, 8000)
-            await page.wait_for_timeout(2000)
-        else:
-            print("Skipping UI Dog filter; will filter dogs from API payload where species is present.")
-
-        stable_rounds = 0
-        last_record_count = -1
-        records: Dict[str, Dict[str, str]] = {}
-
-        for i in range(args.max_scrolls):
-            logs = await get_api_logs(page)
-            assume_dog_view = bool(filter_succeeded and not args.skip_dog_filter)
-            records = parse_records_from_api_logs(logs, assume_dog_view=assume_dog_view, include_unknown_species=args.include_unknown_species)
-
-            print(f"scroll={i + 1:03d} api_logs={len(logs):03d} dog_records={len(records):03d}")
-
-            if len(records) == last_record_count:
-                stable_rounds += 1
-            else:
-                stable_rounds = 0
-
-            # Stop when record count has stopped growing and at least one GraphQL call was captured.
-            if stable_rounds >= args.stable_rounds and len(logs) > 0:
-                print("No new API records after several scrolls; stopping.")
-                break
-
-            last_record_count = len(records)
-            await scroll_page(page, args.scroll_px)
-            await page.wait_for_timeout(args.pause_ms)
-
-        # Final collection pass.
-        logs = await get_api_logs(page)
-        assume_dog_view = bool(filter_succeeded and not args.skip_dog_filter)
-        records = parse_records_from_api_logs(logs, assume_dog_view=assume_dog_view, include_unknown_species=args.include_unknown_species)
-
-        # Save diagnostics every time; they are the fastest way to adjust if the site changes.
-        api_log_path = debug_dir / "nycacc_api_logs.json"
-        api_log_path.write_text(json.dumps(logs, indent=2, ensure_ascii=False), encoding="utf-8")
-
-        graphql_logs = [log for log in logs if "/graphql" in clean(log.get("url"))]
-        (debug_dir / "nycacc_graphql_logs.json").write_text(
-            json.dumps(graphql_logs, indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
-
-        try:
-            await page.screenshot(path=str(debug_dir / "last_page.png"), full_page=True)
-        except Exception:
-            pass
-
-        try:
-            (debug_dir / "last_page.html").write_text(await page.content(), encoding="utf-8")
-        except Exception:
-            pass
-
-        await browser.close()
-
-    rows = list(records.values())
-    rows.sort(key=lambda r: int(r["animal_id"]) if r.get("animal_id", "").isdigit() else 999999999)
-
-    print(f"\nFound {len(rows)} dog rows.")
-    print(f"Debug folder: {debug_dir.resolve()}")
-
-    if len(rows) == 0:
-        print("\nNo dog rows were parsed. Debug files saved to:")
-        print(f"  {debug_dir / 'nycacc_api_logs.json'}")
-        print(f"  {debug_dir / 'nycacc_graphql_logs.json'}")
-        print(f"  {debug_dir / 'last_page.png'}")
-        notes = {"scraped_count": 0}
-        record_run_finish(client, run_id, "failed", notes)
-        raise RuntimeError(
-            f"NYCACC inventory scraped 0 dogs. This likely indicates a site change or scraping failure. "
-            f"Debug files saved to {debug_dir.resolve()}"
-        )
-    else:
         # Map to active_dogs format
-        # animal_id, name, gender, age, weight, scraped_at, shelter_id
         db_rows = []
-        for r in rows:
-            name = r.get("name")
+        for pet in dogs:
+            name = pet.get("name", "")
             if name:
                 name = name.replace("*", "").strip().title()
 
+            native_id = str(pet.get("id", ""))
             db_rows.append({
-                "animal_id": f"NYCACC-{r.get('animal_id')}",
+                "animal_id": f"NYCACC-{native_id}",
                 "name": name,
-                "gender": r.get("gender"),
-                "age": r.get("age"),
-                "weight": r.get("weight"),
+                "gender": pet.get("gender"),
+                "age": pet.get("age"),
+                "weight": pet.get("weight"),
                 "city": "NYC",
                 "state": "NY",
                 "shelter_name": "Animal Care Centers of NYC",
-                "shelter_profile_url": r.get("profile_url"),
+                "shelter_profile_url": PROFILE_URL_TEMPLATE_V2.format(native_id=native_id),
                 "scraped_at": now_iso(),
                 "shelter_id": "NYCACC",
             })
-            
-        print("Performing full replace of NYCACC dogs in active_dogs...")
-        # Delete existing NYCACC dogs
-        try:
-            client.table("active_dogs").delete().eq("shelter_id", "NYCACC").execute()
-            # Insert new dogs in chunks
-            for chunk_start in range(0, len(db_rows), 100):
-                chunk = db_rows[chunk_start:chunk_start + 100]
-                client.table("active_dogs").insert(chunk).execute()
-        except Exception as e:
-            print(f"Error saving to db: {e}")
-            status = "failed"
 
-    notes = {"scraped_count": len(rows)}
-    record_run_finish(client, run_id, status, notes)
-    return 0
+        print(f"Performing full replace of {len(db_rows)} NYCACC dogs in active_dogs...")
+        client.table("active_dogs").delete().eq("shelter_id", "NYCACC").execute()
+        for chunk_start in range(0, len(db_rows), 100):
+            chunk = db_rows[chunk_start:chunk_start + 100]
+            client.table("active_dogs").insert(chunk).execute()
 
+        notes = {"scraped_count": len(db_rows)}
+        record_run_finish(client, run_id, "success", notes)
+        print(f"Done. Wrote {len(db_rows)} NYCACC dogs.")
 
-def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--url", default=BASE_URL)
-    parser.add_argument("--out", default="nycacc_dogs.csv")
-    parser.add_argument("--debug-dir", default="nycacc_debug_v3")
-    parser.add_argument("--headed", action="store_true", help="Show the browser window.")
-    parser.add_argument("--skip-dog-filter", action="store_true", help="Do not try to click the Dog filter in the UI.")
-    parser.add_argument("--width", type=int, default=1920)
-    parser.add_argument("--height", type=int, default=1200)
-    parser.add_argument("--max-scrolls", type=int, default=160)
-    parser.add_argument("--stable-rounds", type=int, default=10)
-    parser.add_argument("--scroll-px", type=int, default=1100)
-    parser.add_argument("--pause-ms", type=int, default=900)
-    parser.add_argument("--initial-wait-ms", type=int, default=6000)
-    parser.add_argument("--verbose", action="store_true")
-    # Left for CLI compatibility with the printed troubleshooting command. In this
-    # script, unknown species are only included when Dog filter likely succeeded.
-    parser.add_argument("--include-unknown-species", action="store_true", help=argparse.SUPPRESS)
-    return parser
+    except Exception:
+        # If record_run_finish wasn't called yet (i.e. unexpected exception),
+        # the scrape_runs row will stay as "running" — the scheduler's
+        # _job_listener will record the failure separately.
+        raise
 
 
 if __name__ == "__main__":
-    parsed_args = build_arg_parser().parse_args()
-    raise SystemExit(asyncio.run(main_async(parsed_args)))
+    main()
+
