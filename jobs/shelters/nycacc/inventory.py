@@ -762,13 +762,16 @@ async def main_async(args: argparse.Namespace) -> int:
     print(f"Debug folder: {debug_dir.resolve()}")
 
     if len(rows) == 0:
-        print("\nNo dog rows were parsed. Please send these files back for the next adjustment:")
+        print("\nNo dog rows were parsed. Debug files saved to:")
         print(f"  {debug_dir / 'nycacc_api_logs.json'}")
         print(f"  {debug_dir / 'nycacc_graphql_logs.json'}")
         print(f"  {debug_dir / 'last_page.png'}")
-        print("\nUseful alternate run:")
-        print(f"  python {Path(sys.argv[0]).name} --headed --skip-dog-filter --include-unknown-species --out {out_path}")
-        status = "failed"
+        notes = {"scraped_count": 0}
+        record_run_finish(client, run_id, "failed", notes)
+        raise RuntimeError(
+            f"NYCACC inventory scraped 0 dogs. This likely indicates a site change or scraping failure. "
+            f"Debug files saved to {debug_dir.resolve()}"
+        )
     else:
         # Map to active_dogs format
         # animal_id, name, gender, age, weight, scraped_at, shelter_id

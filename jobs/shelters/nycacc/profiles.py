@@ -846,8 +846,10 @@ async def main_async(args: argparse.Namespace) -> int:
         fallback_url_fn=nycacc_fallback_url,
     )
     if not raw_dogs:
-        print("No adoptable NYCACC dogs found to scrape.")
-        return 0
+        raise RuntimeError(
+            "NYCACC profiles: No adoptable NYCACC dogs found in active_dogs. "
+            "The inventory job may have failed or scraped 0 dogs."
+        )
 
     # Add numeric_id for NYCACC-specific usage
     dogs = []
@@ -983,8 +985,15 @@ async def main_async(args: argparse.Namespace) -> int:
         finally:
             await browser.close()
             
-        final_status = "success" if errors == 0 else "partial_success"
+        if processed > 0 and errors == processed:
+            final_status = "failed"
+        else:
+            final_status = "success" if errors == 0 else "partial_success"
         store.finish_run(run_id, final_status, processed, inserted, updated, unchanged, errors)
+        if processed > 0 and errors == processed:
+            raise RuntimeError(
+                f"NYCACC profiles: All {processed} profile scrapes failed."
+            )
 
     return 0
 
