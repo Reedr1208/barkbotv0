@@ -23,7 +23,7 @@ if os.path.exists(env_file):
 # Ensure parent and workspace folders are on path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-PORT = 8085
+PORT = 8086
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
 
 class CustomHandler(http.server.SimpleHTTPRequestHandler):

@@ -2,10 +2,20 @@ import json
 import os
 import random
 import re
+import time
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timezone, timedelta
 from supabase import create_client
+
+CACHE_DURATION = 300  # Cache for 5 minutes
+_cache = {
+    "active_data": None,
+    "shelters_data": None,
+    "persona_data": None,
+    "fact_data": None,
+    "expiry": 0
+}
 
 def get_supabase_client():
     supabase_url = os.environ.get("storage_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
@@ -177,30 +187,39 @@ class handler(BaseHTTPRequestHandler):
                         min_dist = dist
                         closer_region = region
 
-            # Fetch all dog IDs, names, and filterable fields from active_dogs
-            active_data = fetch_all_rows(client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id"))
+            # Load dogs, shelters, personas, and facts from cache if valid, otherwise fetch
+            global _cache
+            now = time.time()
+            if not _cache["active_data"] or now > _cache["expiry"]:
+                active_data = fetch_all_rows(client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id"))
+                shelters_res = client.table("shelters").select("*").execute()
+                persona_data_list = fetch_all_rows(client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at"))
+                fact_data_list = fetch_all_rows(client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class"))
+
+                _cache["active_data"] = active_data
+                _cache["shelters_data"] = shelters_res.data if shelters_res.data else []
+                _cache["persona_data"] = persona_data_list
+                _cache["fact_data"] = fact_data_list
+                _cache["expiry"] = now + CACHE_DURATION
+            else:
+                active_data = _cache["active_data"]
+                shelters_data = _cache["shelters_data"]
+                persona_data_list = _cache["persona_data"]
+                fact_data_list = _cache["fact_data"]
+
             if not active_data:
                 self._send_response(404, {"error": "No dogs found in active_dogs."})
                 return
                 
             active_dogs = {row["animal_id"]: row for row in active_data}
-            
-            # Fetch shelters
-            shelters_res = client.table("shelters").select("*").execute()
-            shelters_map = {s["shelter_id"]: s for s in shelters_res.data} if shelters_res.data else {}
-            
-            # Fetch from animal_persona_profiles to get archetype data and freshness
-            persona_data_list = fetch_all_rows(client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at"))
+            shelters_map = {s["shelter_id"]: s for s in shelters_data} if shelters_data else {}
             persona_data = {row["animal_id"]: row for row in persona_data_list}
-            
-            # Fetch animal_fact_profiles to get age_bucket and weight_class
-            fact_data_list = fetch_all_rows(client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class"))
+
             for row in fact_data_list:
                 if row["animal_id"] in active_dogs:
                     active_dogs[row["animal_id"]]["age_bucket"] = row.get("age_bucket")
                     active_dogs[row["animal_id"]]["weight_class"] = row.get("weight_class")
             
-            # Intersect to find valid current dogs that have a persona
             valid_ids = list(set(active_dogs.keys()).intersection(persona_data.keys()))
             
 

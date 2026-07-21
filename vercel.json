@@ -9,6 +9,10 @@
     {
       "source": "/dogs/:path1",
       "destination": "/api/dog_meta?path1=:path1"
+    },
+    {
+      "source": "/((?!api/|dogs/|_expo/|assets/|favicon|privacy\\.html|.*\\.(?:png|jpg|jpeg|gif|ico|js|json|css|svg|woff2?|ttf|otf)).*)",
+      "destination": "/index.html"
     }
   ],
   "functions": {
