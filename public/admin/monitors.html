@@ -464,14 +464,26 @@
         if (!lastRun) {
           statusHtml = '<span class="badge idle">No runs yet</span>';
         } else if (status === 'error') {
-          statusHtml = `<span class="badge failed">Error</span> <span style="font-size:11px;color:var(--text-dim);margin-left:6px">${lastRun}</span>`;
+          const errMsg = lastResult.error || 'Unknown error';
+          statusHtml = `<span class="badge failed">Error</span> <span style="font-size:11px;color:var(--text-dim);margin-left:6px">${lastRun}</span><div style="font-size:11px;color:var(--error);margin-top:6px;font-family:var(--font-mono);word-break:break-all">${errMsg}</div>`;
         } else if (findingsCount === 0) {
           statusHtml = `<span class="badge success">✓ All clear</span> <span style="font-size:11px;color:var(--text-dim);margin-left:6px">${lastRun}</span>`;
         } else {
           const notifSent = lastResult.notifications_sent || 0;
-          const notifLabel = notifSent > 0
-            ? `<span style="font-size:10px;color:var(--success);margin-left:6px">📨 ${notifSent} sent</span>`
-            : `<span style="font-size:10px;color:var(--error);margin-left:6px">📨 0 sent</span>`;
+          const notifyErr = lastResult.notify_error || '';
+          const nftyTopic = lastResult.nfty_topic || '';
+          let notifLabel;
+          if (notifSent > 0) {
+            notifLabel = `<span style="font-size:10px;color:var(--success);margin-left:6px">📨 ${notifSent} sent</span>`;
+          } else {
+            notifLabel = `<span style="font-size:10px;color:var(--error);margin-left:6px">📨 0 sent</span>`;
+            if (notifyErr) {
+              notifLabel += `<div style="font-size:10px;color:var(--error);margin-top:4px;font-family:var(--font-mono);word-break:break-all">Error: ${notifyErr}</div>`;
+            }
+            if (nftyTopic) {
+              notifLabel += `<div style="font-size:10px;color:var(--text-dim);margin-top:2px;font-family:var(--font-mono)">NFTY_TOPIC: ${nftyTopic}</div>`;
+            }
+          }
           statusHtml = `<span class="badge warning">${findingsCount} finding${findingsCount !== 1 ? 's' : ''}</span>${notifLabel} <span style="font-size:11px;color:var(--text-dim);margin-left:6px">${lastRun}</span>`;
         }
 

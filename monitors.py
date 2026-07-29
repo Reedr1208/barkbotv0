@@ -86,12 +86,19 @@ def _record_result(monitor_id: str, result: dict):
 
 # ── ntfy notification helper ────────────────────────────────────────
 
+_last_notify_error: str | None = None  # Surfaced in monitor results for debugging
+
+
 def _send_notification(title: str, body: str, tags: str = "warning", priority: str = "default") -> bool:
     """Send a notification via ntfy using the NFTY_TOPIC env var. Returns True if sent.
     Uses urllib (stdlib) instead of requests to avoid dependency issues."""
+    global _last_notify_error
+    _last_notify_error = None
+
     topic = (os.environ.get("NFTY_TOPIC") or "").strip()
     if not topic:
-        logger.warning("NFTY_TOPIC not set — skipping notification: %s", title)
+        _last_notify_error = "NFTY_TOPIC env var is not set or empty"
+        logger.warning(_last_notify_error)
         return False
     url = f"https://ntfy.sh/{topic}"
     logger.info("Sending ntfy notification to %s: %s", url, title)
@@ -100,7 +107,7 @@ def _send_notification(title: str, body: str, tags: str = "warning", priority: s
             url,
             data=body.encode("utf-8"),
             headers={
-                "Title": title.encode("utf-8"),
+                "Title": title,
                 "Tags": tags,
                 "Priority": priority,
             },
@@ -113,13 +120,16 @@ def _send_notification(title: str, body: str, tags: str = "warning", priority: s
                 return True
             else:
                 resp_body = resp.read().decode("utf-8", errors="replace")[:200]
-                logger.error("ntfy returned %d for '%s': %s", status, title, resp_body)
+                _last_notify_error = f"ntfy returned HTTP {status}: {resp_body}"
+                logger.error(_last_notify_error)
                 return False
     except urllib.error.HTTPError as e:
-        logger.error("ntfy HTTP error %d for '%s': %s", e.code, title, e.read().decode("utf-8", errors="replace")[:200])
+        _last_notify_error = f"ntfy HTTP error {e.code}: {e.read().decode('utf-8', errors='replace')[:200]}"
+        logger.error(_last_notify_error)
         return False
     except Exception as e:
-        logger.error("Failed to send ntfy notification to %s: %s: %s", url, type(e).__name__, e)
+        _last_notify_error = f"{type(e).__name__}: {e}"
+        logger.error("Failed to send ntfy notification to %s: %s", url, _last_notify_error)
         return False
 
 
@@ -503,6 +513,10 @@ def run_monitor(monitor_id: str) -> dict | None:
     except Exception as e:
         logger.error("Monitor %s failed: %s", monitor_id, e)
         result = {"status": "error", "error": str(e), "findings_count": 0, "findings": []}
+    # Surface notification debug info in results
+    result["nfty_topic"] = (os.environ.get("NFTY_TOPIC") or "(not set)")
+    if _last_notify_error:
+        result["notify_error"] = _last_notify_error
     _record_result(monitor_id, result)
     return result
 
