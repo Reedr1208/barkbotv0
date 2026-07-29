@@ -154,7 +154,7 @@ def scrape_inventory() -> None:
         seen_ids = set()
         
         for page_num in range(1, MAX_PAGES + 1):
-            url = f"{LISTING_URL}?Species=Dog&page={page_num}"
+            url = f"{LISTING_URL}?Page={page_num}&Species=Dog&Status=Available,Sponsorship"
             logging.info(f"Fetching page {page_num}...")
             
             resp = requests.get(url, headers=HEADERS, timeout=30)
