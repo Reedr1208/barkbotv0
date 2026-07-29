@@ -127,8 +127,9 @@ _last_notify_error: str | None = None  # Surfaced in monitor results for debuggi
 
 
 def _send_notification(title: str, body: str, tags: str = "warning", priority: str = "default") -> bool:
-    """Send a notification via ntfy using the NFTY_TOPIC env var. Returns True if sent.
-    Forces IPv4 to work around Railway's broken IPv6 routing."""
+    """Send a notification via ntfy, proxied through Supabase's pg_net extension.
+    Railway can't reach ntfy.sh directly, so we call a Supabase RPC function
+    that uses pg_net to make the HTTP POST from Supabase's infrastructure."""
     global _last_notify_error
     _last_notify_error = None
 
@@ -137,40 +138,22 @@ def _send_notification(title: str, body: str, tags: str = "warning", priority: s
         _last_notify_error = "NFTY_TOPIC env var is not set or empty"
         logger.warning(_last_notify_error)
         return False
-    url = f"https://ntfy.sh/{topic}"
-    logger.info("Sending ntfy notification to %s: %s", url, title)
+
+    logger.info("Sending ntfy notification via Supabase pg_net: %s", title)
     try:
-        import socket
-        import requests as _req
-        import urllib3.util.connection as _urllib3_conn
-
-        # Force IPv4 — Railway containers have broken IPv6 routing
-        _orig = _urllib3_conn.allowed_gai_family
-        _urllib3_conn.allowed_gai_family = lambda: socket.AF_INET
-        try:
-            resp = _req.post(
-                url,
-                data=body.encode("utf-8"),
-                headers={
-                    "Title": title,
-                    "Tags": tags,
-                    "Priority": priority,
-                },
-                timeout=10,
-            )
-        finally:
-            _urllib3_conn.allowed_gai_family = _orig
-
-        if resp.status_code == 200:
-            logger.info("ntfy notification sent (200 OK): %s", title)
-            return True
-        else:
-            _last_notify_error = f"ntfy returned HTTP {resp.status_code}: {resp.text[:200]}"
-            logger.error(_last_notify_error)
-            return False
+        client = _get_client()
+        result = client.rpc("send_ntfy", {
+            "topic": topic,
+            "title": title,
+            "body": body,
+            "tags": tags,
+            "priority": priority,
+        }).execute()
+        logger.info("ntfy notification queued via pg_net: %s (result: %s)", title, result.data)
+        return True
     except Exception as e:
         _last_notify_error = f"{type(e).__name__}: {e}"
-        logger.error("Failed to send ntfy notification to %s: %s", url, _last_notify_error)
+        logger.error("Failed to send ntfy notification via pg_net: %s", _last_notify_error)
         return False
 
 
