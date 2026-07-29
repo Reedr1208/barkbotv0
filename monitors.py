@@ -19,8 +19,6 @@ import json
 import logging
 import os
 import threading
-import urllib.request
-import urllib.error
 from datetime import datetime, timezone, timedelta
 from typing import Any
 
@@ -130,7 +128,7 @@ _last_notify_error: str | None = None  # Surfaced in monitor results for debuggi
 
 def _send_notification(title: str, body: str, tags: str = "warning", priority: str = "default") -> bool:
     """Send a notification via ntfy using the NFTY_TOPIC env var. Returns True if sent.
-    Uses urllib (stdlib) instead of requests to avoid dependency issues."""
+    Uses requests library (bundles its own CA certs via certifi — works in Docker)."""
     global _last_notify_error
     _last_notify_error = None
 
@@ -142,7 +140,8 @@ def _send_notification(title: str, body: str, tags: str = "warning", priority: s
     url = f"https://ntfy.sh/{topic}"
     logger.info("Sending ntfy notification to %s: %s", url, title)
     try:
-        req = urllib.request.Request(
+        import requests as _req
+        resp = _req.post(
             url,
             data=body.encode("utf-8"),
             headers={
@@ -150,22 +149,15 @@ def _send_notification(title: str, body: str, tags: str = "warning", priority: s
                 "Tags": tags,
                 "Priority": priority,
             },
-            method="POST",
+            timeout=10,
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            status = resp.getcode()
-            if status == 200:
-                logger.info("ntfy notification sent (200 OK): %s", title)
-                return True
-            else:
-                resp_body = resp.read().decode("utf-8", errors="replace")[:200]
-                _last_notify_error = f"ntfy returned HTTP {status}: {resp_body}"
-                logger.error(_last_notify_error)
-                return False
-    except urllib.error.HTTPError as e:
-        _last_notify_error = f"ntfy HTTP error {e.code}: {e.read().decode('utf-8', errors='replace')[:200]}"
-        logger.error(_last_notify_error)
-        return False
+        if resp.status_code == 200:
+            logger.info("ntfy notification sent (200 OK): %s", title)
+            return True
+        else:
+            _last_notify_error = f"ntfy returned HTTP {resp.status_code}: {resp.text[:200]}"
+            logger.error(_last_notify_error)
+            return False
     except Exception as e:
         _last_notify_error = f"{type(e).__name__}: {e}"
         logger.error("Failed to send ntfy notification to %s: %s", url, _last_notify_error)
