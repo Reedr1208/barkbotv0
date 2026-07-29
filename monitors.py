@@ -86,15 +86,16 @@ def _record_result(monitor_id: str, result: dict):
 
 # ── ntfy notification helper ────────────────────────────────────────
 
-def _send_notification(title: str, body: str, tags: str = "warning", priority: str = "default"):
-    """Send a notification via ntfy using the NFTY_TOPIC env var."""
-    topic = os.environ.get("NFTY_TOPIC")
+def _send_notification(title: str, body: str, tags: str = "warning", priority: str = "default") -> bool:
+    """Send a notification via ntfy using the NFTY_TOPIC env var. Returns True if sent."""
+    topic = (os.environ.get("NFTY_TOPIC") or "").strip()
     if not topic:
         logger.warning("NFTY_TOPIC not set — skipping notification: %s", title)
-        return
+        return False
+    url = f"https://ntfy.sh/{topic}"
     try:
-        http_requests.post(
-            f"https://ntfy.sh/{topic}",
+        resp = http_requests.post(
+            url,
             data=body.encode("utf-8"),
             headers={
                 "Title": title,
@@ -103,9 +104,15 @@ def _send_notification(title: str, body: str, tags: str = "warning", priority: s
             },
             timeout=10,
         )
-        logger.info("Sent ntfy notification: %s", title)
+        if resp.status_code == 200:
+            logger.info("ntfy notification sent (200): %s", title)
+            return True
+        else:
+            logger.error("ntfy returned %d for '%s': %s", resp.status_code, title, resp.text[:200])
+            return False
     except Exception as e:
-        logger.error("Failed to send ntfy notification: %s", e)
+        logger.error("Failed to send ntfy notification to %s: %s", url, e)
+        return False
 
 
 # ── Supabase helper ─────────────────────────────────────────────────
@@ -163,14 +170,16 @@ def _check_stale_profiles() -> dict:
         except Exception as e:
             logger.error("stale_profiles check failed for %s: %s", shelter_id, e)
 
+    sent = 0
     for f in findings:
-        _send_notification(
+        if _send_notification(
             title=f"📋 Stale Profiles — {f['shelter']}",
             body=f"{f['shelter']} profiles haven't been updated in {f['days_ago']} days (last: {f['last_update'][:10]})",
             tags="warning,clipboard",
-        )
+        ):
+            sent += 1
 
-    return {"findings_count": len(findings), "findings": findings}
+    return {"findings_count": len(findings), "notifications_sent": sent, "findings": findings}
 
 
 def _check_blank_bios() -> dict:
@@ -212,14 +221,16 @@ def _check_blank_bios() -> dict:
         except Exception as e:
             logger.error("blank_bios check failed for %s: %s", shelter_id, e)
 
+    sent = 0
     for f in findings:
-        _send_notification(
+        if _send_notification(
             title=f"📝 Blank Bios — {f['shelter']}",
             body=f"{f['shelter']} has {f['blank']}/{f['total']} animals ({f['pct']}%) with blank bios",
             tags="warning,memo",
-        )
+        ):
+            sent += 1
 
-    return {"findings_count": len(findings), "findings": findings}
+    return {"findings_count": len(findings), "notifications_sent": sent, "findings": findings}
 
 
 def _check_missing_fact_profiles() -> dict:
@@ -252,16 +263,18 @@ def _check_missing_fact_profiles() -> dict:
 
     findings = [{"shelter": s, "missing_count": c} for s, c in sorted(shelter_counts.items()) if c > 0]
 
+    sent = 0
     if len(missing) > 0:
         # Send one consolidated notification
         lines = [f"  • {f['shelter']}: {f['missing_count']} dogs" for f in findings]
-        _send_notification(
+        if _send_notification(
             title=f"🧩 Missing Fact Profiles — {len(missing)} total",
             body=f"{len(missing)} active dogs have no fact profile:\n" + "\n".join(lines),
             tags="warning,jigsaw",
-        )
+        ):
+            sent += 1
 
-    return {"findings_count": len(missing), "findings": findings}
+    return {"findings_count": len(missing), "notifications_sent": sent, "findings": findings}
 
 
 def _check_missing_system_prompts() -> dict:
@@ -288,15 +301,17 @@ def _check_missing_system_prompts() -> dict:
 
     findings = [{"shelter": s, "missing_count": c} for s, c in sorted(shelter_counts.items()) if c > 0]
 
+    sent = 0
     if len(missing) > 0:
         lines = [f"  • {f['shelter']}: {f['missing_count']} dogs" for f in findings]
-        _send_notification(
+        if _send_notification(
             title=f"💬 Missing System Prompts — {len(missing)} total",
             body=f"{len(missing)} dogs have fact profiles but no system prompt:\n" + "\n".join(lines),
             tags="warning,speech_balloon",
-        )
+        ):
+            sent += 1
 
-    return {"findings_count": len(missing), "findings": findings}
+    return {"findings_count": len(missing), "notifications_sent": sent, "findings": findings}
 
 
 def _check_cron_failures() -> dict:
@@ -328,6 +343,7 @@ def _check_cron_failures() -> dict:
             "notes": (f.get("notes") or "")[:200],
         })
 
+    sent = 0
     if findings:
         # Group by job_id
         job_counts: dict[str, int] = {}
@@ -335,13 +351,14 @@ def _check_cron_failures() -> dict:
             job_counts[f["job_id"]] = job_counts.get(f["job_id"], 0) + 1
 
         lines = [f"  • {jid}: {cnt}x" for jid, cnt in sorted(job_counts.items())]
-        _send_notification(
+        if _send_notification(
             title=f"❌ Cron Failures — {len(findings)} in last 24h",
             body=f"{len(findings)} cron failures detected:\n" + "\n".join(lines),
             tags="rotating_light,x",
-        )
+        ):
+            sent += 1
 
-    return {"findings_count": len(findings), "findings": findings}
+    return {"findings_count": len(findings), "notifications_sent": sent, "findings": findings}
 
 
 def _check_empty_inventory() -> dict:
@@ -365,15 +382,17 @@ def _check_empty_inventory() -> dict:
         if count == 0:
             findings.append({"shelter": shelter_id, "count": 0})
 
+    sent = 0
     for f in findings:
-        _send_notification(
+        if _send_notification(
             title=f"🚨 Empty Inventory — {f['shelter']}",
             body=f"{f['shelter']} has 0 dogs in active inventory. The inventory scraper may have failed.",
             tags="rotating_light,warning",
             priority="high",
-        )
+        ):
+            sent += 1
 
-    return {"findings_count": len(findings), "findings": findings}
+    return {"findings_count": len(findings), "notifications_sent": sent, "findings": findings}
 
 
 def _check_stale_inventory() -> dict:
@@ -403,14 +422,16 @@ def _check_stale_inventory() -> dict:
         except Exception as e:
             logger.error("stale_inventory check failed for %s: %s", shelter_id, e)
 
+    sent = 0
     for f in findings:
-        _send_notification(
+        if _send_notification(
             title=f"📦 Stale Inventory — {f['shelter']}",
             body=f"{f['shelter']} inventory hasn't been refreshed in {f['days_ago']} days (last: {f['last_scraped'][:10]})",
             tags="warning,package",
-        )
+        ):
+            sent += 1
 
-    return {"findings_count": len(findings), "findings": findings}
+    return {"findings_count": len(findings), "notifications_sent": sent, "findings": findings}
 
 
 # ═══════════════════════════════════════════════════════════════════
