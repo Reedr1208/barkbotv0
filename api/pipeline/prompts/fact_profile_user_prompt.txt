@@ -26,6 +26,7 @@ Instructions:
   - They can be fun/quirky (e.g., "What do you have against the garbage truck?") or serious/informative (e.g., "Tell me about your eye condition").
   - They must reference SPECIFIC details from this dog's profile — not generic questions.
   - If the bio is very short or lacks interesting details, produce fewer than 5. Quality over quantity. Never invent details or make up unanswerable questions.
+  - ALWAYS phrase in 2nd person, as if the user is speaking directly to the dog. Use "you/your" instead of the dog's name. Example: "What commands do you know?" NOT "What commands does Jax know?"
   - They must NOT duplicate or closely overlap with ANY of the following Informative category questions:
     * "What's your rescue story?"
     * "Are you good with other dogs or cats?"
