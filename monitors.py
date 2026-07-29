@@ -128,7 +128,7 @@ _last_notify_error: str | None = None  # Surfaced in monitor results for debuggi
 
 def _send_notification(title: str, body: str, tags: str = "warning", priority: str = "default") -> bool:
     """Send a notification via ntfy using the NFTY_TOPIC env var. Returns True if sent.
-    Uses requests library (bundles its own CA certs via certifi — works in Docker)."""
+    Forces IPv4 to work around Railway's broken IPv6 routing."""
     global _last_notify_error
     _last_notify_error = None
 
@@ -140,17 +140,27 @@ def _send_notification(title: str, body: str, tags: str = "warning", priority: s
     url = f"https://ntfy.sh/{topic}"
     logger.info("Sending ntfy notification to %s: %s", url, title)
     try:
+        import socket
         import requests as _req
-        resp = _req.post(
-            url,
-            data=body.encode("utf-8"),
-            headers={
-                "Title": title,
-                "Tags": tags,
-                "Priority": priority,
-            },
-            timeout=10,
-        )
+        import urllib3.util.connection as _urllib3_conn
+
+        # Force IPv4 — Railway containers have broken IPv6 routing
+        _orig = _urllib3_conn.allowed_gai_family
+        _urllib3_conn.allowed_gai_family = lambda: socket.AF_INET
+        try:
+            resp = _req.post(
+                url,
+                data=body.encode("utf-8"),
+                headers={
+                    "Title": title,
+                    "Tags": tags,
+                    "Priority": priority,
+                },
+                timeout=10,
+            )
+        finally:
+            _urllib3_conn.allowed_gai_family = _orig
+
         if resp.status_code == 200:
             logger.info("ntfy notification sent (200 OK): %s", title)
             return True
