@@ -129,3 +129,9 @@ create table if not exists suggested_prompts (
 --   animal_fact_profiles.sugg_specific text[]  -- up to 5 profile-specific clickbait prompts
 --   chat_messages.sugg_prompts text[]          -- the 3 suggestions shown before user responded
 --   chat_messages.chosen_prompt text            -- the clicked suggestion (null if custom typed)
+
+-- 5. monitor_settings table (persists monitor toggle state across server restarts)
+create table if not exists monitor_settings (
+  monitor_id text primary key,
+  enabled boolean not null default true
+);

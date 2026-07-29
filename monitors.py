@@ -32,9 +32,42 @@ KNOWN_SHELTERS = [
     "MV", "RDR", "MP", "WWLA", "PHP", "HSSA", "HHS", "NYCACC", "SAPA",
 ]
 
-# ── In-memory monitor state ─────────────────────────────────────────
+# ── Monitor state (toggles persisted to Supabase) ──────────────────
 _monitor_state: dict[str, dict] = {}
 _state_lock = threading.Lock()
+_state_loaded = False
+
+
+def _load_state_from_db():
+    """Load monitor enabled/disabled state from Supabase. Called once on first access."""
+    global _state_loaded
+    if _state_loaded:
+        return
+    try:
+        client = _get_client()
+        res = client.table("monitor_settings").select("monitor_id, enabled").execute()
+        for row in (res.data or []):
+            mid = row["monitor_id"]
+            if mid in _monitor_state:
+                _monitor_state[mid]["enabled"] = row["enabled"]
+            else:
+                _monitor_state[mid] = {"enabled": row["enabled"], "last_run": None, "last_result": None}
+        logger.info("Loaded monitor settings from DB: %d rows", len(res.data or []))
+    except Exception as e:
+        logger.warning("Could not load monitor_settings (table may not exist yet): %s", e)
+    _state_loaded = True
+
+
+def _save_toggle_to_db(monitor_id: str, enabled: bool):
+    """Persist a single toggle change to Supabase."""
+    try:
+        client = _get_client()
+        client.table("monitor_settings").upsert(
+            {"monitor_id": monitor_id, "enabled": enabled},
+            on_conflict="monitor_id",
+        ).execute()
+    except Exception as e:
+        logger.warning("Could not save monitor toggle to DB: %s", e)
 
 
 def _default_state() -> dict:
@@ -43,11 +76,17 @@ def _default_state() -> dict:
             for mid in MONITOR_REGISTRY}
 
 
+def _ensure_state():
+    """Initialize state if needed and load persisted toggles."""
+    if not _monitor_state:
+        _monitor_state.update(_default_state())
+    _load_state_from_db()
+
+
 def get_monitor_config() -> dict[str, dict]:
     """Return current monitor config with enabled state and last results."""
     with _state_lock:
-        if not _monitor_state:
-            _monitor_state.update(_default_state())
+        _ensure_state()
         result = {}
         for mid, meta in MONITOR_REGISTRY.items():
             state = _monitor_state.get(mid, {"enabled": True, "last_run": None, "last_result": None})
@@ -63,15 +102,15 @@ def get_monitor_config() -> dict[str, dict]:
 
 
 def set_monitor_enabled(monitor_id: str, enabled: bool) -> bool:
-    """Toggle a monitor on/off. Returns True if the monitor exists."""
+    """Toggle a monitor on/off. Persists to Supabase. Returns True if the monitor exists."""
     if monitor_id not in MONITOR_REGISTRY:
         return False
     with _state_lock:
-        if not _monitor_state:
-            _monitor_state.update(_default_state())
+        _ensure_state()
         if monitor_id not in _monitor_state:
             _monitor_state[monitor_id] = {"enabled": True, "last_run": None, "last_result": None}
         _monitor_state[monitor_id]["enabled"] = enabled
+    _save_toggle_to_db(monitor_id, enabled)
     return True
 
 
