@@ -19,10 +19,10 @@ import json
 import logging
 import os
 import threading
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone, timedelta
 from typing import Any
-
-import requests as http_requests
 
 logger = logging.getLogger("barkbot.monitors")
 
@@ -87,31 +87,39 @@ def _record_result(monitor_id: str, result: dict):
 # ── ntfy notification helper ────────────────────────────────────────
 
 def _send_notification(title: str, body: str, tags: str = "warning", priority: str = "default") -> bool:
-    """Send a notification via ntfy using the NFTY_TOPIC env var. Returns True if sent."""
+    """Send a notification via ntfy using the NFTY_TOPIC env var. Returns True if sent.
+    Uses urllib (stdlib) instead of requests to avoid dependency issues."""
     topic = (os.environ.get("NFTY_TOPIC") or "").strip()
     if not topic:
         logger.warning("NFTY_TOPIC not set — skipping notification: %s", title)
         return False
     url = f"https://ntfy.sh/{topic}"
+    logger.info("Sending ntfy notification to %s: %s", url, title)
     try:
-        resp = http_requests.post(
+        req = urllib.request.Request(
             url,
             data=body.encode("utf-8"),
             headers={
-                "Title": title,
+                "Title": title.encode("utf-8"),
                 "Tags": tags,
                 "Priority": priority,
             },
-            timeout=10,
+            method="POST",
         )
-        if resp.status_code == 200:
-            logger.info("ntfy notification sent (200): %s", title)
-            return True
-        else:
-            logger.error("ntfy returned %d for '%s': %s", resp.status_code, title, resp.text[:200])
-            return False
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            status = resp.getcode()
+            if status == 200:
+                logger.info("ntfy notification sent (200 OK): %s", title)
+                return True
+            else:
+                resp_body = resp.read().decode("utf-8", errors="replace")[:200]
+                logger.error("ntfy returned %d for '%s': %s", status, title, resp_body)
+                return False
+    except urllib.error.HTTPError as e:
+        logger.error("ntfy HTTP error %d for '%s': %s", e.code, title, e.read().decode("utf-8", errors="replace")[:200])
+        return False
     except Exception as e:
-        logger.error("Failed to send ntfy notification to %s: %s", url, e)
+        logger.error("Failed to send ntfy notification to %s: %s: %s", url, type(e).__name__, e)
         return False
 
 
@@ -171,10 +179,11 @@ def _check_stale_profiles() -> dict:
             logger.error("stale_profiles check failed for %s: %s", shelter_id, e)
 
     sent = 0
-    for f in findings:
+    if findings:
+        lines = [f"  - {f['shelter']}: {f['days_ago']}d stale (last: {f['last_update'][:10]})" for f in findings]
         if _send_notification(
-            title=f"📋 Stale Profiles — {f['shelter']}",
-            body=f"{f['shelter']} profiles haven't been updated in {f['days_ago']} days (last: {f['last_update'][:10]})",
+            title=f"Stale Profiles - {len(findings)} shelter(s)",
+            body=f"{len(findings)} shelter(s) with no profile update in 3+ days:\n" + "\n".join(lines),
             tags="warning,clipboard",
         ):
             sent += 1
@@ -222,10 +231,11 @@ def _check_blank_bios() -> dict:
             logger.error("blank_bios check failed for %s: %s", shelter_id, e)
 
     sent = 0
-    for f in findings:
+    if findings:
+        lines = [f"  - {f['shelter']}: {f['blank']}/{f['total']} ({f['pct']}%) blank" for f in findings]
         if _send_notification(
-            title=f"📝 Blank Bios — {f['shelter']}",
-            body=f"{f['shelter']} has {f['blank']}/{f['total']} animals ({f['pct']}%) with blank bios",
+            title=f"Blank Bios - {len(findings)} shelter(s)",
+            body=f"{len(findings)} shelter(s) with >25% blank bios:\n" + "\n".join(lines),
             tags="warning,memo",
         ):
             sent += 1
@@ -265,10 +275,9 @@ def _check_missing_fact_profiles() -> dict:
 
     sent = 0
     if len(missing) > 0:
-        # Send one consolidated notification
-        lines = [f"  • {f['shelter']}: {f['missing_count']} dogs" for f in findings]
+        lines = [f"  - {f['shelter']}: {f['missing_count']} dogs" for f in findings]
         if _send_notification(
-            title=f"🧩 Missing Fact Profiles — {len(missing)} total",
+            title=f"Missing Fact Profiles - {len(missing)} total",
             body=f"{len(missing)} active dogs have no fact profile:\n" + "\n".join(lines),
             tags="warning,jigsaw",
         ):
@@ -303,9 +312,9 @@ def _check_missing_system_prompts() -> dict:
 
     sent = 0
     if len(missing) > 0:
-        lines = [f"  • {f['shelter']}: {f['missing_count']} dogs" for f in findings]
+        lines = [f"  - {f['shelter']}: {f['missing_count']} dogs" for f in findings]
         if _send_notification(
-            title=f"💬 Missing System Prompts — {len(missing)} total",
+            title=f"Missing System Prompts - {len(missing)} total",
             body=f"{len(missing)} dogs have fact profiles but no system prompt:\n" + "\n".join(lines),
             tags="warning,speech_balloon",
         ):
@@ -345,14 +354,13 @@ def _check_cron_failures() -> dict:
 
     sent = 0
     if findings:
-        # Group by job_id
         job_counts: dict[str, int] = {}
         for f in findings:
             job_counts[f["job_id"]] = job_counts.get(f["job_id"], 0) + 1
 
-        lines = [f"  • {jid}: {cnt}x" for jid, cnt in sorted(job_counts.items())]
+        lines = [f"  - {jid}: {cnt}x" for jid, cnt in sorted(job_counts.items())]
         if _send_notification(
-            title=f"❌ Cron Failures — {len(findings)} in last 24h",
+            title=f"Cron Failures - {len(findings)} in last 24h",
             body=f"{len(findings)} cron failures detected:\n" + "\n".join(lines),
             tags="rotating_light,x",
         ):
@@ -383,10 +391,11 @@ def _check_empty_inventory() -> dict:
             findings.append({"shelter": shelter_id, "count": 0})
 
     sent = 0
-    for f in findings:
+    if findings:
+        shelters = [f['shelter'] for f in findings]
         if _send_notification(
-            title=f"🚨 Empty Inventory — {f['shelter']}",
-            body=f"{f['shelter']} has 0 dogs in active inventory. The inventory scraper may have failed.",
+            title=f"Empty Inventory - {len(findings)} shelter(s)",
+            body=f"{len(findings)} shelter(s) have 0 dogs in active inventory:\n  - " + "\n  - ".join(shelters),
             tags="rotating_light,warning",
             priority="high",
         ):
@@ -423,10 +432,11 @@ def _check_stale_inventory() -> dict:
             logger.error("stale_inventory check failed for %s: %s", shelter_id, e)
 
     sent = 0
-    for f in findings:
+    if findings:
+        lines = [f"  - {f['shelter']}: {f['days_ago']}d stale (last: {f['last_scraped'][:10]})" for f in findings]
         if _send_notification(
-            title=f"📦 Stale Inventory — {f['shelter']}",
-            body=f"{f['shelter']} inventory hasn't been refreshed in {f['days_ago']} days (last: {f['last_scraped'][:10]})",
+            title=f"Stale Inventory - {len(findings)} shelter(s)",
+            body=f"{len(findings)} shelter(s) with stale inventory (2+ days):\n" + "\n".join(lines),
             tags="warning,package",
         ):
             sent += 1
