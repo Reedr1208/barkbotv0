@@ -346,6 +346,12 @@ def _run_cleanup_inactive_dogs():
         mod.main()
 
 
+def _run_monitors():
+    from monitors import run_all_monitors
+    with _clean_argv():
+        run_all_monitors()
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Registry: maps job_id → wrapper function
 # Used by both the scheduler and the manual trigger endpoints
@@ -385,6 +391,7 @@ JOB_REGISTRY = {
     "sapa_profiles": _run_sapa_profiles,
     "generate_prompts": _run_generate_prompts,
     "cleanup_inactive_dogs": _run_cleanup_inactive_dogs,
+    "monitors": _run_monitors,
 }
 
 
@@ -480,6 +487,9 @@ def setup_schedules():
 
     # Cleanup inactive dogs
     scheduler.add_job(_run_cleanup_inactive_dogs, CronTrigger.from_crontab("15 */4 * * *"), id="cleanup_inactive_dogs", replace_existing=True)
+
+    # Data quality monitors — daily at 2 PM UTC (8 AM MT)
+    scheduler.add_job(_run_monitors, CronTrigger.from_crontab("0 14 * * *"), id="monitors", replace_existing=True)
 
     logger.info(f"Registered {len(scheduler.get_jobs())} scheduled jobs.")
 

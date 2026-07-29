@@ -71,6 +71,31 @@
 
     .header-left h1 span { color: var(--text-dim); font-weight: 400; }
 
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      margin-left: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .tab-link {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .tab-link:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.04); }
+    .tab-link.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
     .header-stats {
       display: flex;
       gap: 20px;
@@ -473,7 +498,11 @@
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <h1>🐕 BarkBot <span>/ Cron Dashboard</span></h1>
+      <h1>🐕 BarkBot <span>/ Admin</span></h1>
+      <nav class="tab-nav">
+        <a href="/admin/crons" class="tab-link active">Crons</a>
+        <a href="/admin/monitors" class="tab-link">Monitors</a>
+      </nav>
     </div>
     <div class="header-stats" id="headerStats">
       <div class="stat">

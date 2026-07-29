@@ -1,9 +1,10 @@
 """
-Admin dashboard routes for cron job monitoring.
+Admin dashboard routes for cron job monitoring and data quality monitors.
 
-Provides a password-protected web dashboard at /admin/crons for:
-- Viewing all cron jobs with their schedules, statuses, and run history
-- Manually triggering jobs
+Provides a password-protected web dashboard at /admin for:
+- /admin/crons  — Viewing all cron jobs with schedules, statuses, run history
+- /admin/monitors — Toggling and running data quality monitors
+- Manually triggering jobs and monitors
 - Monitoring system health
 
 Authentication is via a simple password (ADMIN_PASSWORD env var) stored
@@ -115,7 +116,13 @@ async def admin_logout(request: Request):
     return response
 
 
-# ── Dashboard page ──────────────────────────────────────────────────
+# ── Dashboard pages ─────────────────────────────────────────────────
+
+@router.get("/admin")
+async def admin_root(request: Request):
+    """Redirect /admin to /admin/crons."""
+    return RedirectResponse(url="/admin/crons", status_code=303)
+
 
 @router.get("/admin/crons")
 async def admin_dashboard(request: Request):
@@ -126,6 +133,17 @@ async def admin_dashboard(request: Request):
     if os.path.isfile(dashboard_path):
         return FileResponse(dashboard_path, media_type="text/html")
     return HTMLResponse("<h1>Dashboard not found</h1>", status_code=500)
+
+
+@router.get("/admin/monitors")
+async def admin_monitors_page(request: Request):
+    """Serve the data quality monitors dashboard."""
+    if not _check_admin_auth(request):
+        return RedirectResponse(url="/admin/login", status_code=303)
+    monitors_path = os.path.join(os.path.dirname(__file__), "..", "public", "admin", "monitors.html")
+    if os.path.isfile(monitors_path):
+        return FileResponse(monitors_path, media_type="text/html")
+    return HTMLResponse("<h1>Monitors page not found</h1>", status_code=500)
 
 
 # ── API endpoints (all require auth) ───────────────────────────────
@@ -275,6 +293,80 @@ async def admin_api_health(request: Request):
         "running_job_ids": list(running.keys()),
         "recent_failures": recent_failures,
     })
+
+
+# ── Monitor API endpoints ───────────────────────────────────────────
+
+@router.get("/admin/api/monitors")
+async def admin_api_monitors(request: Request):
+    """Return all monitors with their enabled state and last results."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    from monitors import get_monitor_config
+    config = get_monitor_config()
+    return JSONResponse(content={"monitors": list(config.values())})
+
+
+@router.post("/admin/api/monitors/{monitor_id}/toggle")
+async def admin_api_toggle_monitor(monitor_id: str, request: Request):
+    """Toggle a monitor on/off."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    try:
+        body = await request.json()
+        enabled = body.get("enabled", True)
+    except Exception:
+        return JSONResponse(status_code=400, content={"error": "Invalid request body"})
+
+    from monitors import set_monitor_enabled
+    if not set_monitor_enabled(monitor_id, enabled):
+        return JSONResponse(status_code=404, content={"error": f"Unknown monitor: {monitor_id}"})
+
+    return JSONResponse(content={"status": "ok", "monitor_id": monitor_id, "enabled": enabled})
+
+
+@router.post("/admin/api/monitors/{monitor_id}/run")
+async def admin_api_run_monitor(monitor_id: str, request: Request):
+    """Manually trigger a single monitor."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    from monitors import run_monitor
+
+    def _run():
+        try:
+            logger.info(f"[admin] Manually triggered monitor: {monitor_id}")
+            run_monitor(monitor_id)
+        except Exception as e:
+            logger.error(f"[admin] Monitor {monitor_id} failed: {e}")
+
+    thread = threading.Thread(target=_run, name=f"admin-monitor-{monitor_id}", daemon=True)
+    thread.start()
+
+    return JSONResponse(content={"status": "triggered", "monitor_id": monitor_id})
+
+
+@router.post("/admin/api/monitors/run-all")
+async def admin_api_run_all_monitors(request: Request):
+    """Manually trigger all enabled monitors."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    from monitors import run_all_monitors
+
+    def _run():
+        try:
+            logger.info("[admin] Manually triggered all monitors")
+            run_all_monitors()
+        except Exception as e:
+            logger.error(f"[admin] Monitor sweep failed: {e}")
+
+    thread = threading.Thread(target=_run, name="admin-monitors-all", daemon=True)
+    thread.start()
+
+    return JSONResponse(content={"status": "triggered", "message": "All enabled monitors started."})
 
 
 def _format_duration(seconds: float) -> str:

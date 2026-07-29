@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarkBot Monitors</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-card: rgba(18, 18, 28, 0.9);
+      --bg-card-hover: rgba(25, 25, 40, 0.95);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --text-primary: #e8e8ef;
+      --text-secondary: #8888a0;
+      --text-dim: #555570;
+      --accent: #7c5cfc;
+      --accent-glow: rgba(124, 92, 252, 0.25);
+      --success: #34d399;
+      --success-bg: rgba(52, 211, 153, 0.1);
+      --error: #f87171;
+      --error-bg: rgba(248, 113, 113, 0.1);
+      --warning: #fbbf24;
+      --warning-bg: rgba(251, 191, 36, 0.1);
+      --running: #60a5fa;
+      --running-bg: rgba(96, 165, 250, 0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(124, 92, 252, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 90%, rgba(248, 113, 113, 0.04) 0%, transparent 50%);
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-left h1 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .header-left h1 span { color: var(--text-dim); font-weight: 400; }
+
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      margin-left: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .tab-link {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .tab-link:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.04); }
+    .tab-link.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .logout-btn {
+      font-size: 12px;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover { color: var(--text-secondary); border-color: var(--border-hover); }
+
+    /* ── Controls ────────────────────────────────────── */
+    .controls {
+      padding: 16px 28px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .run-all-btn {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      background: rgba(124, 92, 252, 0.1);
+      color: var(--accent);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .run-all-btn:hover {
+      background: rgba(124, 92, 252, 0.2);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .run-all-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .controls-info {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+
+    /* ── Main ────────────────────────────────────────── */
+    .main { padding: 0 28px 40px; }
+
+    /* ── Monitor cards ───────────────────────────────── */
+    .monitor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px;
+    }
+
+    .monitor-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: all 0.2s;
+    }
+
+    .monitor-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+    }
+
+    .monitor-card.disabled {
+      opacity: 0.5;
+    }
+
+    .monitor-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .monitor-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .monitor-id {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .monitor-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .monitor-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .monitor-status {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .monitor-status .findings {
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .monitor-status .findings.has-findings { color: var(--warning); }
+    .monitor-status .findings.clear { color: var(--success); }
+    .monitor-status .findings.error { color: var(--error); }
+
+    .monitor-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .run-btn {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .run-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(124, 92, 252, 0.08);
+    }
+
+    .run-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* ── Toggle switch ──────────────────────────────── */
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      transition: all 0.3s;
+    }
+
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background: rgba(124, 92, 252, 0.4);
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(18px);
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    /* ── Badge ──────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge.success { background: var(--success-bg); color: var(--success); }
+    .badge.warning { background: var(--warning-bg); color: var(--warning); }
+    .badge.failed { background: var(--error-bg); color: var(--error); }
+    .badge.idle { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+
+    /* ── Toast ──────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      animation: toast-in 0.3s ease-out;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .toast.success { background: #1a3a2a; color: var(--success); border: 1px solid rgba(52,211,153,0.2); }
+    .toast.error { background: #3a1a1a; color: var(--error); border: 1px solid rgba(248,113,113,0.2); }
+    .toast.info { background: #1a2a3a; color: var(--running); border: 1px solid rgba(96,165,250,0.2); }
+
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Loading ──────────────────────────────────────── */
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 768px) {
+      .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+      .controls { padding: 12px 16px; }
+      .main { padding: 0 16px 30px; }
+      .monitor-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>🐕 BarkBot <span>/ Admin</span></h1>
+      <nav class="tab-nav">
+        <a href="/admin/crons" class="tab-link">Crons</a>
+        <a href="/admin/monitors" class="tab-link active">Monitors</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <form action="/admin/logout" method="post" style="display:inline">
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="run-all-btn" id="runAllBtn" onclick="runAll()">▶ Run All Monitors</button>
+    <span class="controls-info" id="refreshInfo">Auto-refresh: 30s</span>
+  </div>
+
+  <!-- Monitor cards -->
+  <div class="main" id="monitorContainer">
+    <div class="empty-state">
+      <div class="loading-spinner"></div>
+      <p style="margin-top: 12px;">Loading monitors...</p>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ── State ──────────────────────────────────────────
+    let allMonitors = [];
+    let refreshTimer = null;
+
+    // ── API helpers ───────────────────────────────────
+    async function apiFetch(url, opts = {}) {
+      const res = await fetch(url, { credentials: 'same-origin', ...opts });
+      if (res.status === 401) {
+        window.location.href = '/admin/login';
+        throw new Error('Unauthorized');
+      }
+      return res;
+    }
+
+    // ── Load monitors ─────────────────────────────────
+    async function loadMonitors() {
+      try {
+        const res = await apiFetch('/admin/api/monitors');
+        const data = await res.json();
+        allMonitors = data.monitors || [];
+        renderMonitors();
+      } catch (err) {
+        console.error('Failed to load monitors:', err);
+      }
+    }
+
+    // ── Render ────────────────────────────────────────
+    function renderMonitors() {
+      const container = document.getElementById('monitorContainer');
+
+      if (allMonitors.length === 0) {
+        container.innerHTML = '<div class="empty-state">No monitors configured.</div>';
+        return;
+      }
+
+      let html = '<div class="monitor-grid">';
+
+      for (const m of allMonitors) {
+        const lastResult = m.last_result;
+        const lastRun = m.last_run ? formatTimeAgo(m.last_run) : null;
+        const findingsCount = lastResult ? lastResult.findings_count : null;
+        const status = lastResult ? lastResult.status : null;
+
+        let statusHtml;
+        if (!lastRun) {
+          statusHtml = '<span class="badge idle">No runs yet</span>';
+        } else if (status === 'error') {
+          statusHtml = `<span class="badge failed">Error</span> <span style="font-size:11px;color:var(--text-dim);margin-left:6px">${lastRun}</span>`;
+        } else if (findingsCount === 0) {
+          statusHtml = `<span class="badge success">✓ All clear</span> <span style="font-size:11px;color:var(--text-dim);margin-left:6px">${lastRun}</span>`;
+        } else {
+          statusHtml = `<span class="badge warning">${findingsCount} finding${findingsCount !== 1 ? 's' : ''}</span> <span style="font-size:11px;color:var(--text-dim);margin-left:6px">${lastRun}</span>`;
+        }
+
+        html += `
+          <div class="monitor-card ${m.enabled ? '' : 'disabled'}" data-id="${m.id}">
+            <div class="monitor-top">
+              <div>
+                <div class="monitor-name">${m.name}</div>
+                <div class="monitor-id">${m.id}</div>
+              </div>
+              <label class="toggle" title="${m.enabled ? 'Enabled' : 'Disabled'}">
+                <input type="checkbox" ${m.enabled ? 'checked' : ''} onchange="toggleMonitor('${m.id}', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="monitor-desc">${m.description}</div>
+            <div class="monitor-bottom">
+              <div class="monitor-status">${statusHtml}</div>
+              <div class="monitor-actions">
+                <button class="run-btn" onclick="runMonitor('${m.id}')" ${m.enabled ? '' : 'disabled'}>▶ Run</button>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ── Toggle monitor ───────────────────────────────
+    async function toggleMonitor(id, enabled) {
+      try {
+        const res = await apiFetch(`/admin/api/monitors/${id}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled }),
+        });
+        if (res.ok) {
+          showToast(`${id}: ${enabled ? 'Enabled' : 'Disabled'}`, 'info');
+          // Update local state and re-render
+          const m = allMonitors.find(m => m.id === id);
+          if (m) m.enabled = enabled;
+          renderMonitors();
+        } else {
+          showToast('Failed to toggle', 'error');
+        }
+      } catch (err) {
+        showToast('Network error', 'error');
+      }
+    }
+
+    // ── Run single monitor ───────────────────────────
+    async function runMonitor(id) {
+      try {
+        const res = await apiFetch(`/admin/api/monitors/${id}/run`, { method: 'POST' });
+        if (res.ok) {
+          showToast(`Running: ${id}`, 'info');
+          // Refresh after delay to pick up results
+          setTimeout(loadMonitors, 5000);
+        } else {
+          showToast('Failed to trigger', 'error');
+        }
+      } catch (err) {
+        showToast('Network error', 'error');
+      }
+    }
+
+    // ── Run all monitors ─────────────────────────────
+    async function runAll() {
+      const btn = document.getElementById('runAllBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Running...';
+
+      try {
+        const res = await apiFetch('/admin/api/monitors/run-all', { method: 'POST' });
+        if (res.ok) {
+          showToast('All monitors triggered', 'info');
+          setTimeout(loadMonitors, 8000);
+        } else {
+          showToast('Failed to trigger', 'error');
+        }
+      } catch (err) {
+        showToast('Network error', 'error');
+      }
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = '▶ Run All Monitors';
+      }, 10000);
+    }
+
+    // ── Time formatting ──────────────────────────────
+    function formatTimeAgo(isoStr) {
+      if (!isoStr) return '—';
+      const d = new Date(isoStr);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffS = Math.round(diffMs / 1000);
+
+      if (diffS < 0) return 'just now';
+      if (diffS < 60) return `${diffS}s ago`;
+      if (diffS < 3600) return `${Math.round(diffS / 60)}m ago`;
+      if (diffS < 86400) return `${Math.round(diffS / 3600)}h ago`;
+      return `${Math.round(diffS / 86400)}d ago`;
+    }
+
+    // ── Toasts ───────────────────────────────────────
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // ── Init ─────────────────────────────────────────
+    loadMonitors();
+    refreshTimer = setInterval(loadMonitors, 30000);
+  </script>
+</body>
+</html>
