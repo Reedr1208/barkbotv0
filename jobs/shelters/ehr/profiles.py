@@ -1,14 +1,15 @@
 """
 EHR (Eleventh Hour Rescue) — Profile Scraper
 
-Fetches individual dog profile pages from ehrdogs.org (RescueGroups)
-and extracts structured fields + bio text.
+Fetches individual dog profile pages from ehrdogs.org (Buzz Rescues
+WordPress theme) and extracts structured fields + bio text.
 
-The detail pages contain:
-- Header: "Breed / Mixed  ::  Gender (spayed/neutered)  ::  Age  ::  Size"
-- Structured table: Status, Species, Color, Size, Age, Housetrained, etc.
-- Narrative bio text
-- Multiple photos from cdn.rescuegroups.org
+The detail pages (e.g. /dog/alvin-dixon/) contain:
+- Title: Dog name in <h2 class="Bzl-dog-title">
+- Main photo and gallery thumbnails
+- Bio text in <div class="dog-description">
+- Structured features in <li class="features_item"> elements with icons
+  for Breed, Age, Weight, Color, Energy Level, Kids, Dogs, Cats, etc.
 
 No Playwright needed — all static HTML. Runs via Vercel crons.
 """
@@ -29,9 +30,6 @@ SHELTER_NAME = "Eleventh Hour Rescue"
 CITY = "Dover"
 STATE = "NJ"
 
-# Catch-all tile IDs to skip
-EXCLUDED_IDS = {"22543099", "22543103"}
-
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -40,208 +38,249 @@ HEADERS = {
     )
 }
 
+# Icon class -> field name mapping for structured features
+ICON_FIELD_MAP = {
+    "icon-dog-face": None,   # context-dependent: Breed or Good With Dogs
+    "icon-cake": "age",
+    "icon-weight-machine": "weight",
+    "icon-color-palette": "color",
+    "icon-energy": "energy_level",
+    "icon-child": "good_with_kids",
+    "icon-cat-face": "good_with_cats",
+    "icon-other-animal": "small_animals",
+    "icon-info": "livestock",
+    "icon-accountant": "adoption_fee",
+    "icon-male-sign": "gender",
+    "icon-female-sign": "gender",
+}
+
 
 def _extract_image(soup: BeautifulSoup) -> Optional[str]:
-    """Extract the main dog photo URL from RescueGroups CDN."""
-    for img in soup.find_all("img"):
-        src = img.get("src", "")
-        if "cdn.rescuegroups.org" in src and "width=500" in src:
-            return src
-    # Fallback: any rescuegroups image
-    for img in soup.find_all("img"):
-        src = img.get("src", "")
-        if "cdn.rescuegroups.org" in src and "/pictures/animals/" in src:
-            return re.sub(r"\?width=\d+", "?width=500", src)
+    """Extract the main dog photo URL from the Buzz Rescues detail page.
+
+    The main image is inside <div class="Bzl-dog-img"> → <a class="dogPics"> → <img>.
+    The <a> href points to the full-resolution image.
+    """
+    gallery = soup.find("div", class_="Bzl-dog-single-gallery")
+    if not gallery:
+        gallery = soup.find("div", class_="Bzl-popup-gallery")
+
+    if gallery:
+        # Primary image: the main <a class="dogPics"> in Bzl-dog-img
+        dog_img_div = gallery.find("div", class_="Bzl-dog-img")
+        if dog_img_div:
+            main_link = dog_img_div.find("a", class_="dogPics")
+            if main_link and main_link.get("href"):
+                return main_link["href"]
+            # Fallback: the img src
+            img = dog_img_div.find("img")
+            if img:
+                src = img.get("src", "")
+                if src and not src.startswith("data:"):
+                    if src.startswith("/"):
+                        return f"https://ehrdogs.org{src}"
+                    return src
+
+    # Fallback: og:image meta tag
+    og_img = soup.find("meta", property="og:image")
+    if og_img and og_img.get("content"):
+        return og_img["content"]
+
     return None
 
 
-def _parse_header_line(text_lines: list) -> Dict[str, str]:
-    """Parse the header line like 'Terrier / Mixed (short coat)  ::  Male (neutered)  ::  Adult  ::  Medium'."""
-    fields = {"breed": "", "gender": "", "age": "", "size": ""}
-    
-    for line in text_lines:
-        if "  : :  " in line or " :: " in line:
-            parts = re.split(r"\s*::\s*|\s*: :\s*", line)
-            if len(parts) >= 1:
-                fields["breed"] = parts[0].strip()
-            if len(parts) >= 2:
-                raw_gender = parts[1].strip()
-                if "female" in raw_gender.lower():
-                    fields["gender"] = "Female"
-                elif "male" in raw_gender.lower():
-                    fields["gender"] = "Male"
+def _extract_name(soup: BeautifulSoup) -> str:
+    """Extract the dog's name from the page."""
+    # Try og:title first (cleanest)
+    og_title = soup.find("meta", property="og:title")
+    if og_title and og_title.get("content"):
+        name = og_title["content"].strip()
+        if name and name != "Eleventh Hour Rescue":
+            return name
+
+    # Try the Bzl-dog-title heading
+    title_h2 = soup.find("h2", class_="Bzl-dog-title")
+    if title_h2:
+        strong = title_h2.find("strong")
+        if strong:
+            return strong.get_text(strip=True)
+        return title_h2.get_text(strip=True)
+
+    # Fallback: page <title>
+    title_tag = soup.find("title")
+    if title_tag:
+        raw = title_tag.get_text(strip=True)
+        # Format: "Dog Name – Eleventh Hour Rescue"
+        name = re.split(r"\s*[–—-]\s*Eleventh Hour", raw)[0].strip()
+        if name:
+            return name
+
+    return ""
+
+
+def _extract_features(soup: BeautifulSoup) -> Dict[str, str]:
+    """Extract structured feature fields from the detail page.
+
+    Features are in <li class="features_item"> elements, each containing
+    an icon <i> and the field text.
+    """
+    features = {}
+
+    # Find the info section
+    info_section = soup.find("div", class_="Bzl-dog-single-info")
+    if not info_section:
+        info_section = soup  # Fallback to whole page
+
+    breed_count = 0
+    for item in info_section.find_all("li", class_="features_item"):
+        icon = item.find("i", class_="icon")
+        if not icon:
+            continue
+
+        icon_classes = " ".join(icon.get("class", []))
+        icon_title = (icon.get("title") or "").strip()
+        text = item.get_text(strip=True)
+
+        # Determine field based on icon class and title
+        if "icon-dog-face" in icon_classes:
+            if icon_title == "Breed":
+                features["breed"] = text
+                breed_count += 1
+            elif "Good With Dogs" in icon_title:
+                features["good_with_dogs"] = text
+            else:
+                # If we haven't seen a breed yet, treat as breed
+                if breed_count == 0:
+                    features["breed"] = text
+                    breed_count += 1
                 else:
-                    fields["gender"] = raw_gender
-            if len(parts) >= 3:
-                fields["age"] = parts[2].strip()
-            if len(parts) >= 4:
-                fields["size"] = parts[3].strip()
-            break
-    
-    return fields
+                    features["good_with_dogs"] = text
+        elif "icon-cake" in icon_classes:
+            # Extract DOB from <small> tag before getting age text
+            small = item.find("small")
+            if small:
+                dob_match = re.search(r"(\d{2}/\d{2}/\d{4})", small.get_text())
+                if dob_match:
+                    features["dob"] = dob_match.group(1)
+                # Remove the small tag so it doesn't pollute age text
+                small.decompose()
+            features["age"] = item.get_text(strip=True)
+        elif "icon-weight-machine" in icon_classes:
+            features["weight"] = text
+        elif "icon-color-palette" in icon_classes:
+            features["color"] = text
+        elif "icon-energy" in icon_classes:
+            features["energy_level"] = text
+        elif "icon-child" in icon_classes:
+            features["good_with_kids"] = text
+        elif "icon-cat-face" in icon_classes:
+            features["good_with_cats"] = text
+        elif "icon-male-sign" in icon_classes or "icon-female-sign" in icon_classes:
+            if "icon-female-sign" in icon_classes:
+                features["gender"] = "Female"
+            else:
+                features["gender"] = "Male"
+        elif "icon-accountant" in icon_classes:
+            features["adoption_fee"] = text
+
+    return features
 
 
-def _parse_structured_fields(text_lines: list) -> Dict[str, str]:
-    """Parse structured fields from the 'About' table section."""
-    fields = {}
-    field_labels = [
-        "Status", "Species", "General Color", "Color", "Current Size",
-        "Current Age", "Microchipped", "Housetrained",
-        "Obedience Training Needed", "Exercise Needs",
-        "Owner Experience Needed", "Adoption Fee",
-    ]
-    
-    for i, line in enumerate(text_lines):
-        clean = line.lstrip(": ").strip()
-        for label in field_labels:
-            if clean == label and i + 1 < len(text_lines):
-                val = text_lines[i + 1].lstrip(": ").strip()
-                if val and val not in field_labels:
-                    fields[label] = val
-                break
-    
-    return fields
+def _extract_bio(soup: BeautifulSoup) -> str:
+    """Extract the narrative bio text from the dog-description div."""
+    desc_div = soup.find("div", class_="dog-description")
+    if not desc_div:
+        return ""
+
+    paragraphs = []
+    for p in desc_div.find_all("p"):
+        text = p.get_text(strip=True)
+        if text:
+            paragraphs.append(text)
+
+    return "\n".join(paragraphs)
 
 
-def _extract_bio(text_lines: list, name: str) -> str:
-    """Extract the narrative bio text."""
-    bio_lines = []
-    in_bio = False
-    
-    skip_patterns = [
-        r"^HELP CELEBRATE", r"^DONATE", r"^Facebook", r"^TikTok",
-        r"^Instagram", r"^Animal Browse", r"^Review our",
-        r"^Adoption Application", r"^ADVANCED SEARCH",
-        r"^Scroll down", r"^More Pics", r"^Interested in",
-        r"^adopting$", r"^Sponsor This Pet", r"^About\s",
-        r"^Status$", r"^Species$", r"^General Color$",
-        r"^Color$", r"^Current Size$", r"^Current Age$",
-        r"^Microchipped$", r"^Housetrained$",
-        r"^Obedience Training", r"^Exercise Needs",
-        r"^Owner Experience", r"^Adoption Fee",
-        r"^More about\s", r"^Is Not Good", r"^Good with",
-        r"^Is Good with", r"^Not Good with",
-        r"^Lived with", r"^Not Lived with",
-        r"^Prefers a home", r"^Needs a yard",
-        r"^Click for more", r"^\{s956",
-        r"^Available for Adoption", r"^adoption info",
-        r"^BACK to browse", r"^Back to browse",
-        r"^\*\*A Puppy", r"^\*A Dog 7",
-        r"^addthis_", r"^Please$",
-    ]
-    
-    # Find the main bio content — usually after "About {Name}" header
-    # or after the structured fields section
-    for i, line in enumerate(text_lines):
-        line = line.strip()
-        if not line:
-            continue
-        
-        # Start capturing after structured fields end
-        # Bio typically starts with a paragraph about the dog
-        if re.match(r"^: (High|Low|Medium|Species|Yes|No|None)", line):
-            continue
-        
-        if any(re.match(pat, line, re.I) for pat in skip_patterns):
-            continue
-        
-        # Start bio after "needs a caretaker" line or after structured section
-        if "needs a caretaker" in line.lower() or "won't you consider" in line.lower():
-            in_bio = True
-            continue
-        
-        if not in_bio:
-            # Check if this looks like a bio paragraph (long text, not a label)
-            if len(line) > 80 and not line.startswith(":"):
-                in_bio = True
-                bio_lines.append(line)
-            continue
-        
-        # Stop at footer content
-        if line.startswith("More about "):
-            break
-        if "EHRDOGS.ORG" in line.upper():
-            bio_lines.append(line)
-            break
-        
-        if len(line) > 3 and not line.startswith(":"):
-            bio_lines.append(line)
-    
-    return "\n".join(bio_lines)
+def _is_catch_all_tile(name: str) -> bool:
+    """Check if this is a catch-all tile (generic application entry)."""
+    return name.startswith("*") or name.startswith("**")
 
 
 def fetch_record(url: str, target: Dict[str, Any]) -> Dict[str, Any]:
-    """Fetch and parse a single RescueGroups dog detail page."""
-    # Check if this is a catch-all tile
-    match = re.search(r"AnimalID=(\d+)", url)
-    if match and match.group(1) in EXCLUDED_IDS:
-        raise ValueError("NOT_A_DOG")
-    
+    """Fetch and parse a single Buzz Rescues dog detail page."""
     resp = requests.get(url, headers=HEADERS, timeout=30)
     resp.raise_for_status()
-    
+
     soup = BeautifulSoup(resp.text, "html.parser")
-    body = soup.find("body")
-    text_lines = body.get_text(separator="\n", strip=True).split("\n") if body else []
-    
-    # Parse header line (breed :: gender :: age :: size)
-    header = _parse_header_line(text_lines)
-    
-    # Parse structured fields
-    struct = _parse_structured_fields(text_lines)
-    
-    # Extract name from page title
-    name = target.get("name", "")
-    title = soup.find("title")
-    if title:
-        raw = title.get_text(strip=True)
-        name = re.sub(r"'s Web Page$", "", raw).strip()
-        
-    # Check for cats
-    species = struct.get("Species", "").lower()
-    breed = header.get("breed", "").lower()
-    if "cat" in species or "feline" in species or "cat" in breed or "feline" in breed or "domestic" in breed or "kitten" in name.lower():
+
+    # Extract name
+    name = _extract_name(soup)
+
+    # Check for catch-all tiles
+    if _is_catch_all_tile(name):
         raise ValueError("NOT_A_DOG")
-    
-    # Build bio
+
+    # Extract structured features
+    features = _extract_features(soup)
+
+    # Extract bio narrative
+    narrative = _extract_bio(soup)
+
+    # Build bio with structured fields + narrative
     bio_parts = []
-    breed = header.get("breed", "")
+
+    breed = features.get("breed", "")
     if breed:
         bio_parts.append(f"Breed: {breed}")
-    gender = header.get("gender", "")
+
+    gender = features.get("gender", "")
     if gender:
         bio_parts.append(f"Gender: {gender}")
-    
-    age = struct.get("Current Age", header.get("age", ""))
+
+    age = features.get("age", "")
     if age:
         bio_parts.append(f"Age: {age}")
-    
-    size = struct.get("Current Size", header.get("size", ""))
-    if size:
-        bio_parts.append(f"Size: {size}")
-    
-    if struct.get("General Color"):
-        bio_parts.append(f"Color: {struct['General Color']}")
-    if struct.get("Housetrained") and struct["Housetrained"] not in ("Unknown",):
-        bio_parts.append(f"Housetrained: {struct['Housetrained']}")
-    
-    narrative = _extract_bio(text_lines, name)
+
+    weight = features.get("weight", "")
+    if weight:
+        bio_parts.append(f"Weight: {weight}")
+
+    color = features.get("color", "")
+    if color:
+        bio_parts.append(f"Color: {color}")
+
+    energy = features.get("energy_level", "")
+    if energy:
+        bio_parts.append(f"Energy Level: {energy}")
+
+    good_with_kids = features.get("good_with_kids", "")
+    if good_with_kids:
+        bio_parts.append(f"Good with kids: {good_with_kids}")
+
+    good_with_dogs = features.get("good_with_dogs", "")
+    if good_with_dogs:
+        bio_parts.append(f"Good with dogs: {good_with_dogs}")
+
+    good_with_cats = features.get("good_with_cats", "")
+    if good_with_cats:
+        bio_parts.append(f"Good with cats: {good_with_cats}")
+
     if narrative:
         bio_parts.append("")
         bio_parts.append(narrative)
-    
+
     bio = "\n".join(bio_parts)
-    
+
     image_url = _extract_image(soup)
-    
+
     return {
         "shelter_profile_url": url,
         "animal_id": target["animal_id"],
         "shelter_name": SHELTER_NAME,
-        "name": name,
+        "name": name or target.get("name", ""),
         "gender": gender or target.get("gender", ""),
         "age": age or target.get("age", ""),
-        "weight": "",
+        "weight": weight,
         "more_info": "",
         "bio": bio,
         "shelter_image_url": image_url,
