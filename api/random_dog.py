@@ -193,12 +193,16 @@ class handler(BaseHTTPRequestHandler):
             persona_data_list = fetch_all_rows(client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at"))
             persona_data = {row["animal_id"]: row for row in persona_data_list}
             
-            # Fetch animal_fact_profiles to get age_bucket and weight_class
-            fact_data_list = fetch_all_rows(client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class"))
+            # Fetch animal_fact_profiles to get age_bucket, weight_class, and lifestyle filter fields
+            fact_data_list = fetch_all_rows(client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class, altered_status, energy_level, good_with_dogs, house_trained"))
             for row in fact_data_list:
                 if row["animal_id"] in active_dogs:
                     active_dogs[row["animal_id"]]["age_bucket"] = row.get("age_bucket")
                     active_dogs[row["animal_id"]]["weight_class"] = row.get("weight_class")
+                    active_dogs[row["animal_id"]]["altered_status"] = row.get("altered_status")
+                    active_dogs[row["animal_id"]]["energy_level"] = row.get("energy_level")
+                    active_dogs[row["animal_id"]]["good_with_dogs"] = row.get("good_with_dogs")
+                    active_dogs[row["animal_id"]]["house_trained"] = row.get("house_trained")
             
             # Intersect to find valid current dogs that have a persona
             valid_ids = list(set(active_dogs.keys()).intersection(persona_data.keys()))
@@ -234,15 +238,26 @@ class handler(BaseHTTPRequestHandler):
             q_age = query_params.get("age_group", [""])[0].strip().lower()
             q_size = query_params.get("size", [""])[0].strip().lower()
             q_location = query_params.get("location", [""])[0].strip()
+            q_energy = query_params.get("energy", [""])[0].strip().lower()
+            q_altered = query_params.get("altered", [""])[0].strip().lower()
+            q_dogs = query_params.get("dogs", [""])[0].strip().lower()
+            q_house_trained = query_params.get("house_trained", [""])[0].strip().lower()
             
             if q_gender: preferences["gender"] = q_gender; has_real_preferences = True
             if q_age: preferences["age_group"] = q_age; has_real_preferences = True
             if q_size: preferences["size"] = q_size; has_real_preferences = True
             if q_location: preferences["location"] = q_location; has_real_preferences = True
+            if q_energy: preferences["energy"] = q_energy; has_real_preferences = True
+            if q_altered: preferences["altered"] = q_altered; has_real_preferences = True
+            if q_dogs == "true": preferences["dogs"] = True; has_real_preferences = True
+            if q_house_trained == "true": preferences["house_trained"] = True; has_real_preferences = True
             
-            for k in ["gender", "age_group", "size", "location"]:
+            for k in ["gender", "age_group", "size", "location", "energy", "altered"]:
                 if not preferences.get(k):
                     preferences[k] = "any"
+            for k in ["dogs", "house_trained"]:
+                if not preferences.get(k):
+                    preferences[k] = False
 
             # Apply preferences filtering if preferences are configured
             preferences_matched = False
@@ -255,11 +270,19 @@ class handler(BaseHTTPRequestHandler):
                 pref_age = preferences.get("age_group") or "any"
                 pref_size = preferences.get("size") or "any"
                 pref_location = preferences.get("location") or "any"
+                pref_energy = preferences.get("energy") or "any"
+                pref_altered = preferences.get("altered") or "any"
+                pref_dogs = preferences.get("dogs", False)
+                pref_house_trained = preferences.get("house_trained", False)
             else:
                 pref_gender = "any"
                 pref_age = "any"
                 pref_size = "any"
                 pref_location = "any"
+                pref_energy = "any"
+                pref_altered = "any"
+                pref_dogs = False
+                pref_house_trained = False
                 
             # Handle locations and hidden shelters
             import re
@@ -287,8 +310,12 @@ class handler(BaseHTTPRequestHandler):
                 has_age = (pref_age != "any")
                 has_size = (pref_size != "any")
                 has_location = (pref_location != "any")
+                has_energy = (pref_energy != "any")
+                has_altered = (pref_altered != "any")
+                has_dogs = pref_dogs
+                has_house_trained = pref_house_trained
                 
-                total_pref_count = sum([has_gender, has_age, has_size, has_location])
+                total_pref_count = sum([has_gender, has_age, has_size, has_location, has_energy, has_altered, has_dogs, has_house_trained])
                 
                 if total_pref_count > 0:
                     preferences_configured = True
@@ -335,6 +362,36 @@ class handler(BaseHTTPRequestHandler):
                             dog_city = shelters_map.get(dog.get("shelter_id"), {}).get("city", "").upper()
                             if closer_region and dog_city == closer_region:
                                 score += 0.8
+
+                        # 5. Energy Filter (soft scoring)
+                        if has_energy:
+                            dog_energy = (dog.get("energy_level") or "N/A").lower()
+                            if dog_energy != "n/a":
+                                if pref_energy == dog_energy:
+                                    score += 1
+                                elif dog_energy == "moderate":
+                                    score += 0.5  # moderate matches either calm or high partially
+
+                        # 6. Altered Status Filter (soft scoring)
+                        if has_altered:
+                            dog_altered = (dog.get("altered_status") or "N/A").lower()
+                            if dog_altered != "n/a":
+                                if pref_altered == "altered" and dog_altered in ("spayed", "neutered"):
+                                    score += 1
+                                elif pref_altered == "unaltered" and dog_altered == "unaltered":
+                                    score += 1
+
+                        # 7. Good With Dogs Filter (soft scoring)
+                        if has_dogs:
+                            dog_dogs = (dog.get("good_with_dogs") or "unknown").lower()
+                            if dog_dogs == "yes":
+                                score += 1
+
+                        # 8. House Trained Filter (soft scoring)
+                        if has_house_trained:
+                            dog_ht = (dog.get("house_trained") or "unknown").lower()
+                            if dog_ht == "yes":
+                                score += 1
 
                         # Tie-breaker for archetype diversity (layer below preferences)
                         dog_arch = persona_data[aid].get("primary_archetype_key")

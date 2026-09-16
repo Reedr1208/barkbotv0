@@ -20,6 +20,10 @@ Instructions:
 - Evidence snippets should cite short phrases from the input text, not external data.
 - If something is truly absent, do not guess (use "N/A" for strings if instructed, else leave empty/unknown).
 
+- `energy_level`: Infer from behavioral descriptions, activity levels, and temperament notes. Use exactly one of: "calm" (relaxed, mellow, couch potato, low-key), "moderate" (balanced, adaptable, enjoys walks but also relaxing), "high" (energetic, playful, needs lots of exercise, hyperactive), or "N/A" if no energy-related info is available. Do NOT guess — only infer from explicit behavioral descriptions.
+- `good_with_dogs`: "yes" ONLY if the source explicitly says the dog is good with, friendly with, or lives well with other dogs. "no" if the source says the dog is not good with dogs, dog-reactive, or dog-selective. "unknown" if not mentioned or ambiguous. Do NOT infer from general friendliness.
+- `house_trained`: "yes" ONLY if the source explicitly says house trained, potty trained, or housebroken. "no" if explicitly stated the dog is not house trained. "unknown" if not mentioned. Do NOT infer from age or other context.
+
 - `sugg_specific`: Generate up to 5 short, clickbait-style suggested prompts that are specifically tailored to unique or interesting details found in this dog's profile/bio. These are leading questions designed like conversation hooks — things a potential adopter might be curious about after reading the bio. They should be answerable using information available in the dog's record.
   Rules for sugg_specific:
   - Keep them SHORT (under 10 words each is ideal) to conserve display space.

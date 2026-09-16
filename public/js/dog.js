@@ -194,6 +194,11 @@ if (currentPrefs.gender && currentPrefs.gender !== 'any') params.push('gender=' 
 if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.push('age_group=' + encodeURIComponent(currentPrefs.age_group));
 if (currentPrefs.size && currentPrefs.size !== 'any') params.push('size=' + encodeURIComponent(currentPrefs.size));
 if (currentPrefs.location && currentPrefs.location !== 'any') params.push('location=' + encodeURIComponent(currentPrefs.location));
+// Lifestyle preferences
+if (lifestylePrefs.energy && lifestylePrefs.energy !== 'any') params.push('energy=' + encodeURIComponent(lifestylePrefs.energy));
+if (lifestylePrefs.altered && lifestylePrefs.altered !== 'any') params.push('altered=' + encodeURIComponent(lifestylePrefs.altered));
+if (lifestylePrefs.dogs) params.push('dogs=true');
+if (lifestylePrefs.houseTrained) params.push('house_trained=true');
 if (userCoords) {
   params.push('lat=' + userCoords.lat);
   params.push('lon=' + userCoords.lon);
