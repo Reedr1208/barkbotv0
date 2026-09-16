@@ -1,3 +1,21 @@
+function buildDogSharePayload(dog) {
+  const name = dog?.name || currentDogName || 'this dog';
+  const shelter = dog?.shelter_name || 'Pima Animal Care Center';
+  const pron = pronounForGender(dog?.gender);
+  const animalId = dog?.animal_id || currentAnimalId;
+  const url = getCanonicalDogUrl(animalId);
+
+  const text = `${name} is an adoptable rescue dog at ${shelter}. Chat with ${pron} and learn more.`;
+
+  return {
+    title: `Meet ${name} on ChattyHound 🐶`,
+    text,
+    url,
+    animal_id: animalId,
+    dog_name: name
+  };
+}
+
 function updateShareButtonLabels() {
   const label = currentDogName && currentDogName !== 'this dog'
     ? `Share ${currentDogName}`
