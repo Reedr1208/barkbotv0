@@ -710,78 +710,213 @@ def _run_backfill_profiles(run_id: str, shelter_ids: list):
 
 
 def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
-    """Run fact table extraction (generate_prompts) for selected dogs."""
-    _update_step(run_id, "facts", status="running", message="Running fact extraction pipeline...")
-    _log(run_id, f"  🧠 Fact tables: mode={dog_selection.get('mode', 'all')}")
+    """Run fact/persona/prompt pipeline for dogs matching the shelter & selection filters.
+
+    Unlike the standard generate_prompts job, this:
+    - Only processes dogs from the selected shelters
+    - Respects the dog selection mode (all / random N / specific IDs)
+    - Force-refreshes every selected dog regardless of last update time
+    """
+    import random as _random
+
+    mode = dog_selection.get("mode", "all")
+    _update_step(run_id, "facts", status="running", message="Building target list...")
+    _log(run_id, f"  🧠 Fact tables: mode={mode}, shelters={shelter_ids}")
 
     try:
+        import os, sys, time
         from jobs.lib.db import get_supabase_client
+        from openai import OpenAI
 
-        # Snapshot current fact profile timestamps before running
         sb = get_supabase_client()
-        before_data = []
-        offset = 0
+        openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+        # Ensure pipeline modules are importable
+        api_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "api")
+        if api_dir not in sys.path:
+            sys.path.insert(0, api_dir)
+
+        from pipeline.extract_fact_profiles import extract_fact_profile
+        from pipeline.build_persona_profiles import build_persona_profile
+        from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
+
+        # ── 1. Build target dog list ────────────────────────────────
+        if mode == "specific":
+            # User provided explicit animal IDs — use them directly
+            target_ids = dog_selection.get("animal_ids", [])
+            _log(run_id, f"  🧠 Specific IDs: {len(target_ids)} dogs")
+        else:
+            # Fetch active dogs filtered by selected shelters
+            active_data = []
+            offset = 0
+            while True:
+                res = sb.table("active_dogs").select("animal_id, shelter_id").range(offset, offset + 999).execute()
+                active_data.extend(res.data)
+                if len(res.data) < 1000:
+                    break
+                offset += 1000
+
+            # Filter to selected shelters
+            shelter_set = set(s.upper() for s in shelter_ids)
+            shelter_dogs = {}  # shelter_id → [animal_ids]
+            for row in active_data:
+                sid = (row.get("shelter_id") or "").upper()
+                if sid in shelter_set:
+                    shelter_dogs.setdefault(sid, []).append(row["animal_id"])
+
+            _log(run_id, f"  🧠 Active dogs in selected shelters: {sum(len(v) for v in shelter_dogs.values())}")
+
+            if mode == "random":
+                count = dog_selection.get("count", 5)
+                target_ids = []
+                for sid in sorted(shelter_dogs.keys()):
+                    dogs = shelter_dogs[sid]
+                    sample = _random.sample(dogs, min(count, len(dogs)))
+                    target_ids.extend(sample)
+                    _log(run_id, f"    {sid}: picked {len(sample)}/{len(dogs)} random dogs")
+            else:
+                # mode == "all"
+                target_ids = []
+                for sid in sorted(shelter_dogs.keys()):
+                    target_ids.extend(shelter_dogs[sid])
+
+        if not target_ids:
+            _update_step(run_id, "facts", status="done", message="No target dogs found")
+            _log(run_id, "  🧠 No dogs to process")
+            return
+
+        total = len(target_ids)
+        _update_step(run_id, "facts", progress=0, total=total, message=f"Processing 0/{total} dogs...")
+        _log(run_id, f"  🧠 Target list: {total} dogs to process")
+
+        # ── 2. Fetch archetypes + distribution for persona scoring ──
+        archetypes_res = sb.table("persona_archetypes").select("*").eq("active", True).execute()
+        archetypes = archetypes_res.data
+
+        dist_data = []
+        dist_offset = 0
         while True:
-            res = sb.table("animal_fact_profiles").select("animal_id, updated_at").range(offset, offset + 999).execute()
-            before_data.extend(res.data)
-            if len(res.data) < 1000:
+            dist_res = sb.table("animal_persona_profiles").select("primary_archetype_key").range(dist_offset, dist_offset + 999).execute()
+            dist_data.extend(dist_res.data)
+            if len(dist_res.data) < 1000:
                 break
-            offset += 1000
-        before_map = {r["animal_id"]: r.get("updated_at", "") for r in before_data}
-        _log(run_id, f"  🧠 Snapshot: {len(before_map)} existing fact profiles")
+            dist_offset += 1000
+        distribution = {}
+        for row in dist_data:
+            k = row.get("primary_archetype_key")
+            if k:
+                distribution[k] = distribution.get(k, 0) + 1
 
-        # Run the generate_prompts job
-        run_job_by_id("generate_prompts", triggered_by="backfill")
+        # ── 3. Shelter → location path mapping for refreshed dogs links ──
+        shelters_res = sb.table("shelters").select("shelter_id, relative_path").execute()
+        shelter_path_map = {s["shelter_id"]: s.get("relative_path", "") for s in shelters_res.data}
 
-        # Diff to find newly created or updated fact profiles
-        after_data = []
-        offset = 0
-        while True:
-            res = sb.table("animal_fact_profiles").select("animal_id, dog_name, updated_at").range(offset, offset + 999).execute()
-            after_data.extend(res.data)
-            if len(res.data) < 1000:
-                break
-            offset += 1000
+        # Build animal_id → shelter_id lookup
+        active_lookup = []
+        for i in range(0, len(target_ids), 100):
+            chunk = target_ids[i:i+100]
+            res = sb.table("active_dogs").select("animal_id, shelter_id").in_("animal_id", chunk).execute()
+            active_lookup.extend(res.data)
+        dog_shelter_map = {r["animal_id"]: r.get("shelter_id", "") for r in active_lookup}
 
-        refreshed = []
-        for row in after_data:
-            aid = row["animal_id"]
-            new_ts = row.get("updated_at", "")
-            old_ts = before_map.get(aid, "")
-            if new_ts != old_ts:
-                refreshed.append(row)
+        # ── 4. Process each dog ─────────────────────────────────────
+        processed = 0
+        for idx, aid in enumerate(target_ids):
+            if _is_aborted(run_id):
+                _update_step(run_id, "facts", status="aborted", progress=processed, total=total)
+                return
 
-        _log(run_id, f"  🧠 Fact extraction done: {len(refreshed)} dogs refreshed")
-        _update_step(run_id, "facts", progress=len(refreshed), total=len(refreshed),
-                     message=f"{len(refreshed)} dogs refreshed")
+            _update_step(run_id, "facts", progress=idx, total=total,
+                         message=f"Processing {aid} ({idx+1}/{total})...")
 
-        # Populate refreshed_dogs for the UI
-        if refreshed:
-            # Look up shelter → location_path mapping
-            shelters_res = sb.table("shelters").select("shelter_id, relative_path").execute()
-            shelter_path_map = {s["shelter_id"]: s.get("relative_path", "") for s in shelters_res.data}
+            # Fetch full animal record
+            animal_res = sb.table("animals").select("*").eq("animal_id", aid).limit(1).execute()
+            if not animal_res.data:
+                _log(run_id, f"    ⚠️ {aid}: not found in animals table, skipping")
+                continue
 
-            # Look up shelter_id for each refreshed dog from active_dogs
-            refreshed_ids = [r["animal_id"] for r in refreshed]
-            active_lookup = []
-            for i in range(0, len(refreshed_ids), 100):
-                chunk = refreshed_ids[i:i+100]
-                res = sb.table("active_dogs").select("animal_id, shelter_id").in_("animal_id", chunk).execute()
-                active_lookup.extend(res.data)
-            dog_shelter_map = {r["animal_id"]: r.get("shelter_id", "") for r in active_lookup}
+            animal_record = animal_res.data[0]
+            record_hash = animal_record.get("record_hash", "none")
+            updated_at = animal_record.get("updated_at")
+            adoption_url = animal_record.get("shelter_profile_url")
+            shelter_name = animal_record.get("shelter_name")
 
-            with _backfill_lock:
-                run = _backfill_runs.get(run_id)
-                if run:
-                    for row in refreshed:
-                        aid = row["animal_id"]
-                        shelter_id = dog_shelter_map.get(aid, "")
-                        loc_path = shelter_path_map.get(shelter_id, "")
+            # Strip internal fields before sending to LLM
+            for key in ["id", "record_hash", "created_at", "updated_at", "last_scrape_run_id"]:
+                animal_record.pop(key, None)
+
+            try:
+                # 1. Fact Extraction
+                fact_profile_obj = extract_fact_profile(openai_client, animal_record)
+                fact_profile = fact_profile_obj.model_dump()
+                fact_profile["animal_id"] = aid
+                fact_profile["source_record_hash"] = record_hash
+                fact_profile["schema_version"] = "fact_v1"
+                fact_profile["extraction_model"] = "gpt-5.4-mini"
+                fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
+                fact_profile["info_refreshed_at"] = updated_at
+                fact_profile["adoption_url"] = adoption_url
+                fact_profile["shelter_name"] = shelter_name
+                sb.table("animal_fact_profiles").upsert(fact_profile).execute()
+
+                fact_profile["full_bio"] = animal_record.get("bio", "")
+
+                # 2. Persona Scoring
+                persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)
+                assigned_key = persona_profile.get("primary_archetype_key")
+                if assigned_key:
+                    distribution[assigned_key] = distribution.get(assigned_key, 0) + 1
+                persona_profile["source_record_hash"] = record_hash
+
+                db_persona = {
+                    "animal_id": persona_profile.get("animal_id"),
+                    "source_record_hash": persona_profile.get("source_record_hash"),
+                    "primary_archetype_key": persona_profile.get("primary_archetype_key"),
+                    "selection_reasoning": persona_profile.get("selection_reasoning"),
+                }
+                sb.table("animal_persona_profiles").upsert(db_persona).execute()
+
+                # 3. Prompt Rendering
+                system_prompt = render_system_prompt(fact_profile, persona_profile)
+                validation = validate_system_prompt(system_prompt)
+
+                prompt_record = {
+                    "animal_id": aid,
+                    "prompt_version": "v3",
+                    "source_record_hash": record_hash,
+                    "system_prompt": system_prompt,
+                    "render_context_jsonb": {
+                        "fact_profile_used": True,
+                        "persona_profile_used": True,
+                        "archetype": persona_profile.get("primary_archetype_key"),
+                    },
+                    "validation_results_jsonb": validation,
+                    "is_active": True,
+                }
+                sb.table("system_prompts_v2").upsert(prompt_record).execute()
+
+                processed += 1
+                dog_name = fact_profile.get("dog_name", "")
+                _log(run_id, f"    ✅ {aid} ({dog_name})")
+
+                # Add to refreshed_dogs list
+                shelter_id = dog_shelter_map.get(aid, "")
+                loc_path = shelter_path_map.get(shelter_id, "")
+                with _backfill_lock:
+                    run = _backfill_runs.get(run_id)
+                    if run:
                         run["refreshed_dogs"].append({
                             "animal_id": aid,
-                            "name": row.get("dog_name", ""),
+                            "name": dog_name,
                             "location_path": loc_path,
                         })
+
+            except Exception as e:
+                _log(run_id, f"    ❌ {aid} failed: {e}")
+
+        _update_step(run_id, "facts", progress=processed, total=total,
+                     message=f"{processed}/{total} dogs refreshed")
+        _log(run_id, f"  🧠 Fact extraction done: {processed}/{total} dogs refreshed")
 
     except Exception as e:
         raise RuntimeError(f"Fact extraction failed: {e}") from e
