@@ -785,9 +785,73 @@ def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
             _log(run_id, "  🧠 No dogs to process")
             return
 
+        # ── 1b. Apply bio-length eligibility filter (same thresholds as ETL) ──
+        # Fetch bios and shelter_ids for all target dogs
+        animals_data = []
+        for i in range(0, len(target_ids), 100):
+            chunk = target_ids[i:i+100]
+            res = sb.table("animals").select("animal_id, bio").in_("animal_id", chunk).execute()
+            animals_data.extend(res.data)
+        bio_map = {r["animal_id"]: r.get("bio") or "" for r in animals_data}
+
+        # Need shelter_id for threshold lookup
+        active_for_filter = []
+        for i in range(0, len(target_ids), 100):
+            chunk = target_ids[i:i+100]
+            res = sb.table("active_dogs").select("animal_id, shelter_id").in_("animal_id", chunk).execute()
+            active_for_filter.extend(res.data)
+        filter_shelter_map = {r["animal_id"]: (r.get("shelter_id") or "").upper() for r in active_for_filter}
+
+        # Per-shelter minimum bio length thresholds (from generate_prompts_job)
+        eligible_ids = []
+        skipped_count = 0
+        for aid in target_ids:
+            bio = bio_map.get(aid, "")
+            bio_len = len(bio)
+            sid = filter_shelter_map.get(aid, "")
+
+            meets_threshold = True
+            if sid in ("NYCACC", "MUDDYPAWS", "PIMA"):
+                if bio_len < 1500:
+                    meets_threshold = False
+            elif sid == "HSSA":
+                if bio_len < 500:
+                    meets_threshold = False
+            elif sid == "PAWSCH":
+                if bio_len < 1200:
+                    meets_threshold = False
+            elif sid in ("WWLA", "HHS", "PHP", "SAPA"):
+                if bio_len < 1000:
+                    meets_threshold = False
+            elif sid in ("RCHS", "DPA", "NHS", "EHR", "MV", "RDR"):
+                if bio_len < 500:
+                    meets_threshold = False
+            elif sid == "MCACC":
+                if bio_len < 6000:
+                    meets_threshold = False
+            else:
+                if bio_len <= 400:
+                    meets_threshold = False
+
+            if meets_threshold:
+                eligible_ids.append(aid)
+            else:
+                skipped_count += 1
+
+        if skipped_count > 0:
+            _log(run_id, f"  🧠 Bio eligibility filter: {skipped_count} dogs skipped (bio too short)")
+
+        target_ids = eligible_ids
+
+        if not target_ids:
+            _update_step(run_id, "facts", status="done",
+                         message=f"No eligible dogs (all {skipped_count} skipped — bios too short)")
+            _log(run_id, "  🧠 No eligible dogs after bio filter")
+            return
+
         total = len(target_ids)
         _update_step(run_id, "facts", progress=0, total=total, message=f"Processing 0/{total} dogs...")
-        _log(run_id, f"  🧠 Target list: {total} dogs to process")
+        _log(run_id, f"  🧠 Target list: {total} eligible dogs to process")
 
         # ── 2. Fetch archetypes + distribution for persona scoring ──
         archetypes_res = sb.table("persona_archetypes").select("*").eq("active", True).execute()
@@ -923,18 +987,18 @@ def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
 
 
 def _run_backfill_prompts(run_id: str):
-    """Verify suggested_prompts table is populated (read-only check)."""
-    _update_step(run_id, "prompts", status="running", message="Verifying prompt templates...")
-    _log(run_id, "  📝 Prompt templates: verifying DB table...")
+    """Verify suggested_prompts table (conversation starters) is populated."""
+    _update_step(run_id, "prompts", status="running", message="Verifying suggested prompts...")
+    _log(run_id, "  📝 Suggested prompts: verifying conversation starters table...")
 
     try:
         from jobs.lib.db import get_supabase_client
         sb = get_supabase_client()
         res = sb.table("suggested_prompts").select("category, prompt_text").execute()
         count = len(res.data) if res.data else 0
-        _update_step(run_id, "prompts", message=f"Verified: {count} templates in DB")
-        _log(run_id, f"  📝 Prompt templates: {count} templates in DB ✓")
+        _update_step(run_id, "prompts", message=f"Verified: {count} conversation starters in DB")
+        _log(run_id, f"  📝 Suggested prompts: {count} conversation starters ✓")
     except Exception as e:
-        raise RuntimeError(f"Prompt template check failed: {e}") from e
+        raise RuntimeError(f"Suggested prompts check failed: {e}") from e
 
 
