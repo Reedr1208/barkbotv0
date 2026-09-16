@@ -142,79 +142,7 @@ const savePrefBtn = document.getElementById('savePrefBtn');
 // currentPrefs, lifestylePrefs declared in state.js
 // switchView, enterChatMode, exitChatMode declared in ui.js
 
-// Step-by-Step wizard controller
-const tabCoreBtn = document.getElementById('tabCoreBtn');
-const tabHomeBtn = document.getElementById('tabHomeBtn');
-const tabLifeBtn = document.getElementById('tabLifeBtn');
-const stepCore = document.getElementById('stepCore');
-const stepHome = document.getElementById('stepHome');
-const stepLife = document.getElementById('stepLife');
-const prefBackBtn = document.getElementById('prefBackBtn');
-let activeWizardStep = 1;
-
-function showWizardStep(stepNum) {
-  activeWizardStep = stepNum;
-  const tabs = [tabCoreBtn, tabHomeBtn, tabLifeBtn];
-  const steps = [stepCore, stepHome, stepLife];
-
-  tabs.forEach((tab, idx) => {
-    if (tab) {
-      if (idx + 1 === stepNum) {
-        tab.classList.add('active');
-        tab.style.background = 'var(--accent)';
-        tab.style.color = 'var(--accent-text)';
-      } else {
-        tab.classList.remove('active');
-        tab.style.background = 'transparent';
-        tab.style.color = 'var(--text-muted)';
-      }
-    }
-  });
-
-  steps.forEach((step, idx) => {
-    if (step) {
-      if (idx + 1 === stepNum) {
-        step.style.display = 'flex';
-        step.classList.add('active');
-      } else {
-        step.style.display = 'none';
-        step.classList.remove('active');
-      }
-    }
-  });
-
-  // Dynamic Puppy Stepper animation
-  const progressBar = document.getElementById('quizProgressBar');
-  const progressPuppy = document.getElementById('quizProgressPuppy');
-  if (progressBar && progressPuppy) {
-    let pct = 33;
-    if (stepNum === 2) pct = 66;
-    else if (stepNum === 3) pct = 100;
-    progressBar.style.width = pct + '%';
-    progressPuppy.style.left = `calc(${pct}% - 13px)`;
-  }
-
-  if (stepNum === 1) {
-    if (prefBackBtn) prefBackBtn.style.display = 'none';
-    if (savePrefBtn) savePrefBtn.innerHTML = 'Continue ➔';
-  } else if (stepNum === 2) {
-    if (prefBackBtn) prefBackBtn.style.display = 'flex';
-    if (savePrefBtn) savePrefBtn.innerHTML = 'Continue ➔';
-  } else {
-    if (prefBackBtn) prefBackBtn.style.display = 'flex';
-    if (savePrefBtn) savePrefBtn.innerHTML = 'Save Selections ✨';
-  }
-}
-
-if (tabCoreBtn) tabCoreBtn.addEventListener('click', () => showWizardStep(1));
-if (tabHomeBtn) tabHomeBtn.addEventListener('click', () => showWizardStep(2));
-if (tabLifeBtn) tabLifeBtn.addEventListener('click', () => showWizardStep(3));
-if (prefBackBtn) {
-  prefBackBtn.addEventListener('click', () => {
-    if (activeWizardStep === 2) showWizardStep(1);
-    else if (activeWizardStep === 3) showWizardStep(2);
-  });
-}
+// No wizard steps — single flat panel
 
 const prefSkipBtn = document.getElementById('prefSkipBtn');
 if (prefSkipBtn) {
@@ -236,32 +164,82 @@ function updateProfileButton() {
   }
 }
 
+function getEffectiveLocation() {
+  // 1. If a location preference is already set, use it
+  if (currentPrefs.location && currentPrefs.location !== 'any') {
+    return currentPrefs.location;
+  }
+
+  // 2. Check the header dropdown for the active session location
+  const headerSelect = document.getElementById('headerLocationSelect');
+  if (headerSelect && headerSelect.value && headerSelect.value !== 'any') {
+    if (headerSelect.value === 'all') return 'all';
+    const locations = window.__CH_LOCATIONS_DATA__ || [];
+    const locObj = locations.find(l => l.relative_path === headerSelect.value);
+    if (locObj) return locObj.display_name;
+  }
+
+  // 3. Compute closest location from user coordinates (same logic as random_dog.py)
+  if (userCoords) {
+    const regionCoords = {
+      'Tucson, AZ 🌵': { lat: 32.2226, lon: -110.9747 },
+      'Phoenix, AZ 🌵': { lat: 33.4484, lon: -112.0740 },
+      'Chicago, IL 🧁': { lat: 41.8781, lon: -87.6298 },
+      'New York, NY 🗽': { lat: 40.7128, lon: -74.0060 },
+      'Los Angeles, CA 🌴': { lat: 34.0522, lon: -118.2437 },
+      'Houston, TX 🤠': { lat: 29.7604, lon: -95.3698 },
+      'San Antonio, TX 🤠': { lat: 29.4241, lon: -98.4936 },
+      'Dallas, TX 🤠': { lat: 32.7767, lon: -96.7970 },
+      'Philadelphia, PA 🫡': { lat: 39.9526, lon: -75.1652 },
+      'San Diego, CA 🏖️': { lat: 32.7157, lon: -117.1611 },
+      'San Francisco, CA 🌁': { lat: 37.7749, lon: -122.4194 },
+      'Jacksonville, FL 🌴': { lat: 30.3322, lon: -81.6557 },
+    };
+    const locations = window.__CH_LOCATIONS_DATA__ || [];
+    let bestDist = Infinity;
+    let bestName = 'all';
+    for (const loc of locations) {
+      const coords = Object.entries(regionCoords).find(([name]) =>
+        loc.display_name.replace(/\s*[\u{1F000}-\u{1FFFF}]/gu, '').trim() === name.replace(/\s*[\u{1F000}-\u{1FFFF}]/gu, '').trim()
+      );
+      if (coords) {
+        const c = coords[1];
+        const dist = Math.pow(userCoords.lat - c.lat, 2) + Math.pow(userCoords.lon - c.lon, 2);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestName = loc.display_name;
+        }
+      }
+    }
+    return bestName;
+  }
+
+  return 'all';
+}
+
 function openPrefModal() {
   if (!prefModal) return;
   prefModal.classList.add('active');
   prefModal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 
-  showWizardStep(1); // Default to Step 1 basics on open
-
   // Always show the wizard directly (no login gate)
   if (prefLoggedInState) prefLoggedInState.style.display = 'block';
+
+  // Compute effective location default
+  const effectiveLocation = getEffectiveLocation();
 
   // Setup initial button states from current preferences
   setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
   setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
   setupSelectorButtons('prefSizeGroup', currentPrefs.size);
-  setupSelectorButtons('prefLocationGroup', currentPrefs.location || 'any');
+  setupSelectorButtons('prefLocationGroup', effectiveLocation);
   setupSelectorButtons('prefEnergyGroup', lifestylePrefs.energy || 'any');
-  setupSelectorButtons('prefHomeGroup', lifestylePrefs.home || 'any');
 
   // Setup toggle badge states
   setupToggleBadge('prefOptKids', lifestylePrefs.kids);
   setupToggleBadge('prefOptDogs', lifestylePrefs.dogs);
   setupToggleBadge('prefOptCats', lifestylePrefs.cats);
-  setupToggleBadge('prefOptShed', lifestylePrefs.shedding);
-  setupToggleBadge('prefOptAlone', lifestylePrefs.aloneTime);
-  setupToggleBadge('prefOptLearn', lifestylePrefs.training);
 
   trackEvent('preferences_modal_opened');
 }
@@ -321,23 +299,18 @@ const prefAgeGroup = document.getElementById('prefAgeGroup');
 const prefSizeGroup = document.getElementById('prefSizeGroup');
 const prefLocationGroup = document.getElementById('prefLocationGroup');
 const prefEnergyGroup = document.getElementById('prefEnergyGroup');
-const prefHomeGroup = document.getElementById('prefHomeGroup');
 
 if (prefGenderGroup) prefGenderGroup.addEventListener('click', handleSelectorClick);
 if (prefAgeGroup) prefAgeGroup.addEventListener('click', handleSelectorClick);
 if (prefSizeGroup) prefSizeGroup.addEventListener('click', handleSelectorClick);
 if (prefLocationGroup) prefLocationGroup.addEventListener('click', handleSelectorClick);
 if (prefEnergyGroup) prefEnergyGroup.addEventListener('click', handleSelectorClick);
-if (prefHomeGroup) prefHomeGroup.addEventListener('click', handleSelectorClick);
 
-// Bind custom toggle badges inside Lifestyle Step 2
+// Bind custom toggle badges
 const lifestyleButtons = [
   { id: 'prefOptKids', key: 'kids' },
   { id: 'prefOptDogs', key: 'dogs' },
-  { id: 'prefOptCats', key: 'cats' },
-  { id: 'prefOptShed', key: 'shedding' },
-  { id: 'prefOptAlone', key: 'aloneTime' },
-  { id: 'prefOptLearn', key: 'training' }
+  { id: 'prefOptCats', key: 'cats' }
 ];
 
 lifestyleButtons.forEach(item => {
@@ -367,9 +340,7 @@ async function handleSavePreferences() {
 
   // Save advanced lifestyle preferences
   const energyActive = document.getElementById('prefEnergyGroup').querySelector('.pref-btn.active');
-  const homeActive = document.getElementById('prefHomeGroup').querySelector('.pref-btn.active');
   lifestylePrefs.energy = energyActive ? energyActive.getAttribute('data-value') : 'any';
-  lifestylePrefs.home = homeActive ? homeActive.getAttribute('data-value') : 'any';
   localStorage.setItem('chattyhound_lifestyle_prefs', JSON.stringify(lifestylePrefs));
 
   savePrefBtn.disabled = true;
@@ -389,13 +360,9 @@ async function resetPreferences() {
   currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
   lifestylePrefs = {
     energy: 'any',
-    home: 'any',
     kids: false,
     dogs: false,
-    cats: false,
-    shedding: false,
-    aloneTime: false,
-    training: false
+    cats: false
   };
 
   // 2. Write to localStorage
@@ -407,7 +374,6 @@ async function resetPreferences() {
   setupSelectorButtons('prefSizeGroup', 'any');
   setupSelectorButtons('prefLocationGroup', 'any');
   setupSelectorButtons('prefEnergyGroup', 'any');
-  setupSelectorButtons('prefHomeGroup', 'any');
   lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
 
   trackEvent('preferences_reset_all');
@@ -446,11 +412,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 if (savePrefBtn) {
-  savePrefBtn.addEventListener('click', () => {
-    if (activeWizardStep === 1) showWizardStep(2);
-    else if (activeWizardStep === 2) showWizardStep(3);
-    else handleSavePreferences();
-  });
+  savePrefBtn.addEventListener('click', handleSavePreferences);
 }
 
 // Collapsible biography click trigger

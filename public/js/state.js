@@ -39,13 +39,9 @@ let currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'an
 // Expanded lifestyle preferences stored locally
 let lifestylePrefs = JSON.parse(localStorage.getItem('chattyhound_lifestyle_prefs') || JSON.stringify({
   energy: 'any',
-  home: 'any',
   kids: false,
   dogs: false,
-  cats: false,
-  shedding: false,
-  aloneTime: false,
-  training: false
+  cats: false
 }));
 
 // Setup simple Favorites storage array
