@@ -342,8 +342,6 @@ class handler(BaseHTTPRequestHandler):
                     dog_energy = (active_dogs[aid].get("energy_level") or "").lower()
                     if pref_energy == dog_energy:
                         filtered.append(aid)
-                    elif dog_energy == "moderate":
-                        filtered.append(aid)  # moderate passes either calm or high
                 valid_ids = filtered
 
             # Good with dogs hard filter (strict — only confirmed "yes")
@@ -425,8 +423,6 @@ class handler(BaseHTTPRequestHandler):
                             if dog_energy != "n/a":
                                 if pref_energy == dog_energy:
                                     score += 1
-                                elif dog_energy == "moderate":
-                                    score += 0.5  # moderate matches either calm or high partially
 
                         # 6. Altered Status Filter (soft scoring)
                         if has_altered:

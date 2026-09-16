@@ -359,12 +359,16 @@ async def random_dog(request: Request):
         persona_data_list = fetch_all_rows(client.table("animal_persona_profiles").select("animal_id, primary_archetype_key, updated_at"))
         persona_data = {row["animal_id"]: row for row in persona_data_list}
 
-        # Fetch animal_fact_profiles to get age_bucket and weight_class
-        fact_data_list = fetch_all_rows(client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class"))
+        # Fetch animal_fact_profiles to get age_bucket, weight_class, and lifestyle filter fields
+        fact_data_list = fetch_all_rows(client.table("animal_fact_profiles").select("animal_id, age_bucket, weight_class, altered_status, energy_level, good_with_dogs, house_trained"))
         for row in fact_data_list:
             if row["animal_id"] in active_dogs:
                 active_dogs[row["animal_id"]]["age_bucket"] = row.get("age_bucket")
                 active_dogs[row["animal_id"]]["weight_class"] = row.get("weight_class")
+                active_dogs[row["animal_id"]]["altered_status"] = row.get("altered_status")
+                active_dogs[row["animal_id"]]["energy_level"] = row.get("energy_level")
+                active_dogs[row["animal_id"]]["good_with_dogs"] = row.get("good_with_dogs")
+                active_dogs[row["animal_id"]]["house_trained"] = row.get("house_trained")
 
         # Fetch system_prompts_v2 to ensure only dogs with a prompt template are served
         prompts_data_list = fetch_all_rows(client.table("system_prompts_v2").select("animal_id"))
@@ -402,15 +406,26 @@ async def random_dog(request: Request):
         q_age = (params.get("age_group") or "").strip().lower()
         q_size = (params.get("size") or "").strip().lower()
         q_location = (params.get("location") or "").strip()
+        q_energy = (params.get("energy") or "").strip().lower()
+        q_altered = (params.get("altered") or "").strip().lower()
+        q_dogs = (params.get("dogs") or "").strip().lower()
+        q_house_trained = (params.get("house_trained") or "").strip().lower()
 
         if q_gender: preferences["gender"] = q_gender; has_real_preferences = True
         if q_age: preferences["age_group"] = q_age; has_real_preferences = True
         if q_size: preferences["size"] = q_size; has_real_preferences = True
         if q_location: preferences["location"] = q_location; has_real_preferences = True
+        if q_energy: preferences["energy"] = q_energy; has_real_preferences = True
+        if q_altered: preferences["altered"] = q_altered; has_real_preferences = True
+        if q_dogs == "true": preferences["dogs"] = True; has_real_preferences = True
+        if q_house_trained == "true": preferences["house_trained"] = True; has_real_preferences = True
 
-        for k in ["gender", "age_group", "size", "location"]:
+        for k in ["gender", "age_group", "size", "location", "energy", "altered"]:
             if not preferences.get(k):
                 preferences[k] = "any"
+        for k in ["dogs", "house_trained"]:
+            if not preferences.get(k):
+                preferences[k] = False
 
         # Apply preferences filtering
         preferences_matched = False
@@ -422,26 +437,82 @@ async def random_dog(request: Request):
         pref_age = preferences.get("age_group") or "any"
         pref_size = preferences.get("size") or "any"
         pref_location = preferences.get("location") or "any"
+        pref_energy = preferences.get("energy") or "any"
+        pref_altered = preferences.get("altered") or "any"
+        pref_dogs = preferences.get("dogs", False)
+        pref_house_trained = preferences.get("house_trained", False)
 
         def clean_loc(s):
             return re.sub(r'[^a-zA-Z0-9]', '', str(s)).lower()
 
-        if pref_location == "any":
-            pass  # include all locations
-        else:
-            new_valid_ids = []
-            for aid in valid_ids:
-                dog_loc = shelters_map.get(active_dogs[aid].get("shelter_id"), {}).get("location_display_name", "")
-                if clean_loc(pref_location) == clean_loc(dog_loc):
-                    new_valid_ids.append(aid)
-            if new_valid_ids:
-                valid_ids = new_valid_ids
+        # ── Hard pre-filters ──────────────────────────────────────────
+        # All filters always apply. If zero dogs pass, the no_matches 404 fires.
 
+        # Location hard filter
+        if pref_location not in ("any", "all"):
+            valid_ids = [aid for aid in valid_ids
+                         if clean_loc(pref_location) == clean_loc(shelters_map.get(active_dogs[aid].get("shelter_id"), {}).get("location_display_name", ""))]
+
+        # Gender hard filter
+        if pref_gender != "any":
+            valid_ids = [aid for aid in valid_ids if matches_gender(active_dogs[aid].get("gender"), pref_gender)]
+
+        # Age hard filter (unknowns pass through)
+        if pref_age != "any":
+            valid_ids = [aid for aid in valid_ids
+                         if (active_dogs[aid].get("age_bucket") or "N/A") == "N/A"
+                         or pref_age.lower() in (active_dogs[aid].get("age_bucket") or "").lower()]
+
+        # Size hard filter (unknowns pass through)
+        if pref_size != "any":
+            valid_ids = [aid for aid in valid_ids
+                         if (active_dogs[aid].get("weight_class") or "N/A") == "N/A"
+                         or pref_size.lower() in (active_dogs[aid].get("weight_class") or "").lower()]
+
+        # Altered status hard filter (unknowns pass through)
+        if pref_altered != "any":
+            filtered = []
+            for aid in valid_ids:
+                dog_altered = (active_dogs[aid].get("altered_status") or "N/A").lower()
+                if dog_altered == "n/a":
+                    filtered.append(aid)
+                elif pref_altered == "altered" and dog_altered in ("spayed", "neutered"):
+                    filtered.append(aid)
+                elif pref_altered == "unaltered" and dog_altered == "unaltered":
+                    filtered.append(aid)
+            valid_ids = filtered
+
+        # Energy level hard filter (strict — only confirmed matches)
+        if pref_energy != "any":
+            filtered = []
+            for aid in valid_ids:
+                dog_energy = (active_dogs[aid].get("energy_level") or "").lower()
+                if pref_energy == dog_energy:
+                    filtered.append(aid)
+            valid_ids = filtered
+
+        # Good with dogs hard filter (strict — only confirmed "yes")
+        if pref_dogs:
+            valid_ids = [aid for aid in valid_ids if (active_dogs[aid].get("good_with_dogs") or "").lower() == "yes"]
+
+        # House trained hard filter (strict — only confirmed "yes")
+        if pref_house_trained:
+            valid_ids = [aid for aid in valid_ids if (active_dogs[aid].get("house_trained") or "").lower() == "yes"]
+
+        # If all dogs filtered out, return no-match signal
+        if not valid_ids:
+            return JSONResponse(status_code=404, content={"error": "No dogs match your current preferences.", "no_matches": True})
+
+        # ── Soft scoring for ranking within filtered pool ─────────────
         has_gender = (pref_gender != "any")
         has_age = (pref_age != "any")
         has_size = (pref_size != "any")
-        has_location = (pref_location != "any")
-        total_pref_count = sum([has_gender, has_age, has_size, has_location])
+        has_location = (pref_location not in ("any", "all"))
+        has_energy = (pref_energy != "any")
+        has_altered = (pref_altered != "any")
+        has_dogs_pref = pref_dogs
+        has_house_trained = pref_house_trained
+        total_pref_count = sum([has_gender, has_age, has_size, has_location, has_energy, has_altered, has_dogs_pref, has_house_trained])
 
         if total_pref_count > 0:
             preferences_configured = True

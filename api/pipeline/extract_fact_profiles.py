@@ -30,7 +30,7 @@ class FactProfileExtraction(BaseModel):
     containment_notes: Optional[str] = Field(description="Plain-language summary of containment/yard/leash needs.")
     medical_notes: Optional[str] = Field(description="Plain-language summary of medical needs or status.")
     adoption_process_notes: Optional[str] = Field(description="Plain-language summary of adoption rules or deadlines.")
-    energy_level: Optional[str] = Field(description="Energy level inferred from behavioral descriptions: 'calm', 'moderate', 'high', or 'N/A' if not determinable.")
+    energy_level: Optional[str] = Field(description="Energy level inferred from behavioral descriptions: 'calm', 'high', or 'N/A' if not determinable.")
     good_with_dogs: Optional[str] = Field(description="Good with other dogs: 'yes' if explicitly confirmed, 'no' if explicitly stated, or 'unknown' if not mentioned or ambiguous.")
     house_trained: Optional[str] = Field(description="House trained / potty trained: 'yes' if explicitly confirmed, 'no' if explicitly stated, or 'unknown' if not mentioned or ambiguous.")
     evidence_jsonb: List[str] = Field(description="List of exact short quotes used as evidence.")
