@@ -304,38 +304,23 @@ class handler(BaseHTTPRequestHandler):
                     valid_ids = new_valid_ids
 
             # Hard pre-filters for ALL preference selections
-            # Exclude dogs with KNOWN values that explicitly don't match.
-            # Dogs with unknown/N/A values pass through (not penalized for missing data).
+            # Filters always apply — if zero dogs match, the no_matches response fires.
 
             # Gender hard filter
             if pref_gender != "any":
-                filtered = [aid for aid in valid_ids if matches_gender(active_dogs[aid].get("gender"), pref_gender)]
-                if filtered:
-                    valid_ids = filtered
+                valid_ids = [aid for aid in valid_ids if matches_gender(active_dogs[aid].get("gender"), pref_gender)]
 
             # Age hard filter
             if pref_age != "any":
-                filtered = []
-                for aid in valid_ids:
-                    dog_age_bucket = (active_dogs[aid].get("age_bucket") or "N/A")
-                    if dog_age_bucket == "N/A":
-                        filtered.append(aid)  # unknown — keep in pool
-                    elif pref_age.lower() in dog_age_bucket.lower():
-                        filtered.append(aid)
-                if filtered:
-                    valid_ids = filtered
+                valid_ids = [aid for aid in valid_ids
+                             if (active_dogs[aid].get("age_bucket") or "N/A") == "N/A"
+                             or pref_age.lower() in (active_dogs[aid].get("age_bucket") or "").lower()]
 
             # Size hard filter
             if pref_size != "any":
-                filtered = []
-                for aid in valid_ids:
-                    dog_weight_class = (active_dogs[aid].get("weight_class") or "N/A")
-                    if dog_weight_class == "N/A":
-                        filtered.append(aid)  # unknown — keep in pool
-                    elif pref_size.lower() in dog_weight_class.lower():
-                        filtered.append(aid)
-                if filtered:
-                    valid_ids = filtered
+                valid_ids = [aid for aid in valid_ids
+                             if (active_dogs[aid].get("weight_class") or "N/A") == "N/A"
+                             or pref_size.lower() in (active_dogs[aid].get("weight_class") or "").lower()]
 
             # Altered status hard filter
             if pref_altered != "any":
@@ -348,8 +333,7 @@ class handler(BaseHTTPRequestHandler):
                         filtered.append(aid)
                     elif pref_altered == "unaltered" and dog_altered == "unaltered":
                         filtered.append(aid)
-                if filtered:
-                    valid_ids = filtered
+                valid_ids = filtered
 
             # Energy level hard filter (strict — only confirmed matches)
             if pref_energy != "any":
@@ -360,20 +344,15 @@ class handler(BaseHTTPRequestHandler):
                         filtered.append(aid)
                     elif dog_energy == "moderate":
                         filtered.append(aid)  # moderate passes either calm or high
-                if filtered:
-                    valid_ids = filtered
+                valid_ids = filtered
 
             # Good with dogs hard filter (strict — only confirmed "yes")
             if pref_dogs:
-                filtered = [aid for aid in valid_ids if (active_dogs[aid].get("good_with_dogs") or "").lower() == "yes"]
-                if filtered:
-                    valid_ids = filtered
+                valid_ids = [aid for aid in valid_ids if (active_dogs[aid].get("good_with_dogs") or "").lower() == "yes"]
 
             # House trained hard filter (strict — only confirmed "yes")
             if pref_house_trained:
-                filtered = [aid for aid in valid_ids if (active_dogs[aid].get("house_trained") or "").lower() == "yes"]
-                if filtered:
-                    valid_ids = filtered
+                valid_ids = [aid for aid in valid_ids if (active_dogs[aid].get("house_trained") or "").lower() == "yes"]
 
             # If all dogs filtered out, return no-match signal
             if not valid_ids:
