@@ -351,37 +351,27 @@ class handler(BaseHTTPRequestHandler):
                 if filtered:
                     valid_ids = filtered
 
-            # Energy level hard filter
+            # Energy level hard filter (strict — only confirmed matches)
             if pref_energy != "any":
                 filtered = []
                 for aid in valid_ids:
-                    dog_energy = (active_dogs[aid].get("energy_level") or "N/A").lower()
-                    if dog_energy == "n/a":
-                        filtered.append(aid)  # unknown — keep in pool
-                    elif pref_energy == dog_energy:
+                    dog_energy = (active_dogs[aid].get("energy_level") or "").lower()
+                    if pref_energy == dog_energy:
                         filtered.append(aid)
                     elif dog_energy == "moderate":
                         filtered.append(aid)  # moderate passes either calm or high
                 if filtered:
                     valid_ids = filtered
 
-            # Good with dogs hard filter
+            # Good with dogs hard filter (strict — only confirmed "yes")
             if pref_dogs:
-                filtered = []
-                for aid in valid_ids:
-                    dog_dogs = (active_dogs[aid].get("good_with_dogs") or "unknown").lower()
-                    if dog_dogs in ("yes", "unknown"):
-                        filtered.append(aid)  # keep yes + unknown, exclude explicit "no"
+                filtered = [aid for aid in valid_ids if (active_dogs[aid].get("good_with_dogs") or "").lower() == "yes"]
                 if filtered:
                     valid_ids = filtered
 
-            # House trained hard filter
+            # House trained hard filter (strict — only confirmed "yes")
             if pref_house_trained:
-                filtered = []
-                for aid in valid_ids:
-                    dog_ht = (active_dogs[aid].get("house_trained") or "unknown").lower()
-                    if dog_ht in ("yes", "unknown"):
-                        filtered.append(aid)  # keep yes + unknown, exclude explicit "no"
+                filtered = [aid for aid in valid_ids if (active_dogs[aid].get("house_trained") or "").lower() == "yes"]
                 if filtered:
                     valid_ids = filtered
 
