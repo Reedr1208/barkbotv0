@@ -283,10 +283,10 @@ async function renderRecentChats(container) {
   if (!userEmail) {
     container.innerHTML = `
     <div style="text-align:center; padding:40px 24px;">
-      <div style="font-size:3rem; margin-bottom:12px;">🔒</div>
-      <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">Sign in to see chats</h3>
-      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Your chat history is saved when you're signed in. Sign in to pick up where you left off!</p>
-      <button class="btn-primary" onclick="closeSavedModal();setTimeout(openPrefModal,200);" style="margin-top:16px; padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer;">Sign In</button>
+      <div style="font-size:3rem; margin-bottom:12px;">💬</div>
+      <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No chat history yet</h3>
+      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Start chatting with a dog and your conversations will appear here!</p>
+      <button class="btn-primary" onclick="closeSavedModal();" style="margin-top:16px; padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer;">Start Sniffing 🐶</button>
     </div>`;
     return;
   }
@@ -392,8 +392,8 @@ if (savedTabChats) {
   savedTabChats.addEventListener('click', () => loadSavedTab('chats'));
 }
 
-// On init: show Saved button if user is logged in, update badge
-if (userEmail && savedNavBtn) {
+// Always show My Dogs tab (no auth gate)
+if (savedNavBtn) {
   savedNavBtn.style.display = '';
 }
 updateSavedNavBadge();

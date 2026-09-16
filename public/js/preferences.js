@@ -1,5 +1,5 @@
-// ─── Preferences & Authentication ───────────────────────────────────────────
-// Preference wizard, login, save/reset preferences, and sign out
+// ─── Preferences & UI Controls ──────────────────────────────────────────────
+// Preference wizard, save/reset preferences (guest-only, no sign-in)
 
 const stickyInfoBtn = document.getElementById('stickyInfoBtn');
 if (stickyInfoBtn) {
@@ -87,11 +87,6 @@ function openModal() {
     document.body.style.overflow = 'hidden';
   }
 
-  const loginCallout = document.getElementById('aboutLoginCallout');
-  if (loginCallout) {
-    loginCallout.style.display = userEmail ? 'none' : 'flex';
-  }
-
   if (modalStartBtn) {
     modalStartBtn.focus();
   }
@@ -135,31 +130,16 @@ if (aboutBtn) {
   aboutBtn.addEventListener('click', openModal);
 }
 
-const aboutLoginBtn = document.getElementById('aboutLoginBtn');
-if (aboutLoginBtn) {
-  aboutLoginBtn.addEventListener('click', () => {
-    closeModal();
-    setTimeout(openPrefModal, 300);
-  });
-}
-
 // Preferences Modal Elements
 const prefModal = document.getElementById('prefModal');
 const prefBtn = document.getElementById('prefBtn');
 const prefBtnText = document.getElementById('prefBtnText');
 const prefCloseBtn = document.getElementById('prefCloseBtn');
-const prefLoggedOutState = document.getElementById('prefLoggedOutState');
 const prefLoggedInState = document.getElementById('prefLoggedInState');
 
-const loginEmailInput = document.getElementById('loginEmailInput');
-const loginErrorMsg = document.getElementById('loginErrorMsg');
-const loginSubmitBtn = document.getElementById('loginSubmitBtn');
-
-const loggedInEmailText = document.getElementById('loggedInEmailText');
-const signOutBtn = document.getElementById('signOutBtn');
 const savePrefBtn = document.getElementById('savePrefBtn');
 
-// userEmail, currentPrefs, lifestylePrefs declared in state.js
+// currentPrefs, lifestylePrefs declared in state.js
 // switchView, enterChatMode, exitChatMode declared in ui.js
 
 // Step-by-Step wizard controller
@@ -252,7 +232,7 @@ if (prefSkipBtn) {
 
 function updateProfileButton() {
   if (prefBtnText) {
-    prefBtnText.textContent = userEmail ? 'Fit' : 'Fit';
+    prefBtnText.textContent = 'Fit';
   }
 }
 
@@ -264,35 +244,25 @@ function openPrefModal() {
 
   showWizardStep(1); // Default to Step 1 basics on open
 
-  if (userEmail) {
-    prefLoggedOutState.style.display = 'none';
-    prefLoggedInState.style.display = 'block';
-    if (loggedInEmailText) loggedInEmailText.textContent = userEmail.split('@')[0] + "'s Profile";
+  // Always show the wizard directly (no login gate)
+  if (prefLoggedInState) prefLoggedInState.style.display = 'block';
 
-    // Setup initial button states from current preferences
-    setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
-    setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
-    setupSelectorButtons('prefSizeGroup', currentPrefs.size);
-    setupSelectorButtons('prefLocationGroup', currentPrefs.location || 'any');
-    setupSelectorButtons('prefEnergyGroup', lifestylePrefs.energy || 'any');
-    setupSelectorButtons('prefHomeGroup', lifestylePrefs.home || 'any');
+  // Setup initial button states from current preferences
+  setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
+  setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
+  setupSelectorButtons('prefSizeGroup', currentPrefs.size);
+  setupSelectorButtons('prefLocationGroup', currentPrefs.location || 'any');
+  setupSelectorButtons('prefEnergyGroup', lifestylePrefs.energy || 'any');
+  setupSelectorButtons('prefHomeGroup', lifestylePrefs.home || 'any');
 
-    // Setup toggle badge states
-    setupToggleBadge('prefOptKids', lifestylePrefs.kids);
-    setupToggleBadge('prefOptDogs', lifestylePrefs.dogs);
-    setupToggleBadge('prefOptCats', lifestylePrefs.cats);
-    setupToggleBadge('prefOptShed', lifestylePrefs.shedding);
-    setupToggleBadge('prefOptAlone', lifestylePrefs.aloneTime);
-    setupToggleBadge('prefOptLearn', lifestylePrefs.training);
-  } else {
-    prefLoggedOutState.style.display = 'block';
-    prefLoggedInState.style.display = 'none';
-    if (loginEmailInput) {
-      loginEmailInput.value = '';
-      loginEmailInput.focus();
-    }
-    if (loginErrorMsg) loginErrorMsg.style.display = 'none';
-  }
+  // Setup toggle badge states
+  setupToggleBadge('prefOptKids', lifestylePrefs.kids);
+  setupToggleBadge('prefOptDogs', lifestylePrefs.dogs);
+  setupToggleBadge('prefOptCats', lifestylePrefs.cats);
+  setupToggleBadge('prefOptShed', lifestylePrefs.shedding);
+  setupToggleBadge('prefOptAlone', lifestylePrefs.aloneTime);
+  setupToggleBadge('prefOptLearn', lifestylePrefs.training);
+
   trackEvent('preferences_modal_opened');
 }
 
@@ -383,88 +353,8 @@ lifestyleButtons.forEach(item => {
   }
 });
 
-// frictionless sign in API
-async function handleLogin() {
-  const email = loginEmailInput.value.trim();
-  if (!email || !email.includes('@')) {
-    loginErrorMsg.textContent = 'Please enter a valid email address.';
-    loginErrorMsg.style.display = 'block';
-    return;
-  }
-
-  loginSubmitBtn.disabled = true;
-  loginSubmitBtn.textContent = 'Signing in...';
-
-  try {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-
-    if (!response.ok) throw new Error('Authentication failed');
-
-    const profile = await response.json();
-
-    userEmail = profile.email;
-    localStorage.setItem('chattyhound_user_email', userEmail);
-    trackEvent('user_signed_in');
-    updateProfileButton();
-
-    const hasCustomPrefs = Object.values(currentPrefs).some(v => v && v !== 'any') || Object.values(lifestylePrefs).some(v => v !== 'any' && v !== false);
-    const isFromNextDog = window.__CH_INTERRUPTED_NEXT_DOG__ || document.getElementById('landingView').classList.contains('active');
-
-    if (hasCustomPrefs) {
-      // Auto-save guest preferences to backend
-      await fetch('/api/save_preferences', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: userEmail, ...currentPrefs })
-      });
-    } else {
-      // Load backend preferences
-      currentPrefs = {
-        gender: profile.gender || 'any',
-        age_group: profile.age_group || 'any',
-        size: profile.size || 'any',
-        location: profile.location || 'any'
-      };
-    }
-
-    syncLocalFavoritesToBackend(userEmail);
-    const savedNavBtnEl = document.getElementById('savedNavBtn');
-    if (savedNavBtnEl) savedNavBtnEl.style.display = '';
-    updateSavedNavBadge();
-
-    const hasBackendPrefs = profile.gender && profile.gender !== 'any' || profile.age_group && profile.age_group !== 'any' || profile.size && profile.size !== 'any' || profile.location && profile.location !== 'any';
-    const hasDefinedPrefs = hasCustomPrefs || hasBackendPrefs;
-
-    // Unconditionally skip the wizard and route to a dog upon successful sign-in
-    closePrefModal();
-    switchView('app');
-    if (window.__CH_INTERRUPTED_NEXT_DOG__) {
-      window.__CH_INTERRUPTED_NEXT_DOG__ = false;
-    }
-    fetchRandomDog();
-
-  } catch (err) {
-    console.error(err);
-    loginErrorMsg.textContent = 'Trouble signing in. Please check connection and try again.';
-    loginErrorMsg.style.display = 'block';
-  } finally {
-    loginSubmitBtn.disabled = false;
-    loginSubmitBtn.textContent = 'Continue';
-  }
-}
-
-// Save preferences API
+// Save preferences (localStorage only — no backend for guests)
 async function handleSavePreferences() {
-  // If we are on Step 1, transition to Step 2
-  if (activeWizardStep === 1) {
-    showWizardStep(2);
-    return;
-  }
-
   const genderActive = document.getElementById('prefGenderGroup').querySelector('.pref-btn.active');
   const ageActive = document.getElementById('prefAgeGroup').querySelector('.pref-btn.active');
   const sizeActive = document.getElementById('prefSizeGroup').querySelector('.pref-btn.active');
@@ -485,48 +375,13 @@ async function handleSavePreferences() {
   savePrefBtn.disabled = true;
   savePrefBtn.textContent = 'Saving...';
 
-  // If user is not logged in / email-less, save locally and transition directly!
-  if (!userEmail) {
-    currentPrefs = { gender, age_group, size, location };
-    closePrefModal();
-    trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
-    switchView('app'); // Transition to active dog matching cards!
-    fetchRandomDog();
-    savePrefBtn.disabled = false;
-    savePrefBtn.innerHTML = 'Save Selections ✨';
-    return;
-  }
-
-  try {
-    const response = await fetch('/api/save_preferences', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userEmail, gender, age_group, size, location })
-    });
-
-    if (!response.ok) throw new Error('Failed to save preferences');
-
-    const data = await response.json();
-    currentPrefs = {
-      gender: data.preferences.gender,
-      age_group: data.preferences.age_group,
-      size: data.preferences.size,
-      location: data.preferences.location || 'any'
-    };
-
-    closePrefModal();
-    trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
-    switchView('app'); // Transition to active dog matching cards!
-    // Fetch new random dog matching these preferences
-    fetchRandomDog();
-
-  } catch (err) {
-    console.error(err);
-    alert('Trouble saving preferences. Please try again.');
-  } finally {
-    savePrefBtn.disabled = false;
-    savePrefBtn.innerHTML = 'Save Selections ✨';
-  }
+  currentPrefs = { gender, age_group, size, location };
+  closePrefModal();
+  trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
+  switchView('app');
+  fetchRandomDog();
+  savePrefBtn.disabled = false;
+  savePrefBtn.innerHTML = 'Save Selections ✨';
 }
 
 async function resetPreferences() {
@@ -555,53 +410,10 @@ async function resetPreferences() {
   setupSelectorButtons('prefHomeGroup', 'any');
   lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
 
-  // 4. Save to backend if user is logged in
-  if (userEmail) {
-    try {
-      await fetch('/api/save_preferences', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: userEmail, gender: 'any', age_group: 'any', size: 'any', location: 'any' })
-      });
-    } catch (err) {
-      console.error("Failed to reset backend preferences:", err);
-    }
-  }
-
   trackEvent('preferences_reset_all');
 
-  // 5. Trigger a fresh match load
+  // 4. Trigger a fresh match load
   await fetchRandomDog();
-}
-
-function handleSignOut() {
-  userEmail = null;
-  currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
-  lifestylePrefs = {
-    energy: 'any',
-    home: 'any',
-    kids: false,
-    dogs: false,
-    cats: false,
-    shedding: false,
-    aloneTime: false,
-    training: false
-  };
-  localStorage.removeItem('chattyhound_user_email');
-  localStorage.removeItem('chattyhound_lifestyle_prefs');
-
-  // Update badge selectors visual classes
-  lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
-
-  updateProfileButton();
-  closePrefModal();
-  // Remove match badge
-  const badgeContainer = document.getElementById('prefMatchBadgeContainer');
-  if (badgeContainer) badgeContainer.innerHTML = '';
-  trackEvent('user_signed_out');
-  // Transition back to Landing page mode on Sign Out!
-  switchView('landing');
-  fetchRandomDog();
 }
 
 // Event listeners
@@ -633,12 +445,6 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-if (loginSubmitBtn) loginSubmitBtn.addEventListener('click', handleLogin);
-if (loginEmailInput) {
-  loginEmailInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleLogin();
-  });
-}
 if (savePrefBtn) {
   savePrefBtn.addEventListener('click', () => {
     if (activeWizardStep === 1) showWizardStep(2);
@@ -646,7 +452,7 @@ if (savePrefBtn) {
     else handleSavePreferences();
   });
 }
-if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
+
 // Collapsible biography click trigger
 const aboutDogToggle = document.getElementById('aboutDogToggle');
 const aboutDogText = document.getElementById('aboutDogText');

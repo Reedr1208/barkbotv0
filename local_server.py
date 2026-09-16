@@ -63,6 +63,19 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 import importlib
                 module = importlib.import_module("api.dog_meta")
+                # Rewrite /dogs/:path1/:path2 into query params like Vercel does
+                parts = [p for p in parsed_url.path.split("/") if p]  # ['dogs', 'tucson', 'PACC-A123']
+                query = parsed_url.query
+                if len(parts) >= 3:  # /dogs/{path1}/{path2}
+                    path1 = parts[1]
+                    path2 = parts[2]
+                    sep = "&" if query else ""
+                    query = f"path1={path1}&path2={path2}{sep}{query}"
+                elif len(parts) == 2:  # /dogs/{path1}
+                    path1 = parts[1]
+                    sep = "&" if query else ""
+                    query = f"path1={path1}{sep}{query}"
+                self.path = f"/dogs?{query}" if query else "/dogs"
                 module.handler.do_GET(self)
             except Exception as e:
                 import traceback
@@ -78,6 +91,8 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 "chat": "api.chat",
                 "favorites": "api.favorites",
                 "chat_history": "api.chat_history",
+                "locations": "api.locations",
+                "suggested_prompts": "api.suggested_prompts",
             }
             api_name = parsed_url.path.split("/")[-1]
             if api_name in api_routes:

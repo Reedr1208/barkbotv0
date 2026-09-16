@@ -71,17 +71,6 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
             const newLocName = locObj ? locObj.display_name : (selectedPath === 'all' ? 'all' : 'any');
             currentPrefs.location = newLocName;
             setupSelectorButtons('prefLocationGroup', newLocName);
-            if (userEmail) {
-              try {
-                await fetch('/api/save_preferences', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email: userEmail, preferences: currentPrefs })
-                });
-              } catch (e) {
-                console.error('Failed to save location preference', e);
-              }
-            }
             
             // Check if current dog matches new location
             let shouldKeepDog = false;
@@ -116,11 +105,7 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
 })();
 
 // ─── Landing Page & Navigation Wiring ────────────────────────────────────
-// Landing and Empty state triggers
 const landingStartBtn = document.getElementById('landingStartBtn');
-const landingHowBtn = document.getElementById('landingHowBtn');
-const loginSkipBtn = document.getElementById('loginSkipBtn');
-
 if (landingStartBtn) {
   landingStartBtn.addEventListener('click', async () => {
     trackEvent('start_sniffing_clicked');
@@ -137,29 +122,9 @@ if (landingLoginBtn) {
   });
 }
 
-// Cleaned up landingHowBtn
 
-if (loginSkipBtn) {
-  loginSkipBtn.addEventListener('click', () => {
-    closePrefModal();
-    if (window.__CH_INTERRUPTED_NEXT_DOG__) {
-      window.__CH_INTERRUPTED_NEXT_DOG__ = false;
-      fetchRandomDog();
-    } else if (document.getElementById('landingView').classList.contains('active')) {
-      switchView('app');
-      fetchRandomDog();
-    }
-  });
-}
+// Cleaned up: loginSkipBtn and loginGuestBtn removed (no longer exist in HTML)
 
-const loginGuestBtn = document.getElementById('loginGuestBtn');
-if (loginGuestBtn) {
-  loginGuestBtn.addEventListener('click', () => {
-    document.getElementById('prefLoggedOutState').style.display = 'none';
-    document.getElementById('prefLoggedInState').style.display = 'block';
-    if (loggedInEmailText) loggedInEmailText.textContent = "Guest Profile";
-  });
-}
 
 // Sticky mobile action bar overlays
 const mobileShuffleBtn = document.getElementById('mobileShuffleBtn');
@@ -224,45 +189,10 @@ async function startAppAfterPreferences(loaderFn) {
 
   // Pre-fetch suggested prompts pool (Informative/Whimsical) before first dog loads
   await fetchSuggestedPromptsIfNeeded();
-  
-  if (userEmail) {
-    (async function fetchPreferencesOnLoad() {
-      try {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: userEmail })
-        });
-        if (response.ok) {
-          const profile = await response.json();
-          const urlLocation = (window.__CH_INITIAL_LOCATION__ && currentPrefs.location !== 'any') ? currentPrefs.location : null;
-          
-          currentPrefs = {
-            gender: profile.gender || 'any',
-            age_group: profile.age_group || 'any',
-            size: profile.size || 'any',
-            location: urlLocation || profile.location || 'any'
-          };
 
-          // Sync header visual with loaded preference
-          if (window.__CH_LOCATIONS_DATA__ && currentPrefs.location !== 'any') {
-            const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === currentPrefs.location);
-            if (locObj && document.getElementById('headerLocationSelect')) {
-              document.getElementById('headerLocationSelect').value = locObj.relative_path;
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error restoring preferences:', err);
-      }
-      updateProfileButton();
-      await loaderFn();
-      syncLocalFavoritesToBackend(userEmail);
-    })();
-  } else {
-    updateProfileButton();
-    loaderFn();
-  }
+  // Guest-only: just run the loader directly
+  updateProfileButton();
+  loaderFn();
 }
 
 // Initial Login Setup check, shared dog routes, and auto-fetch

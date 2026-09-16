@@ -32,7 +32,8 @@ window.__CH_LOCATIONS_DATA__ = [];
 const CH_CANONICAL_ORIGIN = 'https://chattyhound.com';
 const CH_DEFAULT_OG_IMAGE = CH_CANONICAL_ORIGIN + '/chattyhound_og.png';
 
-let userEmail = localStorage.getItem('chattyhound_user_email') || null;
+// Auth removed — all users are guests. userEmail kept as null for backward compat.
+const userEmail = null;
 let currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
 
 // Expanded lifestyle preferences stored locally

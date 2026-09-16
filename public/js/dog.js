@@ -190,7 +190,6 @@ if (forcedAnimalId) {
 } else if (viewedIds.length > 0) {
   params.push('viewed=' + viewedIds.join(','));
 }
-if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
 if (currentPrefs.gender && currentPrefs.gender !== 'any') params.push('gender=' + encodeURIComponent(currentPrefs.gender));
 if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.push('age_group=' + encodeURIComponent(currentPrefs.age_group));
 if (currentPrefs.size && currentPrefs.size !== 'any') params.push('size=' + encodeURIComponent(currentPrefs.size));
