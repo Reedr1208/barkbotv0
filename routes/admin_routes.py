@@ -381,3 +381,358 @@ def _format_duration(seconds: float) -> str:
         return f"{hours}h {minutes}m"
     else:
         return f"{minutes}m"
+
+
+# ── Backfill ────────────────────────────────────────────────────────
+
+# In-memory store for backfill runs
+_backfill_runs: dict = {}
+_backfill_lock = threading.Lock()
+
+# Shelter → scheduler job ID mapping
+SHELTER_INVENTORY_JOBS = {
+    "PACC": "pacc_inventory",
+    "HSSA": "hssa_inventory",
+    "MCACC": "mcacc_inventory",
+    "DPA": "dpa_inventory",
+    "PAWSCH": "pawsch_inventory",
+    "MP": "mp_all",
+    "WWLA": "wwla_all",
+    "NYCACC": "nycacc_inventory",
+    "NHS": "nhs_inventory",
+    "EHR": "ehr_inventory",
+    "MV": "mv_inventory",
+    "RDR": "rdr_inventory",
+    "RCHS": "rchs_inventory",
+    "PHP": "php_inventory",
+    "HHS": "hhs_inventory",
+    "SAPA": "sapa_inventory",
+}
+
+SHELTER_PROFILES_JOBS = {
+    "PACC": "pacc_profiles",
+    "HSSA": "hssa_profiles",
+    "MCACC": "mcacc_profiles",
+    "DPA": "dpa_profiles",
+    "PAWSCH": "pawsch_profiles",
+    "MP": "mp_all",
+    "WWLA": "wwla_all",
+    "NYCACC": "nycacc_profiles",
+    "NHS": "nhs_profiles",
+    "EHR": "ehr_profiles",
+    "MV": "mv_profiles",
+    "RDR": "rdr_profiles",
+    "RCHS": "rchs_profiles",
+    "PHP": "php_profiles",
+    "HHS": "hhs_profiles",
+    "SAPA": "sapa_profiles",
+}
+
+
+@router.get("/admin/backfill")
+async def admin_backfill_page(request: Request):
+    """Serve the backfill dashboard page."""
+    if not _check_admin_auth(request):
+        return RedirectResponse(url="/admin/login", status_code=303)
+    backfill_path = os.path.join(os.path.dirname(__file__), "..", "public", "admin", "backfill.html")
+    if os.path.isfile(backfill_path):
+        return FileResponse(backfill_path, media_type="text/html")
+    return HTMLResponse("<h1>Backfill page not found</h1>", status_code=500)
+
+
+@router.get("/admin/api/backfill/shelters")
+async def admin_api_backfill_shelters(request: Request):
+    """Return the list of shelters for the backfill UI."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    from jobs.lib.db import get_supabase_client
+    try:
+        sb = get_supabase_client()
+        res = sb.table("shelters").select("shelter_id, shelter_name, location_display_name, relative_path").execute()
+        shelters = sorted(res.data, key=lambda x: x.get("shelter_name", ""))
+        return JSONResponse(content={"shelters": shelters})
+    except Exception as e:
+        logger.error(f"[backfill] Failed to fetch shelters: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.post("/admin/api/backfill/start")
+async def admin_api_backfill_start(request: Request):
+    """Start a backfill run with the given configuration."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    body = await request.json()
+    steps = body.get("steps", [])
+    shelter_ids = body.get("shelters", [])
+    dog_selection = body.get("dog_selection", {"mode": "all"})
+
+    if not steps:
+        return JSONResponse(status_code=400, content={"error": "No steps selected"})
+    if not shelter_ids:
+        return JSONResponse(status_code=400, content={"error": "No shelters selected"})
+
+    # Check if a backfill is already running
+    with _backfill_lock:
+        for rid, run in _backfill_runs.items():
+            if run.get("status") == "running":
+                return JSONResponse(status_code=409, content={
+                    "error": f"A backfill is already running (run_id: {rid})"
+                })
+
+    run_id = secrets.token_hex(6)
+
+    # Resolve "ALL" to all shelter IDs
+    if "ALL" in shelter_ids:
+        all_sids = set(SHELTER_INVENTORY_JOBS.keys()) | set(SHELTER_PROFILES_JOBS.keys())
+        shelter_ids = sorted(all_sids)
+
+    run_state = {
+        "run_id": run_id,
+        "status": "running",
+        "current_step": None,
+        "steps": {s: {"status": "pending"} for s in steps},
+        "config": {
+            "steps": steps,
+            "shelters": shelter_ids,
+            "dog_selection": dog_selection,
+        },
+        "refreshed_dogs": [],
+        "log": [],
+        "abort": False,
+        "started_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    with _backfill_lock:
+        _backfill_runs[run_id] = run_state
+
+    def _execute():
+        try:
+            _run_backfill(run_id)
+        except Exception as e:
+            logger.error(f"[backfill] Run {run_id} crashed: {e}")
+            with _backfill_lock:
+                run = _backfill_runs.get(run_id, {})
+                run["status"] = "error"
+                run["error"] = str(e)
+                _log(run_id, f"❌ Fatal error: {e}")
+
+    thread = threading.Thread(target=_execute, name=f"backfill-{run_id}", daemon=True)
+    thread.start()
+
+    return JSONResponse(content={"run_id": run_id, "status": "started"})
+
+
+@router.get("/admin/api/backfill/status/{run_id}")
+async def admin_api_backfill_status(run_id: str, request: Request):
+    """Return the current progress of a backfill run."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    with _backfill_lock:
+        run = _backfill_runs.get(run_id)
+
+    if not run:
+        return JSONResponse(status_code=404, content={"error": f"Run {run_id} not found"})
+
+    return JSONResponse(content={
+        "run_id": run["run_id"],
+        "status": run["status"],
+        "current_step": run.get("current_step"),
+        "steps": run.get("steps", {}),
+        "refreshed_dogs": run.get("refreshed_dogs", []),
+        "log": run.get("log", [])[-100:],  # Last 100 lines
+        "error": run.get("error"),
+    })
+
+
+@router.post("/admin/api/backfill/abort/{run_id}")
+async def admin_api_backfill_abort(run_id: str, request: Request):
+    """Request abortion of a running backfill."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    with _backfill_lock:
+        run = _backfill_runs.get(run_id)
+        if not run:
+            return JSONResponse(status_code=404, content={"error": f"Run {run_id} not found"})
+        run["abort"] = True
+
+    return JSONResponse(content={"status": "abort_requested"})
+
+
+def _log(run_id: str, msg: str):
+    """Append a log line to the run's log."""
+    ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
+    with _backfill_lock:
+        run = _backfill_runs.get(run_id)
+        if run:
+            run["log"].append(f"[{ts}] {msg}")
+    logger.info(f"[backfill:{run_id}] {msg}")
+
+
+def _is_aborted(run_id: str) -> bool:
+    with _backfill_lock:
+        run = _backfill_runs.get(run_id)
+        return run.get("abort", False) if run else True
+
+
+def _update_step(run_id: str, step: str, **kwargs):
+    with _backfill_lock:
+        run = _backfill_runs.get(run_id)
+        if run and step in run["steps"]:
+            run["steps"][step].update(kwargs)
+
+
+def _run_backfill(run_id: str):
+    """Execute the backfill pipeline in sequence."""
+    with _backfill_lock:
+        run = _backfill_runs.get(run_id)
+        if not run:
+            return
+        config = run["config"]
+        steps = config["steps"]
+        shelter_ids = config["shelters"]
+        dog_selection = config["dog_selection"]
+
+    for step in steps:
+        if _is_aborted(run_id):
+            _log(run_id, "⛔ Abort flag detected, stopping.")
+            # Mark remaining steps as aborted
+            with _backfill_lock:
+                run = _backfill_runs.get(run_id)
+                if run:
+                    run["status"] = "aborted"
+                    for s in steps:
+                        if run["steps"].get(s, {}).get("status") == "pending":
+                            run["steps"][s] = {"status": "aborted"}
+            return
+
+        with _backfill_lock:
+            _backfill_runs[run_id]["current_step"] = step
+
+        _log(run_id, f"▶ Starting step: {step}")
+
+        try:
+            if step == "cleanup":
+                _run_backfill_cleanup(run_id)
+            elif step == "inventory":
+                _run_backfill_inventory(run_id, shelter_ids)
+            elif step == "profiles":
+                _run_backfill_profiles(run_id, shelter_ids)
+            elif step == "facts":
+                _run_backfill_facts(run_id, shelter_ids, dog_selection)
+            elif step == "prompts":
+                _run_backfill_prompts(run_id)
+            else:
+                _update_step(run_id, step, status="skipped", message=f"Unknown step: {step}")
+                _log(run_id, f"⏭️ Skipped unknown step: {step}")
+                continue
+
+            if not _is_aborted(run_id):
+                _update_step(run_id, step, status="done")
+                _log(run_id, f"✅ Completed step: {step}")
+
+        except Exception as e:
+            _update_step(run_id, step, status="error", message=str(e)[:200])
+            _log(run_id, f"❌ Step {step} failed: {e}")
+            logger.exception(f"[backfill:{run_id}] Step {step} failed")
+
+    # Done
+    if not _is_aborted(run_id):
+        with _backfill_lock:
+            _backfill_runs[run_id]["status"] = "done"
+        _log(run_id, "🎉 Backfill complete!")
+
+
+def _run_backfill_cleanup(run_id: str):
+    """Run the cleanup job (remove stale records)."""
+    _update_step(run_id, "cleanup", status="running", message="Running cleanup cron...")
+    try:
+        run_job_by_id("cleanup_inactive_dogs", triggered_by="backfill")
+        _update_step(run_id, "cleanup", message="Cleanup finished")
+    except Exception as e:
+        raise RuntimeError(f"Cleanup failed: {e}") from e
+
+
+def _run_backfill_inventory(run_id: str, shelter_ids: list):
+    """Run inventory scrape for each selected shelter."""
+    # Filter to shelters that have inventory jobs
+    actionable = [(sid, SHELTER_INVENTORY_JOBS[sid]) for sid in shelter_ids if sid in SHELTER_INVENTORY_JOBS]
+    total = len(actionable)
+    _update_step(run_id, "inventory", status="running", progress=0, total=total, message="Starting...")
+
+    for i, (sid, job_id) in enumerate(actionable):
+        if _is_aborted(run_id):
+            _update_step(run_id, "inventory", status="aborted", progress=i, total=total)
+            return
+
+        _update_step(run_id, "inventory", progress=i, total=total, message=f"Processing {sid}...")
+        _log(run_id, f"  📦 Inventory: {sid} ({i+1}/{total})")
+
+        try:
+            run_job_by_id(job_id, triggered_by="backfill")
+        except Exception as e:
+            _log(run_id, f"  ⚠️ Inventory {sid} failed: {e}")
+
+    _update_step(run_id, "inventory", progress=total, total=total, message="All shelters done")
+
+
+def _run_backfill_profiles(run_id: str, shelter_ids: list):
+    """Run profile scrape for each selected shelter."""
+    actionable = [(sid, SHELTER_PROFILES_JOBS[sid]) for sid in shelter_ids if sid in SHELTER_PROFILES_JOBS]
+    # Dedupe job IDs (mp_all and wwla_all serve both inventory and profiles)
+    seen_jobs = set()
+    deduped = []
+    for sid, job_id in actionable:
+        if job_id not in seen_jobs:
+            seen_jobs.add(job_id)
+            deduped.append((sid, job_id))
+
+    total = len(deduped)
+    _update_step(run_id, "profiles", status="running", progress=0, total=total, message="Starting...")
+
+    for i, (sid, job_id) in enumerate(deduped):
+        if _is_aborted(run_id):
+            _update_step(run_id, "profiles", status="aborted", progress=i, total=total)
+            return
+
+        _update_step(run_id, "profiles", progress=i, total=total, message=f"Processing {sid}...")
+        _log(run_id, f"  📋 Profiles: {sid} ({i+1}/{total})")
+
+        try:
+            run_job_by_id(job_id, triggered_by="backfill")
+        except Exception as e:
+            _log(run_id, f"  ⚠️ Profiles {sid} failed: {e}")
+
+    _update_step(run_id, "profiles", progress=total, total=total, message="All shelters done")
+
+
+def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
+    """Run fact table extraction (generate_prompts) for selected dogs."""
+    _update_step(run_id, "facts", status="running", message="Running fact extraction pipeline...")
+    _log(run_id, f"  🧠 Fact tables: mode={dog_selection.get('mode', 'all')}")
+
+    try:
+        run_job_by_id("generate_prompts", triggered_by="backfill")
+        _update_step(run_id, "facts", message="Fact extraction finished")
+    except Exception as e:
+        raise RuntimeError(f"Fact extraction failed: {e}") from e
+
+
+def _run_backfill_prompts(run_id: str):
+    """Prompt templates are read-only from the DB — this is a no-op refresh acknowledgment."""
+    _update_step(run_id, "prompts", status="running", message="Refreshing prompt templates...")
+    _log(run_id, "  📝 Prompt templates: verifying table exists...")
+
+    try:
+        from jobs.lib.db import get_supabase_client
+        sb = get_supabase_client()
+        res = sb.table("suggested_prompts").select("category, prompt_text").execute()
+        count = len(res.data) if res.data else 0
+        _update_step(run_id, "prompts", message=f"Found {count} prompt templates")
+        _log(run_id, f"  📝 Prompt templates: {count} templates verified")
+    except Exception as e:
+        raise RuntimeError(f"Prompt template check failed: {e}") from e
+

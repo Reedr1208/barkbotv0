@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarkBot Backfill Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-card: rgba(18, 18, 28, 0.9);
+      --bg-card-hover: rgba(25, 25, 40, 0.95);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --text-primary: #e8e8ef;
+      --text-secondary: #8888a0;
+      --text-dim: #555570;
+      --accent: #7c5cfc;
+      --accent-glow: rgba(124, 92, 252, 0.25);
+      --success: #34d399;
+      --success-bg: rgba(52, 211, 153, 0.1);
+      --error: #f87171;
+      --error-bg: rgba(248, 113, 113, 0.1);
+      --warning: #fbbf24;
+      --warning-bg: rgba(251, 191, 36, 0.1);
+      --running: #60a5fa;
+      --running-bg: rgba(96, 165, 250, 0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(124, 92, 252, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 90%, rgba(248, 113, 113, 0.04) 0%, transparent 50%);
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-left h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+    .header-left h1 span { color: var(--text-dim); font-weight: 400; }
+    .tab-nav {
+      display: flex; gap: 4px; margin-left: 16px;
+      background: rgba(255, 255, 255, 0.04); border-radius: 8px; padding: 3px;
+    }
+    .tab-link {
+      font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 6px;
+      color: var(--text-secondary); text-decoration: none; transition: all 0.2s;
+    }
+    .tab-link:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.04); }
+    .tab-link.active { background: var(--accent); color: #fff; }
+    .logout-btn {
+      background: none; border: 1px solid var(--border); color: var(--text-secondary);
+      padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+    /* ── Main ────────────────────────────────────── */
+    .main {
+      max-width: 820px; margin: 28px auto; padding: 0 20px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* ── Section Cards ───────────────────────────── */
+    .section {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 22px;
+    }
+    .section-title {
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title .icon { font-size: 16px; }
+
+    /* ── Checkboxes & Radios ─────────────────────── */
+    .check-grid {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .check-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 14px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); cursor: pointer;
+      font-size: 13px; transition: all 0.15s; user-select: none;
+      background: transparent;
+    }
+    .check-item:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.02); }
+    .check-item.active {
+      border-color: var(--accent); background: rgba(124, 92, 252, 0.1);
+      color: var(--text-primary);
+    }
+    .check-item input { display: none; }
+    .check-box {
+      width: 16px; height: 16px; border-radius: 4px;
+      border: 1.5px solid var(--text-dim); display: flex;
+      align-items: center; justify-content: center; transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .check-item.active .check-box {
+      border-color: var(--accent); background: var(--accent);
+    }
+    .check-box::after {
+      content: ''; width: 8px; height: 5px;
+      border-left: 2px solid white; border-bottom: 2px solid white;
+      transform: rotate(-45deg) translateY(-1px); opacity: 0; transition: opacity 0.15s;
+    }
+    .check-item.active .check-box::after { opacity: 1; }
+
+    /* Radio styling */
+    .radio-box {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 1.5px solid var(--text-dim); display: flex;
+      align-items: center; justify-content: center; transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .check-item.active .radio-box {
+      border-color: var(--accent);
+    }
+    .radio-box::after {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); opacity: 0; transition: opacity 0.15s;
+    }
+    .check-item.active .radio-box::after { opacity: 1; }
+
+    .check-item .shelter-id {
+      font-family: var(--font-mono); font-size: 11px; color: var(--accent);
+      background: rgba(124, 92, 252, 0.1); padding: 1px 6px; border-radius: 4px;
+    }
+    .check-item .shelter-name {
+      font-size: 12px; color: var(--text-secondary);
+    }
+
+    /* ── Shelter grid ─────────────────────────────── */
+    .shelter-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 8px;
+    }
+    .shelter-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); cursor: pointer;
+      transition: all 0.15s; user-select: none;
+    }
+    .shelter-item:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.02); }
+    .shelter-item.active {
+      border-color: var(--accent); background: rgba(124, 92, 252, 0.1);
+    }
+    .shelter-item .check-box { width: 14px; height: 14px; }
+    .shelter-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .shelter-info .sid {
+      font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--accent);
+    }
+    .shelter-info .sname {
+      font-size: 11px; color: var(--text-secondary); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* ── Dog selection ────────────────────────────── */
+    .dog-mode-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .dog-input {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 10px; color: var(--text-primary);
+      font-family: var(--font-mono); font-size: 12px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .dog-input:focus { border-color: var(--accent); }
+    .dog-input::placeholder { color: var(--text-dim); }
+    .dog-input-num { width: 70px; }
+    .dog-input-ids { width: 100%; margin-top: 8px; }
+
+    /* ── Buttons ──────────────────────────────────── */
+    .btn-row { display: flex; gap: 10px; align-items: center; }
+    .btn-start {
+      background: var(--accent); color: white; border: none;
+      padding: 10px 28px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+    }
+    .btn-start:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+    .btn-abort {
+      background: transparent; color: var(--error); border: 1px solid var(--error);
+      padding: 10px 24px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-abort:hover { background: var(--error-bg); }
+
+    /* ── Progress ─────────────────────────────────── */
+    .progress-section { display: none; }
+    .progress-section.visible { display: block; }
+    .step-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .step-row:last-child { border-bottom: none; }
+    .step-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+    .step-label { font-size: 13px; font-weight: 500; min-width: 130px; }
+    .step-detail {
+      font-size: 12px; color: var(--text-secondary);
+      font-family: var(--font-mono); flex: 1;
+    }
+    .step-bar-wrap {
+      width: 120px; height: 6px; background: rgba(255,255,255,0.06);
+      border-radius: 3px; overflow: hidden; flex-shrink: 0;
+    }
+    .step-bar {
+      height: 100%; background: var(--accent); border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .step-bar.done { background: var(--success); }
+    .step-bar.error { background: var(--error); }
+
+    /* ── Refreshed Dogs List ──────────────────────── */
+    .refreshed-section { margin-top: 16px; }
+    .refreshed-title {
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+    .refreshed-list {
+      display: flex; flex-direction: column; gap: 4px;
+      max-height: 300px; overflow-y: auto;
+    }
+    .refreshed-dog {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 10px; border-radius: 6px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .refreshed-dog .dog-id {
+      font-family: var(--font-mono); font-weight: 500; color: var(--accent);
+    }
+    .refreshed-dog .dog-name { color: var(--text-secondary); }
+    .refreshed-dog a {
+      color: var(--running); text-decoration: none; margin-left: auto;
+      font-size: 11px;
+    }
+    .refreshed-dog a:hover { text-decoration: underline; }
+
+    /* ── Log area ─────────────────────────────────── */
+    .log-area {
+      margin-top: 12px; background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px; max-height: 200px; overflow-y: auto;
+      font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+      line-height: 1.6; white-space: pre-wrap;
+    }
+
+    /* ── Responsive ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .header { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+      .main { padding: 0 12px; }
+      .shelter-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>🐕 BarkBot <span>/ Admin</span></h1>
+      <nav class="tab-nav">
+        <a href="/admin/crons" class="tab-link">Crons</a>
+        <a href="/admin/monitors" class="tab-link">Monitors</a>
+        <a href="/admin/backfill" class="tab-link active">Backfill</a>
+      </nav>
+    </div>
+    <form action="/admin/logout" method="post" style="display:inline">
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
+
+  <div class="main">
+
+    <!-- Pipeline Steps -->
+    <div class="section">
+      <div class="section-title"><span class="icon">⚙️</span> Pipeline Steps</div>
+      <div class="check-grid" id="stepsGrid">
+        <label class="check-item active" data-step="cleanup">
+          <input type="checkbox" checked><span class="check-box"></span> Run Cleanup
+        </label>
+        <label class="check-item active" data-step="inventory">
+          <input type="checkbox" checked><span class="check-box"></span> Inventory
+        </label>
+        <label class="check-item active" data-step="profiles">
+          <input type="checkbox" checked><span class="check-box"></span> Profiles
+        </label>
+        <label class="check-item active" data-step="facts">
+          <input type="checkbox" checked><span class="check-box"></span> Fact Tables
+        </label>
+        <label class="check-item active" data-step="prompts">
+          <input type="checkbox" checked><span class="check-box"></span> Prompt Templates
+        </label>
+      </div>
+    </div>
+
+    <!-- Shelters -->
+    <div class="section">
+      <div class="section-title"><span class="icon">🏠</span> Shelters</div>
+      <label class="check-item active" id="allSheltersToggle" style="margin-bottom: 10px; font-weight: 600;">
+        <input type="checkbox" checked><span class="check-box"></span> All Shelters
+      </label>
+      <div class="shelter-grid" id="shelterGrid">
+        <div class="check-item" style="color: var(--text-dim); border: none; padding: 20px; justify-content: center;">Loading shelters...</div>
+      </div>
+    </div>
+
+    <!-- Dog Selection -->
+    <div class="section">
+      <div class="section-title"><span class="icon">🐕</span> Dog Selection</div>
+      <div class="dog-mode-row">
+        <label class="check-item active" data-mode="all">
+          <input type="radio" name="dogMode" value="all" checked><span class="radio-box"></span> All dogs
+        </label>
+      </div>
+      <div class="dog-mode-row">
+        <label class="check-item" data-mode="random">
+          <input type="radio" name="dogMode" value="random"><span class="radio-box"></span> Random subset:
+        </label>
+        <input type="number" class="dog-input dog-input-num" id="randomCount" value="5" min="1" max="500" placeholder="5">
+        <span style="font-size: 12px; color: var(--text-secondary);">dogs per shelter</span>
+      </div>
+      <div class="dog-mode-row">
+        <label class="check-item" data-mode="specific">
+          <input type="radio" name="dogMode" value="specific"><span class="radio-box"></span> Specific animal IDs
+        </label>
+      </div>
+      <input type="text" class="dog-input dog-input-ids" id="specificIds" placeholder="e.g. PACC-A903308, DPA-78030, MCACC-5164502" style="display:none;">
+    </div>
+
+    <!-- Start / Abort -->
+    <div class="btn-row">
+      <button class="btn-start" id="btnStart" onclick="startBackfill()">▶ Start Backfill</button>
+      <button class="btn-abort" id="btnAbort" onclick="abortBackfill()" style="display:none;">⛔ Abort</button>
+      <span id="statusText" style="font-size: 12px; color: var(--text-secondary); margin-left: 8px;"></span>
+    </div>
+
+    <!-- Progress Panel -->
+    <div class="section progress-section" id="progressSection">
+      <div class="section-title"><span class="icon">📊</span> Progress</div>
+      <div id="progressSteps"></div>
+
+      <div class="refreshed-section" id="refreshedSection" style="display:none;">
+        <div class="refreshed-title">Refreshed Dogs</div>
+        <div class="refreshed-list" id="refreshedList"></div>
+      </div>
+
+      <div class="log-area" id="logArea" style="display:none;"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── State ────────────────────────────────────────
+    let shelters = [];
+    let currentRunId = null;
+    let pollTimer = null;
+
+    // ── API helper ──────────────────────────────────
+    async function apiFetch(url, opts = {}) {
+      const res = await fetch(url, { credentials: 'same-origin', ...opts });
+      if (res.status === 401) { window.location.href = '/admin/login'; throw new Error('Unauthorized'); }
+      return res;
+    }
+
+    // ── Load shelters ───────────────────────────────
+    async function loadShelters() {
+      try {
+        const res = await apiFetch('/admin/api/backfill/shelters');
+        const data = await res.json();
+        shelters = data.shelters || [];
+        renderShelters();
+      } catch (e) {
+        document.getElementById('shelterGrid').innerHTML = '<div style="color: var(--error); padding: 12px;">Failed to load shelters</div>';
+      }
+    }
+
+    function renderShelters() {
+      const grid = document.getElementById('shelterGrid');
+      const allChecked = document.querySelector('#allSheltersToggle').classList.contains('active');
+      grid.innerHTML = shelters.map(s => `
+        <label class="shelter-item ${allChecked ? 'active' : ''}" data-sid="${s.shelter_id}">
+          <span class="check-box"></span>
+          <div class="shelter-info">
+            <span class="sid">${s.shelter_id}</span>
+            <span class="sname">${s.shelter_name}</span>
+          </div>
+        </label>
+      `).join('');
+
+      // Bind clicks
+      grid.querySelectorAll('.shelter-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          item.classList.toggle('active');
+          // Uncheck "All" if any individual is unchecked
+          const allActive = grid.querySelectorAll('.shelter-item.active').length === shelters.length;
+          const toggle = document.getElementById('allSheltersToggle');
+          if (allActive) toggle.classList.add('active');
+          else toggle.classList.remove('active');
+        });
+      });
+    }
+
+    // ── All Shelters toggle ─────────────────────────
+    document.getElementById('allSheltersToggle').addEventListener('click', (e) => {
+      e.preventDefault();
+      const toggle = document.getElementById('allSheltersToggle');
+      const willBeActive = !toggle.classList.contains('active');
+      toggle.classList.toggle('active');
+      document.querySelectorAll('#shelterGrid .shelter-item').forEach(item => {
+        if (willBeActive) item.classList.add('active');
+        else item.classList.remove('active');
+      });
+    });
+
+    // ── Pipeline step toggles ───────────────────────
+    document.querySelectorAll('#stepsGrid .check-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        item.classList.toggle('active');
+        item.querySelector('input').checked = item.classList.contains('active');
+      });
+    });
+
+    // ── Dog mode radios ─────────────────────────────
+    document.querySelectorAll('[data-mode]').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('[data-mode]').forEach(m => m.classList.remove('active'));
+        item.classList.add('active');
+        item.querySelector('input').checked = true;
+
+        const mode = item.dataset.mode;
+        document.getElementById('specificIds').style.display = mode === 'specific' ? 'block' : 'none';
+      });
+    });
+
+    // ── Build config ────────────────────────────────
+    function getConfig() {
+      const steps = [];
+      document.querySelectorAll('#stepsGrid .check-item.active').forEach(item => {
+        steps.push(item.dataset.step);
+      });
+
+      const selectedShelters = [];
+      const allToggle = document.getElementById('allSheltersToggle');
+      if (allToggle.classList.contains('active')) {
+        selectedShelters.push('ALL');
+      } else {
+        document.querySelectorAll('#shelterGrid .shelter-item.active').forEach(item => {
+          selectedShelters.push(item.dataset.sid);
+        });
+      }
+
+      const activeMode = document.querySelector('[data-mode].active');
+      const mode = activeMode ? activeMode.dataset.mode : 'all';
+      const dogSelection = { mode };
+      if (mode === 'random') {
+        dogSelection.count = parseInt(document.getElementById('randomCount').value) || 5;
+      } else if (mode === 'specific') {
+        dogSelection.animal_ids = document.getElementById('specificIds').value
+          .split(',').map(s => s.trim()).filter(s => s.length > 0);
+      }
+
+      return { steps, shelters: selectedShelters, dog_selection: dogSelection };
+    }
+
+    // ── Start Backfill ──────────────────────────────
+    async function startBackfill() {
+      const config = getConfig();
+
+      if (config.steps.length === 0) {
+        alert('Select at least one pipeline step.');
+        return;
+      }
+      if (config.shelters.length === 0) {
+        alert('Select at least one shelter.');
+        return;
+      }
+      if (config.dog_selection.mode === 'specific' && (!config.dog_selection.animal_ids || config.dog_selection.animal_ids.length === 0)) {
+        alert('Enter at least one animal ID.');
+        return;
+      }
+
+      const btn = document.getElementById('btnStart');
+      btn.disabled = true;
+      document.getElementById('btnAbort').style.display = 'inline-block';
+      document.getElementById('statusText').textContent = 'Starting...';
+
+      // Show progress
+      const progressSection = document.getElementById('progressSection');
+      progressSection.classList.add('visible');
+      renderProgressSteps(config.steps, {});
+      document.getElementById('refreshedSection').style.display = 'none';
+      document.getElementById('refreshedList').innerHTML = '';
+      document.getElementById('logArea').style.display = 'none';
+      document.getElementById('logArea').textContent = '';
+
+      try {
+        const res = await apiFetch('/admin/api/backfill/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          document.getElementById('statusText').textContent = data.error || 'Failed to start';
+          btn.disabled = false;
+          document.getElementById('btnAbort').style.display = 'none';
+          return;
+        }
+
+        currentRunId = data.run_id;
+        document.getElementById('statusText').textContent = `Run ${currentRunId} started`;
+        startPolling();
+      } catch (e) {
+        document.getElementById('statusText').textContent = 'Error: ' + e.message;
+        btn.disabled = false;
+        document.getElementById('btnAbort').style.display = 'none';
+      }
+    }
+
+    // ── Abort ───────────────────────────────────────
+    async function abortBackfill() {
+      if (!currentRunId) return;
+      try {
+        await apiFetch(`/admin/api/backfill/abort/${currentRunId}`, { method: 'POST' });
+        document.getElementById('statusText').textContent = 'Abort requested...';
+      } catch (e) {
+        console.error('Abort failed', e);
+      }
+    }
+
+    // ── Polling ─────────────────────────────────────
+    function startPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(pollStatus, 2000);
+      pollStatus(); // immediate first poll
+    }
+
+    function stopPolling() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    }
+
+    async function pollStatus() {
+      if (!currentRunId) { stopPolling(); return; }
+      try {
+        const res = await apiFetch(`/admin/api/backfill/status/${currentRunId}`);
+        const data = await res.json();
+
+        // Update progress steps
+        renderProgressSteps(Object.keys(data.steps || {}), data.steps || {});
+
+        // Update status text
+        const statusEl = document.getElementById('statusText');
+        if (data.status === 'running') {
+          statusEl.textContent = `Running: ${data.current_step || '...'}`;
+        } else if (data.status === 'done') {
+          statusEl.textContent = '✅ Backfill complete';
+          onBackfillDone();
+        } else if (data.status === 'aborted') {
+          statusEl.textContent = '⛔ Backfill aborted';
+          onBackfillDone();
+        } else if (data.status === 'error') {
+          statusEl.textContent = '❌ Backfill failed: ' + (data.error || '');
+          onBackfillDone();
+        }
+
+        // Update refreshed dogs
+        if (data.refreshed_dogs && data.refreshed_dogs.length > 0) {
+          const section = document.getElementById('refreshedSection');
+          section.style.display = 'block';
+          const list = document.getElementById('refreshedList');
+          list.innerHTML = data.refreshed_dogs.map(d => `
+            <div class="refreshed-dog">
+              <span class="dog-id">${d.animal_id}</span>
+              <span class="dog-name">${d.name || ''}</span>
+              <a href="/dogs${d.location_path || ''}/${d.animal_id}" target="_blank">View →</a>
+            </div>
+          `).join('');
+        }
+
+        // Update log
+        if (data.log && data.log.length > 0) {
+          const logArea = document.getElementById('logArea');
+          logArea.style.display = 'block';
+          logArea.textContent = data.log.join('\n');
+          logArea.scrollTop = logArea.scrollHeight;
+        }
+
+      } catch (e) {
+        console.error('Poll error', e);
+      }
+    }
+
+    function onBackfillDone() {
+      stopPolling();
+      document.getElementById('btnStart').disabled = false;
+      document.getElementById('btnAbort').style.display = 'none';
+      currentRunId = null;
+    }
+
+    // ── Render progress ─────────────────────────────
+    const STEP_LABELS = {
+      cleanup: 'Run Cleanup',
+      inventory: 'Inventory',
+      profiles: 'Profiles',
+      facts: 'Fact Tables',
+      prompts: 'Prompt Templates',
+    };
+
+    function renderProgressSteps(stepKeys, stepsData) {
+      const container = document.getElementById('progressSteps');
+      container.innerHTML = stepKeys.map(key => {
+        const info = stepsData[key] || {};
+        const status = info.status || 'pending';
+
+        let icon = '⏳';
+        let barClass = '';
+        let pct = 0;
+
+        if (status === 'running') { icon = '🔄'; barClass = ''; pct = info.total ? Math.round((info.progress || 0) / info.total * 100) : 30; }
+        else if (status === 'done') { icon = '✅'; barClass = 'done'; pct = 100; }
+        else if (status === 'error') { icon = '❌'; barClass = 'error'; pct = 100; }
+        else if (status === 'skipped') { icon = '⏭️'; barClass = ''; pct = 0; }
+        else if (status === 'aborted') { icon = '⛔'; barClass = 'error'; pct = info.total ? Math.round((info.progress || 0) / info.total * 100) : 0; }
+
+        const detail = info.message || (status === 'pending' ? 'waiting...' : '');
+        const counterText = info.total ? `${info.progress || 0}/${info.total}` : '';
+
+        return `
+          <div class="step-row">
+            <span class="step-icon">${icon}</span>
+            <span class="step-label">${STEP_LABELS[key] || key}</span>
+            <span class="step-detail">${counterText} ${detail}</span>
+            <div class="step-bar-wrap">
+              <div class="step-bar ${barClass}" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ── Init ────────────────────────────────────────
+    loadShelters();
+  </script>
+
+</body>
+</html>
