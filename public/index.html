@@ -228,6 +228,12 @@
               <line x1="18" y1="16" x2="22" y2="16" />
             </svg>
           </button>
+          <button class="tab-btn" id="searchBtn" aria-label="Search for a dog by name" style="padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </button>
           <button class="tab-btn" id="savedNavBtn" aria-label="View saved dogs and chats"
             style="display:none; position: relative;">My Dogs <span id="savedNavBadge"
               style="display:none; position:absolute; top:2px; right:2px; width:7px; height:7px; background:var(--accent); border-radius:50%;"></span></button>
@@ -805,6 +811,7 @@
     <script src="js/chat.js"></script>
     <script src="js/preferences.js"></script>
     <script src="js/saved.js"></script>
+    <script src="js/search.js"></script>
     <script src="js/init.js"></script>
   
   <!-- Device Orientation Landscape Lock Overlay screen -->
@@ -822,6 +829,29 @@
         </svg>
         <span>Rotate device to portrait</span>
       </div>
+    </div>
+  </div>
+
+  <!-- Search Overlay -->
+  <div class="search-overlay" id="searchOverlay" aria-hidden="true" role="dialog" aria-label="Search for a dog">
+    <div class="search-panel">
+      <div class="search-header">
+        <div class="search-input-wrapper">
+          <svg class="search-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search by name..." autocomplete="off" />
+        </div>
+        <button class="search-close-btn" id="searchCloseBtn" aria-label="Close search">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <p class="search-status" id="searchStatus">Type a name to search...</p>
+      <div class="search-results" id="searchResults"></div>
     </div>
   </div>
 </body>

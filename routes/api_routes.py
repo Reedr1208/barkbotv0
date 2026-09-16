@@ -245,6 +245,74 @@ async def chat(request: Request):
 
 
 # ──────────────────────────────────────────────────────────────────────
+# GET /api/search_dogs — lightweight list for client-side name search
+# ──────────────────────────────────────────────────────────────────────
+
+@router.get("/api/search_dogs")
+async def search_dogs():
+    """Return all chat-eligible dogs for client-side name search."""
+    try:
+        client = get_supabase_client()
+        image_base_url = get_image_base_url()
+
+        active_list = fetch_all_rows(
+            client.table("active_dogs").select("animal_id, name, shelter_id")
+        )
+        active_map = {r["animal_id"]: r for r in active_list}
+
+        persona_list = fetch_all_rows(
+            client.table("animal_persona_profiles").select("animal_id")
+        )
+        persona_ids = {r["animal_id"] for r in persona_list}
+
+        prompt_list = fetch_all_rows(
+            client.table("system_prompts_v2").select("animal_id")
+        )
+        prompt_ids = {r["animal_id"] for r in prompt_list}
+
+        fact_list = fetch_all_rows(
+            client.table("animal_fact_profiles").select("animal_id, dog_name")
+        )
+        fact_names = {r["animal_id"]: r.get("dog_name") for r in fact_list}
+
+        shelters_res = client.table("shelters").select("shelter_id, city, state").execute()
+        shelters_map = {s["shelter_id"]: s for s in shelters_res.data}
+
+        # Fetch actual image paths from animals table
+        img_list = fetch_all_rows(
+            client.table("animals").select("animal_id, image_file")
+        )
+        img_map = {r["animal_id"]: r.get("image_file") for r in img_list}
+
+        eligible_ids = set(active_map.keys()) & persona_ids & prompt_ids
+
+        dogs = []
+        for aid in eligible_ids:
+            dog = active_map[aid]
+            shelter = shelters_map.get(dog.get("shelter_id"), {})
+            name = fact_names.get(aid) or dog.get("name") or "Unknown"
+            img_file = img_map.get(aid)
+            image_url = f"{image_base_url}{img_file}" if img_file else ""
+            dogs.append({
+                "id": aid,
+                "name": name,
+                "image_url": image_url,
+                "shelter_id": dog.get("shelter_id", ""),
+                "city": shelter.get("city", ""),
+                "state": shelter.get("state", ""),
+            })
+
+        dogs.sort(key=lambda d: d["name"].lower())
+        return JSONResponse(
+            content={"dogs": dogs, "count": len(dogs)},
+            headers={"Cache-Control": "public, max-age=300"},
+        )
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+# ──────────────────────────────────────────────────────────────────────
 # GET /api/random_dog
 # ──────────────────────────────────────────────────────────────────────
 

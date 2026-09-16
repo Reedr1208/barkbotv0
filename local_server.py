@@ -93,6 +93,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 "chat_history": "api.chat_history",
                 "locations": "api.locations",
                 "suggested_prompts": "api.suggested_prompts",
+                "search_dogs": "api.search_dogs",
             }
             api_name = parsed_url.path.split("/")[-1]
             if api_name in api_routes:
