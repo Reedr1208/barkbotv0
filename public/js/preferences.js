@@ -350,6 +350,18 @@ async function handleSavePreferences() {
   savePrefBtn.textContent = 'Saving...';
 
   currentPrefs = { gender, age_group, size, location };
+
+  // Sync header location dropdown with preference center selection
+  const headerSelect = document.getElementById('headerLocationSelect');
+  if (headerSelect && window.__CH_LOCATIONS_DATA__) {
+    if (location === 'any' || location === 'all') {
+      headerSelect.value = location === 'any' ? 'all' : 'all';
+    } else {
+      const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === location);
+      if (locObj) headerSelect.value = locObj.relative_path;
+    }
+  }
+
   closePrefModal();
   trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
   switchView('app');

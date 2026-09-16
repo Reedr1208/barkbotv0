@@ -290,7 +290,7 @@ class handler(BaseHTTPRequestHandler):
             def clean_loc(s):
                 return re.sub(r'[^a-zA-Z0-9]', '', str(s)).lower()
                 
-            if pref_location == "any":
+            if pref_location in ("any", "all"):
                 pass  # include all locations
             else:
                 # Make location a HARD filter
@@ -303,9 +303,41 @@ class handler(BaseHTTPRequestHandler):
                 if new_valid_ids:
                     valid_ids = new_valid_ids
 
-            # Hard pre-filters for lifestyle preferences
+            # Hard pre-filters for ALL preference selections
             # Exclude dogs with KNOWN values that explicitly don't match.
             # Dogs with unknown/N/A values pass through (not penalized for missing data).
+
+            # Gender hard filter
+            if pref_gender != "any":
+                filtered = [aid for aid in valid_ids if matches_gender(active_dogs[aid].get("gender"), pref_gender)]
+                if filtered:
+                    valid_ids = filtered
+
+            # Age hard filter
+            if pref_age != "any":
+                filtered = []
+                for aid in valid_ids:
+                    dog_age_bucket = (active_dogs[aid].get("age_bucket") or "N/A")
+                    if dog_age_bucket == "N/A":
+                        filtered.append(aid)  # unknown — keep in pool
+                    elif pref_age.lower() in dog_age_bucket.lower():
+                        filtered.append(aid)
+                if filtered:
+                    valid_ids = filtered
+
+            # Size hard filter
+            if pref_size != "any":
+                filtered = []
+                for aid in valid_ids:
+                    dog_weight_class = (active_dogs[aid].get("weight_class") or "N/A")
+                    if dog_weight_class == "N/A":
+                        filtered.append(aid)  # unknown — keep in pool
+                    elif pref_size.lower() in dog_weight_class.lower():
+                        filtered.append(aid)
+                if filtered:
+                    valid_ids = filtered
+
+            # Altered status hard filter
             if pref_altered != "any":
                 filtered = []
                 for aid in valid_ids:
@@ -316,10 +348,10 @@ class handler(BaseHTTPRequestHandler):
                         filtered.append(aid)
                     elif pref_altered == "unaltered" and dog_altered == "unaltered":
                         filtered.append(aid)
-                    # else: explicitly doesn't match — exclude
                 if filtered:
                     valid_ids = filtered
 
+            # Energy level hard filter
             if pref_energy != "any":
                 filtered = []
                 for aid in valid_ids:
@@ -333,6 +365,7 @@ class handler(BaseHTTPRequestHandler):
                 if filtered:
                     valid_ids = filtered
 
+            # Good with dogs hard filter
             if pref_dogs:
                 filtered = []
                 for aid in valid_ids:
@@ -342,6 +375,7 @@ class handler(BaseHTTPRequestHandler):
                 if filtered:
                     valid_ids = filtered
 
+            # House trained hard filter
             if pref_house_trained:
                 filtered = []
                 for aid in valid_ids:
@@ -350,6 +384,11 @@ class handler(BaseHTTPRequestHandler):
                         filtered.append(aid)  # keep yes + unknown, exclude explicit "no"
                 if filtered:
                     valid_ids = filtered
+
+            # If all dogs filtered out, return no-match signal
+            if not valid_ids:
+                self._send_response(404, {"error": "No dogs match your current preferences.", "no_matches": True})
+                return
                     
             if preferences:
 

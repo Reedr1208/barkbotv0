@@ -213,6 +213,14 @@ if (!response.ok) {
     if (!isStaleFetch()) showDogUnavailableState(fetchId);
     return;
   }
+  // Check for no-matches signal from preference hard filters
+  try {
+    const errBody = await response.json();
+    if (errBody.no_matches) {
+      if (!isStaleFetch()) setAppState('empty');
+      return;
+    }
+  } catch (_) {}
   throw new Error('Failed to fetch a dog.');
 }
 
