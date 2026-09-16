@@ -749,9 +749,23 @@
                     style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Household Compatibility</span>
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <button class="pref-btn" id="prefOptKids" data-active="false">Good with kids 👼</button>
                   <button class="pref-btn" id="prefOptDogs" data-active="false">Good with dogs 🐕</button>
-                  <button class="pref-btn" id="prefOptCats" data-active="false">Good with cats 🐱</button>
+                  <button class="pref-btn" id="prefOptHouseTrained" data-active="false">House Trained 🏠</button>
+                </div>
+              </div>
+
+              <!-- Altered Status -->
+              <div class="pref-row"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1rem;">✂️</span>
+                  <span
+                    style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Altered Status</span>
+                </div>
+                <div class="pref-selector-group" id="prefAlteredGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <button class="pref-btn" data-value="any">Any Status</button>
+                  <button class="pref-btn" data-value="altered">Spayed/Neutered ✅</button>
+                  <button class="pref-btn" data-value="unaltered">Unaltered</button>
                 </div>
               </div>
 

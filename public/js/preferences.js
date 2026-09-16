@@ -235,11 +235,11 @@ function openPrefModal() {
   setupSelectorButtons('prefSizeGroup', currentPrefs.size);
   setupSelectorButtons('prefLocationGroup', effectiveLocation);
   setupSelectorButtons('prefEnergyGroup', lifestylePrefs.energy || 'any');
+  setupSelectorButtons('prefAlteredGroup', lifestylePrefs.altered || 'any');
 
   // Setup toggle badge states
-  setupToggleBadge('prefOptKids', lifestylePrefs.kids);
   setupToggleBadge('prefOptDogs', lifestylePrefs.dogs);
-  setupToggleBadge('prefOptCats', lifestylePrefs.cats);
+  setupToggleBadge('prefOptHouseTrained', lifestylePrefs.houseTrained);
 
   trackEvent('preferences_modal_opened');
 }
@@ -299,18 +299,19 @@ const prefAgeGroup = document.getElementById('prefAgeGroup');
 const prefSizeGroup = document.getElementById('prefSizeGroup');
 const prefLocationGroup = document.getElementById('prefLocationGroup');
 const prefEnergyGroup = document.getElementById('prefEnergyGroup');
+const prefAlteredGroup = document.getElementById('prefAlteredGroup');
 
 if (prefGenderGroup) prefGenderGroup.addEventListener('click', handleSelectorClick);
 if (prefAgeGroup) prefAgeGroup.addEventListener('click', handleSelectorClick);
 if (prefSizeGroup) prefSizeGroup.addEventListener('click', handleSelectorClick);
 if (prefLocationGroup) prefLocationGroup.addEventListener('click', handleSelectorClick);
 if (prefEnergyGroup) prefEnergyGroup.addEventListener('click', handleSelectorClick);
+if (prefAlteredGroup) prefAlteredGroup.addEventListener('click', handleSelectorClick);
 
 // Bind custom toggle badges
 const lifestyleButtons = [
-  { id: 'prefOptKids', key: 'kids' },
   { id: 'prefOptDogs', key: 'dogs' },
-  { id: 'prefOptCats', key: 'cats' }
+  { id: 'prefOptHouseTrained', key: 'houseTrained' }
 ];
 
 lifestyleButtons.forEach(item => {
@@ -340,7 +341,9 @@ async function handleSavePreferences() {
 
   // Save advanced lifestyle preferences
   const energyActive = document.getElementById('prefEnergyGroup').querySelector('.pref-btn.active');
+  const alteredActive = document.getElementById('prefAlteredGroup').querySelector('.pref-btn.active');
   lifestylePrefs.energy = energyActive ? energyActive.getAttribute('data-value') : 'any';
+  lifestylePrefs.altered = alteredActive ? alteredActive.getAttribute('data-value') : 'any';
   localStorage.setItem('chattyhound_lifestyle_prefs', JSON.stringify(lifestylePrefs));
 
   savePrefBtn.disabled = true;
@@ -360,9 +363,9 @@ async function resetPreferences() {
   currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
   lifestylePrefs = {
     energy: 'any',
-    kids: false,
+    altered: 'any',
     dogs: false,
-    cats: false
+    houseTrained: false
   };
 
   // 2. Write to localStorage
@@ -374,6 +377,7 @@ async function resetPreferences() {
   setupSelectorButtons('prefSizeGroup', 'any');
   setupSelectorButtons('prefLocationGroup', 'any');
   setupSelectorButtons('prefEnergyGroup', 'any');
+  setupSelectorButtons('prefAlteredGroup', 'any');
   lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
 
   trackEvent('preferences_reset_all');
