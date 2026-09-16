@@ -715,24 +715,91 @@ def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
     _log(run_id, f"  🧠 Fact tables: mode={dog_selection.get('mode', 'all')}")
 
     try:
+        from jobs.lib.db import get_supabase_client
+
+        # Snapshot current fact profile timestamps before running
+        sb = get_supabase_client()
+        before_data = []
+        offset = 0
+        while True:
+            res = sb.table("animal_fact_profiles").select("animal_id, updated_at").range(offset, offset + 999).execute()
+            before_data.extend(res.data)
+            if len(res.data) < 1000:
+                break
+            offset += 1000
+        before_map = {r["animal_id"]: r.get("updated_at", "") for r in before_data}
+        _log(run_id, f"  🧠 Snapshot: {len(before_map)} existing fact profiles")
+
+        # Run the generate_prompts job
         run_job_by_id("generate_prompts", triggered_by="backfill")
-        _update_step(run_id, "facts", message="Fact extraction finished")
+
+        # Diff to find newly created or updated fact profiles
+        after_data = []
+        offset = 0
+        while True:
+            res = sb.table("animal_fact_profiles").select("animal_id, dog_name, updated_at").range(offset, offset + 999).execute()
+            after_data.extend(res.data)
+            if len(res.data) < 1000:
+                break
+            offset += 1000
+
+        refreshed = []
+        for row in after_data:
+            aid = row["animal_id"]
+            new_ts = row.get("updated_at", "")
+            old_ts = before_map.get(aid, "")
+            if new_ts != old_ts:
+                refreshed.append(row)
+
+        _log(run_id, f"  🧠 Fact extraction done: {len(refreshed)} dogs refreshed")
+        _update_step(run_id, "facts", progress=len(refreshed), total=len(refreshed),
+                     message=f"{len(refreshed)} dogs refreshed")
+
+        # Populate refreshed_dogs for the UI
+        if refreshed:
+            # Look up shelter → location_path mapping
+            shelters_res = sb.table("shelters").select("shelter_id, relative_path").execute()
+            shelter_path_map = {s["shelter_id"]: s.get("relative_path", "") for s in shelters_res.data}
+
+            # Look up shelter_id for each refreshed dog from active_dogs
+            refreshed_ids = [r["animal_id"] for r in refreshed]
+            active_lookup = []
+            for i in range(0, len(refreshed_ids), 100):
+                chunk = refreshed_ids[i:i+100]
+                res = sb.table("active_dogs").select("animal_id, shelter_id").in_("animal_id", chunk).execute()
+                active_lookup.extend(res.data)
+            dog_shelter_map = {r["animal_id"]: r.get("shelter_id", "") for r in active_lookup}
+
+            with _backfill_lock:
+                run = _backfill_runs.get(run_id)
+                if run:
+                    for row in refreshed:
+                        aid = row["animal_id"]
+                        shelter_id = dog_shelter_map.get(aid, "")
+                        loc_path = shelter_path_map.get(shelter_id, "")
+                        run["refreshed_dogs"].append({
+                            "animal_id": aid,
+                            "name": row.get("dog_name", ""),
+                            "location_path": loc_path,
+                        })
+
     except Exception as e:
         raise RuntimeError(f"Fact extraction failed: {e}") from e
 
 
 def _run_backfill_prompts(run_id: str):
-    """Prompt templates are read-only from the DB — this is a no-op refresh acknowledgment."""
-    _update_step(run_id, "prompts", status="running", message="Refreshing prompt templates...")
-    _log(run_id, "  📝 Prompt templates: verifying table exists...")
+    """Verify suggested_prompts table is populated (read-only check)."""
+    _update_step(run_id, "prompts", status="running", message="Verifying prompt templates...")
+    _log(run_id, "  📝 Prompt templates: verifying DB table...")
 
     try:
         from jobs.lib.db import get_supabase_client
         sb = get_supabase_client()
         res = sb.table("suggested_prompts").select("category, prompt_text").execute()
         count = len(res.data) if res.data else 0
-        _update_step(run_id, "prompts", message=f"Found {count} prompt templates")
-        _log(run_id, f"  📝 Prompt templates: {count} templates verified")
+        _update_step(run_id, "prompts", message=f"Verified: {count} templates in DB")
+        _log(run_id, f"  📝 Prompt templates: {count} templates in DB ✓")
     except Exception as e:
         raise RuntimeError(f"Prompt template check failed: {e}") from e
+
 
