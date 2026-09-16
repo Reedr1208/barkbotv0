@@ -302,6 +302,54 @@ class handler(BaseHTTPRequestHandler):
                 # Only apply hard filter if there are actually dogs in that location
                 if new_valid_ids:
                     valid_ids = new_valid_ids
+
+            # Hard pre-filters for lifestyle preferences
+            # Exclude dogs with KNOWN values that explicitly don't match.
+            # Dogs with unknown/N/A values pass through (not penalized for missing data).
+            if pref_altered != "any":
+                filtered = []
+                for aid in valid_ids:
+                    dog_altered = (active_dogs[aid].get("altered_status") or "N/A").lower()
+                    if dog_altered == "n/a":
+                        filtered.append(aid)  # unknown — keep in pool
+                    elif pref_altered == "altered" and dog_altered in ("spayed", "neutered"):
+                        filtered.append(aid)
+                    elif pref_altered == "unaltered" and dog_altered == "unaltered":
+                        filtered.append(aid)
+                    # else: explicitly doesn't match — exclude
+                if filtered:
+                    valid_ids = filtered
+
+            if pref_energy != "any":
+                filtered = []
+                for aid in valid_ids:
+                    dog_energy = (active_dogs[aid].get("energy_level") or "N/A").lower()
+                    if dog_energy == "n/a":
+                        filtered.append(aid)  # unknown — keep in pool
+                    elif pref_energy == dog_energy:
+                        filtered.append(aid)
+                    elif dog_energy == "moderate":
+                        filtered.append(aid)  # moderate passes either calm or high
+                if filtered:
+                    valid_ids = filtered
+
+            if pref_dogs:
+                filtered = []
+                for aid in valid_ids:
+                    dog_dogs = (active_dogs[aid].get("good_with_dogs") or "unknown").lower()
+                    if dog_dogs in ("yes", "unknown"):
+                        filtered.append(aid)  # keep yes + unknown, exclude explicit "no"
+                if filtered:
+                    valid_ids = filtered
+
+            if pref_house_trained:
+                filtered = []
+                for aid in valid_ids:
+                    dog_ht = (active_dogs[aid].get("house_trained") or "unknown").lower()
+                    if dog_ht in ("yes", "unknown"):
+                        filtered.append(aid)  # keep yes + unknown, exclude explicit "no"
+                if filtered:
+                    valid_ids = filtered
                     
             if preferences:
 
