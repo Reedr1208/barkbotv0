@@ -764,89 +764,77 @@ def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
                 if sid in shelter_set:
                     shelter_dogs.setdefault(sid, []).append(row["animal_id"])
 
-            _log(run_id, f"  🧠 Active dogs in selected shelters: {sum(len(v) for v in shelter_dogs.values())}")
+            all_candidate_ids = []
+            for sid in sorted(shelter_dogs.keys()):
+                all_candidate_ids.extend(shelter_dogs[sid])
 
+            _log(run_id, f"  🧠 Active dogs in selected shelters: {len(all_candidate_ids)}")
+
+            # ── 1b. Apply bio-length eligibility filter BEFORE random selection ──
+            animals_data = []
+            for i in range(0, len(all_candidate_ids), 100):
+                chunk = all_candidate_ids[i:i+100]
+                res = sb.table("animals").select("animal_id, bio").in_("animal_id", chunk).execute()
+                animals_data.extend(res.data)
+            bio_map = {r["animal_id"]: r.get("bio") or "" for r in animals_data}
+
+            # Per-shelter minimum bio length thresholds (from generate_prompts_job)
+            eligible_by_shelter = {}  # shelter_id → [eligible_animal_ids]
+            skipped_count = 0
+            for sid in sorted(shelter_dogs.keys()):
+                for aid in shelter_dogs[sid]:
+                    bio_len = len(bio_map.get(aid, ""))
+
+                    meets_threshold = True
+                    if sid in ("NYCACC", "MUDDYPAWS", "PIMA"):
+                        if bio_len < 1500:
+                            meets_threshold = False
+                    elif sid == "HSSA":
+                        if bio_len < 500:
+                            meets_threshold = False
+                    elif sid == "PAWSCH":
+                        if bio_len < 1200:
+                            meets_threshold = False
+                    elif sid in ("WWLA", "HHS", "PHP", "SAPA"):
+                        if bio_len < 1000:
+                            meets_threshold = False
+                    elif sid in ("RCHS", "DPA", "NHS", "EHR", "MV", "RDR"):
+                        if bio_len < 500:
+                            meets_threshold = False
+                    elif sid == "MCACC":
+                        if bio_len < 6000:
+                            meets_threshold = False
+                    else:
+                        if bio_len <= 400:
+                            meets_threshold = False
+
+                    if meets_threshold:
+                        eligible_by_shelter.setdefault(sid, []).append(aid)
+                    else:
+                        skipped_count += 1
+
+            total_eligible = sum(len(v) for v in eligible_by_shelter.values())
+            if skipped_count > 0:
+                _log(run_id, f"  🧠 Bio eligibility: {total_eligible} eligible, {skipped_count} skipped (bio too short)")
+
+            # Now apply random/all selection to the ELIGIBLE pool
             if mode == "random":
                 count = dog_selection.get("count", 5)
                 target_ids = []
-                for sid in sorted(shelter_dogs.keys()):
-                    dogs = shelter_dogs[sid]
+                for sid in sorted(eligible_by_shelter.keys()):
+                    dogs = eligible_by_shelter[sid]
                     sample = _random.sample(dogs, min(count, len(dogs)))
                     target_ids.extend(sample)
-                    _log(run_id, f"    {sid}: picked {len(sample)}/{len(dogs)} random dogs")
+                    _log(run_id, f"    {sid}: picked {len(sample)}/{len(dogs)} eligible dogs")
             else:
                 # mode == "all"
                 target_ids = []
-                for sid in sorted(shelter_dogs.keys()):
-                    target_ids.extend(shelter_dogs[sid])
+                for sid in sorted(eligible_by_shelter.keys()):
+                    target_ids.extend(eligible_by_shelter[sid])
 
         if not target_ids:
-            _update_step(run_id, "facts", status="done", message="No target dogs found")
-            _log(run_id, "  🧠 No dogs to process")
-            return
-
-        # ── 1b. Apply bio-length eligibility filter (same thresholds as ETL) ──
-        # Fetch bios and shelter_ids for all target dogs
-        animals_data = []
-        for i in range(0, len(target_ids), 100):
-            chunk = target_ids[i:i+100]
-            res = sb.table("animals").select("animal_id, bio").in_("animal_id", chunk).execute()
-            animals_data.extend(res.data)
-        bio_map = {r["animal_id"]: r.get("bio") or "" for r in animals_data}
-
-        # Need shelter_id for threshold lookup
-        active_for_filter = []
-        for i in range(0, len(target_ids), 100):
-            chunk = target_ids[i:i+100]
-            res = sb.table("active_dogs").select("animal_id, shelter_id").in_("animal_id", chunk).execute()
-            active_for_filter.extend(res.data)
-        filter_shelter_map = {r["animal_id"]: (r.get("shelter_id") or "").upper() for r in active_for_filter}
-
-        # Per-shelter minimum bio length thresholds (from generate_prompts_job)
-        eligible_ids = []
-        skipped_count = 0
-        for aid in target_ids:
-            bio = bio_map.get(aid, "")
-            bio_len = len(bio)
-            sid = filter_shelter_map.get(aid, "")
-
-            meets_threshold = True
-            if sid in ("NYCACC", "MUDDYPAWS", "PIMA"):
-                if bio_len < 1500:
-                    meets_threshold = False
-            elif sid == "HSSA":
-                if bio_len < 500:
-                    meets_threshold = False
-            elif sid == "PAWSCH":
-                if bio_len < 1200:
-                    meets_threshold = False
-            elif sid in ("WWLA", "HHS", "PHP", "SAPA"):
-                if bio_len < 1000:
-                    meets_threshold = False
-            elif sid in ("RCHS", "DPA", "NHS", "EHR", "MV", "RDR"):
-                if bio_len < 500:
-                    meets_threshold = False
-            elif sid == "MCACC":
-                if bio_len < 6000:
-                    meets_threshold = False
-            else:
-                if bio_len <= 400:
-                    meets_threshold = False
-
-            if meets_threshold:
-                eligible_ids.append(aid)
-            else:
-                skipped_count += 1
-
-        if skipped_count > 0:
-            _log(run_id, f"  🧠 Bio eligibility filter: {skipped_count} dogs skipped (bio too short)")
-
-        target_ids = eligible_ids
-
-        if not target_ids:
-            _update_step(run_id, "facts", status="done",
-                         message=f"No eligible dogs (all {skipped_count} skipped — bios too short)")
-            _log(run_id, "  🧠 No eligible dogs after bio filter")
+            _update_step(run_id, "facts", status="done", message="No eligible dogs found")
+            _log(run_id, "  🧠 No eligible dogs to process")
             return
 
         total = len(target_ids)
