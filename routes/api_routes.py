@@ -403,7 +403,17 @@ async def random_dog(request: Request):
                 "CHICAGO": (41.8781, -87.6298),
                 "NYC": (40.7128, -74.0060),
                 "LOS ANGELES": (34.0522, -118.2437),
-                "HOUSTON": (29.7604, -95.3698)
+                "HOUSTON": (29.7604, -95.3698),
+                "SEATTLE": (47.6062, -122.3321),
+                "SAN FRANCISCO": (37.7749, -122.4194),
+                "SAN DIEGO": (32.7157, -117.1611),
+                "DALLAS": (32.7767, -96.7970),
+                "SAN ANTONIO": (29.4241, -98.4936),
+                "PHOENIX": (33.4484, -112.0740),
+                "JACKSONVILLE": (30.3322, -81.6557),
+                "PHILADELPHIA": (39.9526, -75.1652),
+                "NEWARK": (40.7357, -74.1724),
+                "DOVER": (40.8859, -74.5625),
             }
             min_dist = float('inf')
             for region, (lat, lon) in locations.items():
