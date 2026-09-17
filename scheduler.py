@@ -249,6 +249,18 @@ def _run_rdr_profiles():
         main()
 
 
+def _run_dgs_inventory():
+    from jobs.shelters.dgs.inventory import scrape_inventory
+    with _clean_argv():
+        scrape_inventory()
+
+
+def _run_dgs_profiles():
+    from jobs.shelters.dgs.profiles import main
+    with _clean_argv():
+        main()
+
+
 def _run_mp_all():
     from jobs.shelters.mp.all import fetch_dogs, save_to_supabase
     with _clean_argv():
@@ -377,6 +389,8 @@ JOB_REGISTRY = {
     "mv_profiles": _run_mv_profiles,
     "rdr_inventory": _run_rdr_inventory,
     "rdr_profiles": _run_rdr_profiles,
+    "dgs_inventory": _run_dgs_inventory,
+    "dgs_profiles": _run_dgs_profiles,
     "mp_all": _run_mp_all,
     "wwla_all": _run_wwla_all,
     "php_inventory": _run_php_inventory,
@@ -451,6 +465,10 @@ def setup_schedules():
     # RDR
     scheduler.add_job(_run_rdr_inventory, CronTrigger.from_crontab("5 */4 * * *"), id="rdr_inventory", replace_existing=True)
     scheduler.add_job(_run_rdr_profiles, CronTrigger.from_crontab("15 * * * *"), id="rdr_profiles", replace_existing=True)
+
+    # DGS (Dog Gone Seattle) — pure HTTP via RescueGroups API
+    scheduler.add_job(_run_dgs_inventory, CronTrigger.from_crontab("10 */4 * * *"), id="dgs_inventory", replace_existing=True)
+    scheduler.add_job(_run_dgs_profiles, CronTrigger.from_crontab("40 * * * *"), id="dgs_profiles", replace_existing=True)
 
     # MP (MuddyPaws)
     scheduler.add_job(_run_mp_all, CronTrigger.from_crontab("0 */6 * * *"), id="mp_all", replace_existing=True)
