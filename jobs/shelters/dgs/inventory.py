@@ -34,7 +34,8 @@ HEADERS = {
 }
 
 # Dog Gone Seattle profile link pattern
-PROFILE_URL_TEMPLATE = "https://doggoneseattle.org/adoptable-dogs/#animalID_0={rg_id}"
+# action_0=pet tells the RescueGroups toolkit to show the individual pet page
+PROFILE_URL_TEMPLATE = "https://doggoneseattle.org/adoptable-dogs/#action_0=pet&animalID_0={rg_id}&petIndex_0=0"
 
 # Maximum pages to paginate through (safety valve)
 MAX_PAGES = 10
