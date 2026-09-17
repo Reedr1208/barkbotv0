@@ -664,7 +664,7 @@ query ACCGetFeed {
     __typename
     updated
     pets {
-      id name age type species link gender weight location locationInShelter photos intakeDate
+      id name age type species link gender summaryHtml weight location locationInShelter photos youTubeIds intakeDate
     }
   }
 }
