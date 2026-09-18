@@ -680,7 +680,13 @@ def _run_backfill_inventory(run_id: str, shelter_ids: list):
 
 
 def _run_backfill_profiles(run_id: str, shelter_ids: list):
-    """Run profile scrape for each selected shelter."""
+    """Run profile scrape for each selected shelter.
+
+    Unlike the cron (which processes ~30 dogs per run), the backfill loops
+    each shelter's profile job until ALL dogs in the inventory table have
+    been processed.  Combined scrapers (mp_all, wwla_all) already fetch
+    everything in a single pass so they only run once.
+    """
     actionable = [(sid, SHELTER_PROFILES_JOBS[sid]) for sid in shelter_ids if sid in SHELTER_PROFILES_JOBS]
     # Dedupe job IDs (mp_all and wwla_all serve both inventory and profiles)
     seen_jobs = set()
@@ -693,18 +699,50 @@ def _run_backfill_profiles(run_id: str, shelter_ids: list):
     total = len(deduped)
     _update_step(run_id, "profiles", status="running", progress=0, total=total, message="Starting...")
 
+    # Combined scrapers that fetch everything in one pass — no need to loop
+    SINGLE_PASS_JOBS = {"mp_all", "wwla_all"}
+
     for i, (sid, job_id) in enumerate(deduped):
         if _is_aborted(run_id):
             _update_step(run_id, "profiles", status="aborted", progress=i, total=total)
             return
 
-        _update_step(run_id, "profiles", progress=i, total=total, message=f"Processing {sid}...")
-        _log(run_id, f"  📋 Profiles: {sid} ({i+1}/{total})")
+        if job_id in SINGLE_PASS_JOBS:
+            _update_step(run_id, "profiles", progress=i, total=total, message=f"Processing {sid}...")
+            _log(run_id, f"  📋 Profiles: {sid} ({i+1}/{total}) — single pass")
+            try:
+                run_job_by_id(job_id, triggered_by="backfill")
+            except Exception as e:
+                _log(run_id, f"  ⚠️ Profiles {sid} failed: {e}")
+        else:
+            # Calculate how many batches we need to cover all inventory dogs
+            try:
+                from jobs.lib.db import get_supabase_client
+                client = get_supabase_client()
+                count_res = client.table("active_dogs").select("animal_id", count="exact").eq("shelter_id", sid).execute()
+                inventory_count = count_res.count or 0
+            except Exception:
+                inventory_count = 30  # Fallback: at least one batch
 
-        try:
-            run_job_by_id(job_id, triggered_by="backfill")
-        except Exception as e:
-            _log(run_id, f"  ⚠️ Profiles {sid} failed: {e}")
+            batch_size = 30  # Matches DEFAULT_DOGS_PER_RUN in store.py
+            num_batches = max(1, -(-inventory_count // batch_size))  # ceil division
+
+            _log(run_id, f"  📋 {sid}: {inventory_count} dogs in inventory → {num_batches} batch(es)")
+
+            for batch in range(1, num_batches + 1):
+                if _is_aborted(run_id):
+                    _update_step(run_id, "profiles", status="aborted", progress=i, total=total)
+                    return
+
+                _update_step(run_id, "profiles", progress=i, total=total,
+                             message=f"Processing {sid} (batch {batch}/{num_batches})...")
+                _log(run_id, f"  📋 Profiles: {sid} ({i+1}/{total}) — batch {batch}/{num_batches}")
+
+                try:
+                    run_job_by_id(job_id, triggered_by="backfill")
+                except Exception as e:
+                    _log(run_id, f"  ⚠️ Profiles {sid} batch {batch} failed: {e}")
+                    break
 
     _update_step(run_id, "profiles", progress=total, total=total, message="All shelters done")
 
