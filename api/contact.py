@@ -107,6 +107,7 @@ def _send_email(subject: str, email: str, message: str, ip: str) -> dict:
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            "User-Agent": "ChattyHound/1.0",
         },
         method="POST",
     )
