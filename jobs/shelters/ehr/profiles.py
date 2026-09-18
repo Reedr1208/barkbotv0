@@ -11,7 +11,7 @@ The detail pages (e.g. /dog/alvin-dixon/) contain:
 - Structured features in <li class="features_item"> elements with icons
   for Breed, Age, Weight, Color, Energy Level, Kids, Dogs, Cats, etc.
 
-No Playwright needed — all static HTML. Runs via Vercel crons.
+No Playwright needed — all static HTML. Runs via APScheduler.
 """
 
 import logging

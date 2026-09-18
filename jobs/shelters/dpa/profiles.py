@@ -6,7 +6,7 @@ Each profile page is a WordPress/Elementor page with structured fields
 (age, breed, gender, location) and a narrative bio.
 
 No Playwright needed — all content is in the static HTML.
-Runs via Vercel crons using the shared profiles_runner.
+Runs via APScheduler using the shared profiles_runner.
 """
 
 import logging

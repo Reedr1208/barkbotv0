@@ -1,8 +1,7 @@
 """
 BarkBot FastAPI Server — Entry point for Railway deployment.
 
-Replaces the Vercel serverless function architecture with a single
-persistent FastAPI application that:
+A persistent FastAPI application that:
 - Serves all API routes (JSON endpoints)
 - Serves the /dogs/ SSR pages (OG meta injection)
 - Serves static files from public/

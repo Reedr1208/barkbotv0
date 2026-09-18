@@ -6,7 +6,7 @@ Also downloads and extracts text from Pet Report Card PDFs
 for richer biographical data.
 
 This is a WordPress-based site — all data available via HTTP.
-Runs via Vercel crons using the shared profiles_runner.
+Runs via APScheduler using the shared profiles_runner.
 """
 
 import io

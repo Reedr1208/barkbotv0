@@ -5,7 +5,7 @@ Fetches individual dog profile pages from the PetPoint/Petango detail
 endpoint and extracts structured fields + bio text.
 
 No Playwright needed — all content is static HTML.
-Runs via Vercel crons using the shared profiles_runner.
+Runs via APScheduler using the shared profiles_runner.
 """
 
 import logging

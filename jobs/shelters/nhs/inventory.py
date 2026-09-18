@@ -5,7 +5,7 @@ Uses the PetPoint/Petango web services API to fetch adoptable dog listings.
 The shelter embeds a Petango iframe on their site; we hit the same endpoint
 directly. Already filtered to species=Dog.
 
-No Playwright needed — pure HTTP requests. Runs via Vercel crons.
+No Playwright needed — pure HTTP requests. Runs via APScheduler.
 """
 
 import json

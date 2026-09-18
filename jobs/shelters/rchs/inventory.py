@@ -5,7 +5,7 @@ Uses the WordPress REST API to fetch adoptable dog listings.
 Each dog is a blog post in the "Dogs" category (category ID 38).
 No Playwright needed — pure HTTP requests.
 
-This job runs via Vercel crons.
+This job runs via APScheduler.
 """
 
 import json

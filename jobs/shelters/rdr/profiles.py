@@ -14,7 +14,7 @@ containing all structured data including:
 - public_url
 
 No Playwright needed — the JSON is embedded in the initial HTML response.
-Runs via Vercel crons.
+Runs via APScheduler.
 """
 
 import html

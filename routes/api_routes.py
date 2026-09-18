@@ -1,9 +1,5 @@
 """
 FastAPI routes for all BarkBot JSON API endpoints.
-
-Replaces the 10 BaseHTTPRequestHandler-based handlers in api/*.py with
-clean FastAPI route functions. Business logic is preserved exactly;
-only the HTTP plumbing changes.
 """
 
 import json
@@ -25,7 +21,7 @@ import requests as _requests
 router = APIRouter()
 logger = logging.getLogger("barkbot.api")
 
-# ── Server-side IP geolocation (replaces Vercel geo-IP headers) ─────
+# ── Server-side IP geolocation ──────────────────────────────────────
 _geoip_cache = {}  # key: IP /24 prefix, value: (timestamp, lat, lon)
 _GEOIP_TTL = 3600  # 1 hour
 
@@ -194,9 +190,9 @@ async def chat(request: Request):
 
         # IP/Location from forwarded headers (Railway sets x-forwarded-for)
         ip_address = request.headers.get("x-forwarded-for") or request.headers.get("x-real-ip") or ""
-        # No Vercel-specific geo headers on Railway — location comes from client
-        city = request.headers.get("x-vercel-ip-city")
-        country = request.headers.get("x-vercel-ip-country")
+        # Check for geo headers from reverse proxy (if configured)
+        city = request.headers.get("x-geo-ip-city")
+        country = request.headers.get("x-geo-ip-country")
         location = f"{city}, {country}" if city and country else (city or country or "")
 
         sugg_prompts = body.get("sugg_prompts")

@@ -19,7 +19,7 @@ from jobs.lib.db import get_supabase_client
 
 logger = logging.getLogger("barkbot.jobs.generate_prompts")
 
-# On Railway there's no Vercel 300s limit. Allow up to 15 minutes per run.
+# Allow up to 15 minutes per run.
 MAX_EXECUTION_TIME = 900
 
 

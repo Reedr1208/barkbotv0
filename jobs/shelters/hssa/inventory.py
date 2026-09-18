@@ -2,7 +2,7 @@
 HSSA (Humane Society of Southern Arizona) — Inventory Scraper
 
 Uses Playwright to scrape adoptable dog listings from adoptapet.com.
-This job requires Playwright and must run via GitHub Actions (not Vercel crons).
+This job requires Playwright and runs via APScheduler.
 """
 
 import json

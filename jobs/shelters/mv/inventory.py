@@ -5,7 +5,7 @@ Scrapes adoptable dog listings from muttville.org/available_mutts.
 All dogs are listed on a single page as links to /mutt/{slug} detail pages.
 The slug format is {name}-{id} where id is a numeric Muttville ID.
 
-No Playwright needed — pure HTTP. Runs via Vercel crons.
+No Playwright needed — pure HTTP. Runs via APScheduler.
 """
 
 import json

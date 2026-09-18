@@ -3,7 +3,7 @@ PHP (Philly PAWS) — Inventory Scraper
 
 Scrapes adoptable dog listings from phillypaws.org using Playwright
 (Shelterluv-powered embed). This job requires Playwright and must run
-via GitHub Actions (not Vercel crons).
+via APScheduler.
 
 Adapted from the HHS inventory scraper which uses the same Shelterluv
 embed technology.

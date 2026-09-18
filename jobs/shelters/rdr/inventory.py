@@ -5,7 +5,7 @@ Scrapes adoptable dog listings via the public Shelterluv V3 API.
 The API endpoint provides a full list of available dogs in JSON format.
 We extract basic metadata, avoiding the need for Playwright or pagination logic.
 
-No Playwright needed — pure HTTP. Runs via Vercel crons.
+No Playwright needed — pure HTTP. Runs via APScheduler.
 """
 
 import json

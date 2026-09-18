@@ -8,7 +8,7 @@ at /dogs/ as server-rendered HTML cards.
 Filters out catch-all tiles (generic application entries) whose names
 start with '*' (e.g. "**A Puppy under 7 months", "*A dog 7+ months").
 
-No Playwright needed — pure HTTP. Runs via Vercel crons.
+No Playwright needed — pure HTTP. Runs via APScheduler.
 """
 
 import json

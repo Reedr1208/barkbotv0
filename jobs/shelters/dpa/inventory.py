@@ -11,7 +11,7 @@ Each dog card contains:
 - Profile URL (from link href)
 - Tags: age category, gender, size (from wpgb-block-term spans)
 
-This job runs via Vercel crons (HTTP only).
+This job runs via APScheduler (HTTP only).
 """
 
 import json

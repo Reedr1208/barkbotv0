@@ -13,7 +13,7 @@ Each profile page has:
 - Narrative bio paragraph
 - Photos from muttville-media CDN
 
-No Playwright needed — all static HTML. Runs via Vercel crons.
+No Playwright needed — all static HTML. Runs via APScheduler.
 """
 
 import logging
