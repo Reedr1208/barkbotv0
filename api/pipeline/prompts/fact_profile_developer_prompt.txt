@@ -25,3 +25,8 @@ Important unknowns policy:
 - If the source hints at something but does not clearly confirm it, treat it as unknown or “possible but unconfirmed.”
 
 Return only valid JSON matching the schema.
+
+Tag-field rules for `highlights` and `important_facts_jsonb`:
+- These fields must NEVER contain sex, age, weight, breed, color, or physical stats — those are displayed separately on the profile page.
+- `highlights`: 1-3 punchy, adopter-appeal phrases (1-4 words). Think desirability and emotional hook.
+- `important_facts_jsonb`: 1-4 word personality/behavioral observations, special needs, or living situation details.

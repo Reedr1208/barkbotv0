@@ -54,9 +54,6 @@ The following facts are important and must not be blatantly contradicted
 {IMPORTANT_FACTS_BULLET_LIST}
 
 BEHAVIOR AND HOME NEEDS
-Known strengths:
-{STRENGTHS}
-
 Known sensitivities or challenges:
 {CHALLENGES}
 

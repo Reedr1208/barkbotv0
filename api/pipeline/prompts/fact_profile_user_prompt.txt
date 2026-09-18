@@ -14,7 +14,13 @@ Instructions:
 - `sex`: "Male", "Female", or "N/A". If the exact sex is not provided, look for hints in the bio (e.g. use of "He/His" implies Male, "She/Her" implies Female).
 - `altered_status`: "Spayed", "Neutered", "Unaltered", or "N/A".
 - `location_detail`: Specific location info beyond the shelter (e.g., NYC borough, foster home, kennel number, room number).
-- `important_facts_jsonb`, `risk_flags_jsonb`, `unknowns_jsonb`, `strengths_jsonb`, `challenges_jsonb`, `ideal_home_jsonb`, and `management_notes_jsonb` should be arrays of short strings.
+- `highlights`: Generate 1-3 short, punchy phrases (1-4 words each) that highlight the dog's most desirable, scroll-stopping qualities from an adopter's perspective. These are the "headline" appeal words. Think emotional hooks — what makes this dog special and lovable.
+  Examples: "Cuddle Bug", "Gentle Giant", "Loyal Companion", "Total Sweetheart", "Playful Spirit", "Velcro Dog", "Adventure Ready"
+  MUST NOT include: sex, age, weight, breed, color, or any stat already shown on the profile page.
+- `important_facts_jsonb`: Generate an array of 1-4 word phrases focused on unique personality traits, behavioral observations, special needs, or living situation details that help a potential adopter understand what daily life with this dog is like. These appear as chip badges on the profile page.
+  Examples: "Loves Fetch", "Needs Slow Intros", "In Foster Care", "Leash Trained", "Dog Selective", "Knows Commands", "Crate Trained", "Escape Artist"
+  MUST NOT include: sex, age, weight, breed, color, or any stat already shown on the profile page.
+- `risk_flags_jsonb`, `unknowns_jsonb`, `challenges_jsonb`, `ideal_home_jsonb`, and `management_notes_jsonb` should be arrays of short strings.
 - Keep `backstory_summary` concise and factual.
 - `other_animals_notes`, `people_notes`, `containment_notes`, `medical_notes`, and `adoption_process_notes` should be plain-language summaries.
 - Evidence snippets should cite short phrases from the input text, not external data.

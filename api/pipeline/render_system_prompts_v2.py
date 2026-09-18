@@ -49,7 +49,6 @@ def render_system_prompt(fact_profile: Dict[str, Any], persona_profile: Dict[str
         # Facts
         "BACKSTORY_SUMMARY": fact_profile.get("backstory_summary", ""),
         "IMPORTANT_FACTS_BULLET_LIST": to_bullets(fact_profile.get("important_facts_jsonb", [])),
-        "STRENGTHS": to_bullets(fact_profile.get("strengths_jsonb", [])),
         "CHALLENGES": to_bullets(fact_profile.get("challenges_jsonb", [])),
         "IDEAL_HOME": to_bullets(fact_profile.get("ideal_home_jsonb", [])),
         "MANAGEMENT_NOTES": to_bullets(fact_profile.get("management_notes_jsonb", [])),
