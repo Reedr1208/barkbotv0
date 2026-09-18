@@ -54,6 +54,22 @@
       overflow: hidden;
     }
 
+    /* Highlight Badge (DB-driven) — base styles for all viewports */
+    .fit-badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      margin-bottom: 8px;
+    }
+
     @media (max-width: 480px) {
       body {
         padding: 0;
@@ -2310,7 +2326,7 @@
       animation: quizStepFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* Dynamic Match Fit Badge styles */
+    /* Dynamic Highlight Badge styles (DB-driven from highlights field) */
     .fit-badge-tag {
       display: inline-flex;
       align-items: center;
@@ -2319,39 +2335,11 @@
       border-radius: 9999px;
       font-size: 0.8rem;
       font-weight: 800;
-      border: 1px solid transparent;
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
+      border: 1px solid rgba(20, 184, 166, 0.3);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
       margin-bottom: 8px;
-    }
-
-    .fit-badge-tag.apartment {
-      background: rgba(20, 184, 166, 0.15);
-      color: var(--teal);
-      border-color: rgba(20, 184, 166, 0.3);
-    }
-
-    .fit-badge-tag.adventure {
-      background: rgba(20, 184, 166, 0.15);
-      color: var(--teal);
-      border-color: rgba(20, 184, 166, 0.3);
-    }
-
-    .fit-badge-tag.family {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-      border-color: rgba(251, 191, 36, 0.3);
-    }
-
-    .fit-badge-tag.cats {
-      background: rgba(236, 72, 153, 0.15);
-      color: #f472b6;
-      border-color: rgba(244, 114, 182, 0.3);
-    }
-
-    .fit-badge-tag.cuddle {
-      background: rgba(6, 182, 212, 0.15);
-      color: #22d3ee;
-      border-color: rgba(34, 211, 238, 0.3);
     }
 
     /* Empty state card */
