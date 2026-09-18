@@ -308,6 +308,13 @@ nextBtn.addEventListener('click', () => {
   trackEvent('dog_shuffled');
   fetchRandomDog();
 });
+const prevBtn = document.getElementById('prevBtn');
+if (prevBtn) {
+  prevBtn.addEventListener('click', () => {
+    trackEvent('dog_back');
+    goToPreviousDog();
+  });
+}
 sendBtn.addEventListener('click', sendMessage);
 chatInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') sendMessage();

@@ -89,9 +89,31 @@ if (favBtn) {
 
 // formatRelativeTime is defined in utils.js
 
+function goToPreviousDog() {
+  if (!previousDogId) return;
+  const idToLoad = previousDogId;
+  previousDogId = null; // Clear so we don't chain backwards
+  updateBackBtnVisibility();
+  fetchRandomDog(idToLoad);
+}
+
+function updateBackBtnVisibility() {
+  const backBtn = document.getElementById('prevBtn');
+  if (backBtn) {
+    backBtn.style.display = previousDogId ? '' : 'none';
+  }
+}
+
 async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
   const fetchId = ++activeDogFetchId;
   const isStaleFetch = () => fetchId !== activeDogFetchId;
+
+  // Save current dog as previous (skip only when navigating back)
+  const isGoingBack = previousDogId && forcedAnimalId === previousDogId;
+  if (currentAnimalId && !isGoingBack) {
+    previousDogId = currentAnimalId;
+  }
+  updateBackBtnVisibility();
 
   setAppState('loading');
   if (typeof exitChatMode === 'function') {
@@ -268,6 +290,7 @@ currentAnimalId = dog.animal_id;
 if (currentAnimalId && !viewedIds.includes(currentAnimalId)) {
   viewedIds.push(currentAnimalId);
 }
+updateBackBtnVisibility();
 
 // Toggle Favorite heart state on load
 if (favBtn) {

@@ -363,8 +363,11 @@ function handleSwipe() {
     } else {
       // Swiped left-to-right
       if (document.body.classList.contains('chat-engaged')) {
-        // In chat mode -> Exit chat mode
+        // In chat mode -> Exit chat mode (highest priority)
         exitChatMode();
+      } else if (previousDogId) {
+        // On profile page -> Go back to previous dog
+        goToPreviousDog();
       }
     }
   }

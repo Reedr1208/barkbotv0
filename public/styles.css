@@ -200,6 +200,11 @@
       flex-shrink: 0;
     }
 
+    .brand-mark {
+      display: none;
+      line-height: 1;
+    }
+
     .brand-tagline {
       font-size: 1rem;
       font-weight: 900;
@@ -253,6 +258,18 @@
       opacity: 0.5;
       cursor: not-allowed;
       transform: none;
+    }
+
+    .prev-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      box-shadow: none;
+      padding: 8px 10px;
+    }
+
+    .prev-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--text-primary);
     }
 
     /* Main Scrollable Area */
@@ -1326,11 +1343,16 @@
       box-shadow: 0 6px 16px var(--accent-shadow);
     }
 
-    /* ── Mobile header: hide tagline to free space for tabs + shuffle ── */
+    /* ── Mobile header: compact icon-only layout ── */
     @media (max-width: 480px) {
       .header {
-        padding: 12px 10px;
-        gap: 6px;
+        padding: 8px 8px;
+        gap: 4px;
+      }
+
+      /* Hide brand entirely on mobile — icons are self-explanatory */
+      .header > div:first-child {
+        display: none;
       }
 
       .brand-tagline {
@@ -1338,37 +1360,56 @@
       }
 
       .brand-title {
-        font-size: 0.65rem;
-        margin-bottom: 0;
+        display: none;
+      }
+
+      .brand-mark {
+        display: none;
+      }
+
+      /* Tab bar fills available space, icons spread evenly */
+      .tab-bar {
+        flex: 1;
+        justify-content: space-evenly;
+        gap: 0;
       }
 
       .tab-btn {
-        padding: 5px 8px;
+        padding: 0;
         font-size: 0.7rem;
         gap: 2px;
+        min-width: 40px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .tab-btn svg {
-        width: 13px;
-        height: 13px;
+        width: 16px;
+        height: 16px;
       }
 
       .header-location-select {
         color: transparent;
-        width: 44px;
-        padding: 8px 24px 8px 12px;
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        padding: 0;
         background: rgba(255, 255, 255, 0.1) url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center center;
+        border-radius: 50%;
       }
       .header-location-select option {
         color: black;
       }
 
       .shuffle-btn {
-        padding: 7px;
+        padding: 0;
         font-size: 0;
         gap: 0;
-        width: 38px;
-        height: 38px;
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1379,8 +1420,23 @@
         height: 18px;
       }
 
+      .prev-btn {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        padding: 0;
+      }
+      .prev-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
       .hide-mobile {
         display: none !important;
+      }
+
+      .show-mobile {
+        display: block !important;
       }
 
       .sticky-dog-bar {

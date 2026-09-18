@@ -7,6 +7,7 @@ let conversationHistory = [];
 let factInterval = null;
 let currentDogName = 'this dog';
 let currentDogData = null;
+let previousDogId = null;
 let activeDogFetchId = 0;
 
 let userCoords = null;
