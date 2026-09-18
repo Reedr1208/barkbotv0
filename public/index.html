@@ -214,7 +214,21 @@
           <h2 class="brand-tagline">Find your match</h2>
         </div>
         <div class="tab-bar" style="flex-shrink: 0;">
-          <button class="tab-btn" id="aboutBtn" aria-label="Open About ChattyHound description">About</button>
+          <button class="tab-btn" id="aboutBtn" aria-label="Open About ChattyHound description" style="padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span class="hide-mobile">About</span>
+          </button>
+          <button class="tab-btn" id="contactBtn" aria-label="Contact us" style="padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <span class="hide-mobile">Contact</span>
+          </button>
           <button class="tab-btn" id="prefBtn" aria-label="Open Fit Match Profile control panel" style="padding: 6px 10px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
               <line x1="4" y1="21" x2="4" y2="14" />
@@ -812,6 +826,7 @@
     <script src="js/preferences.js"></script>
     <script src="js/saved.js"></script>
     <script src="js/search.js"></script>
+    <script src="js/contact.js"></script>
     <script src="js/init.js"></script>
   
   <!-- Device Orientation Landscape Lock Overlay screen -->
@@ -828,6 +843,69 @@
           <line x1="12" y1="18" x2="12.01" y2="18" stroke-width="4" />
         </svg>
         <span>Rotate device to portrait</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Modal -->
+  <div class="modal-overlay" id="contactModal" aria-hidden="true" role="dialog" aria-labelledby="contactModalTitle">
+    <div class="modal-card" style="max-width: 500px;">
+      <button class="modal-close-btn" id="contactCloseBtn" aria-label="Close contact form">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+      <div class="modal-header">
+        <div class="modal-badge">✉️ Get in Touch</div>
+        <h2 class="modal-title" id="contactModalTitle">Contact Us</h2>
+      </div>
+      <div class="modal-content">
+        <!-- Form body (hidden on success) -->
+        <div id="contactFormBody">
+          <p style="font-size: 0.92rem; line-height: 1.6; margin-bottom: 6px;">
+            We'd love to hear from you! 🐾
+          </p>
+          <p style="font-size: 0.85rem; line-height: 1.55; color: var(--text-muted); margin-bottom: 8px;">
+            ChattyHound exists for dogs and the people who love them, and we're incredibly grateful to everyone who stops by, shares the site, or gives one of our pups a little attention. Have an idea? Found something wonky? Just want to say hi? Send us a note!
+          </p>
+          <p style="font-size: 0.85rem; line-height: 1.55; color: var(--text-muted); margin-bottom: 16px;">
+            And if ChattyHound helped you discover a new best friend, please, <em>please</em> tell us about it. Success stories are our absolute favorite kind of mail. ❤️
+          </p>
+
+          <form id="contactForm" class="contact-form" autocomplete="off">
+            <label class="contact-label" for="contactSubject">Subject</label>
+            <select id="contactSubject" class="contact-select" required>
+              <option value="" disabled selected>Choose a topic...</option>
+              <option value="Site Feedback or Suggestion">Site Feedback or Suggestion</option>
+              <option value="Report a Problem">Report a Problem</option>
+              <option value="Contribute or Collaborate">Contribute or Collaborate</option>
+              <option value="Share Your ChattyHound Story">Share Your ChattyHound Story</option>
+              <option value="Something Else">Something Else</option>
+            </select>
+
+            <label class="contact-label" for="contactEmail">Your Email <span style="font-weight: 400; color: var(--text-muted);">(optional)</span></label>
+            <input type="email" id="contactEmail" class="contact-input" placeholder="you@example.com" maxlength="254" />
+
+            <label class="contact-label" for="contactMessage">Message</label>
+            <textarea id="contactMessage" class="contact-textarea" placeholder="What's on your mind?" rows="5" maxlength="5000" required></textarea>
+            <div class="contact-char-count" id="contactCharCount"></div>
+
+            <div class="contact-status" id="contactStatus"></div>
+
+            <button type="submit" class="modal-start-btn" id="contactSubmitBtn" style="margin-top: 8px;">Send Message 📬</button>
+          </form>
+        </div>
+
+        <!-- Success message (shown after submit) -->
+        <div id="contactSuccessMsg" style="display: none; text-align: center; padding: 32px 16px;">
+          <div style="font-size: 3rem; margin-bottom: 16px;">🐾</div>
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 8px;">Message Sent!</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+            Thank you for reaching out. We read every message and will get back to you if you included your email.
+          </p>
+          <button class="modal-start-btn" onclick="closeContactModal()" style="margin-top: 20px;">Close ✕</button>
+        </div>
       </div>
     </div>
   </div>

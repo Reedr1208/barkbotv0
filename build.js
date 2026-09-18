@@ -35,6 +35,7 @@ const jsFiles = [
   'js/preferences.js',
   'js/saved.js',
   'js/search.js',
+  'js/contact.js',
   'js/init.js',
 ];
 
