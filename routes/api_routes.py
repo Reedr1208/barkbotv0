@@ -1061,3 +1061,121 @@ async def delete_account(request: Request):
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+# ──────────────────────────────────────────────────────────────────────
+# CONTACT FORM
+# ──────────────────────────────────────────────────────────────────────
+_contact_rate_store: dict[str, list[float]] = {}
+_CONTACT_RATE_LIMIT = 5
+_CONTACT_RATE_WINDOW = 3600  # 1 hour
+
+_CONTACT_EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
+_CONTACT_VALID_SUBJECTS = {
+    "Site Feedback or Suggestion",
+    "Report a Problem",
+    "Contribute or Collaborate",
+    "Share Your ChattyHound Story",
+    "Something Else",
+}
+
+
+def _contact_is_rate_limited(ip: str) -> bool:
+    now = time.time()
+    timestamps = _contact_rate_store.get(ip, [])
+    timestamps = [t for t in timestamps if now - t < _CONTACT_RATE_WINDOW]
+    _contact_rate_store[ip] = timestamps
+    if len(timestamps) >= _CONTACT_RATE_LIMIT:
+        return True
+    timestamps.append(now)
+    return False
+
+
+@router.post("/api/contact")
+async def contact_form(request: Request):
+    try:
+        # Get client IP
+        ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+        if not ip:
+            ip = request.client.host if request.client else "unknown"
+
+        # Rate limit
+        if _contact_is_rate_limited(ip):
+            return JSONResponse(status_code=429, content={
+                "error": "You've sent too many messages recently. Please try again later."
+            })
+
+        body = await request.json()
+
+        subject = (body.get("subject") or "").strip()
+        email = (body.get("email") or "").strip()
+        message = (body.get("message") or "").strip()
+
+        # Validate
+        if subject not in _CONTACT_VALID_SUBJECTS:
+            return JSONResponse(status_code=400, content={"error": "Please select a valid subject."})
+        if email:
+            if len(email) > 254:
+                return JSONResponse(status_code=400, content={"error": "Email address is too long."})
+            if not _CONTACT_EMAIL_RE.match(email):
+                return JSONResponse(status_code=400, content={"error": "Please enter a valid email address."})
+        if not message:
+            return JSONResponse(status_code=400, content={"error": "Please enter a message."})
+        if len(message) > 5000:
+            return JSONResponse(status_code=400, content={"error": "Message is too long (max 5,000 characters)."})
+
+        # Send via Resend
+        api_key = os.environ.get("RESEND_API_KEY", "")
+        from_email = os.environ.get("CONTACT_FROM_EMAIL", "")
+        to_email = os.environ.get("CONTACT_TO_EMAIL", "")
+
+        if not api_key or not from_email or not to_email:
+            logger.error("Contact form: missing email configuration env vars")
+            return JSONResponse(status_code=500, content={
+                "error": "Something went wrong sending your message. Please try again."
+            })
+
+        full_subject = f"ChattyHound Contact: {subject}"
+        text_body = "\n".join([
+            f"Subject: {subject}",
+            f"From: {email or '(anonymous)'}",
+            f"IP: {ip}",
+            "",
+            "Message:",
+            "─" * 40,
+            message,
+            "─" * 40,
+        ])
+
+        payload = {
+            "from": f"ChattyHound Contact <{from_email}>",
+            "to": [to_email],
+            "subject": full_subject,
+            "text": text_body,
+        }
+        if email:
+            payload["reply_to"] = email
+
+        resp = _requests.post(
+            "https://api.resend.com/emails",
+            json=payload,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "User-Agent": "ChattyHound/1.0",
+            },
+            timeout=15,
+        )
+
+        if resp.status_code >= 400:
+            logger.error(f"Contact form: Resend API error {resp.status_code}: {resp.text}")
+            return JSONResponse(status_code=500, content={
+                "error": "Something went wrong sending your message. Please try again."
+            })
+
+        return JSONResponse(content={"ok": True, "message": "Message sent! Thank you. 🐾"})
+
+    except Exception as e:
+        logger.error(f"Contact form unexpected error: {e}")
+        return JSONResponse(status_code=500, content={
+            "error": "Something went wrong. Please try again."
+        })
