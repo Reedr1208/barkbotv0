@@ -230,13 +230,27 @@ if (isStaleFetch()) return;
 currentDogData = dog;
 updateDocumentMetaForDog(dog);
 
-if (!dog.user_has_preferences) {
-  const hs = document.getElementById('headerLocationSelect');
-  if (hs && hs.value === 'any') {
-    if (dog.suggested_location && window.__CH_LOCATIONS_DATA__) {
-      const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === dog.suggested_location);
-      if (locObj) {
-        hs.value = locObj.relative_path;
+// Update location dropdown to match the loaded dog's shelter
+const hs = document.getElementById('headerLocationSelect');
+if (hs && window.__CH_LOCATIONS_DATA__ && dog.shelter_id) {
+  // Find the location entry that contains this dog's shelter_id
+  const dogLocObj = window.__CH_LOCATIONS_DATA__.find(l =>
+    l.shelter_ids && l.shelter_ids.includes(dog.shelter_id)
+  );
+
+  if (forcedAnimalId && dogLocObj) {
+    // Dog was loaded via search, direct URL, or shared link — force location to match
+    hs.value = dogLocObj.relative_path;
+    currentPrefs.location = dogLocObj.display_name;
+    if (typeof setupSelectorButtons === 'function') {
+      setupSelectorButtons('prefLocationGroup', dogLocObj.display_name);
+    }
+  } else if (!dog.user_has_preferences && hs.value === 'any') {
+    // First random dog load with no prefs — use geo suggestion or fallback to All
+    if (dog.suggested_location) {
+      const sugLocObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === dog.suggested_location);
+      if (sugLocObj) {
+        hs.value = sugLocObj.relative_path;
       } else {
         hs.value = 'all';
       }

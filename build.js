@@ -34,6 +34,7 @@ const jsFiles = [
   'js/chat.js',
   'js/preferences.js',
   'js/saved.js',
+  'js/search.js',
   'js/init.js',
 ];
 
