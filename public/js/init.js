@@ -159,19 +159,8 @@ if (dogUnavailableCtaBtn) {
   });
 }
 
-// Report an issue button wiring
-const reportIssueBtn = document.getElementById('reportIssueBtn');
-if (reportIssueBtn) {
-  reportIssueBtn.addEventListener('click', () => {
-    trackEvent('issue_reported', { dog_name: currentDogName, animal_id: currentAnimalId });
-    showToast("Thank you! Report received and sent to shelter team. 🐾");
-    reportIssueBtn.textContent = "Reported ✓";
-    reportIssueBtn.disabled = true;
-    reportIssueBtn.style.color = "var(--text-muted)";
-    reportIssueBtn.style.textDecoration = "none";
-    reportIssueBtn.style.cursor = "default";
-  });
-}
+
+
 
 window.addEventListener('popstate', () => {
   const routeDogId = getDogIdFromPath();

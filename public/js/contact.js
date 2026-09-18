@@ -1,7 +1,7 @@
 // ─── Contact Form ─────────────────────────────────────────────────────
 // Handles the Contact Us modal: open/close, form submission, validation
 
-function openContactModal() {
+function openContactModal(preSelectedSubject) {
   const modal = document.getElementById('contactModal');
   if (!modal) return;
   modal.classList.add('active');
@@ -21,6 +21,11 @@ function openContactModal() {
   // Enable submit
   const btn = document.getElementById('contactSubmitBtn');
   if (btn) { btn.disabled = false; btn.textContent = 'Send Message 📬'; }
+  // Pre-select subject if provided
+  if (preSelectedSubject) {
+    const subjectEl = document.getElementById('contactSubject');
+    if (subjectEl) subjectEl.value = preSelectedSubject;
+  }
 }
 
 function closeContactModal() {
@@ -125,6 +130,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const contactCloseBtn = document.getElementById('contactCloseBtn');
   if (contactCloseBtn) contactCloseBtn.addEventListener('click', closeContactModal);
+
+  // Report an issue button — opens contact form with subject pre-selected
+  const reportIssueBtn = document.getElementById('reportIssueBtn');
+  if (reportIssueBtn) {
+    reportIssueBtn.addEventListener('click', () => {
+      trackEvent('issue_reported', { dog_name: currentDogName, animal_id: currentAnimalId });
+      openContactModal('Report a Problem');
+    });
+  }
 
   const contactModal = document.getElementById('contactModal');
   if (contactModal) {
