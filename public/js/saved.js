@@ -133,11 +133,16 @@ async function renderSavedDogs(container) {
             return {
               animal_id: dog.animal_id,
               dog_name: dog.name || 'Shelter Pup',
-              gender: dog.gender || 'Unknown',
-              age: dog.age || 'Unknown',
-              weight: dog.weight || 'Unknown',
-              located_at: dog.shelter_name || 'Pima Animal Care Center',
-              url: dog.shelter_profile_url || '',
+              gender: dog.gender || '',
+              age: dog.age || '',
+              age_summary: dog.age_summary || '',
+              weight: dog.weight || '',
+              breed_or_description: dog.breed_or_description || '',
+              shelter_name: dog.shelter_name || '',
+              shelter_profile_url: dog.shelter_profile_url || '',
+              city: dog.city || '',
+              state: dog.state || '',
+              relative_path: dog.relative_path || '',
               dog_image_url: dog.shelter_image_url || ''
             };
           }
@@ -166,49 +171,69 @@ async function renderSavedDogs(container) {
     return;
   }
 
-  container.innerHTML = dogs.map(d => `
-  <div class="saved-dog-card" data-animal-id="${d.animal_id}" style="display:flex; flex-direction:column; gap:12px; padding:16px; border-radius:18px; background:rgba(255,255,255,0.03); margin-bottom:14px; border:1px solid rgba(255,255,255,0.06); position:relative; transition:all 0.2s ease;">
-    <!-- Top Row: Photo + Meta + Heart -->
-    <div style="display:flex; gap:14px; align-items:flex-start;">
-      <div style="width:68px; height:68px; border-radius:12px; overflow:hidden; flex-shrink:0; background:var(--bg-slate-800); border:1px solid rgba(255,255,255,0.1);">
-        ${d.dog_image_url ? `<img src="${d.dog_image_url}" alt="${d.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;background:var(--bg-slate-800);">🐾</div>'}
-      </div>
-      <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;">
-        <h4 style="font-weight:900; font-size:1.1rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">${d.dog_name || 'Shelter Pup'}</h4>
-        <!-- Gender/Age/Weight/Breed mini pills or badges -->
-        <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
-          <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.gender || 'Unknown'}</span>
-          <span style="font-size:0.68rem; background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:6px; font-weight:700;">${d.shelter_name ? (d.shelter_name.includes('PAWS') ? 'PAWSCH' : (d.shelter_name.includes('Muddy') ? 'MP' : (d.shelter_name.includes('Humane') || d.shelter_name.includes('HSSA') ? 'HSSA' : (d.shelter_name.includes('Animal Care Centers') || d.shelter_name.includes('NYC') ? 'NYCACC' : d.shelter_name.replace('Pima Animal Care Center', 'PACC'))))) : 'PACC'}</span>
+  // Build cards HTML with 2-per-row grid on desktop, 1 on mobile
+  const cardsHtml = dogs.map(d => {
+    const breed = d.breed_or_description || '';
+    const age = d.age_summary || d.age || '';
+    const shelterName = d.shelter_name || '';
+    const location = (d.city && d.state) ? `${d.city}, ${d.state}` : (d.city || d.state || '');
+    const shelterUrl = d.shelter_profile_url || '';
+    const relativePath = d.relative_path || '';
+    // Build subtitle line: breed · age (skip empty parts)
+    const subtitleParts = [breed, age].filter(Boolean);
+    const subtitle = subtitleParts.join(' · ');
+    // Build location line: shelter name — city, state
+    const locationParts = [shelterName, location].filter(Boolean);
+    const locationLine = locationParts.join(' — ');
+
+    return `
+    <div class="saved-dog-card" data-animal-id="${d.animal_id}" style="display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); position:relative; transition:all 0.2s ease; cursor:pointer;">
+      <!-- Top Row: Photo + Meta + Heart -->
+      <div style="display:flex; gap:10px; align-items:flex-start;">
+        <div style="width:56px; height:56px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--bg-slate-800); border:1px solid rgba(255,255,255,0.1);">
+          ${d.dog_image_url ? `<img src="${d.dog_image_url}" alt="${d.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--bg-slate-800);">🐾</div>'}
+        </div>
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;">
+          <h4 style="font-weight:900; font-size:1rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">${d.dog_name || 'Shelter Pup'}</h4>
+          ${subtitle ? `<div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${subtitle}</div>` : ''}
+          ${locationLine ? `<div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📍 ${locationLine}</div>` : ''}
+        </div>
+        <!-- Heart + Share -->
+        <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0;">
+          <button type="button" class="modal-unheart-btn" data-animal-id="${d.animal_id}" aria-label="Remove ${d.dog_name || 'dog'} from My Dogs" style="background:transparent; border:none; color:var(--accent); font-size:1.1rem; cursor:pointer; padding:2px; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;">
+            ❤️
+          </button>
+          <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${d.animal_id}" data-location="${shelterName}" data-relative-path="${relativePath}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${d.dog_name || 'this dog'}" title="Share" style="width:24px; height:24px;">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
         </div>
       </div>
-      <!-- Right side Action Buttons (Share and Heart toggle) -->
-      <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
-        <button type="button" class="modal-unheart-btn" data-animal-id="${d.animal_id}" aria-label="Remove ${d.dog_name || 'dog'} from My Dogs" style="background:transparent; border:none; color:var(--accent); font-size:1.25rem; cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;">
-          ❤️
+      <!-- CTA Buttons (stacked vertically) -->
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <button type="button" class="modal-chat-cta" data-animal-id="${d.animal_id}" style="padding:7px; border:1px solid var(--accent); border-radius:8px; background:var(--accent); color:var(--accent-text); font-weight:800; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
+          Chat 💬
         </button>
-        <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${d.animal_id}" data-location="${d.shelter_name || 'Pima Animal Care Center'}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${d.dog_name || 'this dog'}" title="Share" style="width:28px; height:28px;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-        </button>
+        ${shelterUrl
+          ? `<a href="${shelterUrl}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" style="text-decoration:none; padding:7px; border:1px solid rgba(255,255,255,0.12); border-radius:8px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
+              Shelter Page 🔗
+            </a>`
+          : ''}
       </div>
-    </div>
-    <!-- Bottom Row: Twin CTA Buttons -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
-      <button type="button" class="modal-chat-cta" data-animal-id="${d.animal_id}" style="padding:8px; border:1px solid var(--accent); border-radius:10px; background:var(--accent); color:var(--accent-text); font-weight:800; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
-        Chat 💬
-      </button>
-      <a href="${d.shelter_profile_url || 'https://www.pima.gov/pacc'}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" style="text-decoration:none; padding:8px; border:1px solid rgba(255,255,255,0.12); border-radius:10px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
-        Shelter Page 🔗
-      </a>
-    </div>
-  </div>`).join('');
+    </div>`;
+  }).join('');
+
+  const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+  const gridCols = isDesktop ? 'repeat(2, 1fr)' : '1fr';
+  container.innerHTML = `<div class="saved-dogs-grid" style="display:grid; grid-template-columns:${gridCols}; gap:14px;">${cardsHtml}</div>`;
 
   container.querySelectorAll('.saved-card-share-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const aid = btn.getAttribute('data-animal-id');
       const name = btn.getAttribute('data-dog-name');
-      const loc = btn.getAttribute('data-location') || 'Pima Animal Care Center';
-      shareCurrentDog(btn, { animal_id: aid, name, shelter_name: loc });
+      const loc = btn.getAttribute('data-location') || '';
+      const relPath = btn.getAttribute('data-relative-path') || '';
+      shareCurrentDog(btn, { animal_id: aid, name, shelter_name: loc, relative_path: relPath });
     });
   });
 
@@ -344,7 +369,7 @@ async function renderRecentChats(container) {
         e.stopPropagation();
         const aid = btn.getAttribute('data-animal-id');
         const name = btn.getAttribute('data-dog-name');
-        const loc = btn.getAttribute('data-location') || 'Pima Animal Care Center';
+        const loc = btn.getAttribute('data-location') || '';
         shareCurrentDog(btn, { animal_id: aid, name, shelter_name: loc });
       });
     });

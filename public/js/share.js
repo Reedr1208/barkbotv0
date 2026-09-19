@@ -1,11 +1,14 @@
 function buildDogSharePayload(dog) {
   const name = dog?.name || currentDogName || 'this dog';
-  const shelter = dog?.shelter_name || 'Pima Animal Care Center';
+  const shelter = dog?.shelter_name || '';
   const pron = pronounForGender(dog?.gender);
   const animalId = dog?.animal_id || currentAnimalId;
-  const url = getCanonicalDogUrl(animalId);
+  // Use the dog's actual location path if available (e.g. from saved dogs)
+  const locationPath = dog?.relative_path ? dog.relative_path : undefined;
+  const url = getCanonicalDogUrl(animalId, locationPath);
 
-  const text = `${name} is an adoptable rescue dog at ${shelter}. Chat with ${pron} and learn more.`;
+  const shelterText = shelter ? ` at ${shelter}` : '';
+  const text = `${name} is an adoptable rescue dog${shelterText}. Chat with ${pron} and learn more.`;
 
   return {
     title: `Meet ${name} on ChattyHound 🐶`,

@@ -71,9 +71,14 @@ function getDogIdFromPath(pathname) {
   return null;
 }
 
-function getCanonicalDogUrl(animalId) {
-  const sel = document.getElementById('headerLocationSelect');
-  let locPath = sel && sel.value !== 'any' ? sel.value : '';
+function getCanonicalDogUrl(animalId, locationPathOverride) {
+  let locPath;
+  if (locationPathOverride !== undefined) {
+    locPath = locationPathOverride;
+  } else {
+    const sel = document.getElementById('headerLocationSelect');
+    locPath = sel && sel.value !== 'any' ? sel.value : '';
+  }
   if (locPath === 'all') locPath = '/alldogs';
   if (!animalId) return CH_CANONICAL_ORIGIN + '/';
   return `${CH_CANONICAL_ORIGIN}/dogs${locPath}/${encodeURIComponent(animalId)}`;

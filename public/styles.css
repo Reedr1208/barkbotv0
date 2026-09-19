@@ -1166,6 +1166,13 @@
       transform: scale(1) translateY(0);
     }
 
+    /* Saved dogs grid: 1 column by default (mobile), overridden to 2 on desktop */
+    .saved-dogs-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
     .modal-close-btn {
       position: absolute;
       top: 16px;
@@ -1817,20 +1824,24 @@
       }
 
       #savedModalContent {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 16px !important;
         max-height: 60vh !important;
         scrollbar-width: thin;
+      }
+
+      /* 2-column grid for saved dogs on desktop */
+      .saved-dogs-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 14px !important;
       }
 
       /* Widescreen Saved Dog cards */
       #savedModalContent .saved-dog-card {
         margin-bottom: 0 !important;
-        border-radius: 20px !important;
+        border-radius: 16px !important;
         background: rgba(255, 255, 255, 0.02) !important;
         border: 1px solid rgba(255, 255, 255, 0.06) !important;
-        padding: 20px !important;
+        padding: 14px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;

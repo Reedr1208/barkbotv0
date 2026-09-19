@@ -327,7 +327,7 @@ async def random_dog(request: Request):
 
         # ── Direct lookup by animal_id (for Saved Dogs / Resume Chat) ──
         if animal_id_override:
-            active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight").eq("animal_id", animal_id_override).limit(1).execute()
+            active_res = client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").eq("animal_id", animal_id_override).limit(1).execute()
             prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
             profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
             fact_res = client.table("animal_fact_profiles").select("dog_name, breed_or_description, intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary, sugg_specific, highlights").eq("animal_id", animal_id_override).limit(1).execute()
@@ -366,6 +366,15 @@ async def random_dog(request: Request):
             profile["preferences_matched"] = False
             profile["user_has_preferences"] = False
             profile["match_details"] = {}
+
+            # Add shelter relative_path for share URL construction
+            dog_sid = active_dog.get("shelter_id", "")
+            if dog_sid:
+                shelter_res = client.table("shelters").select("relative_path").eq("shelter_id", dog_sid).limit(1).execute()
+                profile["relative_path"] = (shelter_res.data[0].get("relative_path", "") if shelter_res.data else "")
+            else:
+                profile["relative_path"] = ""
+
             for key in ["id", "record_hash", "created_at", "last_scrape_run_id"]:
                 profile.pop(key, None)
             profile["image_base_url"] = image_base_url
@@ -748,6 +757,10 @@ async def random_dog(request: Request):
                     break
         profile["suggested_location"] = suggested_location
 
+        # Add shelter relative_path for share URL construction
+        dog_shelter_id = active_dogs[random_id].get("shelter_id", "")
+        profile["relative_path"] = shelters_map.get(dog_shelter_id, {}).get("relative_path", "")
+
         for key in ["id", "record_hash", "created_at", "last_scrape_run_id"]:
             profile.pop(key, None)
 
@@ -779,11 +792,21 @@ async def get_favorites(request: Request):
 
         animal_ids = [r["animal_id"] for r in saved_records]
 
-        active_res = sb.table("active_dogs").select("animal_id, name, gender, age, weight").in_("animal_id", animal_ids).execute()
+        active_res = sb.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id").in_("animal_id", animal_ids).execute()
         active_map = {p["animal_id"]: p for p in (active_res.data or [])}
 
-        animals_res = sb.table("animals").select("animal_id, shelter_name, shelter_profile_url, image_file, image_public_url, shelter_image_url").in_("animal_id", animal_ids).execute()
+        animals_res = sb.table("animals").select("animal_id, shelter_name, shelter_profile_url, city, state, image_file, image_public_url, shelter_image_url").in_("animal_id", animal_ids).execute()
         animals_map = {a["animal_id"]: a for a in (animals_res.data or [])}
+
+        facts_res = sb.table("animal_fact_profiles").select("animal_id, breed_or_description, age_summary").in_("animal_id", animal_ids).execute()
+        facts_map = {f["animal_id"]: f for f in (facts_res.data or [])}
+
+        # Fetch shelter relative_path for share URLs
+        shelter_ids = list({active_map.get(aid, {}).get("shelter_id") for aid in animal_ids if active_map.get(aid, {}).get("shelter_id")})
+        shelters_path_map = {}
+        if shelter_ids:
+            shelters_res = sb.table("shelters").select("shelter_id, relative_path").in_("shelter_id", shelter_ids).execute()
+            shelters_path_map = {s["shelter_id"]: s.get("relative_path", "") for s in (shelters_res.data or [])}
 
         image_base = get_image_base_url()
         saved_dogs_rich = []
@@ -792,6 +815,8 @@ async def get_favorites(request: Request):
             aid = r["animal_id"]
             active_dog = active_map.get(aid, {})
             animal = animals_map.get(aid, {})
+            facts = facts_map.get(aid, {})
+            shelter_id = active_dog.get("shelter_id", "")
 
             dog_image_url = ""
             if animal.get("image_file"):
@@ -805,11 +830,16 @@ async def get_favorites(request: Request):
                 "animal_id": aid,
                 "created_at": r["created_at"],
                 "dog_name": active_dog.get("name") or "Shelter Pup",
-                "gender": active_dog.get("gender") or "Unknown",
-                "age": active_dog.get("age") or "Unknown",
-                "weight": active_dog.get("weight") or "Unknown",
-                "shelter_name": animal.get("shelter_name") or "Pima Animal Care Center",
+                "gender": active_dog.get("gender") or "",
+                "age": active_dog.get("age") or "",
+                "age_summary": facts.get("age_summary") or "",
+                "weight": active_dog.get("weight") or "",
+                "breed_or_description": facts.get("breed_or_description") or "",
+                "shelter_name": animal.get("shelter_name") or "",
                 "shelter_profile_url": animal.get("shelter_profile_url") or "",
+                "city": animal.get("city") or "",
+                "state": animal.get("state") or "",
+                "relative_path": shelters_path_map.get(shelter_id, ""),
                 "dog_image_url": dog_image_url
             })
 
