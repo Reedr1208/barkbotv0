@@ -110,49 +110,52 @@ async function loadSavedTab(tab) {
 }
 
 async function renderSavedDogs(container) {
-  // Prefer backend data for logged-in users, fall back to local list
+  // Fetch from backend (always available now via device email)
   let dogs = [];
-  if (userEmail) {
-    try {
-      const res = await fetch('/api/favorites?email=' + encodeURIComponent(userEmail));
-      if (res.ok) {
-        const data = await res.json();
-        dogs = data.saved || [];
-      }
-    } catch (e) { }
-  }
-
-  // If no backend data, render from local favoritesList with dynamic detail fetching
-  if (dogs.length === 0 && favoritesList.length > 0 && !userEmail) {
-    try {
-      const promises = favoritesList.map(async (id) => {
-        try {
-          const res = await fetch(`/api/random_dog?animal_id=${encodeURIComponent(id)}`);
-          if (res.ok) {
-            const dog = await res.json();
-            return {
-              animal_id: dog.animal_id,
-              dog_name: dog.name || 'Shelter Pup',
-              gender: dog.gender || '',
-              age: dog.age || '',
-              age_summary: dog.age_summary || '',
-              weight: dog.weight || '',
-              breed_or_description: dog.breed_or_description || '',
-              shelter_name: dog.shelter_name || '',
-              shelter_profile_url: dog.shelter_profile_url || '',
-              city: dog.city || '',
-              state: dog.state || '',
-              relative_path: dog.relative_path || '',
-              dog_image_url: dog.shelter_image_url || ''
-            };
-          }
-        } catch (e) {}
-        return { animal_id: id, dog_name: 'Shelter Pup', dog_image_url: '' };
-      });
-      dogs = await Promise.all(promises);
-    } catch (e) {
-      dogs = favoritesList.map(id => ({ animal_id: id, dog_name: 'Shelter Pup', dog_image_url: '' }));
+  try {
+    const res = await fetch('/api/favorites?email=' + encodeURIComponent(userEmail));
+    if (res.ok) {
+      const data = await res.json();
+      dogs = data.saved || [];
     }
+  } catch (e) { }
+
+  // Merge in any localStorage-only favorites not yet in backend
+  const backendIds = new Set(dogs.map(d => d.animal_id));
+  const localOnly = favoritesList.filter(id => !backendIds.has(id));
+
+  if (localOnly.length > 0) {
+    const localDogs = await Promise.all(localOnly.map(async (id) => {
+      try {
+        const res = await fetch(`/api/random_dog?animal_id=${encodeURIComponent(id)}`);
+        if (res.ok) {
+          const dog = await res.json();
+          // Sync to backend (non-blocking)
+          fetch('/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail, animal_id: id, dog_name: dog.name || '', dog_image_url: dog.shelter_image_url || '', action: 'save' })
+          }).catch(() => {});
+          return {
+            animal_id: dog.animal_id,
+            dog_name: dog.name || 'Shelter Pup',
+            gender: dog.gender || '',
+            age: dog.age || '',
+            age_summary: dog.age_summary || '',
+            weight: dog.weight || '',
+            breed_or_description: dog.breed_or_description || '',
+            shelter_name: dog.shelter_name || '',
+            shelter_profile_url: dog.shelter_profile_url || '',
+            city: dog.city || '',
+            state: dog.state || '',
+            relative_path: dog.relative_path || '',
+            dog_image_url: dog.shelter_image_url || ''
+          };
+        }
+      } catch (e) {}
+      return { animal_id: id, dog_name: 'Shelter Pup', dog_image_url: '' };
+    }));
+    dogs = dogs.concat(localDogs);
   }
 
   if (dogs.length === 0) {
@@ -305,17 +308,6 @@ async function renderSavedDogs(container) {
 }
 
 async function renderRecentChats(container) {
-  if (!userEmail) {
-    container.innerHTML = `
-    <div style="text-align:center; padding:40px 24px;">
-      <div style="font-size:3rem; margin-bottom:12px;">💬</div>
-      <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No chat history yet</h3>
-      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Start chatting with a dog and your conversations will appear here!</p>
-      <button class="btn-primary" onclick="closeSavedModal();" style="margin-top:16px; padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer;">Start Sniffing 🐶</button>
-    </div>`;
-    return;
-  }
-
   try {
     const res = await fetch('/api/chat_history?email=' + encodeURIComponent(userEmail));
     if (!res.ok) throw new Error('Failed');
@@ -339,18 +331,25 @@ async function renderRecentChats(container) {
 
     container.innerHTML = convs.map(c => {
       const dateStr = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      const available = c.is_available !== false;
+      const unavailBadge = available ? '' : '<span style="font-size:0.65rem; background:rgba(251,191,36,0.15); color:#fbbf24; padding:2px 6px; border-radius:6px; font-weight:700; white-space:nowrap;">Adopted 🎉</span>';
+      const opacity = available ? '1' : '0.6';
+      const cursorStyle = available ? 'cursor:pointer;' : 'cursor:default;';
       return `
-    <div class="saved-dog-card" data-animal-id="${c.animal_id}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:rgba(255,255,255,0.03); margin-bottom:10px; cursor:pointer; transition:all 0.2s ease; border:1px solid rgba(255,255,255,0.06);">
+    <div class="saved-dog-card ${available ? '' : 'unavailable'}" data-animal-id="${c.animal_id}" data-available="${available}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:rgba(255,255,255,0.03); margin-bottom:10px; ${cursorStyle} transition:all 0.2s ease; border:1px solid rgba(255,255,255,0.06); opacity:${opacity};">
       <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--bg-slate-800); border:1px solid rgba(255,255,255,0.08);">
-        ${c.dog_image_url ? `<img src="${c.dog_image_url}" alt="${c.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--bg-slate-800);">💬</div>'}
+        ${c.dog_image_url ? `<img src="${c.dog_image_url}" alt="${c.dog_name}" style="width:100%;height:100%;object-fit:cover;${available ? '' : 'filter:grayscale(40%);'}">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--bg-slate-800);">💬</div>'}
       </div>
       <div style="flex:1; min-width:0;">
-        <div style="font-weight:800; font-size:0.95rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.dog_name || 'Shelter Pup'}</div>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.last_message_preview || 'Tap to continue'}</div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-weight:800; font-size:0.95rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.dog_name || 'Shelter Pup'}</span>
+          ${unavailBadge}
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${available ? (c.last_message_preview || 'Tap to continue') : 'No longer available for chat'}</div>
       </div>
-      <button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Share" style="width:28px; height:28px;">
+      ${available ? `<button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Share" style="width:28px; height:28px;">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-      </button>
+      </button>` : ''}
       <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; margin-left:4px;">${dateStr}</div>
     </div>`;
     }).join('');
@@ -359,6 +358,16 @@ async function renderRecentChats(container) {
       card.addEventListener('click', (e) => {
         if (e.target.closest('.saved-card-share-btn')) return;
         const aid = card.getAttribute('data-animal-id');
+        const available = card.getAttribute('data-available') !== 'false';
+        if (!available) {
+          // Show a brief toast for unavailable dogs
+          const toast = document.createElement('div');
+          toast.textContent = 'This dog has been adopted or is no longer available 🎉';
+          toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:white;padding:10px 20px;border-radius:12px;font-size:0.82rem;font-weight:600;z-index:10001;animation:fadeIn 0.2s ease;';
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+          return;
+        }
         closeSavedModal();
         fetchSpecificDog(aid, true);
       });

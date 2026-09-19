@@ -33,8 +33,14 @@ window.__CH_LOCATIONS_DATA__ = [];
 const CH_CANONICAL_ORIGIN = 'https://chattyhound.com';
 const CH_DEFAULT_OG_IMAGE = CH_CANONICAL_ORIGIN + '/chattyhound_og.png';
 
-// Auth removed — all users are guests. userEmail kept as null for backward compat.
-const userEmail = null;
+// Device-based guest identity — persists across sessions via localStorage.
+// No PII is collected; the ID is a random UUID generated client-side.
+let _deviceId = localStorage.getItem('chattyhound_device_id');
+if (!_deviceId) {
+  _deviceId = crypto.randomUUID();
+  localStorage.setItem('chattyhound_device_id', _deviceId);
+}
+const userEmail = _deviceId + '@device.chattyhound.com';
 let currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
 
 // Expanded lifestyle preferences stored locally

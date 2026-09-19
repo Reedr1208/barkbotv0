@@ -257,12 +257,6 @@ async function sendMessage(customText = null, chosenPrompt = null) {
 
   try {
     const currentImageUrl = document.getElementById('dogImage')?.src || '';
-    
-    let guestSessionId = localStorage.getItem('chattyhound_guest_id');
-    if (!guestSessionId) {
-      guestSessionId = 'guest_' + Math.random().toString(36).substr(2, 9) + '@guest.chattyhound.com';
-      localStorage.setItem('chattyhound_guest_id', guestSessionId);
-    }
 
     const response = await fetch('/api/chat', {
       method: 'POST',
@@ -271,7 +265,7 @@ async function sendMessage(customText = null, chosenPrompt = null) {
         animal_id: currentAnimalId,
         message: text,
         conversation_history: historyToSend,
-        email: userEmail || guestSessionId,
+        email: userEmail,
         dog_name: currentDogName,
         dog_image_url: currentImageUrl,
         sugg_prompts: currentSuggPrompts.length > 0 ? currentSuggPrompts : null,

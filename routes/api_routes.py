@@ -131,9 +131,18 @@ def matches_gender(dog_gender, pref_gender):
 CHAT_MODEL = "gpt-5.4-mini"
 
 
+def _ensure_user_preferences(sb, email):
+    """Ensure a user_preferences row exists for the given email (FK requirement)."""
+    try:
+        sb.table("user_preferences").upsert({"email": email}, on_conflict="email").execute()
+    except Exception:
+        pass  # Non-blocking — row may already exist
+
+
 def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_preview, ip_address="", location=""):
     """Upsert a chat_conversations row and return the conversation id."""
     try:
+        _ensure_user_preferences(sb, email)
         row = {
             "email": email,
             "animal_id": animal_id,
@@ -182,7 +191,7 @@ async def chat(request: Request):
         user_message = body.get("message", "")
         conversation_history = body.get("conversation_history", [])
         user_email = (body.get("email") or "").strip().lower()
-        if not user_email or user_email.endswith("@guest.chattyhound.com"):
+        if not user_email:
             user_email = "anonymous@chattyhound.com"
 
         dog_name = body.get("dog_name") or ""
@@ -868,6 +877,7 @@ async def post_favorites(request: Request):
         else:
             dog_name = body.get("dog_name") or ""
             dog_image_url = body.get("dog_image_url") or ""
+            _ensure_user_preferences(sb, email)
             row = {"email": email, "animal_id": animal_id, "dog_name": dog_name, "dog_image_url": dog_image_url}
             sb.table("saved_dogs").upsert(row, on_conflict="email,animal_id").execute()
             return JSONResponse(content={"status": "saved"})
@@ -989,7 +999,17 @@ async def chat_history(request: Request):
                 .select("animal_id, dog_name, dog_image_url, last_message_preview, updated_at") \
                 .eq("email", email).order("updated_at", desc=True).limit(20).execute()
 
-            return JSONResponse(content={"conversations": conv_res.data or []})
+            convs = conv_res.data or []
+
+            # Annotate each conversation with availability status
+            if convs:
+                aids = [c["animal_id"] for c in convs]
+                active_res = sb.table("active_dogs").select("animal_id").in_("animal_id", aids).execute()
+                active_set = {r["animal_id"] for r in (active_res.data or [])}
+                for c in convs:
+                    c["is_available"] = c["animal_id"] in active_set
+
+            return JSONResponse(content={"conversations": convs})
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
