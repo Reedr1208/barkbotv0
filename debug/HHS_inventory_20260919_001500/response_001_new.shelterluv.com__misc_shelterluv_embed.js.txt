@@ -1,0 +1,153 @@
+function EmbedAvailablePets(container_id,shelter_gid,filters, columns, sourceDomain,baseurl, embedVersion, options){
+    if(!baseurl) baseurl='';
+    options = options || {};
+    var shelterluv_domain=(sourceDomain?sourceDomain:'https://www.shelterluv.com')
+    var iframe = document.createElement('iframe');
+    iframe.className = 'shelterluv';
+    if (options.scrollContainer === 'host') {
+        iframe.setAttribute('scrolling', 'no');
+    }
+    iframe.allowFullscreen = true;
+    iframe.dataset.domain = shelterluv_domain;
+    iframe.dataset.baseurl = baseurl;
+    if (columns){
+        iframe.dataset.columns = columns;
+    }
+
+    iframe.style.border = 0;
+    iframe.style.width = '100%';
+
+    if (typeof (sl_frame_width) != 'undefined') {
+        iframe.style.height = sl_frame_height
+    } else {
+        iframe.style.height = '90%';
+    }
+    var hasLoaded = false;
+    iframe.addEventListener('load', function() {
+        if (!iframe.getAttribute('src')) return;
+        if (hasLoaded) {
+            shelterluvScrollToTop(container_id);
+        }
+        hasLoaded = true;
+    });
+    window.addEventListener('message', function(event) {
+        if (event.origin !== shelterluv_domain || event.data.iframeId !== container_id) return;
+        if(event.data.if_height) {
+            iframe.style.height = event.data.if_height + 'px';
+        }
+        if(event.data.if_url) {
+            var if_url = event.data.if_url.replace( /.*if_url=(.*?)(?:&.*|$)/, '$1' );
+            if(window.chrome){
+                if_url = decodeURIComponent(if_url); // Chrome applies a round of url encoding on its own
+            }
+            if_url = decodeURIComponent(if_url).replace(/#.*$/,'');
+            window.location.hash = "sl_embed&page="+encodeURIComponent(if_url);
+            shelterluvScrollToTop(container_id);
+        }
+
+        if(event.data.open_link) {
+            var openUrl = event.data.open_link.replace(/.*open_link=(.*?)(?:&.*|$)/, '$1');
+            if (window.chrome) {
+                openUrl = decodeURIComponent(openUrl); // Chrome applies a round of url encoding on its own
+            }
+            openUrl = decodeURIComponent(openUrl).replace(/#.*$/, '');
+
+            window.open(openUrl)
+        }
+
+        if(event.data.if_load_initial_search) {
+            var url = '/embed/' + shelter_gid
+            query = '';
+            for (f in filters) {
+                if (query) {
+                    query += '&';
+                }
+                query += f + '=' + encodeURIComponent(filters[f]);
+            }
+            if (query) {
+                url += '?' + query;
+            }
+            shelterluvLoadIframe(container_id, url);
+            shelterluvScrollToTop(container_id);
+        }
+
+        if(event.data.reset_to_top) {
+            shelterluvScrollToTop(container_id);
+        }
+    })
+    setTimeout(function(){
+        document.getElementById(container_id).append(iframe);
+        var hashParsed = shelterluvParseHash();
+        if(hashParsed && hashParsed.containerId === container_id){
+            shelterluvLoadIframe(hashParsed.containerId,hashParsed.url);
+        }else{
+            var url = '/embed/' + shelter_gid
+            query = '';
+            for(f in filters){
+                if(query){
+                    query+='&';
+                }
+                query += f+'='+encodeURIComponent(filters[f]);
+            }
+            if(query){
+                url+='?'+query;
+            }
+            shelterluvLoadIframe(container_id,url);
+        }
+    },100);
+}
+
+window.addEventListener('hashchange',function(){
+    var parsed = shelterluvParseHash();
+    if(parsed){
+        current_hash = window.location.hash;
+        shelterluvLoadIframe(parsed.containerId,parsed.url);
+        shelterluvScrollToTop(parsed.containerId);
+    }
+});
+
+function shelterluvScrollToTop(containerId){
+    var container = document.getElementById(containerId);
+    if(!container)return;
+
+    container.scrollIntoView({behavior:'instant', block:'start'});
+}
+
+function shelterluvLoadIframe(containerId,url){
+    var container = document.getElementById(containerId);
+    if(!container)return;
+    var iframes = container.getElementsByTagName('iframe');
+    if (iframes.length==0)return;
+    var iframe = iframes[0];
+
+    var domain = iframe.getAttribute('data-domain');
+    var baseurl = iframe.getAttribute('data-baseurl');
+    var columns = iframe.getAttribute('data-columns');
+    if(url.indexOf('?')>-1){
+        url+='&';
+    }else{
+        url+='?';
+    }
+    url += 'embedded=1&iframeId='+encodeURIComponent(containerId)+(columns?'&columns='+columns:'');
+    url += '#' + encodeURIComponent( document.location.href );
+    iframe.src = domain+baseurl+url;
+}
+
+function shelterluvParseHash(){
+    var hash = window.location.hash.substring(1);
+    if(hash.indexOf('sl_embed')>-1){
+        hash = hash.substring(hash.indexOf('sl_embed')+9);
+        var page = hash.replace( /.*page=(.*?)(?:&.*|$)/, '$1' );
+        page = decodeURIComponent(page);
+        var slashi = page.indexOf('/');
+        if(slashi<0){
+            page = decodeURIComponent(page);
+            slashi = page.indexOf('/');
+        }
+        var containerId = page.substring(0,slashi);
+
+        var url = page.substring(slashi);
+        return { containerId:containerId, url:url};
+    }
+    return false;
+}

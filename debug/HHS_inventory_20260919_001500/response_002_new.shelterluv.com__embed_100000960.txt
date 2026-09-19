@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="">
+    <meta property="og:type" content="website" />
+    <meta property="fb:app_id" content="320934942548315" />
+    <meta property="og:url" content="https://new.shelterluv.com/embed/100000960" />
+    <meta property="og:site_name" content="Shelterluv" />
+    <title>Shelterluv</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    
+    <script src="https://use.fontawesome.com/b12fd142ae.js"></script>
+        <meta name="sentry-trace" content="90fc0e64f06a4e60914e1d17585005b0-56469d461105435a"/><meta name="baggage" content="sentry-trace_id=90fc0e64f06a4e60914e1d17585005b0,sentry-sample_rand=0.939633,sentry-sample_rate=0,sentry-public_key=98ad05e3568d4a3bbd55777717d358f6,sentry-org_id=57720,sentry-release=d330cda3d868811db6453d528a6f214765a2eb16,sentry-environment=production"/>
+
+    <script>
+    window.SENTRY_CONFIG = {
+        dsn: "https://98ad05e3568d4a3bbd55777717d358f6@o57720.ingest.sentry.io/4503943870939136",
+        release: "d330cda3d868811db6453d528a6f214765a2eb16",
+        environment: "production",
+        sampleRate: 1,
+        tracesSampleRate: 0,
+        profilesSampleRate: 0,
+        sendDefaultPii: true,
+        initialScope: (scope) => {
+                        return scope;
+        },
+    };
+    </script>
+    <link rel="preload" as="style" href="https://new-s3.shelterluv.com/public/./build/iframe/assets/iframe-Clj-GRW7.css" /><link rel="preload" as="style" href="https://new-s3.shelterluv.com/public/./build/iframe/assets/iframe-BPa6DgYG.css" /><link rel="modulepreload" as="script" href="https://new-s3.shelterluv.com/public/./build/iframe/assets/iframe-D8k23fpK.js" /><link rel="stylesheet" href="https://new-s3.shelterluv.com/public/./build/iframe/assets/iframe-Clj-GRW7.css" data-navigate-track="reload" /><link rel="stylesheet" href="https://new-s3.shelterluv.com/public/./build/iframe/assets/iframe-BPa6DgYG.css" data-navigate-track="reload" /><script type="module" src="https://new-s3.shelterluv.com/public/./build/iframe/assets/iframe-D8k23fpK.js" data-navigate-track="reload"></script>    </head>
+<body>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<div>
+    <div id="app" class="">
+            <iframe-animals :shelter-id="100000960"></iframe-animals>
+    </div>
+</div>
+    <script>
+        window.shelterId = 100000960
+    </script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>

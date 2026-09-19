@@ -197,9 +197,10 @@ async function renderSavedDogs(container) {
           ${d.dog_image_url ? `<img src="${d.dog_image_url}" alt="${d.dog_name}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--bg-slate-800);">🐾</div>'}
         </div>
         <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;">
-          <h4 style="font-weight:900; font-size:1rem; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">${d.dog_name || 'Shelter Pup'}</h4>
-          ${subtitle ? `<div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${subtitle}</div>` : ''}
-          ${locationLine ? `<div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📍 ${locationLine}</div>` : ''}
+          <h4 style="font-weight:900; font-size:1rem; color:white; margin:0; word-wrap:break-word;">${d.dog_name || 'Shelter Pup'}</h4>
+          ${breed ? `<div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; line-height:1.3; word-wrap:break-word;">${breed}</div>` : ''}
+          ${age ? `<div style="font-size:0.72rem; color:var(--text-muted); font-weight:500; line-height:1.3;">${age}</div>` : ''}
+          ${locationLine ? `<div style="font-size:0.68rem; color:var(--text-muted); line-height:1.3; word-wrap:break-word;">📍 ${locationLine}</div>` : ''}
         </div>
         <!-- Heart + Share -->
         <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0;">
