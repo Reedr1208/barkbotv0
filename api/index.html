@@ -6751,6 +6751,29 @@ if (landingStartBtn) {
   landingStartBtn.addEventListener('click', async () => {
     trackEvent('start_sniffing_clicked');
     switchView('app');
+
+    // Resolve browser geolocation so getEffectiveLocation() can auto-detect nearest shelter
+    if (!userCoords) {
+      const geoResult = await _geoCoordsPromise;
+      if (geoResult) userCoords = geoResult;
+    }
+
+    // If no location preference is set yet, auto-detect from user coordinates
+    if ((!currentPrefs.location || currentPrefs.location === 'any') && userCoords) {
+      await window.__CH_LOCATIONS_PROMISE__;  // ensure locations data is loaded
+      const detectedLocation = getEffectiveLocation();
+      if (detectedLocation && detectedLocation !== 'all') {
+        currentPrefs.location = detectedLocation;
+        localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+        setupSelectorButtons('prefLocationGroup', detectedLocation);
+        const headerSelect = document.getElementById('headerLocationSelect');
+        if (headerSelect) {
+          const locObj = (window.__CH_LOCATIONS_DATA__ || []).find(l => l.display_name === detectedLocation);
+          if (locObj) headerSelect.value = locObj.relative_path;
+        }
+      }
+    }
+
     await fetchSuggestedPromptsIfNeeded();
     fetchRandomDog();
   });
