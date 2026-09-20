@@ -944,6 +944,7 @@ async def save_preferences(request: Request):
         shelters_res = client.table("shelters").select("location_display_name").execute()
         valid_locations = set([s["location_display_name"] for s in shelters_res.data]) if shelters_res.data else set()
         valid_locations.add("any")
+        valid_locations.add("all")
 
         if gender not in valid_genders: gender = "any"
         if age_group not in valid_ages: age_group = "any"

@@ -199,7 +199,7 @@ async function fetchDogData(forcedAnimalId) {
   if (currentPrefs.gender && currentPrefs.gender !== 'any') params.push('gender=' + encodeURIComponent(currentPrefs.gender));
   if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.push('age_group=' + encodeURIComponent(currentPrefs.age_group));
   if (currentPrefs.size && currentPrefs.size !== 'any') params.push('size=' + encodeURIComponent(currentPrefs.size));
-  if (currentPrefs.location && currentPrefs.location !== 'any') params.push('location=' + encodeURIComponent(currentPrefs.location));
+  if (currentPrefs.location && currentPrefs.location !== 'any' && currentPrefs.location !== 'all') params.push('location=' + encodeURIComponent(currentPrefs.location));
   if (lifestylePrefs.energy && lifestylePrefs.energy !== 'any') params.push('energy=' + encodeURIComponent(lifestylePrefs.energy));
   if (lifestylePrefs.altered && lifestylePrefs.altered !== 'any') params.push('altered=' + encodeURIComponent(lifestylePrefs.altered));
   if (lifestylePrefs.dogs) params.push('dogs=true');
@@ -222,9 +222,14 @@ function syncLocationDropdown(dog, forcedAnimalId) {
     l.shelter_ids && l.shelter_ids.includes(dog.shelter_id)
   );
 
-  if (forcedAnimalId && dogLocObj) {
+  // If user explicitly chose "All Locations", don't override dropdown to dog's specific location
+  const userChoseAll = currentPrefs.location === 'all' || hs.value === 'all';
+
+  if (forcedAnimalId && dogLocObj && !userChoseAll) {
+    // Only sync to dog's location when user hasn't explicitly chosen "All Locations"
     hs.value = dogLocObj.relative_path;
     currentPrefs.location = dogLocObj.display_name;
+    localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
     if (typeof setupSelectorButtons === 'function') {
       setupSelectorButtons('prefLocationGroup', dogLocObj.display_name);
     }
