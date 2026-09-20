@@ -437,7 +437,7 @@ async def random_dog(request: Request):
             return JSONResponse(status_code=404, content={"error": "No dogs match your current preferences.", "no_matches": True})
 
         # ── Soft scoring (delegated to dog_ranking) ───────────────────
-        scored_dogs = score_candidates(valid_ids, persona_data, viewed_list)
+        scored_dogs = score_candidates(valid_ids, persona_data, viewed_list, client)
 
         # ── Selection (delegated to dog_ranking) ──────────────────────
         random_id = select_dog(valid_ids, scored_dogs, persona_data, viewed_ids, client)

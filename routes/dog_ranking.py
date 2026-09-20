@@ -24,8 +24,20 @@ logger = logging.getLogger("barkbot.ranking")
 #  TUNABLE WEIGHTS — edit these to change ranking behavior
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-WEIGHT_ARCHETYPE_VARIETY = 0.5   # Bonus for archetype not in last 2 shown
-FRESHNESS_WINDOW_DAYS    = 3     # Profiles updated within N days are "fresh"
+WEIGHT_ARCHETYPE_VARIETY = 0.40   # Bonus for archetype not in last 2 shown
+WEIGHT_BIO_RICHNESS      = 0.30   # Bonus for dogs with rich shelter bios
+WEIGHT_FRESHNESS         = 0.30   # Bonus for recently-updated profiles
+#                          ────
+#                          1.00   ← weights MUST sum to 1.0
+
+# How much randomness to inject into the final selection.
+#   0.0 = fully deterministic (always picks highest-scored dog)
+#   1.0 = fully random (scores are ignored)
+#   0.3 = recommended default — mostly score-driven with healthy shuffle
+RANDOMNESS = 0.3
+
+FRESHNESS_WINDOW_DAYS = 3   # Profiles updated within N days score 1.0 for freshness
+BIO_RICHNESS_CAP      = 800 # Bio char-length at which richness score maxes out at 1.0
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -131,16 +143,38 @@ def apply_hard_filters(valid_ids, active_dogs, shelters_map, preferences):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  SOFT SCORING  (additive bonuses for ranking within filtered pool)
+#  SOFT SCORING  (all factors scored 0–1, multiplied by weight)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def score_candidates(candidates, persona_data, viewed_list):
+def _freshness_score(aid, persona_data):
+    """Return 1.0 if profile was updated within FRESHNESS_WINDOW_DAYS, else 0.0."""
+    dt_str = persona_data.get(aid, {}).get("updated_at", "")
+    if dt_str.endswith("Z"):
+        dt_str = dt_str[:-1] + "+00:00"
+    try:
+        updated_at = datetime.fromisoformat(dt_str)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=FRESHNESS_WINDOW_DAYS)
+        return 1.0 if updated_at >= cutoff else 0.0
+    except Exception:
+        return 1.0  # treat parse failures as fresh
+
+
+def _bio_richness_score(bio_length):
+    """Return 0.0–1.0 based on bio character length (capped at BIO_RICHNESS_CAP)."""
+    return min(bio_length, BIO_RICHNESS_CAP) / BIO_RICHNESS_CAP
+
+
+def score_candidates(candidates, persona_data, viewed_list, client):
     """
     Score each candidate dog.  Higher score = more desirable to show next.
 
-    Current factors
-    ───────────────
-    • Archetype variety  (+0.5 if archetype not in last 2 shown)
+    Factors (each scored 0–1, then multiplied by weight)
+    ─────────────────────────────────────────────────────
+    • Archetype variety   × WEIGHT_ARCHETYPE_VARIETY
+    • Bio richness        × WEIGHT_BIO_RICHNESS
+    • Profile freshness   × WEIGHT_FRESHNESS
+
+    Total score range: 0.0 – 1.0
 
     Returns {animal_id: score} dict.
     """
@@ -154,13 +188,31 @@ def score_candidates(candidates, persona_data, viewed_list):
         if len(last_2_archetypes) >= 2:
             break
 
+    # Fetch bio lengths in one batch query
+    bio_lengths = {}
+    try:
+        res = client.table("animals").select("animal_id, bio").in_("animal_id", candidates).execute()
+        bio_lengths = {row["animal_id"]: len(row.get("bio") or "") for row in res.data}
+    except Exception:
+        pass  # all bio scores will be 0
+
     scores = {}
     for aid in candidates:
-        score = 0.0
+        # Factor 1: archetype variety (1.0 if unseen archetype, 0.0 if repeated)
         dog_arch = persona_data.get(aid, {}).get("primary_archetype_key")
-        if dog_arch and dog_arch not in last_2_archetypes:
-            score += WEIGHT_ARCHETYPE_VARIETY
-        scores[aid] = score
+        f_variety = 1.0 if (dog_arch and dog_arch not in last_2_archetypes) else 0.0
+
+        # Factor 2: bio richness (0.0–1.0 continuous)
+        f_bio = _bio_richness_score(bio_lengths.get(aid, 0))
+
+        # Factor 3: freshness (1.0 if recent, 0.0 if stale)
+        f_fresh = _freshness_score(aid, persona_data)
+
+        scores[aid] = (
+            f_variety * WEIGHT_ARCHETYPE_VARIETY +
+            f_bio     * WEIGHT_BIO_RICHNESS +
+            f_fresh   * WEIGHT_FRESHNESS
+        )
 
     return scores
 
@@ -169,53 +221,18 @@ def score_candidates(candidates, persona_data, viewed_list):
 #  SELECTION  (pick one dog from scored candidates)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def _freshness_map(candidates, persona_data):
-    """Classify each candidate as fresh (True) or stale (False)."""
-    cutoff = datetime.now(timezone.utc) - timedelta(days=FRESHNESS_WINDOW_DAYS)
-    status = {}
-    for aid in candidates:
-        dt_str = persona_data.get(aid, {}).get("updated_at", "")
-        if dt_str.endswith("Z"):
-            dt_str = dt_str[:-1] + "+00:00"
-        try:
-            updated_at = datetime.fromisoformat(dt_str)
-            status[aid] = (updated_at >= cutoff)
-        except Exception:
-            status[aid] = True  # treat parse failures as fresh
-    return status
-
-
-def _pick_bio_weighted(candidates, client):
-    """
-    Weighted random selection favouring dogs with richer bios.
-
-    Weight = min(bio_length, 800) / 10 + 10
-    This gives dogs with longer bios higher probability without
-    completely excluding dogs with short bios.
-    """
-    if not candidates:
-        return None
-    if len(candidates) == 1:
-        return candidates[0]
-    try:
-        res = client.table("animals").select("animal_id, bio").in_("animal_id", candidates).execute()
-        lengths = {row["animal_id"]: len(row.get("bio") or "") for row in res.data}
-        weights = [min(lengths.get(cid, 0), 800) / 10.0 + 10 for cid in candidates]
-        return random.choices(candidates, weights=weights, k=1)[0]
-    except Exception:
-        return random.choice(candidates)
-
-
 def select_dog(candidates, scores, persona_data, viewed_ids, client):
     """
     Select a single dog to show next.
 
-    Priority order
-    ──────────────
     1. Unviewed dogs first (ensures no repeats until full loop)
-    2. Highest score within the unviewed/viewed pool
-    3. Fresh profiles over stale (within same score tier)
-    4. Bio-weighted random within same tier
+    2. Within the pool, selection weight for each dog is:
+
+         weight = (1 - RANDOMNESS) × score  +  RANDOMNESS × random(0, 1)
+
+       • RANDOMNESS = 0  → always picks the highest-scored dog
+       • RANDOMNESS = 1  → completely random
+       • RANDOMNESS = 0.3 → mostly score-driven with healthy shuffle
 
     When all candidates have been viewed, selects from the full pool
     — this enables endless looping.
@@ -228,15 +245,17 @@ def select_dog(candidates, scores, persona_data, viewed_ids, client):
 
     if not pool:
         return None
+    if len(pool) == 1:
+        return pool[0]
 
-    freshness = _freshness_map(pool, persona_data)
-    max_score = max(scores.get(aid, 0) for aid in pool)
-    best = [aid for aid in pool if scores.get(aid, 0) == max_score]
+    # Blend deterministic score with random component
+    weights = []
+    for aid in pool:
+        deterministic = scores.get(aid, 0)
+        noise = random.random()
+        w = (1.0 - RANDOMNESS) * deterministic + RANDOMNESS * noise
+        # Ensure weight is always positive for random.choices
+        weights.append(max(w, 0.001))
 
-    # Prefer fresh within best-scored tier
-    fresh = [aid for aid in best if freshness.get(aid, True)]
-    stale = [aid for aid in best if not freshness.get(aid, True)]
+    return random.choices(pool, weights=weights, k=1)[0]
 
-    if fresh:
-        return _pick_bio_weighted(fresh, client)
-    return _pick_bio_weighted(stale, client)
