@@ -330,26 +330,6 @@
       gap: 12px;
     }
 
-    .match-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      background: rgba(20, 184, 166, 0.15);
-      color: var(--teal);
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 900;
-      letter-spacing: 0.02em;
-      border: 1px solid rgba(20, 184, 166, 0.3);
-      margin-bottom: 6px;
-    }
-
-    .match-badge.fallback {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-      border-color: rgba(251, 191, 36, 0.2);
-    }
 
     .dog-name {
       font-size: 2.5rem;

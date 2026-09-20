@@ -28,5 +28,5 @@ Return only valid JSON matching the schema.
 
 Tag-field rules for `highlights` and `important_facts_jsonb`:
 - These fields must NEVER contain sex, age, weight, breed, color, or physical stats — those are displayed separately on the profile page.
-- `highlights`: 1-3 punchy, adopter-appeal phrases (1-4 words). Think desirability and emotional hook.
-- `important_facts_jsonb`: 1-4 word personality/behavioral observations, special needs, or living situation details.
+- `highlights`: 2-4 short, positive-only phrases (1-4 words) highlighting what makes this dog lovable or uniquely awesome. Think desirability and emotional hook. Always return at least 2.
+- `important_facts_jsonb`: 2-5 short phrases (1-5 words) of adoption-critical information: special needs, house training, compatibility with kids/dogs/cats, behavioral concerns, medical notes, containment needs. Always return at least 2.

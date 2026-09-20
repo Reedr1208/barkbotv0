@@ -361,20 +361,13 @@ function renderCompatBadges(dog) {
   if (badgeContainer) {
     badgeContainer.innerHTML = '';
 
-    // Preference match badge (Strong Match / All Pups)
-    if (dog.user_has_preferences) {
-      if (dog.preferences_matched) {
-        badgeContainer.innerHTML = '<span class="match-badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Strong Match</span>';
-      } else {
-        badgeContainer.innerHTML = '<span class="match-badge fallback" title="Showing all pups as no exact fits match your preferences currently.">All Pups</span>';
-      }
-    }
-
-    // Highlight badge — driven directly from DB highlights field
+    // Highlight badges — show all highlights from DB as green tags
     const highlights = dog.highlights || [];
-    const fitBadgeLabel = highlights.length > 0 ? highlights[0] : 'Shelter hero 🦸';
-    const fitBadgeHtml = `<span class="fit-badge-tag">${fitBadgeLabel}</span>`;
-    badgeContainer.innerHTML = fitBadgeHtml + badgeContainer.innerHTML;
+    if (highlights.length > 0) {
+      badgeContainer.innerHTML = highlights.map(h => `<span class="fit-badge-tag">${h}</span>`).join('');
+    } else {
+      badgeContainer.innerHTML = '<span class="fit-badge-tag">Shelter Hero 🦸</span>';
+    }
   }
 
   // Preference stat dots (green/yellow/gray) and Why Fit card
@@ -500,7 +493,7 @@ function renderTraitChips(dog) {
     }
   } else {
     // Default trait chips when no facts exist
-    ['Active & Playful', 'Friendly Companion', 'Sweet Personality', 'Shelter Hero'].forEach(t => {
+    ['Ask About House Training', 'Ask About Other Pets', 'Ask About Special Needs'].forEach(t => {
       const chip = document.createElement('span');
       chip.className = 'trait-chip';
       chip.textContent = t;
