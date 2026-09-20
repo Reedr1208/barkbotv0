@@ -70,6 +70,7 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
             // Update preferences
             const newLocName = locObj ? locObj.display_name : (selectedPath === 'all' ? 'all' : 'any');
             currentPrefs.location = newLocName;
+            localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
             setupSelectorButtons('prefLocationGroup', newLocName);
             
             // Check if current dog matches new location

@@ -350,6 +350,14 @@ async function handleSavePreferences() {
   savePrefBtn.textContent = 'Saving...';
 
   currentPrefs = { gender, age_group, size, location };
+  localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+
+  // Sync to backend (non-blocking)
+  fetch('/api/save_preferences', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: userEmail, preferences: { gender, age_group, size, location } })
+  }).catch(() => {});
 
   // Sync header location dropdown with preference center selection
   const headerSelect = document.getElementById('headerLocationSelect');
@@ -382,6 +390,14 @@ async function resetPreferences() {
 
   // 2. Write to localStorage
   localStorage.setItem('chattyhound_lifestyle_prefs', JSON.stringify(lifestylePrefs));
+  localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+
+  // Sync reset to backend (non-blocking)
+  fetch('/api/save_preferences', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: userEmail, preferences: { gender: 'any', age_group: 'any', size: 'any', location: 'any' } })
+  }).catch(() => {});
 
   // 3. Update the selectors visually so that if user opens preferences again, it is correctly reset
   setupSelectorButtons('prefGenderGroup', 'any');

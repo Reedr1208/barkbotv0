@@ -41,7 +41,7 @@ if (!_deviceId) {
   localStorage.setItem('chattyhound_device_id', _deviceId);
 }
 const userEmail = _deviceId + '@device.chattyhound.com';
-let currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
+let currentPrefs = JSON.parse(localStorage.getItem('chattyhound_prefs') || JSON.stringify({ gender: 'any', age_group: 'any', size: 'any', location: 'any' }));
 
 // Expanded lifestyle preferences stored locally
 let lifestylePrefs = JSON.parse(localStorage.getItem('chattyhound_lifestyle_prefs') || JSON.stringify({
