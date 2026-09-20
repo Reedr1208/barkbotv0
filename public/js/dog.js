@@ -468,16 +468,14 @@ function renderBioSection(dog) {
   const aboutDogCard = document.getElementById('aboutDogCard');
   const aboutDogName = document.getElementById('aboutDogName');
   const aboutDogText = document.getElementById('aboutDogText');
-  const aboutDogToggle = document.getElementById('aboutDogToggle');
 
-  if (!aboutDogCard || !aboutDogText || !aboutDogToggle || !aboutDogName) return;
+  if (!aboutDogCard || !aboutDogText || !aboutDogName) return;
 
   if (bioText) {
     aboutDogCard.style.display = 'block';
     aboutDogName.textContent = currentDogName;
     aboutDogText.textContent = bioText;
     aboutDogText.classList.remove('collapsed');
-    aboutDogToggle.style.display = 'none';
   } else {
     aboutDogCard.style.display = 'none';
   }

@@ -37,7 +37,7 @@ WEIGHT_FRESHNESS         = 0.30   # Bonus for recently-updated profiles
 RANDOMNESS = 0.3
 
 FRESHNESS_WINDOW_DAYS = 3   # Profiles updated within N days score 1.0 for freshness
-BIO_RICHNESS_CAP      = 800 # Bio char-length at which richness score maxes out at 1.0
+BIO_RICHNESS_CAP      = 1500 # Bio char-length at which richness score maxes out at 1.0
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
