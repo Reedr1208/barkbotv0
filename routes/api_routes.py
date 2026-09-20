@@ -426,7 +426,6 @@ async def random_dog(request: Request):
                 "PHOENIX": (33.4484, -112.0740),
                 "JACKSONVILLE": (30.3322, -81.6557),
                 "PHILADELPHIA": (39.9526, -75.1652),
-                "NEWARK": (40.7357, -74.1724),
                 "DOVER": (40.8859, -74.5625),
             }
             min_dist = float('inf')

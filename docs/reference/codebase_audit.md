@@ -248,11 +248,11 @@ These files create noise when searching the codebase and make it harder to ident
 
 ### Vercel Crons vs GitHub Actions
 
-Some shelters run via Vercel cron jobs (PACC, PAWSCH, AHSCN, WWLA, Muddypaws) while others run via GitHub Actions (HSSA, NYCACC, HHS). The split appears to be based on whether Playwright is needed, but this isn't documented anywhere.
+Some shelters run via Vercel cron jobs (PACC, PAWSCH, WWLA, Muddypaws) while others run via GitHub Actions (HSSA, NYCACC, HHS). The split appears to be based on whether Playwright is needed, but this isn't documented anywhere.
 
 | Execution | Shelters | Reason |
 |---|---|---|
-| Vercel Cron | PACC, PAWSCH, AHSCN, WWLA, MP | Simple HTTP scraping or Vercel cron |
+| Vercel Cron | PACC, PAWSCH, WWLA, MP | Simple HTTP scraping or Vercel cron |
 | GitHub Actions | HSSA, NYCACC, HHS | Need Playwright (dynamic JS rendering) |
 
 ### The `.env` Loading Problem

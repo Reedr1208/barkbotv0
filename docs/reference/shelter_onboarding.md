@@ -64,7 +64,7 @@ client.table("shelters").insert({
 ```
 
 **Emoji conventions:**
-Tucson 🌵, NYC 🗽, LA 🌴, Chicago 🫘, Houston 🤠, Newark ✈️
+Tucson 🌵, NYC 🗽, LA 🌴, Chicago 🫘, Houston 🤠
 
 ---
 
