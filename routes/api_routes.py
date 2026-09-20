@@ -817,6 +817,105 @@ async def locations(request: Request):
 
 
 # ──────────────────────────────────────────────────────────────────────
+# GET /api/detect_location  — IP-based location auto-detection
+# ──────────────────────────────────────────────────────────────────────
+
+# Region coordinates for nearest-shelter matching
+_REGION_COORDS = {
+    "Tucson, AZ": (32.2226, -110.9747),
+    "Phoenix, AZ": (33.4484, -112.0740),
+    "Chicago, IL": (41.8781, -87.6298),
+    "New York, NY": (40.7128, -74.0060),
+    "Los Angeles, CA": (34.0522, -118.2437),
+    "Houston, TX": (29.7604, -95.3698),
+    "San Antonio, TX": (29.4241, -98.4936),
+    "Dallas, TX": (32.7767, -96.7970),
+    "Philadelphia, PA": (39.9526, -75.1652),
+    "San Diego, CA": (32.7157, -117.1611),
+    "San Francisco, CA": (37.7749, -122.4194),
+    "Jacksonville, FL": (30.3322, -81.6557),
+}
+
+import requests as _requests
+
+_geoip_cache = {}
+_GEOIP_TTL = 3600  # 1 hour
+
+
+def _geoip_lookup(ip: str):
+    """Look up lat/lon for an IP via ip-api.com. Cached by /24 subnet.
+    For private/localhost IPs, queries without a specific IP (auto-detects public IP)."""
+    is_private = (
+        not ip or ip.startswith("127.") or ip.startswith("10.")
+        or ip.startswith("192.168.") or ip.startswith("172.")
+        or ip == "::1"
+    )
+    # Use the IP if public, otherwise omit to let ip-api auto-detect
+    query_ip = "" if is_private else ip
+
+    parts = ip.split(".") if ip else ["local"]
+    cache_key = ".".join(parts[:3]) if len(parts) == 4 and not is_private else "_self"
+    cached = _geoip_cache.get(cache_key)
+    if cached:
+        ts, lat, lon = cached
+        if time.time() - ts < _GEOIP_TTL:
+            return lat, lon
+    try:
+        url = f"http://ip-api.com/json/{query_ip}?fields=status,lat,lon" if query_ip else "http://ip-api.com/json/?fields=status,lat,lon"
+        resp = _requests.get(url, timeout=2)
+        data = resp.json()
+        if data.get("status") == "success":
+            lat, lon = float(data["lat"]), float(data["lon"])
+            _geoip_cache[cache_key] = (time.time(), lat, lon)
+            return lat, lon
+    except Exception:
+        pass
+    return None, None
+
+
+@router.get("/api/detect_location")
+async def detect_location(request: Request):
+    """Return the nearest shelter location based on the user's IP address."""
+    try:
+        client_ip = (
+            request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+            or request.headers.get("x-real-ip", "")
+            or (request.client.host if request.client else "")
+        )
+
+        user_lat, user_lon = _geoip_lookup(client_ip)
+        if user_lat is None:
+            return JSONResponse(content={"location": None})
+
+        # Fetch locations from DB
+        sb = get_supabase_client()
+        res = sb.table("shelters").select("shelter_id, location_display_name").execute()
+        known_display_names = set()
+        for row in res.data:
+            dn = row.get("location_display_name")
+            if dn:
+                known_display_names.add(dn)
+
+        # Find nearest region
+        best_dist = float("inf")
+        best_name = None
+        for region_base, (lat, lon) in _REGION_COORDS.items():
+            dist = (user_lat - lat) ** 2 + (user_lon - lon) ** 2
+            if dist < best_dist:
+                # Match region base to a known display_name (which may include emoji)
+                matching = [dn for dn in known_display_names if dn.startswith(region_base)]
+                if matching:
+                    best_dist = dist
+                    best_name = matching[0]
+
+        return JSONResponse(content={"location": best_name})
+
+    except Exception as e:
+        logger.error(f"Error detecting location: {e}")
+        return JSONResponse(content={"location": None})
+
+
+# ──────────────────────────────────────────────────────────────────────
 # GET /api/suggested_prompts
 # ──────────────────────────────────────────────────────────────────────
 

@@ -6752,25 +6752,26 @@ if (landingStartBtn) {
     trackEvent('start_sniffing_clicked');
     switchView('app');
 
-    // Resolve browser geolocation so getEffectiveLocation() can auto-detect nearest shelter
-    if (!userCoords) {
-      const geoResult = await _geoCoordsPromise;
-      if (geoResult) userCoords = geoResult;
-    }
-
-    // If no location preference is set yet, auto-detect from user coordinates
-    if ((!currentPrefs.location || currentPrefs.location === 'any') && userCoords) {
-      await window.__CH_LOCATIONS_PROMISE__;  // ensure locations data is loaded
-      const detectedLocation = getEffectiveLocation();
-      if (detectedLocation && detectedLocation !== 'all') {
-        currentPrefs.location = detectedLocation;
-        localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-        setupSelectorButtons('prefLocationGroup', detectedLocation);
-        const headerSelect = document.getElementById('headerLocationSelect');
-        if (headerSelect) {
-          const locObj = (window.__CH_LOCATIONS_DATA__ || []).find(l => l.display_name === detectedLocation);
-          if (locObj) headerSelect.value = locObj.relative_path;
+    // Auto-detect nearest location from IP if no location preference set
+    if (!currentPrefs.location || currentPrefs.location === 'any' || currentPrefs.location === 'all') {
+      try {
+        await window.__CH_LOCATIONS_PROMISE__;  // ensure locations data is loaded
+        const detectRes = await fetch('/api/detect_location');
+        if (detectRes.ok) {
+          const detectData = await detectRes.json();
+          if (detectData.location) {
+            currentPrefs.location = detectData.location;
+            localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+            setupSelectorButtons('prefLocationGroup', detectData.location);
+            const headerSelect = document.getElementById('headerLocationSelect');
+            if (headerSelect) {
+              const locObj = (window.__CH_LOCATIONS_DATA__ || []).find(l => l.display_name === detectData.location);
+              if (locObj) headerSelect.value = locObj.relative_path;
+            }
+          }
         }
+      } catch (e) {
+        console.warn('Location auto-detect failed:', e);
       }
     }
 
