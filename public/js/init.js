@@ -105,6 +105,63 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
   }
 })();
 
+// ─── Location Personalization for Landing Page ───────────────────────────
+function personalizeForLocation(displayName) {
+  if (!displayName) return;
+  // Extract short city name (e.g. "Tucson" from "Tucson, AZ 🌵")
+  const cityShort = displayName.replace(/,.*$/, '').trim();
+  if (!cityShort) return;
+
+  // Update the location chip
+  const chip = document.getElementById('landingLocationChip');
+  const chipText = document.getElementById('landingLocationChipText');
+  if (chip && chipText) {
+    chipText.textContent = cityShort + '-area dogs ready';
+    chip.classList.add('visible');
+  }
+
+  // Update the title
+  const titleEl = document.getElementById('landingTitle');
+  if (titleEl) {
+    titleEl.innerHTML = cityShort + ' dogs <span class="gradient-text-accent">are online.</span><br>Go ask them something.';
+  }
+
+  // Update the subtitle
+  const subEl = document.getElementById('landingSub');
+  if (subEl) {
+    subEl.textContent = 'Meet adoptable shelter dogs around ' + cityShort + ' through playful AI conversations that reveal the energy, quirks, and personality hiding behind the kennel card.';
+  }
+
+  // Update the CTA button
+  const startBtn = document.getElementById('landingStartBtn');
+  if (startBtn) {
+    startBtn.textContent = 'Chat with ' + cityShort + ' hounds →';
+  }
+
+  // Store the detected city for later use in Start Sniffing handler
+  window.__CH_DETECTED_CITY__ = displayName;
+}
+
+// If city was injected server-side (e.g. /tucson route), personalize immediately
+if (window.__CH_DETECTED_CITY__) {
+  personalizeForLocation(window.__CH_DETECTED_CITY__);
+} else {
+  // Auto-detect from IP (non-blocking, fires on root "/" visits)
+  (async () => {
+    try {
+      const res = await fetch('/api/detect_location');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.location) {
+          personalizeForLocation(data.location);
+        }
+      }
+    } catch (e) {
+      // Silent fail — generic landing page will show
+    }
+  })();
+}
+
 // ─── Landing Page & Navigation Wiring ────────────────────────────────────
 const landingStartBtn = document.getElementById('landingStartBtn');
 if (landingStartBtn) {
@@ -112,10 +169,22 @@ if (landingStartBtn) {
     trackEvent('start_sniffing_clicked');
     switchView('app');
 
-    // Auto-detect nearest location from IP if no location preference set
-    if (!currentPrefs.location || currentPrefs.location === 'any' || currentPrefs.location === 'all') {
+    // Use the detected city if available, otherwise try to detect
+    const detectedCity = window.__CH_DETECTED_CITY__;
+    if (detectedCity && (!currentPrefs.location || currentPrefs.location === 'any' || currentPrefs.location === 'all')) {
+      await window.__CH_LOCATIONS_PROMISE__;  // ensure locations data is loaded
+      currentPrefs.location = detectedCity;
+      localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+      setupSelectorButtons('prefLocationGroup', detectedCity);
+      const headerSelect = document.getElementById('headerLocationSelect');
+      if (headerSelect) {
+        const locObj = (window.__CH_LOCATIONS_DATA__ || []).find(l => l.display_name === detectedCity);
+        if (locObj) headerSelect.value = locObj.relative_path;
+      }
+    } else if (!currentPrefs.location || currentPrefs.location === 'any' || currentPrefs.location === 'all') {
+      // Fallback: try API detection
       try {
-        await window.__CH_LOCATIONS_PROMISE__;  // ensure locations data is loaded
+        await window.__CH_LOCATIONS_PROMISE__;
         const detectRes = await fetch('/api/detect_location');
         if (detectRes.ok) {
           const detectData = await detectRes.json();

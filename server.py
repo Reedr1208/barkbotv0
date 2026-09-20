@@ -8,6 +8,7 @@ A persistent FastAPI application that:
 - Runs APScheduler for all cron jobs
 """
 
+import json
 import os
 import sys
 import logging
@@ -84,15 +85,33 @@ if os.path.isdir(PUBLIC_DIR):
     app.mount("/static", StaticFiles(directory=PUBLIC_DIR), name="static_assets")
 
 
-# ── Catch-all: serve index.html for SPA routes ─────────────────────
+# ── Cache for known location slugs → display_name ──────────────────
 
-@app.get("/privacy.html")
-async def privacy():
-    """Serve the privacy policy page."""
-    path = os.path.join(PUBLIC_DIR, "privacy.html")
-    if os.path.isfile(path):
-        return FileResponse(path, media_type="text/html")
-    return HTMLResponse("Not found", status_code=404)
+_LOCATION_SLUG_CACHE = None  # {slug: display_name}
+
+
+def _get_location_slugs():
+    """Load and cache the slug→display_name map from the shelters table."""
+    global _LOCATION_SLUG_CACHE
+    if _LOCATION_SLUG_CACHE is not None:
+        return _LOCATION_SLUG_CACHE
+
+    try:
+        from routes.deps import get_supabase_client
+        sb = get_supabase_client()
+        res = sb.table("shelters").select("relative_path, location_display_name").execute()
+        slugs = {}
+        for row in res.data:
+            rp = row.get("relative_path", "")
+            dn = row.get("location_display_name", "")
+            if rp and dn:
+                slug = rp.lstrip("/").lower()
+                if slug and slug not in slugs:
+                    slugs[slug] = dn
+        _LOCATION_SLUG_CACHE = slugs
+        return slugs
+    except Exception:
+        return {}
 
 
 @app.get("/{filename:path}")
@@ -100,6 +119,7 @@ async def serve_static_or_spa(filename: str, request: Request):
     """
     Serve static files from public/ if they exist, otherwise serve
     index.html for SPA client-side routing.
+    For known location slugs (e.g. /tucson), inject city data into the HTML.
     """
     # Try to serve the file directly from public/
     file_path = os.path.join(PUBLIC_DIR, filename)
@@ -123,9 +143,28 @@ async def serve_static_or_spa(filename: str, request: Request):
             return FileResponse(file_path, media_type="image/webp")
         return FileResponse(file_path)
 
+    # Check if this is a known location slug (e.g. /tucson → "Tucson, AZ 🌵")
+    slug = filename.strip("/").lower()
+    if slug and "/" not in slug:
+        location_slugs = _get_location_slugs()
+        display_name = location_slugs.get(slug)
+        if display_name:
+            index_path = os.path.join(PUBLIC_DIR, "index.html")
+            if os.path.isfile(index_path):
+                with open(index_path, "r", encoding="utf-8") as f:
+                    html_content = f.read()
+                # Inject city data into the HTML
+                bootstrap = (
+                    f'<script>window.__CH_DETECTED_CITY__={json.dumps(display_name)};'
+                    f'window.__CH_INITIAL_LOCATION__={json.dumps("/" + slug)};</script>\n'
+                )
+                html_content = html_content.replace("<body>", f"<body>\n{bootstrap}", 1)
+                return HTMLResponse(content=html_content, headers={"Cache-Control": "public, max-age=300"})
+
     # Fallback: serve index.html (SPA routing)
     index_path = os.path.join(PUBLIC_DIR, "index.html")
     if os.path.isfile(index_path):
         return FileResponse(index_path, media_type="text/html")
 
     return HTMLResponse("Not found", status_code=404)
+

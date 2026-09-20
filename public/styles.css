@@ -1890,6 +1890,42 @@
       background: radial-gradient(circle at bottom, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
     }
 
+    /* ── Location chip for geo-personalized landing page ─────── */
+    .landing-location-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      color: rgba(255,255,255,0.84);
+      background: rgba(255,255,255,0.07);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .landing-location-chip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .landing-location-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9ef2bd;
+      box-shadow: 0 0 0 4px rgba(158,242,189,0.15), 0 0 14px rgba(158,242,189,0.6);
+      animation: locationPulse 2s ease-in-out infinite;
+    }
+    @keyframes locationPulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(158,242,189,0.15), 0 0 14px rgba(158,242,189,0.6); }
+      50% { box-shadow: 0 0 0 6px rgba(158,242,189,0.25), 0 0 20px rgba(158,242,189,0.8); }
+    }
+
     .landing-logo {
       font-size: 1rem;
       text-transform: uppercase;
