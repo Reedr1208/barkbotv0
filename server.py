@@ -80,7 +80,7 @@ app.include_router(admin_router)
 
 PUBLIC_DIR = os.path.join(PROJECT_ROOT, "public")
 if os.path.isdir(PUBLIC_DIR):
-    app.mount("/js", StaticFiles(directory=os.path.join(PUBLIC_DIR, "js")), name="js")
+    # JS files served via catch-all handler with no-cache headers (see serve_static_or_spa)
     app.mount("/static", StaticFiles(directory=PUBLIC_DIR), name="static_assets")
 
 
@@ -106,9 +106,9 @@ async def serve_static_or_spa(filename: str, request: Request):
     if filename and os.path.isfile(file_path):
         # Determine content type
         if filename.endswith(".css"):
-            return FileResponse(file_path, media_type="text/css")
+            return FileResponse(file_path, media_type="text/css", headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
         elif filename.endswith(".js"):
-            return FileResponse(file_path, media_type="application/javascript")
+            return FileResponse(file_path, media_type="application/javascript", headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
         elif filename.endswith(".png"):
             return FileResponse(file_path, media_type="image/png")
         elif filename.endswith(".jpg") or filename.endswith(".jpeg"):

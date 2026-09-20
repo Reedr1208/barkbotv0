@@ -5,6 +5,7 @@
 
 /**
  * Fetch the Informative/Whimsical prompt pools from the API (cached).
+ * API returns: { informative: [{text, weight}, ...], whimsical: [{text, weight}, ...] }
  */
 async function fetchSuggestedPromptsIfNeeded() {
   if (suggestedPromptsCache) return suggestedPromptsCache;
@@ -27,124 +28,128 @@ async function fetchSuggestedPromptsIfNeeded() {
  */
 function initSuggestionsForDog(dogData) {
   const cache = suggestedPromptsCache || { informative: [], whimsical: [] };
-  const profilePrompts = (dogData && dogData.sugg_specific) ? [...dogData.sugg_specific] : [];
+
+  // Normalize: handle both old format (plain strings) and new format ({text, weight})
+  function normalizePool(items) {
+    return (items || []).map(item => {
+      if (typeof item === 'string') return { text: item, weight: 1.0 };
+      if (item && typeof item === 'object' && typeof item.text === 'string') return item;
+      // Unknown format — skip
+      return null;
+    }).filter(Boolean);
+  }
+
+  // Profile-specific prompts come as plain strings — give them weight=1.0
+  const profilePrompts = (dogData && dogData.sugg_specific)
+    ? dogData.sugg_specific.map(t => ({ text: String(t), weight: 1.0 }))
+    : [];
 
   suggestionState = {
     pools: {
-      informative: [...cache.informative],
-      whimsical: [...cache.whimsical],
+      informative: normalizePool(cache.informative),
+      whimsical: normalizePool(cache.whimsical),
       profile: profilePrompts,
     },
     usedPrompts: new Set(),
-    current: {
-      informative: { text: null, turnsShown: 0 },
-      whimsical:   { text: null, turnsShown: 0 },
-      profile:     { text: null, turnsShown: 0 },
-    },
   };
   activeSuggestions = [];
 }
 
 /**
- * Pick a random unused prompt from a category pool.
- * Returns null if the pool is exhausted.
+ * Weighted random pick from a pool, excluding used prompts.
+ * Returns the {text, weight} object or null if pool exhausted.
  */
-function pickFromPool(category) {
+function pickWeightedFromPool(category) {
   const pool = suggestionState.pools[category];
-  const available = pool.filter(p => !suggestionState.usedPrompts.has(p));
+  const available = pool.filter(p => !suggestionState.usedPrompts.has(p.text));
   if (available.length === 0) return null;
-  const idx = Math.floor(Math.random() * available.length);
-  return available[idx];
+  if (available.length === 1) return available[0];
+
+  // Weighted random selection
+  const totalWeight = available.reduce((sum, p) => sum + p.weight, 0);
+  let r = Math.random() * totalWeight;
+  for (const p of available) {
+    r -= p.weight;
+    if (r <= 0) return p;
+  }
+  return available[available.length - 1]; // fallback
 }
 
 /**
- * Core suggestion logic. Called on dog load (no args) and after each bot reply.
- * Shows one suggestion per category (Informative, Whimsical, Profile-Specific).
- * Rotates suggestions after 2 chat turns. Used suggestions are never reshown.
+ * Core suggestion logic. Called on dog load and after EVERY chat turn.
+ * Picks a fresh weighted-random prompt from each category every time.
+ * Used (clicked) prompts are excluded. When a category is exhausted,
+ * remaining slots fill from other categories.
  */
-function updateSuggestions(botReplyText) {
+function updateSuggestions() {
   const quickPromptsContainer = document.getElementById('quickPromptsContainer');
   if (!quickPromptsContainer) return;
 
   const categories = ['informative', 'whimsical', 'profile'];
 
-  // Check if ALL prompts across ALL categories have been used
+  // Check total availability
   const totalAvailable = categories.reduce((sum, cat) => {
-    return sum + suggestionState.pools[cat].filter(p => !suggestionState.usedPrompts.has(p)).length;
+    return sum + suggestionState.pools[cat].filter(p => !suggestionState.usedPrompts.has(p.text)).length;
   }, 0);
 
   if (totalAvailable === 0) {
-    // All prompts exhausted — show nothing
     quickPromptsContainer.innerHTML = '';
     activeSuggestions = [];
     return;
   }
 
-  // For each category, decide whether to keep the current prompt or rotate
-  for (const cat of categories) {
-    const cur = suggestionState.current[cat];
-
-    const needsNew = (
-      cur.text === null ||                           // No prompt yet
-      suggestionState.usedPrompts.has(cur.text) ||   // Was used (clicked)
-      cur.turnsShown >= 2                            // Shown for 2 turns
-    );
-
-    if (needsNew) {
-      const newPick = pickFromPool(cat);
-      suggestionState.current[cat] = { text: newPick, turnsShown: 0 };
-    }
-
-    // If we have a bot reply, increment turnsShown for non-null prompts
-    if (botReplyText && suggestionState.current[cat].text) {
-      suggestionState.current[cat].turnsShown++;
-    }
-  }
-
-  // Collect one prompt from each category that has one
+  // Pick one weighted-random prompt from each category
   let finalPrompts = [];
-  const categoriesWithPrompts = [];
-  const categoriesExhausted = [];
+  const categoriesWithRoom = [];
+  const usedTexts = new Set();
 
   for (const cat of categories) {
-    const text = suggestionState.current[cat].text;
-    if (text && !suggestionState.usedPrompts.has(text)) {
-      finalPrompts.push({ text, category: cat });
-      categoriesWithPrompts.push(cat);
-    } else {
-      categoriesExhausted.push(cat);
+    const pick = pickWeightedFromPool(cat);
+    if (pick && !usedTexts.has(pick.text)) {
+      finalPrompts.push({ text: pick.text, category: cat });
+      usedTexts.add(pick.text);
+      categoriesWithRoom.push(cat);
     }
   }
 
-  // If any category is exhausted, fill from remaining categories (overflow)
-  if (categoriesExhausted.length > 0 && finalPrompts.length < 3) {
-    const usedTexts = new Set(finalPrompts.map(p => p.text));
-    for (const cat of categoriesWithPrompts) {
+  // If any category is exhausted and we have fewer than 3, fill from remaining
+  if (finalPrompts.length < 3) {
+    for (const cat of categoriesWithRoom) {
       if (finalPrompts.length >= 3) break;
       const pool = suggestionState.pools[cat];
       const available = pool.filter(p =>
-        !suggestionState.usedPrompts.has(p) && !usedTexts.has(p)
+        !suggestionState.usedPrompts.has(p.text) && !usedTexts.has(p.text)
       );
-      for (const p of available) {
-        if (finalPrompts.length >= 3) break;
-        finalPrompts.push({ text: p, category: cat });
-        usedTexts.add(p);
+      // Pick additional via weighted random
+      for (let i = 0; i < available.length && finalPrompts.length < 3; i++) {
+        const totalW = available.reduce((s, p) => s + (usedTexts.has(p.text) ? 0 : p.weight), 0);
+        if (totalW <= 0) break;
+        let r = Math.random() * totalW;
+        let picked = null;
+        for (const p of available) {
+          if (usedTexts.has(p.text)) continue;
+          r -= p.weight;
+          if (r <= 0) { picked = p; break; }
+        }
+        if (!picked) break;
+        finalPrompts.push({ text: picked.text, category: cat });
+        usedTexts.add(picked.text);
       }
     }
   }
 
-  // Limit to 3
   finalPrompts = finalPrompts.slice(0, 3);
   activeSuggestions = finalPrompts.map(p => p.text);
 
   // Render the suggestion buttons
   quickPromptsContainer.innerHTML = '';
   finalPrompts.forEach(p => {
+    const promptText = (typeof p.text === 'object') ? (p.text.text || String(p.text)) : String(p.text);
     const btn = document.createElement('button');
     btn.className = 'prompt-shortcut-btn';
     btn.setAttribute('type', 'button');
-    btn.setAttribute('data-prompt', p.text);
-    btn.textContent = p.text;
+    btn.setAttribute('data-prompt', promptText);
+    btn.textContent = promptText;
 
     const handleImmediateSend = (e) => {
       e.preventDefault();
@@ -281,7 +286,7 @@ async function sendMessage(customText = null, chosenPrompt = null) {
     const firstLetter = currentDogName.charAt(0).toUpperCase();
     if (data.reply) {
       appendMessage('bot', data.reply, firstLetter);
-      updateSuggestions(data.reply);
+      updateSuggestions();
     } else {
       appendMessage('bot', '[Error: No reply received]', firstLetter);
     }

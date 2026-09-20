@@ -824,15 +824,16 @@ async def locations(request: Request):
 async def suggested_prompts(request: Request):
     try:
         client = get_supabase_client()
-        res = client.table("suggested_prompts").select("category, prompt_text").execute()
+        res = client.table("suggested_prompts").select("category, prompt_text, weight").execute()
 
         informative = []
         whimsical = []
         for row in res.data:
+            entry = {"text": row["prompt_text"], "weight": row.get("weight", 1.0)}
             if row["category"] == "Informative":
-                informative.append(row["prompt_text"])
+                informative.append(entry)
             elif row["category"] == "Whimsical":
-                whimsical.append(row["prompt_text"])
+                whimsical.append(entry)
 
         return JSONResponse(content={"informative": informative, "whimsical": whimsical})
 
