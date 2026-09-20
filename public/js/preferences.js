@@ -447,21 +447,3 @@ if (savePrefBtn) {
   savePrefBtn.addEventListener('click', handleSavePreferences);
 }
 
-// Collapsible biography click trigger
-const aboutDogToggle = document.getElementById('aboutDogToggle');
-const aboutDogText = document.getElementById('aboutDogText');
-if (aboutDogToggle && aboutDogText) {
-  aboutDogToggle.addEventListener('click', () => {
-    const fullBio = aboutDogText.dataset.fullBio || '';
-    const isCollapsed = aboutDogText.classList.toggle('collapsed');
-    if (isCollapsed) {
-      aboutDogText.textContent = fullBio.slice(0, 180) + '...';
-      aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
-      trackEvent('bio_collapsed', { dog_name: currentDogName });
-    } else {
-      aboutDogText.textContent = fullBio;
-      aboutDogToggle.innerHTML = `See less <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="18 15 12 9 6 15"/></svg>`;
-      trackEvent('bio_expanded', { dog_name: currentDogName });
-    }
-  });
-}

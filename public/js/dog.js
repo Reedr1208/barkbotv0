@@ -456,41 +456,13 @@ function renderTraitChips(dog) {
   const existingToggle = traitChipsContainer.parentNode.querySelector('.facts-toggle-btn');
   if (existingToggle) existingToggle.remove();
 
-  const facts = dog.important_facts || [];
-  const chevronDown = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px;"><polyline points="6 9 12 15 18 9"/></svg>';
-  const chevronUp = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px;"><polyline points="18 15 12 9 6 15"/></svg>';
-
   if (facts.length > 0) {
-    const MAX_VISIBLE = 3;
-    facts.forEach((fact, i) => {
+    facts.forEach((fact) => {
       const chip = document.createElement('span');
       chip.className = 'trait-chip';
-      if (i >= MAX_VISIBLE) {
-        chip.classList.add('fact-hidden');
-        chip.style.display = 'none';
-      }
       chip.textContent = fact;
       traitChipsContainer.appendChild(chip);
     });
-
-    if (facts.length > MAX_VISIBLE) {
-      const toggleBtn = document.createElement('button');
-      toggleBtn.className = 'see-more-toggle facts-toggle-btn';
-      toggleBtn.style.cssText = 'width:100%; justify-content:center; margin-top:8px;';
-      toggleBtn.innerHTML = `See more notes (${facts.length - MAX_VISIBLE} more) ${chevronDown}`;
-
-      let expanded = false;
-      toggleBtn.addEventListener('click', () => {
-        expanded = !expanded;
-        traitChipsContainer.querySelectorAll('.trait-chip.fact-hidden').forEach(c => {
-          c.style.display = expanded ? 'inline-flex' : 'none';
-        });
-        toggleBtn.innerHTML = expanded
-          ? `See less notes ${chevronUp}`
-          : `See more notes (${facts.length - MAX_VISIBLE} more) ${chevronDown}`;
-      });
-      traitChipsContainer.after(toggleBtn);
-    }
   } else {
     // Default trait chips when no facts exist
     ['Ask About House Training', 'Ask About Other Pets', 'Ask About Special Needs'].forEach(t => {
@@ -516,18 +488,9 @@ function renderBioSection(dog) {
   if (bioText) {
     aboutDogCard.style.display = 'block';
     aboutDogName.textContent = currentDogName;
-    aboutDogText.dataset.fullBio = bioText;
-
-    if (bioText.length > 180) {
-      aboutDogText.textContent = bioText.slice(0, 180) + '...';
-      aboutDogToggle.style.display = 'inline-flex';
-      aboutDogToggle.innerHTML = `See more <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px;"><polyline points="6 9 12 15 18 9"/></svg>`;
-      aboutDogText.classList.add('collapsed');
-    } else {
-      aboutDogText.textContent = bioText;
-      aboutDogToggle.style.display = 'none';
-      aboutDogText.classList.remove('collapsed');
-    }
+    aboutDogText.textContent = bioText;
+    aboutDogText.classList.remove('collapsed');
+    aboutDogToggle.style.display = 'none';
   } else {
     aboutDogCard.style.display = 'none';
   }
