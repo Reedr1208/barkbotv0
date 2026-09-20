@@ -441,6 +441,8 @@ function renderTraitChips(dog) {
   const existingToggle = traitChipsContainer.parentNode.querySelector('.facts-toggle-btn');
   if (existingToggle) existingToggle.remove();
 
+  const facts = dog.important_facts || [];
+
   if (facts.length > 0) {
     facts.forEach((fact) => {
       const chip = document.createElement('span');
