@@ -256,6 +256,9 @@ async function sendMessage(customText = null, chosenPrompt = null) {
   chatInput.disabled = true;
   sendBtn.disabled = true;
 
+  // Rotate suggestions immediately on every user turn
+  updateSuggestions();
+
   showTypingIndicator();
 
   const historyToSend = conversationHistory.slice(0, -1);
