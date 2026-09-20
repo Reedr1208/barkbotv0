@@ -4,7 +4,6 @@ FastAPI routes for all BarkBot JSON API endpoints.
 
 import json
 import os
-import random
 import re
 import time
 import logging
@@ -15,42 +14,10 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from routes.deps import get_supabase_client, get_image_base_url
-
-import requests as _requests
+from routes.dog_ranking import apply_hard_filters, score_candidates, select_dog
 
 router = APIRouter()
 logger = logging.getLogger("barkbot.api")
-
-# ── Server-side IP geolocation ──────────────────────────────────────
-_geoip_cache = {}  # key: IP /24 prefix, value: (timestamp, lat, lon)
-_GEOIP_TTL = 3600  # 1 hour
-
-def _geoip_lookup(ip: str):
-    """Look up lat/lon for an IP address using ip-api.com. Returns (lat, lon) or (None, None).
-    Results are cached by /24 subnet for 1 hour to minimise external calls."""
-    if not ip or ip.startswith("127.") or ip.startswith("10.") or ip == "::1":
-        return None, None
-    # Cache key: first 3 octets of IPv4
-    parts = ip.split(".")
-    cache_key = ".".join(parts[:3]) if len(parts) == 4 else ip
-    cached = _geoip_cache.get(cache_key)
-    if cached:
-        ts, lat, lon = cached
-        if time.time() - ts < _GEOIP_TTL:
-            return lat, lon
-    try:
-        resp = _requests.get(
-            f"http://ip-api.com/json/{ip}?fields=status,lat,lon",
-            timeout=2,
-        )
-        data = resp.json()
-        if data.get("status") == "success":
-            lat, lon = float(data["lat"]), float(data["lon"])
-            _geoip_cache[cache_key] = (time.time(), lat, lon)
-            return lat, lon
-    except Exception:
-        pass
-    return None, None
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -389,51 +356,6 @@ async def random_dog(request: Request):
             profile["image_base_url"] = image_base_url
             return JSONResponse(content=profile)
 
-        # Parse user coordinates from query params for proximity matching
-        user_lat = None
-        user_lon = None
-        try:
-            lat_str = (params.get("lat") or "").strip()
-            lon_str = (params.get("lon") or "").strip()
-            if lat_str and lon_str:
-                user_lat = float(lat_str)
-                user_lon = float(lon_str)
-        except Exception:
-            pass
-
-        # Fallback: server-side IP geolocation when client didn't send coords
-        if user_lat is None or user_lon is None:
-            client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or \
-                        request.headers.get("x-real-ip", "") or \
-                        (request.client.host if request.client else "")
-            geo_lat, geo_lon = _geoip_lookup(client_ip)
-            if geo_lat is not None:
-                user_lat, user_lon = geo_lat, geo_lon
-
-        closer_region = None
-        if user_lat is not None and user_lon is not None:
-            locations = {
-                "TUCSON": (32.2226, -110.9747),
-                "CHICAGO": (41.8781, -87.6298),
-                "NYC": (40.7128, -74.0060),
-                "LOS ANGELES": (34.0522, -118.2437),
-                "HOUSTON": (29.7604, -95.3698),
-                "SEATTLE": (47.6062, -122.3321),
-                "SAN FRANCISCO": (37.7749, -122.4194),
-                "SAN DIEGO": (32.7157, -117.1611),
-                "DALLAS": (32.7767, -96.7970),
-                "SAN ANTONIO": (29.4241, -98.4936),
-                "PHOENIX": (33.4484, -112.0740),
-                "JACKSONVILLE": (30.3322, -81.6557),
-                "PHILADELPHIA": (39.9526, -75.1652),
-                "DOVER": (40.8859, -74.5625),
-            }
-            min_dist = float('inf')
-            for region, (lat, lon) in locations.items():
-                dist = (user_lat - lat)**2 + (user_lon - lon)**2
-                if dist < min_dist:
-                    min_dist = dist
-                    closer_region = region
 
         # Fetch all dog IDs, names, and filterable fields from active_dogs
         active_data = fetch_all_rows(client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id"))
@@ -470,16 +392,6 @@ async def random_dog(request: Request):
 
         if not valid_ids:
             return JSONResponse(status_code=404, content={"error": "No dogs with generated personas found."})
-
-        # Determine last 2 unique archetypes the user has seen
-        last_2_archetypes = set()
-        for aid in reversed(viewed_list):
-            if aid in persona_data:
-                arch = persona_data[aid].get("primary_archetype_key")
-                if arch:
-                    last_2_archetypes.add(arch)
-            if len(last_2_archetypes) >= 2:
-                break
 
         # Fetch user preferences if logged in
         preferences = None
@@ -518,207 +430,63 @@ async def random_dog(request: Request):
             if not preferences.get(k):
                 preferences[k] = False
 
-        # Apply preferences filtering
+        # ── Hard filters (delegated to dog_ranking) ───────────────────
+        valid_ids = apply_hard_filters(valid_ids, active_dogs, shelters_map, preferences)
+
+        if not valid_ids:
+            return JSONResponse(status_code=404, content={"error": "No dogs match your current preferences.", "no_matches": True})
+
+        # ── Soft scoring (delegated to dog_ranking) ───────────────────
+        scored_dogs = score_candidates(valid_ids, persona_data, viewed_list)
+
+        # ── Selection (delegated to dog_ranking) ──────────────────────
+        random_id = select_dog(valid_ids, scored_dogs, persona_data, viewed_ids, client)
+
+        if not random_id:
+            return JSONResponse(status_code=404, content={"error": "Could not select a dog."})
+
+        # ── Build match_details for frontend compat dots ──────────────
         preferences_matched = False
         best_match_details = {}
-        scored_dogs = {aid: 0 for aid in valid_ids}
-        preferences_configured = False
-
         pref_gender = preferences.get("gender") or "any"
         pref_age = preferences.get("age_group") or "any"
         pref_size = preferences.get("size") or "any"
         pref_location = preferences.get("location") or "any"
-        pref_energy = preferences.get("energy") or "any"
-        pref_altered = preferences.get("altered") or "any"
-        pref_dogs = preferences.get("dogs", False)
-        pref_house_trained = preferences.get("house_trained", False)
 
-        def clean_loc(s):
-            return re.sub(r'[^a-zA-Z0-9]', '', str(s)).lower()
-
-        # ── Hard pre-filters ──────────────────────────────────────────
-        # All filters always apply. If zero dogs pass, the no_matches 404 fires.
-
-        # Location hard filter
-        if pref_location not in ("any", "all"):
-            valid_ids = [aid for aid in valid_ids
-                         if clean_loc(pref_location) == clean_loc(shelters_map.get(active_dogs[aid].get("shelter_id"), {}).get("location_display_name", ""))]
-
-        # Gender hard filter
-        if pref_gender != "any":
-            valid_ids = [aid for aid in valid_ids if matches_gender(active_dogs[aid].get("gender"), pref_gender)]
-
-        # Age hard filter (unknowns pass through)
-        if pref_age != "any":
-            valid_ids = [aid for aid in valid_ids
-                         if (active_dogs[aid].get("age_bucket") or "N/A") == "N/A"
-                         or pref_age.lower() in (active_dogs[aid].get("age_bucket") or "").lower()]
-
-        # Size hard filter (unknowns pass through)
-        if pref_size != "any":
-            valid_ids = [aid for aid in valid_ids
-                         if (active_dogs[aid].get("weight_class") or "N/A") == "N/A"
-                         or pref_size.lower() in (active_dogs[aid].get("weight_class") or "").lower()]
-
-        # Altered status hard filter (unknowns pass through)
-        if pref_altered != "any":
-            filtered = []
-            for aid in valid_ids:
-                dog_altered = (active_dogs[aid].get("altered_status") or "N/A").lower()
-                if dog_altered == "n/a":
-                    filtered.append(aid)
-                elif pref_altered == "altered" and dog_altered in ("spayed", "neutered"):
-                    filtered.append(aid)
-                elif pref_altered == "unaltered" and dog_altered == "unaltered":
-                    filtered.append(aid)
-            valid_ids = filtered
-
-        # Energy level hard filter (strict — only confirmed matches)
-        if pref_energy != "any":
-            filtered = []
-            for aid in valid_ids:
-                dog_energy = (active_dogs[aid].get("energy_level") or "").lower()
-                if pref_energy == dog_energy:
-                    filtered.append(aid)
-            valid_ids = filtered
-
-        # Good with dogs hard filter (strict — only confirmed "yes")
-        if pref_dogs:
-            valid_ids = [aid for aid in valid_ids if (active_dogs[aid].get("good_with_dogs") or "").lower() == "yes"]
-
-        # House trained hard filter (strict — only confirmed "yes")
-        if pref_house_trained:
-            valid_ids = [aid for aid in valid_ids if (active_dogs[aid].get("house_trained") or "").lower() == "yes"]
-
-        # If all dogs filtered out, return no-match signal
-        if not valid_ids:
-            return JSONResponse(status_code=404, content={"error": "No dogs match your current preferences.", "no_matches": True})
-
-        # ── Soft scoring for ranking within filtered pool ─────────────
         has_gender = (pref_gender != "any")
         has_age = (pref_age != "any")
         has_size = (pref_size != "any")
         has_location = (pref_location not in ("any", "all"))
-        has_energy = (pref_energy != "any")
-        has_altered = (pref_altered != "any")
-        has_dogs_pref = pref_dogs
-        has_house_trained = pref_house_trained
-        total_pref_count = sum([has_gender, has_age, has_size, has_location, has_energy, has_altered, has_dogs_pref, has_house_trained])
+        preferences_configured = has_gender or has_age or has_size or has_location
 
-        if total_pref_count > 0:
-            preferences_configured = True
-            for aid in valid_ids:
-                dog = active_dogs[aid]
-                score = 0
-                details = {
-                    "gender": {"active": has_gender, "preferred": pref_gender, "actual": dog.get("gender") or "Unknown", "matched": False},
-                    "age": {"active": has_age, "preferred": pref_age, "actual": dog.get("age") or "Unknown", "matched": False},
-                    "size": {"active": has_size, "preferred": pref_size, "actual": dog.get("weight") or "Unknown", "matched": False},
-                    "location": {"active": has_location, "preferred": pref_location, "actual": shelters_map.get(dog.get("shelter_id"), {}).get("location_display_name", "Unknown"), "matched": False}
-                }
-                if has_gender:
-                    if matches_gender(dog.get("gender"), pref_gender):
-                        score += 1
-                        details["gender"]["matched"] = True
-                if has_age:
-                    dog_age_group = dog.get("age_bucket") or "N/A"
-                    if pref_age.lower() in dog_age_group.lower() and dog_age_group != "N/A":
-                        score += 1
-                        details["age"]["matched"] = True
-                    details["age"]["actual"] = dog_age_group
-                if has_size:
-                    dog_size_class = dog.get("weight_class") or "N/A"
-                    if pref_size.lower() in dog_size_class.lower() and dog_size_class != "N/A":
-                        score += 1
-                        details["size"]["matched"] = True
-                    details["size"]["actual"] = dog_size_class
-                if has_location:
-                    dog_loc = shelters_map.get(dog.get("shelter_id"), {}).get("location_display_name", "")
-                    if pref_location.lower() == dog_loc.lower():
-                        score += 1
-                        details["location"]["matched"] = True
-                else:
-                    dog_city = shelters_map.get(dog.get("shelter_id"), {}).get("city", "").upper()
-                    if closer_region and dog_city == closer_region:
-                        score += 0.8
-                dog_arch = persona_data[aid].get("primary_archetype_key")
-                if dog_arch and dog_arch not in last_2_archetypes:
-                    score += 0.5
-                scored_dogs[aid] = score
-                best_match_details[aid] = details
-        else:
-            for aid in valid_ids:
-                score = 0
-                dog = active_dogs[aid]
-                dog_city = shelters_map.get(dog.get("shelter_id"), {}).get("city", "").upper()
-                if closer_region and dog_city == closer_region:
-                    score += 0.8
-                dog_arch = persona_data[aid].get("primary_archetype_key")
-                if dog_arch and dog_arch not in last_2_archetypes:
-                    score += 0.5
-                scored_dogs[aid] = score
+        if preferences_configured:
+            dog = active_dogs[random_id]
+            details = {
+                "gender": {"active": has_gender, "preferred": pref_gender, "actual": dog.get("gender") or "Unknown", "matched": False},
+                "age": {"active": has_age, "preferred": pref_age, "actual": dog.get("age") or "Unknown", "matched": False},
+                "size": {"active": has_size, "preferred": pref_size, "actual": dog.get("weight") or "Unknown", "matched": False},
+                "location": {"active": has_location, "preferred": pref_location, "actual": shelters_map.get(dog.get("shelter_id"), {}).get("location_display_name", "Unknown"), "matched": False}
+            }
+            if has_gender and matches_gender(dog.get("gender"), pref_gender):
+                details["gender"]["matched"] = True
+            if has_age:
+                dog_age_group = dog.get("age_bucket") or "N/A"
+                if pref_age.lower() in dog_age_group.lower() and dog_age_group != "N/A":
+                    details["age"]["matched"] = True
+                details["age"]["actual"] = dog_age_group
+            if has_size:
+                dog_size_class = dog.get("weight_class") or "N/A"
+                if pref_size.lower() in dog_size_class.lower() and dog_size_class != "N/A":
+                    details["size"]["matched"] = True
+                details["size"]["actual"] = dog_size_class
+            if has_location:
+                dog_loc = shelters_map.get(dog.get("shelter_id"), {}).get("location_display_name", "")
+                if pref_location.lower() == dog_loc.lower():
+                    details["location"]["matched"] = True
+            best_match_details[random_id] = details
+            preferences_matched = all(d["matched"] for d in details.values() if d["active"])
 
-        # Categorize all valid dogs by freshness
-        three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
-        fresh_status = {}
-        for aid in valid_ids:
-            dt_str = persona_data[aid].get("updated_at", "")
-            if dt_str.endswith("Z"):
-                dt_str = dt_str[:-1] + "+00:00"
-            try:
-                updated_at = datetime.fromisoformat(dt_str)
-                fresh_status[aid] = (updated_at >= three_days_ago)
-            except Exception:
-                fresh_status[aid] = True
-
-        # Separate candidates into unviewed and viewed
-        unviewed_ids = [aid for aid in valid_ids if aid not in viewed_ids]
-
-        def select_weighted_dog(candidates):
-            if not candidates:
-                return None
-            if len(candidates) == 1:
-                return candidates[0]
-            try:
-                res = client.table("animals").select("animal_id, bio").in_("animal_id", candidates).execute()
-                lengths = {}
-                for row in res.data:
-                    b_len = len(row.get("bio") or "")
-                    lengths[row["animal_id"]] = b_len
-                weights = []
-                for cid in candidates:
-                    w = min(lengths.get(cid, 0), 800) / 10.0 + 10
-                    weights.append(w)
-                return random.choices(candidates, weights=weights, k=1)[0]
-            except Exception:
-                return random.choice(candidates)
-
-        random_id = None
-        if unviewed_ids:
-            max_unviewed_score = max(scored_dogs[aid] for aid in unviewed_ids)
-            best_unviewed_candidates = [aid for aid in unviewed_ids if scored_dogs[aid] == max_unviewed_score]
-            unviewed_fresh = [aid for aid in best_unviewed_candidates if fresh_status[aid]]
-            unviewed_stale = [aid for aid in best_unviewed_candidates if not fresh_status[aid]]
-            if unviewed_fresh:
-                random_id = select_weighted_dog(unviewed_fresh)
-            else:
-                random_id = select_weighted_dog(unviewed_stale)
-        else:
-            max_score = max(scored_dogs.values()) if scored_dogs else 0
-            best_candidates = [aid for aid, score in scored_dogs.items() if score == max_score]
-            all_fresh = [aid for aid in best_candidates if fresh_status[aid]]
-            all_stale = [aid for aid in best_candidates if not fresh_status[aid]]
-            if all_fresh:
-                random_id = select_weighted_dog(all_fresh)
-            else:
-                random_id = select_weighted_dog(all_stale)
-
-        # Determine whether preferences are matched for the selected dog
-        if preferences_configured and random_id:
-            max_overall_score = max(scored_dogs.values()) if scored_dogs else 0
-            preferences_matched = (scored_dogs[random_id] >= 1.0 and (scored_dogs[random_id] == max_overall_score or scored_dogs[random_id] >= 1.0))
-
-        # Fetch the full profile
+        # ── Fetch the full profile ────────────────────────────────────
         profile_res = client.table("animals").select("*").eq("animal_id", random_id).limit(1).execute()
         if not profile_res.data:
             return JSONResponse(status_code=404, content={"error": "Profile not found in animals table."})
@@ -757,14 +525,6 @@ async def random_dog(request: Request):
         profile["user_has_preferences"] = has_real_preferences
         profile["match_details"] = best_match_details.get(random_id, {})
 
-        suggested_location = None
-        if closer_region and not has_real_preferences:
-            for s in shelters_map.values():
-                if s.get("city", "").upper() == closer_region:
-                    suggested_location = s.get("location_display_name")
-                    break
-        profile["suggested_location"] = suggested_location
-
         # Add shelter relative_path for share URL construction
         dog_shelter_id = active_dogs[random_id].get("shelter_id", "")
         profile["relative_path"] = shelters_map.get(dog_shelter_id, {}).get("relative_path", "")
@@ -775,6 +535,8 @@ async def random_dog(request: Request):
         profile["image_base_url"] = image_base_url
 
         return JSONResponse(content=profile)
+
+
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

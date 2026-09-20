@@ -184,12 +184,6 @@ function resetProfileUI() {
 // ─── fetchDogData: Build URL, call API, return fetch Response ───────────────
 
 async function fetchDogData(forcedAnimalId) {
-  // Ensure browser geolocation has resolved before first fetch
-  if (!userCoords) {
-    const geoResult = await _geoCoordsPromise;
-    if (geoResult) userCoords = geoResult;
-  }
-
   const params = [];
   if (forcedAnimalId) {
     params.push('animal_id=' + encodeURIComponent(forcedAnimalId));
@@ -204,10 +198,6 @@ async function fetchDogData(forcedAnimalId) {
   if (lifestylePrefs.altered && lifestylePrefs.altered !== 'any') params.push('altered=' + encodeURIComponent(lifestylePrefs.altered));
   if (lifestylePrefs.dogs) params.push('dogs=true');
   if (lifestylePrefs.houseTrained) params.push('house_trained=true');
-  if (userCoords) {
-    params.push('lat=' + userCoords.lat);
-    params.push('lon=' + userCoords.lon);
-  }
 
   return fetch('/api/random_dog?' + params.join('&'));
 }
@@ -234,12 +224,7 @@ function syncLocationDropdown(dog, forcedAnimalId) {
       setupSelectorButtons('prefLocationGroup', dogLocObj.display_name);
     }
   } else if (!dog.user_has_preferences && hs.value === 'any') {
-    if (dog.suggested_location) {
-      const sugLocObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === dog.suggested_location);
-      hs.value = sugLocObj ? sugLocObj.relative_path : 'all';
-    } else {
-      hs.value = 'all';
-    }
+    hs.value = 'all';
   }
 }
 
