@@ -886,16 +886,31 @@ def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
         dist_data = []
         dist_offset = 0
         while True:
-            dist_res = sb.table("animal_persona_profiles").select("primary_archetype_key").range(dist_offset, dist_offset + 999).execute()
+            dist_res = sb.table("animal_persona_profiles").select("animal_id, primary_archetype_key").range(dist_offset, dist_offset + 999).execute()
             dist_data.extend(dist_res.data)
             if len(dist_res.data) < 1000:
                 break
             dist_offset += 1000
-        distribution = {}
+
+        # Build animal_id -> shelter_id lookup for distribution
+        all_persona_aids = [r["animal_id"] for r in dist_data if r.get("animal_id")]
+        dist_shelter_lookup = {}
+        for i in range(0, len(all_persona_aids), 500):
+            batch = all_persona_aids[i:i+500]
+            shelter_res = sb.table("animals").select("animal_id, shelter_id").in_("animal_id", batch).execute()
+            for r in shelter_res.data:
+                dist_shelter_lookup[r["animal_id"]] = r.get("shelter_id", "unknown")
+
+        # Build per-shelter distribution: {shelter_id: {archetype_key: count}}
+        shelter_distributions = {}
         for row in dist_data:
-            k = row.get("primary_archetype_key")
-            if k:
-                distribution[k] = distribution.get(k, 0) + 1
+            aid_key = row.get("animal_id")
+            arch_key = row.get("primary_archetype_key")
+            sid = dist_shelter_lookup.get(aid_key, "unknown")
+            if sid not in shelter_distributions:
+                shelter_distributions[sid] = {}
+            if arch_key:
+                shelter_distributions[sid][arch_key] = shelter_distributions[sid].get(arch_key, 0) + 1
 
         # ── 3. Shelter → location path mapping for refreshed dogs links ──
         shelters_res = sb.table("shelters").select("shelter_id, relative_path").execute()
@@ -930,6 +945,7 @@ def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
             updated_at = animal_record.get("updated_at")
             adoption_url = animal_record.get("shelter_profile_url")
             shelter_name = animal_record.get("shelter_name")
+            shelter_id = animal_record.get("shelter_id", dog_shelter_map.get(aid, "unknown"))
 
             # Strip internal fields before sending to LLM
             for key in ["id", "record_hash", "created_at", "updated_at", "last_scrape_run_id"]:
@@ -951,11 +967,14 @@ def _run_backfill_facts(run_id: str, shelter_ids: list, dog_selection: dict):
 
                 fact_profile["full_bio"] = animal_record.get("bio", "")
 
-                # 2. Persona Scoring
-                persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)
+                # 2. Persona Scoring (per-shelter distribution for balance)
+                this_shelter_dist = shelter_distributions.get(shelter_id, {})
+                persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, this_shelter_dist)
                 assigned_key = persona_profile.get("primary_archetype_key")
                 if assigned_key:
-                    distribution[assigned_key] = distribution.get(assigned_key, 0) + 1
+                    if shelter_id not in shelter_distributions:
+                        shelter_distributions[shelter_id] = {}
+                    shelter_distributions[shelter_id][assigned_key] = shelter_distributions[shelter_id].get(assigned_key, 0) + 1
                 persona_profile["source_record_hash"] = record_hash
 
                 db_persona = {

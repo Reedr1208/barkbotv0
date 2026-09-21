@@ -1,4 +1,5 @@
 import os
+import random
 import logging
 from typing import Dict, Any
 
@@ -28,6 +29,13 @@ def render_system_prompt(fact_profile: Dict[str, Any], persona_profile: Dict[str
             return "\n".join([f"- {item}" for item in items])
         return str(items)
 
+    # Select one creative quirk at random from the archetype's list
+    creative_quirks = persona_profile.get("creative_quirks", [])
+    if creative_quirks and isinstance(creative_quirks, list) and len(creative_quirks) > 0:
+        selected_quirk = random.choice(creative_quirks)
+    else:
+        selected_quirk = ""
+
     # Prepare context
     context = {
         "DOG_NAME": fact_profile.get("dog_name", "Buddy"),
@@ -45,6 +53,12 @@ def render_system_prompt(fact_profile: Dict[str, Any], persona_profile: Dict[str
         # Archetype Style Rules
         "ARCHETYPE_CHARACTERS": persona_profile.get("characters", "* A good dog"),
         "ARCHETYPE_LINGUISTIC_STYLE": persona_profile.get("linguistic_style", "* Normal conversational tone"),
+
+        # Creative quirk
+        "CREATIVE_QUIRK": selected_quirk,
+
+        # Personality traits
+        "PERSONALITY_TRAITS": to_bullets(persona_profile.get("personality", [])),
         
         # Facts
         "BACKSTORY_SUMMARY": fact_profile.get("backstory_summary", ""),

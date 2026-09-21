@@ -195,7 +195,7 @@ async def chat(request: Request):
         openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
         try:
-            response = openai_client.chat.completions.create(model=CHAT_MODEL, messages=input_messages)
+            response = openai_client.chat.completions.create(model=CHAT_MODEL, messages=input_messages, temperature=1.1)
             output_text = response.choices[0].message.content
         except AttributeError:
             response = openai_client.responses.create(model=CHAT_MODEL, input=input_messages)
