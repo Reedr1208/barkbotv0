@@ -1466,10 +1466,22 @@
 
       #landingView .scroll-content {
         display: block !important;
-        height: 100% !important;
-        overflow: hidden !important;
+        height: auto !important;
+        overflow: visible !important;
         padding-bottom: 0 !important;
         padding-top: 0 !important;
+      }
+
+      /* When landing page is active, let the container grow for scrolling */
+      #landingView.view-screen {
+        height: auto !important;
+        overflow: visible !important;
+      }
+      #landingView.view-screen ~ #appView.hidden + .app-container,
+      .app-container:has(#landingView:not(.hidden)) {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
       }
 
       .hero-section {
