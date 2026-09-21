@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 # ── Threshold: if top-2 scores are within this many points, consider
 #    swapping to the 2nd choice for distribution balance.
-SCORE_PROXIMITY_THRESHOLD = 15
+SCORE_PROXIMITY_THRESHOLD = 20
 
 
 class ArchetypeScore(BaseModel):
