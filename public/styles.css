@@ -1890,7 +1890,7 @@
       margin: 16px auto;
       display: grid;
       grid-template-rows: auto 1fr auto;
-      overflow: hidden;
+      overflow: visible;
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 30px;
       background: linear-gradient(140deg, rgba(15,23,42,0.95), rgba(7,14,22,0.97));
@@ -2074,8 +2074,9 @@
     .landing-stage {
       position: relative;
       display: grid;
-      place-items: center;
-      padding: clamp(28px, 5vw, 70px);
+      justify-items: center;
+      align-items: start;
+      padding: clamp(28px, 5vw, 50px) clamp(28px, 5vw, 70px);
       min-height: 580px;
       overflow: hidden;
     }
@@ -2217,7 +2218,7 @@
       .landing-shell { min-height: auto; }
       .landing-hero-grid { grid-template-columns: 1fr; }
       .landing-copy { padding-bottom: 24px; }
-      .landing-stage { min-height: 520px; padding-top: 35px; }
+      .landing-stage { min-height: auto; padding-top: 15px; padding-bottom: 42px; }
       .landing-how-inner { grid-template-columns: 1fr; }
       .landing-steps { grid-template-columns: 1fr; }
     }
@@ -2236,7 +2237,7 @@
       .landing-trust-row { margin-top: 28px; grid-template-columns: 1fr; }
       .landing-trust-item { padding: 10px 0; font-size: 0.68rem; }
       .landing-trust-item strong { font-size: 0.68rem; }
-      .landing-stage { min-height: 480px; padding: 26px 20px 42px; }
+      .landing-stage { min-height: auto; padding: 15px 20px 42px; }
       .landing-how { padding: 0 20px 36px; }
       .landing-how-inner { padding: 16px; gap: 16px; }
     }

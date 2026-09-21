@@ -227,6 +227,13 @@ if (landingLoginBtn) {
   });
 }
 
+const landingPrefBtn = document.getElementById('landingPrefBtn');
+if (landingPrefBtn) {
+  landingPrefBtn.addEventListener('click', () => {
+    openPrefModal();
+  });
+}
+
 
 // Cleaned up: loginSkipBtn and loginGuestBtn removed (no longer exist in HTML)
 
