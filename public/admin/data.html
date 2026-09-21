@@ -294,13 +294,20 @@ let chartDogsShelter = null;
 async function loadData() {
   try {
     const res = await fetch('/admin/api/data/stats');
-    if (!res.ok) throw new Error('Failed to load');
+    if (!res.ok) {
+      let detail = `HTTP ${res.status}`;
+      try { const body = await res.json(); detail += `: ${body.error || JSON.stringify(body)}`; } catch(_) {}
+      throw new Error(detail);
+    }
     RAW_DATA = await res.json();
     populateFilters();
     render('ALL', 'ALL');
   } catch (e) {
     document.querySelector('.main').innerHTML =
-      `<div class="loading-overlay" style="color:var(--error)">❌ Failed to load data: ${e.message}</div>`;
+      `<div class="loading-overlay" style="color:var(--error);flex-direction:column;gap:8px;text-align:center">
+        <div>❌ Failed to load data</div>
+        <div style="font-size:12px;color:var(--text-dim);max-width:600px;word-break:break-all">${e.message}</div>
+      </div>`;
   }
 }
 
