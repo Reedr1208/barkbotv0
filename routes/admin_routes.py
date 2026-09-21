@@ -221,11 +221,11 @@ async def admin_data_stats(request: Request):
     archetype_names = {a["archetype_key"]: a["name"] for a in archetypes_res.data}
 
     # Get shelters list
-    shelters_res = sb.table("shelters").select("shelter_id, name, city, state").execute()
+    shelters_res = sb.table("shelters").select("shelter_id, shelter_name, city, state").execute()
     shelter_meta = {}
     for s in shelters_res.data:
         shelter_meta[s["shelter_id"]] = {
-            "name": s.get("name", s["shelter_id"]),
+            "name": s.get("shelter_name", s["shelter_id"]),
             "city": s.get("city", ""),
             "state": s.get("state", ""),
             "location": f"{s.get('city', '')}, {s.get('state', '')}".strip(", "),
