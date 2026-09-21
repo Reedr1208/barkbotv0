@@ -161,9 +161,8 @@ def run():
             sys.path.insert(0, api_dir)
 
         from pipeline.extract_fact_profiles import extract_fact_profile
-        from pipeline.build_persona_profiles import build_persona_profile, enrich_persona_fingerprint
+        from pipeline.build_persona_profiles import build_persona_profile
         from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
-        from pipeline.persona_helpers import persona_profile_to_db_row, build_render_context, prompt_record_to_db_row
 
         # Fetch current distribution
         dist_data = []
@@ -217,7 +216,7 @@ def run():
 
                 fact_profile["full_bio"] = animal_record.get("bio", "")
 
-                # 2. Persona Scoring (archetype selection)
+                # 2. Persona Scoring
                 persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, distribution)
 
                 assigned_key = persona_profile.get("primary_archetype_key")
@@ -225,35 +224,34 @@ def run():
                     distribution[assigned_key] = distribution.get(assigned_key, 0) + 1
                 persona_profile["source_record_hash"] = record_hash
 
-                # 2b. Persona Enrichment (v4 fingerprint)
-                fingerprint_dict = None
-                try:
-                    fingerprint = enrich_persona_fingerprint(openai_client, fact_profile, persona_profile)
-                    if fingerprint:
-                        fingerprint_dict = fingerprint.model_dump()
-                        persona_profile["enrichment_model"] = "gpt-4o-mini"
-                        persona_profile["enrichment_params_jsonb"] = {"temperature": 1.0}
-                except Exception as enrich_err:
-                    logger.warning(f"Enrichment failed for {aid}, continuing with v3: {enrich_err}")
-
-                # Persist persona using centralized serializer
-                db_persona = persona_profile_to_db_row(persona_profile, record_hash, fingerprint_dict)
+                db_persona = {
+                    "animal_id": persona_profile.get("animal_id"),
+                    "source_record_hash": persona_profile.get("source_record_hash"),
+                    "primary_archetype_key": persona_profile.get("primary_archetype_key"),
+                    "selection_reasoning": persona_profile.get("selection_reasoning"),
+                }
                 sb_client.table("animal_persona_profiles").upsert(db_persona).execute()
 
                 # 3. Prompt Rendering
-                system_prompt = render_system_prompt(fact_profile, persona_profile, fingerprint_dict)
+                system_prompt = render_system_prompt(fact_profile, persona_profile)
                 validation = validate_system_prompt(system_prompt)
-                render_context = build_render_context(fact_profile, persona_profile, fingerprint_dict)
-                prompt_version = "v4" if fingerprint_dict else "v3"
 
-                prompt_record = prompt_record_to_db_row(
-                    animal_id=aid,
-                    system_prompt=system_prompt,
-                    source_record_hash=record_hash,
-                    render_context=render_context,
-                    validation=validation,
-                    prompt_version=prompt_version,
-                )
+                render_context = {
+                    "fact_profile_used": True,
+                    "persona_profile_used": True,
+                    "archetype": persona_profile.get("primary_archetype_key")
+                }
+
+                prompt_record = {
+                    "animal_id": aid,
+                    "prompt_version": "v3",
+                    "source_record_hash": record_hash,
+                    "system_prompt": system_prompt,
+                    "render_context_jsonb": render_context,
+                    "validation_results_jsonb": validation,
+                    "is_active": True
+                }
+
                 sb_client.table("system_prompts_v2").upsert(prompt_record).execute()
 
                 processed_count += 1
