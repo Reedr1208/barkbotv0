@@ -61,6 +61,14 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
           }
         }
 
+        // Helper: toggle glow indicator on mobile when a specific location is active
+        function updateLocationIndicator() {
+          if (!headerSelect) return;
+          const v = headerSelect.value;
+          headerSelect.classList.toggle('location-active', v !== 'any' && v !== 'all');
+        }
+        updateLocationIndicator();
+
         // Bind event listener to headerLocationSelect
         if (headerSelect) {
           headerSelect.addEventListener('change', async (e) => {
@@ -72,6 +80,7 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
             currentPrefs.location = newLocName;
             localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
             setupSelectorButtons('prefLocationGroup', newLocName);
+            updateLocationIndicator();
             
             // Check if current dog matches new location
             let shouldKeepDog = false;
