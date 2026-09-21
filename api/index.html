@@ -1950,34 +1950,67 @@
       opacity: 0;
     }
 
-    /* Premium Landing Page */
-    .landing-hero {
-      padding: 32px 24px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      background: radial-gradient(circle at bottom, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+    /* ════════════════════════════════════════════════════════
+       NEW PREMIUM LANDING PAGE (Mockup-inspired)
+       ════════════════════════════════════════════════════════ */
+
+    .landing-shell {
+      position: relative;
+      width: min(1200px, calc(100% - 32px));
+      min-height: min(880px, calc(100vh - 32px));
+      margin: 16px auto;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 30px;
+      background: linear-gradient(140deg, rgba(15,23,42,0.95), rgba(7,14,22,0.97));
+      box-shadow: 0 32px 100px rgba(0,0,0,0.48), inset 0 1px 0 rgba(255,255,255,0.05);
+      isolation: isolate;
+    }
+    .landing-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent 0 56%, rgba(255,255,255,0.03) 56% 56.1%, transparent 56.1%);
+      z-index: -1;
     }
 
-    /* ── Location chip for geo-personalized landing page ─────── */
+    /* ── Nav ────────────────────────── */
+    .landing-nav {
+      min-height: 74px;
+      padding: 19px clamp(20px, 4vw, 48px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .landing-brand {
+      font-size: 0.86rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: var(--cream-highlight);
+      white-space: nowrap;
+    }
+
+    /* ── Location chip ────────────────── */
     .landing-location-chip {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 7px 14px;
-      border: 1px solid rgba(255,255,255,0.16);
+      padding: 9px 14px;
+      border: 1px solid rgba(255,255,255,0.14);
       border-radius: 999px;
       color: rgba(255,255,255,0.84);
-      background: rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.06);
       font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      margin-bottom: 12px;
       opacity: 0;
-      transform: translateY(-6px);
+      transform: translateY(-4px);
       transition: opacity 0.4s ease, transform 0.4s ease;
     }
     .landing-location-chip.visible {
@@ -1997,309 +2030,289 @@
       50% { box-shadow: 0 0 0 6px rgba(158,242,189,0.25), 0 0 20px rgba(158,242,189,0.8); }
     }
 
-    .landing-logo {
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.25em;
-      color: var(--accent-hover);
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
+    /* ── Hero grid ────────────────────── */
+    .landing-hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.07fr) minmax(370px, 0.93fr);
+      min-height: 0;
     }
 
+    /* ── Left copy ────────────────────── */
+    .landing-copy {
+      padding: clamp(36px, 6vw, 78px) clamp(24px, 5vw, 72px) 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
     .landing-title {
-      font-size: 2.25rem;
-      font-weight: 950;
-      line-height: 1.1;
-      letter-spacing: -0.03em;
-      background: linear-gradient(135deg, var(--cream-highlight) 30%, var(--accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    .landing-sub {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-      font-weight: 500;
-      max-width: 380px;
-    }
-
-    .landing-cta-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-      max-width: 280px;
-      margin-top: 8px;
-    }
-
-    @keyframes ctaBreathe {
-      0%, 100% {
-        box-shadow: 0 6px 20px var(--accent-shadow);
-        transform: scale(1);
-      }
-      50% {
-        box-shadow: 0 6px 28px rgba(245, 158, 11, 0.45);
-        transform: scale(1.025);
-      }
-    }
-
-    .btn-primary {
-      padding: 14px 28px;
-      background: var(--accent);
-      color: var(--accent-text);
-      border: none;
-      border-radius: 9999px;
-      font-weight: 800;
-      font-size: 0.95rem;
-      cursor: pointer;
-      box-shadow: 0 6px 20px var(--accent-shadow);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      animation: ctaBreathe 3s ease-in-out infinite;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      transform: translateY(-2px) scale(1.04);
-      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
-      animation: none;
-    }
-
-    .btn-secondary {
-      padding: 12px 24px;
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text-main);
-      border: 1px solid var(--border-soft);
-      border-radius: 9999px;
-      font-weight: 700;
-      font-size: 0.88rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    /* ── Landing page Grid and Right Pane Showcase ── */
-    .landing-grid-container {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-    }
-
-    .landing-right-pane {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
-      box-sizing: border-box;
-    }
-
-    .landing-hero-card {
-      position: relative;
-      width: 100%;
-      max-width: 380px;
-      aspect-ratio: 1;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-      background: var(--bg-slate-800);
-      transition: transform 0.3s ease;
-      margin-bottom: 60px;
-      cursor: pointer;
-    }
-
-    .landing-hero-card:hover {
-      transform: translateY(-4px) scale(1.02);
-      border-color: var(--accent);
-      box-shadow: 0 25px 50px rgba(245, 158, 11, 0.15);
-    }
-
-    .landing-hero-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      border-radius: 24px;
-    }
-
-    .landing-mock-bubble {
-      position: absolute;
-      top: 80%;
-      left: 14px;
-      right: 14px;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 12px 14px;
-      box-sizing: border-box;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-      animation: floatBubble 3s ease-in-out infinite;
-    }
-
-    .landing-mock-bubble p {
-      font-size: 0.78rem;
-      line-height: 1.45;
-      color: var(--text-main);
+      max-width: 710px;
       margin: 0;
-      font-weight: 500;
+      font-size: clamp(2.6rem, 5.8vw, 5rem);
+      line-height: 0.99;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+      color: var(--cream-highlight);
+      text-wrap: balance;
     }
-
-    .bubble-heart {
-      position: absolute;
-      top: -12px;
-      right: 16px;
-      font-size: 1.2rem;
-      filter: drop-shadow(0 2px 5px rgba(239, 68, 68, 0.5));
-      animation: heartPulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes floatBubble {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
-    }
-
-    @keyframes heartPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-    }
-
     .gradient-text-accent {
-      background: linear-gradient(135deg, var(--accent) 30%, #fcd34d 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline;
+      color: var(--accent);
+      text-shadow: 0 0 42px var(--accent-shadow);
+      -webkit-text-fill-color: var(--accent);
+      background: none;
+      -webkit-background-clip: unset;
+    }
+    .landing-sub {
+      max-width: 540px;
+      margin: 28px 0 0;
+      color: rgba(248,250,252,0.65);
+      font-size: clamp(0.95rem, 1.35vw, 1.12rem);
+      line-height: 1.62;
+      letter-spacing: -0.015em;
+      font-weight: 400;
     }
 
-    /* Landing explanation grid */
-    .landing-explanation {
-      padding: 24px;
-      border-top: 1px solid var(--border-soft);
-      background: rgba(255, 255, 255, 0.01);
+    /* ── CTA buttons ──────────────────── */
+    .landing-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
     }
-
-    .explanation-title {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--text-muted);
+    .landing-btn {
+      min-height: 50px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 13px 20px;
+      border: 1px solid transparent;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 0.86rem;
       font-weight: 900;
-      text-align: center;
-      margin-bottom: 20px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    .landing-btn:hover { transform: translateY(-2px); }
+    .landing-btn-primary {
+      color: var(--accent-text);
+      background: var(--accent);
+      box-shadow: 0 12px 30px var(--accent-shadow);
+    }
+    .landing-btn-primary:hover { box-shadow: 0 16px 36px rgba(245,158,11,0.35); background: var(--accent-hover); }
+    .landing-btn-ghost {
+      color: var(--text-main);
+      border-color: rgba(255,255,255,0.17);
+      background: rgba(255,255,255,0.06);
+    }
+    .landing-btn-ghost:hover { border-color: rgba(255,255,255,0.38); background: rgba(255,255,255,0.1); }
+
+    .landing-micro-note {
+      margin-top: 13px;
+      color: rgba(248,250,252,0.42);
+      font-size: 0.74rem;
+      line-height: 1.45;
     }
 
-    .steps-vertical {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
+    /* ── Trust row ─────────────────────── */
+    .landing-trust-row {
+      max-width: 640px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 36px;
+    }
+    .landing-trust-item {
+      padding: 14px 13px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      color: rgba(248,250,252,0.55);
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+    .landing-trust-item strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--cream-highlight);
+      font-size: 0.74rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Right stage (dog card) ────────── */
+    .landing-stage {
       position: relative;
+      display: grid;
+      place-items: center;
+      padding: clamp(28px, 5vw, 70px);
+      min-height: 580px;
+      overflow: hidden;
     }
-
-    .steps-vertical::before {
-      content: '';
+    .landing-stage::before {
+      content: "";
       position: absolute;
-      left: 32px; /* 16px left-padding of step-item + 16px half-width of badge */
-      top: 32px;
-      bottom: 32px;
-      width: 2px;
-      background: linear-gradient(to bottom, var(--teal) 0%, rgba(20, 184, 166, 0.1) 100%);
+      width: 80%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--accent-shadow);
+      filter: blur(22px);
+      opacity: 0.5;
+    }
+    .landing-dog-card {
+      position: relative;
+      width: min(100%, 420px);
+      padding: 13px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 25px;
+      background: rgba(245,247,241,0.94);
+      color: #1a1a1a;
+      box-shadow: 0 35px 75px rgba(0,0,0,0.42), 0 0 0 9px rgba(255,255,255,0.03);
+      transform: rotate(-2.2deg);
+      transition: transform 0.28s ease, box-shadow 0.28s ease;
       z-index: 1;
+      cursor: pointer;
+    }
+    .landing-dog-card:hover {
+      transform: rotate(0) translateY(-5px);
+      box-shadow: 0 45px 90px rgba(0,0,0,0.5), 0 0 0 9px rgba(255,255,255,0.06);
     }
 
-    .step-item {
+    .landing-preview-bar {
       display: flex;
-      gap: 16px;
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-radius: 20px;
-      padding: 16px 20px;
-      text-align: left;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 5px 4px 12px;
+      color: #666;
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .landing-preview-status { color: var(--accent-text); }
+    .landing-preview-status::before {
+      content: "";
+      display: inline-block;
+      width: 7px; height: 7px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-shadow);
+    }
+
+    .landing-dog-photo {
       position: relative;
+      height: 310px;
+      overflow: hidden;
+      border-radius: 17px;
+      background-position: center 34%;
+      background-size: cover;
+    }
+
+    .landing-conversation {
+      position: relative;
+      margin: -22px 12px 0;
+      padding: 16px;
+      border: 1px solid rgba(8,18,25,0.11);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.96);
+      box-shadow: 0 14px 28px rgba(8,18,25,0.14);
       z-index: 2;
     }
-
-    .step-item:hover {
-      transform: translateX(6px);
-      background: rgba(255, 255, 255, 0.03);
-      border-color: rgba(20, 184, 166, 0.35);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    .landing-conversation p {
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: #1a1a1a;
     }
 
-    .step-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #141f32; /* solid dark slate matching background */
-      border: 1.5px solid rgba(20, 184, 166, 0.4);
-      color: #2dd4bf;
+    .landing-card-bottom {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 0.9rem;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 3;
-      box-shadow: 0 0 12px rgba(20, 184, 166, 0.2);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 4px 2px;
+    }
+    .landing-card-bottom p { margin: 0; color: #888; font-size: 0.67rem; line-height: 1.35; }
+    .landing-card-bottom button {
+      border: 0; padding: 8px 0;
+      color: var(--accent-text);
+      background: transparent;
+      font: inherit; font-size: 0.72rem; font-weight: 950;
+      cursor: pointer;
     }
 
-    .step-item:hover .step-badge {
-      background: var(--teal);
-      color: var(--bg-slate-950);
-      border-color: var(--teal);
-      box-shadow: 0 0 16px rgba(20, 184, 166, 0.6);
-      transform: scale(1.08);
+    /* ── How it works ──────────────────── */
+    .landing-how {
+      padding: 0 clamp(24px, 5vw, 72px) 48px;
     }
-
-    .step-body h4 {
-      font-size: 0.9rem;
-      font-weight: 800;
-      margin-bottom: 4px;
+    .landing-how-inner {
+      display: grid;
+      grid-template-columns: 0.85fr 1.6fr;
+      gap: 25px;
+      padding: 22px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 19px;
+      background: rgba(255,255,255,0.035);
     }
+    .landing-how-intro h2 { margin: 0; font-size: 1.08rem; letter-spacing: -0.035em; color: var(--cream-highlight); }
+    .landing-how-intro p { margin: 8px 0 0; color: rgba(248,250,252,0.5); font-size: 0.76rem; line-height: 1.5; }
 
-    .step-body p {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
+    .landing-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .landing-step { padding: 2px 0 0 14px; border-left: 1px solid rgba(255,255,255,0.15); }
+    .landing-step-number { color: var(--accent); font-size: 0.65rem; font-weight: 950; letter-spacing: 0.14em; }
+    .landing-step h3 { margin: 8px 0 4px; font-size: 0.78rem; color: var(--cream-highlight); }
+    .landing-step p { margin: 0; color: rgba(248,250,252,0.48); font-size: 0.68rem; line-height: 1.4; }
 
-    /* Landing bottom footer disclaimers */
-    .landing-footer {
-      padding: 24px;
-      border-top: 1px solid var(--border-soft);
-      text-align: center;
-    }
-
-    .disclaimer-card {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1.5px dashed rgba(255, 255, 255, 0.06);
-      border-radius: 16px;
-      padding: 12px 14px;
-      font-size: 0.72rem;
-      color: var(--text-muted);
+    /* ── Footer bar ───────────────────── */
+    .landing-footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px clamp(20px, 4vw, 48px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: rgba(248,250,252,0.42);
+      font-size: 0.66rem;
       line-height: 1.45;
-      text-align: center;
     }
+    .landing-footer-bar p { max-width: 690px; margin: 0; }
+    .landing-footer-bar strong { color: rgba(248,250,252,0.65); }
+
+    /* ── Responsive: tablet ─────────── */
+    @media (max-width: 900px) {
+      .landing-shell { min-height: auto; }
+      .landing-hero-grid { grid-template-columns: 1fr; }
+      .landing-copy { padding-bottom: 24px; }
+      .landing-stage { min-height: 520px; padding-top: 35px; }
+      .landing-how-inner { grid-template-columns: 1fr; }
+      .landing-steps { grid-template-columns: 1fr; }
+    }
+
+    /* ── Responsive: mobile ─────────── */
+    @media (max-width: 560px) {
+      .landing-shell { width: 100%; margin: 0; border-radius: 0; border-left: 0; border-right: 0; }
+      .landing-nav { min-height: 66px; padding: 15px 18px; }
+      .landing-brand { font-size: 0.75rem; letter-spacing: 0.14em; }
+      .landing-location-chip { padding: 7px 9px; font-size: 0.6rem; }
+      .landing-copy { padding: 38px 20px 26px; }
+      .landing-title { font-size: clamp(2.4rem, 12vw, 4rem); }
+      .landing-sub { margin-top: 20px; font-size: 0.95rem; }
+      .landing-actions { display: grid; grid-template-columns: 1fr; margin-top: 22px; }
+      .landing-btn { width: 100%; }
+      .landing-trust-row { margin-top: 28px; grid-template-columns: 1fr; }
+      .landing-trust-item { padding: 10px 0; font-size: 0.68rem; }
+      .landing-trust-item strong { font-size: 0.68rem; }
+      .landing-stage { min-height: 480px; padding: 26px 20px 42px; }
+      .landing-how { padding: 0 20px 36px; }
+      .landing-how-inner { padding: 16px; gap: 16px; }
+    }
+
+    /* Keep legacy .btn-primary / .btn-secondary for non-landing uses */
 
     /* Skeleton loaders pulse animation */
     @keyframes skeleton-pulse {
@@ -3039,132 +3052,155 @@
 
     <!-- ────────────────────────────────────────── -->
     <div id="landingView" class="view-screen">
-      <div class="scroll-content" id="landingScrollContent" style="padding-bottom: 24px; padding-top: 24px;">
-        <div class="landing-grid-container">
-          
-          <!-- Left Content Pane -->
-          <div class="landing-left-pane">
-            <section class="landing-hero">
-              <div class="landing-location-chip" id="landingLocationChip">
-                <span class="landing-location-dot" aria-hidden="true"></span>
-                <span id="landingLocationChipText">Dogs near you are ready</span>
-              </div>
-              <div class="landing-logo">🐾 ChattyHound</div>
-              <h1 class="landing-title" id="landingTitle">Meet adoptable dogs in a <span class="gradient-text-accent">whole new way</span>.</h1>
-              <p class="landing-sub" id="landingSub">Chat with shelter dogs, discover their personality, and find the pup who fits your life.</p>
-              <div class="landing-cta-group">
-                <button class="btn-primary" id="landingStartBtn"
-                  aria-label="Start Sniffing: Build your dog match profile">Start Sniffing 🐶</button>
-                <button class="btn-secondary" id="landingLoginBtn" aria-label="Set your dog match preferences" style="border: 1.5px solid transparent; background: rgba(255,255,255,0.05); color: var(--text-muted);">Set Preferences ⚙️</button>
-              </div>
-            </section>
+      <div class="scroll-content" id="landingScrollContent" style="padding: 0;">
+        <div class="landing-shell">
 
-
-
-            <!-- Shelter Credibility Disclaimer -->
-            <section class="landing-footer" style="padding: 16px 24px;">
-              <div class="disclaimer-card"
-                style="background: rgba(20, 184, 166, 0.08); border: 1.5px solid rgba(20, 184, 166, 0.2); text-align: left; display: flex; gap: 12px; align-items: flex-start; color: var(--text-main); font-size: 0.78rem;">
-                <div style="color: var(--teal); flex-shrink: 0; margin-top: 2px;">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                </div>
-                <div>
-                  <strong
-                    style="color: white; font-weight: 800; font-size: 0.85rem; display: block; margin-bottom: 3px;">Shelter
-                    info comes first 🛡️</strong>
-                  ChattyHound is a playful AI companion to help you discover dogs. The official shelter page remains the
-                  absolute authority for all medical details, behavioral history, and adoption eligibility. ChattyHound is not necessarily affiliated with the shelters from which our listings are sourced.
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <!-- Right Hero Showcase Pane -->
-          <div class="landing-right-pane">
-            <div class="landing-hero-card">
-              <img src="spike.jpg" alt="Extremely cute adoptable shelter puppy" class="landing-hero-img" id="featuredDogImg">
-              <div class="landing-mock-bubble">
-                <span class="bubble-heart">❤️</span>
-                <p id="featuredDogQuote">My foster called me a “dog from another planet” cuz my style is extraooo special, and I’m also a playyyful senior boy who loves zoomies, belly rubs, toys, fetch, tug, and car rides!!</p>
-              </div>
+          <!-- Nav bar -->
+          <header class="landing-nav">
+            <span class="landing-brand">CHATTYHOUND</span>
+            <div class="landing-location-chip" id="landingLocationChip">
+              <span class="landing-location-dot" aria-hidden="true"></span>
+              <span id="landingLocationChipText">Dogs near you are ready</span>
             </div>
-          </div>
-          
-          <script>
-            document.addEventListener('DOMContentLoaded', () => {
-              // Variations for the featured dog on the landing page
-              const featuredDogs = [
-                {
-                  src: "spike.jpg",
-                  alt: "Spike, a playful senior dog",
-                  quote: "My foster called me a “dog from another planet” cuz my style is extraooo special, and I’m also a playyyful senior boy who loves zoomies, belly rubs, toys, fetch, tug, and car rides!!"
-                },
-                {
-                  src: "lulu.jpg",
-                  alt: "Lulu the dog",
-                  quote: "i think i’m a lot like baloo — easygoing, cozy, and always ready for a good couch snooze after some happy walkies 😌. but i’ve got a lil’ wise old soul too… like, “sometimes the best adventure is a soft bed and a kind hand.”"
-                },
-                {
-                  src: "jack.jpg",
-                  alt: "Jack the dog",
-                  quote: "😎 I’m Jack, 3 yrs old, 64 lbs of pure main-character energy, and I do have a big ol’ personality. I’m best when I get to come to you for pets on my own terms, and I need an experienced adult-only home that goes slow with me and helps me feel safe."
-                }
-              ];
-              
-              if (featuredDogs.length > 0) {
-                const imgEl = document.getElementById("featuredDogImg");
-                const quoteEl = document.getElementById("featuredDogQuote");
-                const cardEl = document.querySelector(".landing-hero-card");
-                
-                let currentIndex = Math.floor(Math.random() * featuredDogs.length);
-                let typingTimeout = null;
+          </header>
 
-                function typeQuote(text, index, callback) {
-                  if (index < text.length) {
-                    quoteEl.textContent += text.charAt(index);
-                    typingTimeout = setTimeout(() => typeQuote(text, index + 1, callback), 15);
-                  } else {
-                    if (callback) callback();
-                  }
-                }
-                
-                function updateFeaturedDog() {
-                  const selectedDog = featuredDogs[currentIndex];
-                  if (imgEl && quoteEl) {
-                    if (cardEl) cardEl.style.opacity = 0.5;
-                    setTimeout(() => {
-                      imgEl.src = selectedDog.src;
-                      imgEl.alt = selectedDog.alt;
-                      quoteEl.textContent = '';
-                      if (cardEl) cardEl.style.opacity = 1;
-                      
-                      clearTimeout(typingTimeout);
-                      typeQuote(selectedDog.quote, 0, () => {
-                        setTimeout(updateFeaturedDog, 3000);
-                      });
-                    }, 150);
-                  }
-                  currentIndex = (currentIndex + 1) % featuredDogs.length;
-                }
+          <!-- Hero grid -->
+          <main>
+            <section class="landing-hero-grid">
+              <!-- Left copy -->
+              <div class="landing-copy">
+                <h1 class="landing-title" id="landingTitle">Meet adoptable dogs in a <span class="gradient-text-accent">whole new way.</span><br>Go ask them something.</h1>
+                <p class="landing-sub" id="landingSub">Meet adoptable shelter dogs through playful AI conversations that reveal the energy, quirks, and home life hiding behind the kennel card.</p>
 
-                if (cardEl) {
-                  cardEl.style.transition = "opacity 0.3s ease";
-                  cardEl.addEventListener("click", () => {
-                    const startBtn = document.getElementById("landingStartBtn");
-                    if (startBtn) startBtn.click();
-                  });
-                }
-                
-                // Set initial dog
-                updateFeaturedDog();
-              }
-            });
-          </script>
+                <div class="landing-actions">
+                  <button class="landing-btn landing-btn-primary" id="landingStartBtn"
+                    aria-label="Start Sniffing: Build your dog match profile">Start Sniffing 🐶 <span aria-hidden="true">→</span></button>
+                  <a class="landing-btn landing-btn-ghost" href="#landingHowItWorks">How it works <span aria-hidden="true">↓</span></a>
+                </div>
+                <p class="landing-micro-note">Curiosity is allowed. The next step is still the official shelter listing.</p>
+
+                <div class="landing-trust-row" aria-label="Why ChattyHound is useful">
+                  <div class="landing-trust-item"><strong>Local first</strong>Start with dogs near you.</div>
+                  <div class="landing-trust-item"><strong>Personality forward</strong>Hear the personality before the paperwork.</div>
+                  <div class="landing-trust-item"><strong>Shelter linked</strong>Jump to the shelter when it feels right.</div>
+                </div>
+              </div>
+
+              <!-- Right dog card -->
+              <div class="landing-stage" aria-label="Sample dog chat preview">
+                <article class="landing-dog-card">
+                  <div class="landing-preview-bar">
+                    <span class="landing-preview-status">🐾 Sample chat preview</span>
+                    <span id="landingCardLocationLabel">Preview</span>
+                  </div>
+                  <div class="landing-dog-photo" id="featuredDogImg" role="img" aria-label="Sample adoptable dog preview"
+                    style="background-image: linear-gradient(180deg, transparent 45%, rgba(3,10,13,0.76) 100%), url('/jack.jpg');">
+                  </div>
+                  <div class="landing-conversation">
+                    <p id="featuredDogQuote">😎 I'm Jack, 3 yrs old, 64 lbs of pure main-character energy, and I do have a big ol' personality. I'm best when I get to come to you for pets on my own terms, and I need an experienced adult-only home that goes slow with me and helps me feel safe.</p>
+                  </div>
+                  <div class="landing-card-bottom">
+                    <p>Start with a question.<br>Stay for the personality.</p>
+                    <button type="button" id="landingCardChatBtn">Open the chat <span aria-hidden="true">↗</span></button>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <!-- How it works -->
+            <section class="landing-how" id="landingHowItWorks">
+              <div class="landing-how-inner">
+                <div class="landing-how-intro">
+                  <h2 id="landingHowTitle">A better first hello.</h2>
+                  <p>Curiosity gets you in the door. The official shelter profile helps you decide what happens next.</p>
+                </div>
+                <div class="landing-steps">
+                  <div class="landing-step"><div class="landing-step-number">01</div><h3>Pick a face</h3><p id="landingStep1">Browse dogs available near you.</p></div>
+                  <div class="landing-step"><div class="landing-step-number">02</div><h3>Ask anything</h3><p>Get a feel for quirks beyond the kennel card.</p></div>
+                  <div class="landing-step"><div class="landing-step-number">03</div><h3>Make it real</h3><p>Open the shelter's official listing when one clicks.</p></div>
+                </div>
+              </div>
+            </section>
+          </main>
+
+          <!-- Footer -->
+          <footer class="landing-footer-bar">
+            <p><strong>Important:</strong> ChattyHound is a playful discovery layer. The official shelter page remains the authority for medical details, behavior history, availability, and adoption eligibility. ChattyHound is not necessarily affiliated with the shelters listed.</p>
+          </footer>
 
         </div>
+
+        <!-- Featured dog rotation script -->
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            const featuredDogs = [
+              {
+                img: "/jack.jpg",
+                alt: "Jack the dog",
+                quote: "😎 I'm Jack, 3 yrs old, 64 lbs of pure main-character energy, and I do have a big ol' personality. I'm best when I get to come to you for pets on my own terms, and I need an experienced adult-only home that goes slow with me and helps me feel safe."
+              },
+              {
+                img: "/spike.jpg",
+                alt: "Spike, a playful senior dog",
+                quote: "My foster called me a \u201cdog from another planet\u201d cuz my style is extraooo special, and I'm also a playyyful senior boy who loves zoomies, belly rubs, toys, fetch, tug, and car rides!!"
+              },
+              {
+                img: "/lulu.jpg",
+                alt: "Lulu the dog",
+                quote: "i think i'm a lot like baloo \u2014 easygoing, cozy, and always ready for a good couch snooze after some happy walkies 😌. but i've got a lil' wise old soul too\u2026 like, \u201csometimes the best adventure is a soft bed and a kind hand.\u201d"
+              }
+            ];
+
+            const photoEl = document.getElementById("featuredDogImg");
+            const quoteEl = document.getElementById("featuredDogQuote");
+            const cardEl = document.querySelector(".landing-dog-card");
+            const chatBtn = document.getElementById("landingCardChatBtn");
+
+            if (chatBtn) {
+              chatBtn.addEventListener("click", () => {
+                const startBtn = document.getElementById("landingStartBtn");
+                if (startBtn) startBtn.click();
+              });
+            }
+
+            if (!photoEl || !quoteEl || featuredDogs.length === 0) return;
+
+            let currentIndex = Math.floor(Math.random() * featuredDogs.length);
+            let typingTimeout = null;
+
+            function typeQuote(text, index, callback) {
+              if (index < text.length) {
+                quoteEl.textContent += text.charAt(index);
+                typingTimeout = setTimeout(() => typeQuote(text, index + 1, callback), 15);
+              } else if (callback) callback();
+            }
+
+            function updateFeaturedDog() {
+              const dog = featuredDogs[currentIndex];
+              if (cardEl) cardEl.style.opacity = 0.5;
+              setTimeout(() => {
+                photoEl.style.backgroundImage = `linear-gradient(180deg, transparent 45%, rgba(3,10,13,0.76) 100%), url('${dog.img}')`;
+                photoEl.setAttribute("aria-label", dog.alt);
+                quoteEl.textContent = '';
+                if (cardEl) cardEl.style.opacity = 1;
+                clearTimeout(typingTimeout);
+                typeQuote(dog.quote, 0, () => setTimeout(updateFeaturedDog, 3000));
+              }, 150);
+              currentIndex = (currentIndex + 1) % featuredDogs.length;
+            }
+
+            if (cardEl) {
+              cardEl.style.transition = "opacity 0.3s ease, transform 0.28s ease, box-shadow 0.28s ease";
+              cardEl.addEventListener("click", () => {
+                const startBtn = document.getElementById("landingStartBtn");
+                if (startBtn) startBtn.click();
+              });
+            }
+
+            updateFeaturedDog();
+          });
+        </script>
+
       </div>
     </div>
 
@@ -6803,20 +6839,31 @@ function personalizeForLocation(displayName) {
   // Update the title
   const titleEl = document.getElementById('landingTitle');
   if (titleEl) {
-    titleEl.innerHTML = cityShort + ' dogs <span class="gradient-text-accent">are online.</span><br>Go ask them something.';
+    titleEl.innerHTML = cityShort + ' dogs <span class="gradient-text-accent">are online.</span><br>Go ask them something weird.';
   }
 
   // Update the subtitle
   const subEl = document.getElementById('landingSub');
   if (subEl) {
-    subEl.textContent = 'Meet adoptable shelter dogs around ' + cityShort + ' through playful AI conversations that reveal the energy, quirks, and personality hiding behind the kennel card.';
+    subEl.textContent = 'Meet adoptable shelter dogs around ' + cityShort + ' through playful AI conversations that reveal the energy, quirks, and home life hiding behind the kennel card.';
   }
 
   // Update the CTA button
   const startBtn = document.getElementById('landingStartBtn');
   if (startBtn) {
-    startBtn.textContent = 'Chat with ' + cityShort + ' hounds →';
+    startBtn.innerHTML = 'Chat with ' + cityShort + ' hounds <span aria-hidden="true">→</span>';
   }
+
+  // Update the dog card location label
+  const cardLabel = document.getElementById('landingCardLocationLabel');
+  if (cardLabel) cardLabel.textContent = cityShort;
+
+  // Update how-it-works section
+  const howTitle = document.getElementById('landingHowTitle');
+  if (howTitle) howTitle.textContent = 'A better first hello for ' + cityShort + '.';
+
+  const step1 = document.getElementById('landingStep1');
+  if (step1) step1.textContent = 'Browse dogs available near ' + cityShort + '.';
 
   // Store the detected city for later use in Start Sniffing handler
   window.__CH_DETECTED_CITY__ = displayName;

@@ -123,20 +123,31 @@ function personalizeForLocation(displayName) {
   // Update the title
   const titleEl = document.getElementById('landingTitle');
   if (titleEl) {
-    titleEl.innerHTML = cityShort + ' dogs <span class="gradient-text-accent">are online.</span><br>Go ask them something.';
+    titleEl.innerHTML = cityShort + ' dogs <span class="gradient-text-accent">are online.</span><br>Go ask them something weird.';
   }
 
   // Update the subtitle
   const subEl = document.getElementById('landingSub');
   if (subEl) {
-    subEl.textContent = 'Meet adoptable shelter dogs around ' + cityShort + ' through playful AI conversations that reveal the energy, quirks, and personality hiding behind the kennel card.';
+    subEl.textContent = 'Meet adoptable shelter dogs around ' + cityShort + ' through playful AI conversations that reveal the energy, quirks, and home life hiding behind the kennel card.';
   }
 
   // Update the CTA button
   const startBtn = document.getElementById('landingStartBtn');
   if (startBtn) {
-    startBtn.textContent = 'Chat with ' + cityShort + ' hounds →';
+    startBtn.innerHTML = 'Chat with ' + cityShort + ' hounds <span aria-hidden="true">→</span>';
   }
+
+  // Update the dog card location label
+  const cardLabel = document.getElementById('landingCardLocationLabel');
+  if (cardLabel) cardLabel.textContent = cityShort;
+
+  // Update how-it-works section
+  const howTitle = document.getElementById('landingHowTitle');
+  if (howTitle) howTitle.textContent = 'A better first hello for ' + cityShort + '.';
+
+  const step1 = document.getElementById('landingStep1');
+  if (step1) step1.textContent = 'Browse dogs available near ' + cityShort + '.';
 
   // Store the detected city for later use in Start Sniffing handler
   window.__CH_DETECTED_CITY__ = displayName;
