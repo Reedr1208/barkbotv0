@@ -164,6 +164,7 @@ async def admin_data_stats(request: Request):
         return JSONResponse(status_code=401, content={"error": "Unauthorized"})
 
     try:
+        from jobs.lib.db import get_supabase_client
         sb = get_supabase_client()
 
         # 1. Get all animals with shelter info and bio
