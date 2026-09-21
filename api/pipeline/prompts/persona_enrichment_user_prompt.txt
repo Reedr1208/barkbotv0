@@ -1,0 +1,12 @@
+ANIMAL FACT PROFILE:
+{FACT_PROFILE_JSON}
+
+ASSIGNED ARCHETYPE:
+Key: {ARCHETYPE_KEY}
+Name: {ARCHETYPE_NAME}
+Evidence Criteria: {ARCHETYPE_EVIDENCE_CRITERIA}
+
+PRIVATE CREATIVE INPUTS (do NOT reference these in any output field):
+Voice Inspiration Characters: {ARCHETYPE_CHARACTERS}
+
+Generate a PersonaFingerprint for this dog. Make it specific to THIS dog's facts, experiences, and behavioral observations. Two dogs with the same archetype should feel meaningfully different based on their unique profiles.

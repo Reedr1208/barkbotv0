@@ -135,3 +135,9 @@ create table if not exists monitor_settings (
   monitor_id text primary key,
   enabled boolean not null default true
 );
+
+-- Additional columns on animal_persona_profiles (Persona V4):
+--   persona_fingerprint_jsonb jsonb default '{}'  -- v4 enriched personality fingerprint
+--   schema_version text default 'persona_v3'      -- 'persona_v3' or 'persona_v4'
+--   enrichment_model text                          -- model used for enrichment call
+--   enrichment_params_jsonb jsonb                  -- parameters for enrichment call

@@ -178,28 +178,111 @@ async def chat(request: Request):
             return JSONResponse(status_code=400, content={"error": "animal_id and message are required."})
 
         sb_client = get_supabase_client()
-        res = sb_client.table("system_prompts_v2").select("system_prompt").eq("animal_id", animal_id).order("created_at", desc=True).limit(1).execute()
+        res = sb_client.table("system_prompts_v2").select("system_prompt, render_context_jsonb, prompt_version").eq("animal_id", animal_id).order("created_at", desc=True).limit(1).execute()
 
         if not res.data:
             return JSONResponse(status_code=404, content={"error": "System prompt not found for this dog."})
 
         system_prompt = res.data[0]["system_prompt"]
+        render_context = res.data[0].get("render_context_jsonb") or {}
+        prompt_version = res.data[0].get("prompt_version", "v3")
 
         input_messages = [{"role": "developer", "content": system_prompt}]
         for turn in conversation_history:
             if "role" in turn and "content" in turn:
                 input_messages.append({"role": turn["role"], "content": turn["content"]})
+
+        # ── V4 Turn Director ──────────────────────────────────────────
+        import time as _time
+        import random as _random
+
+        turn_mode = "plain"
+        selected_move_id = None
+        temperature = 1.0
+
+        try:
+            from api.pipeline.feature_flags import PERSONA_V4_ENABLED, PERSONA_TURN_DIRECTOR_ENABLED, \
+                PERSONA_SIGNATURE_RATE, PERSONA_WILDCARD_RATE, \
+                PERSONA_GROUNDED_TEMPERATURE, PERSONA_PLAIN_TEMPERATURE, \
+                PERSONA_SIGNATURE_TEMPERATURE, PERSONA_WILDCARD_TEMPERATURE
+        except ImportError:
+            PERSONA_V4_ENABLED = False
+            PERSONA_TURN_DIRECTOR_ENABLED = False
+            PERSONA_SIGNATURE_RATE = 0.30
+            PERSONA_WILDCARD_RATE = 0.15
+            PERSONA_GROUNDED_TEMPERATURE = 0.8
+            PERSONA_PLAIN_TEMPERATURE = 1.0
+            PERSONA_SIGNATURE_TEMPERATURE = 1.0
+            PERSONA_WILDCARD_TEMPERATURE = 1.15
+
+        fingerprint_version = render_context.get("fingerprint_version", "")
+        behavior_deck = render_context.get("behavior_deck", [])
+
+        if PERSONA_V4_ENABLED and PERSONA_TURN_DIRECTOR_ENABLED and behavior_deck:
+            try:
+                from api.pipeline.persona_runtime import choose_turn_mode, select_conversation_move, render_turn_cue, temperature_for_mode
+
+                rng = _random.Random()
+                turn_mode = choose_turn_mode(
+                    user_message, rng,
+                    signature_rate=PERSONA_SIGNATURE_RATE,
+                    wildcard_rate=PERSONA_WILDCARD_RATE
+                )
+
+                if turn_mode in ("signature", "wildcard"):
+                    move = select_conversation_move(behavior_deck, turn_mode, rng)
+                    if move:
+                        selected_move_id = move.get("move_id")
+                        cue_text = render_turn_cue(move)
+                        # Insert cue after history, before current user message
+                        input_messages.append({"role": "developer", "content": cue_text})
+
+                temperature = temperature_for_mode(
+                    turn_mode,
+                    grounded_temp=PERSONA_GROUNDED_TEMPERATURE,
+                    plain_temp=PERSONA_PLAIN_TEMPERATURE,
+                    signature_temp=PERSONA_SIGNATURE_TEMPERATURE,
+                    wildcard_temp=PERSONA_WILDCARD_TEMPERATURE
+                )
+            except Exception as td_err:
+                logger.warning(f"Turn director error for {animal_id}: {td_err}")
+                turn_mode = "plain"
+                temperature = 1.0
+
         input_messages.append({"role": "user", "content": user_message})
 
         from openai import OpenAI
         openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
+        chat_start = _time.time()
         try:
-            response = openai_client.chat.completions.create(model=CHAT_MODEL, messages=input_messages)
+            response = openai_client.chat.completions.create(
+                model=CHAT_MODEL,
+                messages=input_messages,
+                temperature=temperature,
+            )
             output_text = response.choices[0].message.content
+            token_usage = {
+                "prompt_tokens": getattr(response.usage, "prompt_tokens", None),
+                "completion_tokens": getattr(response.usage, "completion_tokens", None),
+                "total_tokens": getattr(response.usage, "total_tokens", None),
+            }
         except AttributeError:
             response = openai_client.responses.create(model=CHAT_MODEL, input=input_messages)
             output_text = response.output_text
+            token_usage = {}
+        chat_latency_ms = int((_time.time() - chat_start) * 1000)
+
+        # ── Chat logging (non-blocking) ───────────────────────────────
+        try:
+            logger.info(
+                f"chat_response animal_id={animal_id} prompt_version={prompt_version} "
+                f"fingerprint_version={fingerprint_version} turn_mode={turn_mode} "
+                f"move_id={selected_move_id} temperature={temperature} "
+                f"latency_ms={chat_latency_ms} tokens={token_usage.get('total_tokens', 'N/A')}"
+            )
+        except Exception:
+            pass
 
         # Persist conversation (non-blocking)
         try:
