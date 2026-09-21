@@ -163,16 +163,24 @@ function updateDocumentMetaForDog(dog) {
 function switchView(viewName) {
   const landingView = document.getElementById('landingView');
   const appView = document.getElementById('appView');
+  const browseView = document.getElementById('browseView');
   const footerInputBar = document.querySelector('.footer-input-bar');
 
   if (viewName === 'app') {
     landingView.classList.add('hidden');
     appView.classList.remove('hidden');
+    if (browseView) browseView.classList.add('hidden');
     if (footerInputBar) footerInputBar.style.display = 'block';
     localStorage.setItem('chattyhound_visited', 'true');
+  } else if (viewName === 'browse') {
+    landingView.classList.add('hidden');
+    appView.classList.add('hidden');
+    if (browseView) browseView.classList.remove('hidden');
+    if (footerInputBar) footerInputBar.style.display = 'none';
   } else {
     landingView.classList.remove('hidden');
     appView.classList.add('hidden');
+    if (browseView) browseView.classList.add('hidden');
     if (footerInputBar) footerInputBar.style.display = 'none';
   }
 }

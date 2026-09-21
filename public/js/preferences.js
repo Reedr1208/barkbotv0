@@ -372,8 +372,15 @@ async function handleSavePreferences() {
 
   closePrefModal();
   trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
-  switchView('app');
-  fetchRandomDog();
+
+  // If in browse mode, stay in browse and refresh results; otherwise go to app view
+  if (typeof isBrowseMode !== 'undefined' && isBrowseMode) {
+    openBrowseView();
+  } else {
+    switchView('app');
+    fetchRandomDog();
+  }
+
   savePrefBtn.disabled = false;
   savePrefBtn.innerHTML = 'Save Selections ✨';
 }

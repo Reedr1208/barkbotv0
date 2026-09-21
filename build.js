@@ -33,6 +33,7 @@ const jsFiles = [
   'js/dog.js',
   'js/chat.js',
   'js/preferences.js',
+  'js/browse.js',
   'js/saved.js',
   'js/search.js',
   'js/contact.js',

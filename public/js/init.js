@@ -392,11 +392,13 @@ window.addEventListener('orientationchange', () => {
 });
 
 // Completely block native window layout scroll to prevent iOS Safari input focus layout offset bugs
-// Only when the app view is active (landing page needs native scrolling)
+// Only when the app view is active (landing page and browse view need native scrolling)
 window.addEventListener('scroll', () => {
   const landingView = document.getElementById('landingView');
+  const browseView = document.getElementById('browseView');
   const isLanding = landingView && !landingView.classList.contains('hidden');
-  if (!isLanding && (window.scrollY !== 0 || window.scrollX !== 0)) {
+  const isBrowse = browseView && !browseView.classList.contains('hidden');
+  if (!isLanding && !isBrowse && (window.scrollY !== 0 || window.scrollX !== 0)) {
     window.scrollTo(0, 0);
   }
 }, { passive: true });

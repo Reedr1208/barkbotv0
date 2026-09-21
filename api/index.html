@@ -1473,6 +1473,10 @@
         background: rgba(255, 255, 255, 0.1) url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center center;
         border-radius: 50%;
       }
+      .header-location-select.location-active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent-shadow);
+      }
       .header-location-select option {
         color: black;
       }
@@ -1537,10 +1541,22 @@
 
       #landingView .scroll-content {
         display: block !important;
-        height: 100% !important;
-        overflow: hidden !important;
+        height: auto !important;
+        overflow: visible !important;
         padding-bottom: 0 !important;
         padding-top: 0 !important;
+      }
+
+      /* When landing page is active, let the container grow for scrolling */
+      #landingView.view-screen {
+        height: auto !important;
+        overflow: visible !important;
+      }
+      #landingView.view-screen ~ #appView.hidden + .app-container,
+      .app-container:has(#landingView:not(.hidden)) {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
       }
 
       .hero-section {
@@ -1961,7 +1977,7 @@
       margin: 16px auto;
       display: grid;
       grid-template-rows: auto 1fr auto;
-      overflow: hidden;
+      overflow: visible;
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 30px;
       background: linear-gradient(140deg, rgba(15,23,42,0.95), rgba(7,14,22,0.97));
@@ -2145,8 +2161,9 @@
     .landing-stage {
       position: relative;
       display: grid;
-      place-items: center;
-      padding: clamp(28px, 5vw, 70px);
+      justify-items: center;
+      align-items: start;
+      padding: clamp(28px, 5vw, 50px) clamp(28px, 5vw, 70px);
       min-height: 580px;
       overflow: hidden;
     }
@@ -2288,7 +2305,7 @@
       .landing-shell { min-height: auto; }
       .landing-hero-grid { grid-template-columns: 1fr; }
       .landing-copy { padding-bottom: 24px; }
-      .landing-stage { min-height: 520px; padding-top: 35px; }
+      .landing-stage { min-height: auto; padding-top: 15px; padding-bottom: 42px; }
       .landing-how-inner { grid-template-columns: 1fr; }
       .landing-steps { grid-template-columns: 1fr; }
     }
@@ -2307,9 +2324,235 @@
       .landing-trust-row { margin-top: 28px; grid-template-columns: 1fr; }
       .landing-trust-item { padding: 10px 0; font-size: 0.68rem; }
       .landing-trust-item strong { font-size: 0.68rem; }
-      .landing-stage { min-height: 480px; padding: 26px 20px 42px; }
+      .landing-stage { min-height: auto; padding: 15px 20px 42px; }
       .landing-how { padding: 0 20px 36px; }
       .landing-how-inner { padding: 16px; gap: 16px; }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       BROWSE ALL DOGS — Tile Grid View
+       ════════════════════════════════════════════════════════════════════ */
+
+    #browseView {
+      background: var(--bg-slate-900);
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .browse-view-header,
+    .browse-header {
+      flex-wrap: nowrap !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+    .browse-header .nav-actions {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      flex: 1;
+      justify-content: space-evenly;
+      gap: 0;
+    }
+    .browse-header .brand-title,
+    .browse-header .brand-mark {
+      display: none !important;
+    }
+    @media (max-width: 768px) {
+      .browse-header {
+        gap: 4px !important;
+        padding: 8px 8px !important;
+      }
+      .browse-header > div:first-child {
+        display: none !important;
+      }
+      .browse-header .tab-btn {
+        padding: 0 !important;
+        min-width: 36px;
+        min-height: 36px;
+      }
+    }
+
+    .browse-count-bar {
+      display: flex;
+      justify-content: flex-end;
+      padding: 8px 4px 4px;
+    }
+
+    .browse-count {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--accent);
+      background: rgba(255,255,255,0.06);
+      padding: 5px 12px;
+      border-radius: 9999px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .browse-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── Tile Grid ─────────────────────────────── */
+    .browse-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (min-width: 600px) {
+      .browse-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 960px) {
+      .browse-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (min-width: 1200px) {
+      .browse-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+
+    /* ── Individual Tile ──────────────────────── */
+    .browse-tile {
+      position: relative;
+      display: block;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 3 / 4;
+      background: var(--bg-slate-800);
+      text-decoration: none;
+      color: white;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .browse-tile:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    }
+    .browse-tile:active {
+      transform: scale(0.97);
+    }
+
+    .browse-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .browse-tile-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 32px 12px 12px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .browse-tile-name {
+      font-weight: 900;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+
+    .browse-tile-shelter {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Loading State ────────────────────────── */
+    .browse-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .browse-loading p {
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .browse-loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: browse-spin 0.8s linear infinite;
+    }
+    @keyframes browse-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Empty State ──────────────────────────── */
+    .browse-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .browse-empty p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ── Footer CTA ──────────────────────────── */
+    .browse-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 32px 20px 48px;
+      text-align: center;
+    }
+    .browse-footer p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .browse-adjust-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 9999px;
+      padding: 10px 24px;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .browse-adjust-btn:hover {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    /* ── Browse All header button ─────────────── */
+    .browse-all-btn {
+      background: rgba(255,255,255,0.1) !important;
+      box-shadow: none !important;
+      color: var(--text-main) !important;
+    }
+    .browse-all-btn:hover {
+      background: rgba(255,255,255,0.18) !important;
     }
 
     /* Keep legacy .btn-primary / .btn-secondary for non-landing uses */
@@ -3075,9 +3318,9 @@
                 <div class="landing-actions">
                   <button class="landing-btn landing-btn-primary" id="landingStartBtn"
                     aria-label="Start Sniffing: Build your dog match profile">Start Sniffing 🐶 <span aria-hidden="true">→</span></button>
-                  <a class="landing-btn landing-btn-ghost" href="#landingHowItWorks">How it works <span aria-hidden="true">↓</span></a>
+                  <button class="landing-btn landing-btn-ghost" id="landingPrefBtn" type="button">Set Preferences <span aria-hidden="true">⚙</span></button>
                 </div>
-                <p class="landing-micro-note">Curiosity is allowed. The next step is still the official shelter listing.</p>
+                <p class="landing-micro-note">Start with a conversation. See where it leads.</p>
 
                 <div class="landing-trust-row" aria-label="Why ChattyHound is useful">
                   <div class="landing-trust-item"><strong>Local first</strong>Start with dogs near you.</div>
@@ -3262,6 +3505,15 @@
           </button>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="shuffle-btn browse-all-btn" id="browseAllBtn" aria-label="Browse all matches" title="Your Matches">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            <span class="hide-mobile">Your Matches</span>
+          </button>
           <select class="header-location-select" id="headerLocationSelect" aria-label="Filter by location">
             <option value="any" style="color: black;">All Locations 🌎</option>
           </select>
@@ -3467,15 +3719,6 @@
                 <div class="trait-chips-grid" id="traitChipsContainer"></div>
               </div>
 
-              <!-- SECTION 3: Ideal Home & Fit -->
-              <div class="details-section" id="secIdealHome" style="display: contents;">
-                <div class="details-fit-container" id="whyFitCard" style="display: none;">
-                  <div class="details-bio-title" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 900; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
-                    🏡 Ideal Home &amp; Fit
-                  </div>
-                  <p class="details-fit-text" id="whyFitDesc">-</p>
-                </div>
-              </div>
 
               <!-- SECTION 4: Biography Story -->
               <div class="details-section" id="secBiography" style="display: contents;">
@@ -3824,6 +4067,98 @@
 
     <div id="shareFallbackMenu" class="share-fallback-menu" role="menu" aria-label="Share options" hidden></div>
     <div id="shareToast" class="share-toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- 3. BROWSE ALL DOGS VIEW ──────────────────── -->
+    <div id="browseView" class="view-screen hidden">
+      <header class="header browse-header">
+        <div>
+          <span class="brand-mark">🐾</span>
+          <span class="brand-title"><span class="brand-upper">CHATTYHOUND</span><br><strong>Your Matches</strong></span>
+        </div>
+        <div class="nav-actions">
+          <button class="tab-btn" id="browseAboutBtn" aria-label="About" style="padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span class="hide-mobile">About</span>
+          </button>
+          <button class="tab-btn" id="browseContactBtn" aria-label="Contact us" style="padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <span class="hide-mobile">Contact</span>
+          </button>
+          <button class="tab-btn" id="browsePrefBtn" aria-label="Open preferences" style="padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <line x1="4" y1="21" x2="4" y2="14" />
+              <line x1="4" y1="10" x2="4" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12" y2="3" />
+              <line x1="20" y1="21" x2="20" y2="16" />
+              <line x1="20" y1="12" x2="20" y2="3" />
+              <line x1="2" y1="14" x2="6" y2="14" />
+              <line x1="10" y1="8" x2="14" y2="8" />
+              <line x1="18" y1="16" x2="22" y2="16" />
+            </svg>
+          </button>
+          <button class="tab-btn" id="browseSearchBtn" aria-label="Search for a dog by name" style="padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </button>
+          <button class="tab-btn" id="browseSavedBtn" aria-label="View saved dogs" style="display:none; position: relative; padding: 6px 10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block; width: 14px; height: 14px;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span class="hide-mobile">My Dogs</span>
+          </button>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <select class="header-location-select" id="browseLocationSelect" aria-label="Filter by location">
+            <option value="any" style="color: black;">All Locations 🌎</option>
+          </select>
+          <button class="shuffle-btn browse-all-btn" id="browseMeetOneBtn" aria-label="Meet a single dog" title="Meet One">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="3" width="16" height="18" rx="3" />
+              <circle cx="12" cy="10" r="3" />
+              <path d="M7 21v-1a5 5 0 0 1 10 0v1" />
+            </svg>
+            <span class="hide-mobile">Meet One</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="browse-scroll">
+        <div class="browse-count-bar">
+          <span class="browse-count" id="browseCount"></span>
+        </div>
+        <!-- Loading state -->
+        <div class="browse-loading" id="browseLoading" style="display: none;">
+          <div class="browse-loading-spinner"></div>
+          <p>Fetching dogs...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div class="browse-empty" id="browseEmpty" style="display: none;">
+          <p>No dogs match your current preferences.</p>
+          <button class="browse-adjust-btn" id="browseEmptyPrefsBtn">Adjust Preferences ⚙</button>
+        </div>
+
+        <!-- Tile grid -->
+        <div class="browse-grid" id="browseGrid"></div>
+
+        <!-- End-of-results footer -->
+        <div class="browse-footer" id="browseFooter">
+          <p>Not finding your match?</p>
+          <button class="browse-adjust-btn" id="browseAdjustPrefs">Adjust Preferences ⚙</button>
+        </div>
+      </div>
+    </div>
 
     <script>
 // ─── Global State Variables ─────────────────────────────────────────────────
@@ -4200,16 +4535,24 @@ function updateDocumentMetaForDog(dog) {
 function switchView(viewName) {
   const landingView = document.getElementById('landingView');
   const appView = document.getElementById('appView');
+  const browseView = document.getElementById('browseView');
   const footerInputBar = document.querySelector('.footer-input-bar');
 
   if (viewName === 'app') {
     landingView.classList.add('hidden');
     appView.classList.remove('hidden');
+    if (browseView) browseView.classList.add('hidden');
     if (footerInputBar) footerInputBar.style.display = 'block';
     localStorage.setItem('chattyhound_visited', 'true');
+  } else if (viewName === 'browse') {
+    landingView.classList.add('hidden');
+    appView.classList.add('hidden');
+    if (browseView) browseView.classList.remove('hidden');
+    if (footerInputBar) footerInputBar.style.display = 'none';
   } else {
     landingView.classList.remove('hidden');
     appView.classList.add('hidden');
+    if (browseView) browseView.classList.add('hidden');
     if (footerInputBar) footerInputBar.style.display = 'none';
   }
 }
@@ -5900,8 +6243,15 @@ async function handleSavePreferences() {
 
   closePrefModal();
   trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
-  switchView('app');
-  fetchRandomDog();
+
+  // If in browse mode, stay in browse and refresh results; otherwise go to app view
+  if (typeof isBrowseMode !== 'undefined' && isBrowseMode) {
+    openBrowseView();
+  } else {
+    switchView('app');
+    fetchRandomDog();
+  }
+
   savePrefBtn.disabled = false;
   savePrefBtn.innerHTML = 'Save Selections ✨';
 }
@@ -5975,6 +6325,206 @@ if (savePrefBtn) {
   savePrefBtn.addEventListener('click', handleSavePreferences);
 }
 
+
+    </script>
+    <script>
+// ─── Browse All Dogs ────────────────────────────────────────────────
+// Tile grid view showing all dogs matching current preferences
+
+const browseGrid = document.getElementById('browseGrid');
+const browseCount = document.getElementById('browseCount');
+const browseAdjustPrefs = document.getElementById('browseAdjustPrefs');
+const browseLoading = document.getElementById('browseLoading');
+const browseEmpty = document.getElementById('browseEmpty');
+
+// Track whether we're currently in browse mode (used by preferences.js)
+let isBrowseMode = false;
+
+async function openBrowseView(returnTo) {
+  isBrowseMode = true;
+  switchView('browse');
+
+  // Show loading state
+  if (browseGrid) browseGrid.innerHTML = '';
+  if (browseLoading) browseLoading.style.display = 'flex';
+  if (browseEmpty) browseEmpty.style.display = 'none';
+  if (browseCount) browseCount.textContent = '';
+
+  // Sync the browse location selector with the main one
+  syncBrowseLocationSelect();
+
+  // Build query params from current preferences
+  const params = new URLSearchParams({ email: userEmail });
+  if (currentPrefs.gender && currentPrefs.gender !== 'any') params.set('gender', currentPrefs.gender);
+  if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.set('age_group', currentPrefs.age_group);
+  if (currentPrefs.size && currentPrefs.size !== 'any') params.set('size', currentPrefs.size);
+  if (currentPrefs.location && currentPrefs.location !== 'any') params.set('location', currentPrefs.location);
+  if (lifestylePrefs.energy && lifestylePrefs.energy !== 'any') params.set('energy', lifestylePrefs.energy);
+  if (lifestylePrefs.altered && lifestylePrefs.altered !== 'any') params.set('altered', lifestylePrefs.altered);
+  if (lifestylePrefs.dogs) params.set('dogs', 'true');
+  if (lifestylePrefs.houseTrained) params.set('house_trained', 'true');
+
+  try {
+    const res = await fetch(`/api/browse_dogs?${params.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch dogs');
+    const data = await res.json();
+
+    if (browseLoading) browseLoading.style.display = 'none';
+
+    if (!data.dogs || data.dogs.length === 0) {
+      if (browseEmpty) browseEmpty.style.display = 'flex';
+      if (browseCount) browseCount.textContent = '0 dogs';
+      return;
+    }
+
+    if (browseCount) browseCount.textContent = `${data.total} dog${data.total !== 1 ? 's' : ''}`;
+
+    // Render tiles
+    const fragment = document.createDocumentFragment();
+    for (const dog of data.dogs) {
+      const tile = document.createElement('a');
+      const path = dog.relative_path ? `/dogs${dog.relative_path}/${dog.animal_id}` : `/dogs/${dog.animal_id}`;
+      tile.href = path;
+      tile.className = 'browse-tile';
+      tile.setAttribute('data-animal-id', dog.animal_id);
+
+      const img = document.createElement('img');
+      img.src = dog.image_url || 'happy_rescue_pup.png';
+      img.alt = dog.name;
+      img.loading = 'lazy';
+      img.onerror = function() { this.src = 'happy_rescue_pup.png'; };
+      tile.appendChild(img);
+
+      const info = document.createElement('div');
+      info.className = 'browse-tile-info';
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'browse-tile-name';
+      nameEl.textContent = dog.name;
+      info.appendChild(nameEl);
+
+      const shelterEl = document.createElement('span');
+      shelterEl.className = 'browse-tile-shelter';
+      const locShort = (dog.location || '').replace(/,.*$/, '').replace(/\s*[\u{1F000}-\u{1FFFF}]/gu, '').trim();
+      shelterEl.textContent = locShort ? `${dog.shelter_name} \u00B7 ${locShort}` : dog.shelter_name;
+      info.appendChild(shelterEl);
+
+      tile.appendChild(info);
+      fragment.appendChild(tile);
+    }
+    browseGrid.appendChild(fragment);
+
+  } catch (err) {
+    console.error('Browse dogs error:', err);
+    if (browseLoading) browseLoading.style.display = 'none';
+    if (browseEmpty) {
+      browseEmpty.style.display = 'flex';
+      const emptyP = browseEmpty.querySelector('p');
+      if (emptyP) emptyP.textContent = 'Something went wrong. Try again.';
+    }
+  }
+}
+
+function closeBrowseView() {
+  isBrowseMode = false;
+  switchView('app');
+}
+
+// Sync the browse location dropdown with the main header's location dropdown
+function syncBrowseLocationSelect() {
+  const mainSelect = document.getElementById('headerLocationSelect');
+  const browseSelect = document.getElementById('browseLocationSelect');
+  if (!mainSelect || !browseSelect) return;
+
+  // Copy options from main select
+  browseSelect.innerHTML = '';
+  for (const opt of mainSelect.options) {
+    const newOpt = document.createElement('option');
+    newOpt.value = opt.value;
+    newOpt.textContent = opt.textContent;
+    newOpt.style.color = 'black';
+    browseSelect.appendChild(newOpt);
+  }
+  browseSelect.value = mainSelect.value;
+}
+
+// ─── Event listeners ──────────────────────────────────────────────
+
+// "Your Matches" button in app header → open browse view
+const browseAllBtn = document.getElementById('browseAllBtn');
+if (browseAllBtn) {
+  browseAllBtn.addEventListener('click', () => {
+    trackEvent('browse_all_clicked');
+    openBrowseView();
+  });
+}
+
+// "Meet One" button in browse header → go back to single dog view
+const browseMeetOneBtn = document.getElementById('browseMeetOneBtn');
+if (browseMeetOneBtn) {
+  browseMeetOneBtn.addEventListener('click', closeBrowseView);
+}
+
+// Bottom "Adjust Preferences" button
+if (browseAdjustPrefs) {
+  browseAdjustPrefs.addEventListener('click', () => openPrefModal());
+}
+
+// Empty state "Adjust Preferences" button
+const browseEmptyPrefsBtn = document.getElementById('browseEmptyPrefsBtn');
+if (browseEmptyPrefsBtn) {
+  browseEmptyPrefsBtn.addEventListener('click', () => openPrefModal());
+}
+
+// Browse header nav buttons — wire to the same modals as app header
+const browseAboutBtn = document.getElementById('browseAboutBtn');
+if (browseAboutBtn) browseAboutBtn.addEventListener('click', () => {
+  const modal = document.getElementById('aboutModal');
+  if (modal) { modal.classList.add('active'); modal.setAttribute('aria-hidden', 'false'); }
+});
+
+const browseContactBtn = document.getElementById('browseContactBtn');
+if (browseContactBtn) browseContactBtn.addEventListener('click', () => {
+  if (typeof openContactModal === 'function') openContactModal();
+});
+
+const browsePrefBtn = document.getElementById('browsePrefBtn');
+if (browsePrefBtn) browsePrefBtn.addEventListener('click', () => openPrefModal());
+
+const browseSearchBtn = document.getElementById('browseSearchBtn');
+if (browseSearchBtn) browseSearchBtn.addEventListener('click', () => {
+  if (typeof openSearchOverlay === 'function') openSearchOverlay();
+});
+
+const browseSavedBtn = document.getElementById('browseSavedBtn');
+if (browseSavedBtn) browseSavedBtn.addEventListener('click', () => {
+  if (typeof openSavedModal === 'function') openSavedModal();
+});
+
+// Show the My Dogs button in browse header if user has saved dogs
+function updateBrowseSavedBtn() {
+  const mainSavedBtn = document.getElementById('savedNavBtn');
+  const bSavedBtn = document.getElementById('browseSavedBtn');
+  if (mainSavedBtn && bSavedBtn) {
+    bSavedBtn.style.display = mainSavedBtn.style.display;
+  }
+}
+
+// Browse location selector — change location and refresh browse
+const browseLocationSelect = document.getElementById('browseLocationSelect');
+if (browseLocationSelect) {
+  browseLocationSelect.addEventListener('change', (e) => {
+    const val = e.target.value;
+    // Sync to main header select
+    const mainSelect = document.getElementById('headerLocationSelect');
+    if (mainSelect) mainSelect.value = val;
+    // Update prefs
+    currentPrefs.location = val === 'any' ? 'any' : browseLocationSelect.options[browseLocationSelect.selectedIndex].textContent.trim();
+    localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+    // Refresh browse
+    openBrowseView();
+  });
+}
 
     </script>
     <script>
@@ -6777,6 +7327,14 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
           }
         }
 
+        // Helper: toggle glow indicator on mobile when a specific location is active
+        function updateLocationIndicator() {
+          if (!headerSelect) return;
+          const v = headerSelect.value;
+          headerSelect.classList.toggle('location-active', v !== 'any' && v !== 'all');
+        }
+        updateLocationIndicator();
+
         // Bind event listener to headerLocationSelect
         if (headerSelect) {
           headerSelect.addEventListener('change', async (e) => {
@@ -6788,6 +7346,7 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
             currentPrefs.location = newLocName;
             localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
             setupSelectorButtons('prefLocationGroup', newLocName);
+            updateLocationIndicator();
             
             // Check if current dog matches new location
             let shouldKeepDog = false;
@@ -6943,6 +7502,13 @@ if (landingLoginBtn) {
   });
 }
 
+const landingPrefBtn = document.getElementById('landingPrefBtn');
+if (landingPrefBtn) {
+  landingPrefBtn.addEventListener('click', () => {
+    openPrefModal();
+  });
+}
+
 
 // Cleaned up: loginSkipBtn and loginGuestBtn removed (no longer exist in HTML)
 
@@ -7092,13 +7658,19 @@ window.addEventListener('orientationchange', () => {
 });
 
 // Completely block native window layout scroll to prevent iOS Safari input focus layout offset bugs
+// Only when the app view is active (landing page and browse view need native scrolling)
 window.addEventListener('scroll', () => {
-  if (window.scrollY !== 0 || window.scrollX !== 0) {
+  const landingView = document.getElementById('landingView');
+  const browseView = document.getElementById('browseView');
+  const isLanding = landingView && !landingView.classList.contains('hidden');
+  const isBrowse = browseView && !browseView.classList.contains('hidden');
+  if (!isLanding && !isBrowse && (window.scrollY !== 0 || window.scrollX !== 0)) {
     window.scrollTo(0, 0);
   }
 }, { passive: true });
 
 // Completely block scrollContent from scrolling on desktop viewports
+// scrollContent belongs to the app view, not the landing view
 if (scrollContent) {
   scrollContent.addEventListener('scroll', () => {
     if (window.innerWidth >= 800 && scrollContent.scrollTop !== 0) {
@@ -7266,6 +7838,7 @@ function handleSwipe() {
       </div>
     </div>
   </div>
+
 
   <!-- Search Overlay -->
   <div class="search-overlay" id="searchOverlay" aria-hidden="true" role="dialog" aria-label="Search for a dog">

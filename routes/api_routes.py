@@ -543,6 +543,139 @@ async def random_dog(request: Request):
 
 
 # ──────────────────────────────────────────────────────────────────────
+# GET /api/browse_dogs
+# Returns all dogs matching current preferences for the tile grid view
+# ──────────────────────────────────────────────────────────────────────
+
+@router.get("/api/browse_dogs")
+async def browse_dogs(request: Request):
+    try:
+        params = request.query_params
+        email = (params.get("email") or "").strip().lower()
+
+        client = get_supabase_client()
+        image_base_url = get_image_base_url()
+
+        # Fetch all active dogs with filterable fields
+        active_data = fetch_all_rows(client.table("active_dogs").select("animal_id, name, gender, age, weight, shelter_id"))
+        if not active_data:
+            return JSONResponse(content={"dogs": [], "total": 0, "image_base_url": image_base_url})
+
+        active_dogs = {row["animal_id"]: row for row in active_data}
+
+        # Fetch shelters
+        shelters_res = client.table("shelters").select("*").execute()
+        shelters_map = {s["shelter_id"]: s for s in shelters_res.data} if shelters_res.data else {}
+
+        # Fetch persona profiles (needed to filter to dogs with personas)
+        persona_data_list = fetch_all_rows(client.table("animal_persona_profiles").select("animal_id"))
+        persona_ids = {row["animal_id"] for row in persona_data_list}
+
+        # Fetch fact profiles for filtering + names
+        fact_data_list = fetch_all_rows(client.table("animal_fact_profiles").select("animal_id, dog_name, age_bucket, weight_class, altered_status, energy_level, good_with_dogs, house_trained"))
+        fact_map = {}
+        for row in fact_data_list:
+            fact_map[row["animal_id"]] = row
+            if row["animal_id"] in active_dogs:
+                active_dogs[row["animal_id"]]["age_bucket"] = row.get("age_bucket")
+                active_dogs[row["animal_id"]]["weight_class"] = row.get("weight_class")
+                active_dogs[row["animal_id"]]["altered_status"] = row.get("altered_status")
+                active_dogs[row["animal_id"]]["energy_level"] = row.get("energy_level")
+                active_dogs[row["animal_id"]]["good_with_dogs"] = row.get("good_with_dogs")
+                active_dogs[row["animal_id"]]["house_trained"] = row.get("house_trained")
+
+        # Fetch system_prompts_v2 to ensure only dogs with a prompt are served
+        prompts_data_list = fetch_all_rows(client.table("system_prompts_v2").select("animal_id"))
+        prompt_ids = {row["animal_id"] for row in prompts_data_list}
+
+        valid_ids = list(set(active_dogs.keys()) & persona_ids & prompt_ids)
+
+        if not valid_ids:
+            return JSONResponse(content={"dogs": [], "total": 0, "image_base_url": image_base_url})
+
+        # Build preferences from query params + stored prefs
+        preferences = {}
+        has_real_preferences = False
+        if email:
+            pref_res = client.table("user_preferences").select("*").eq("email", email).limit(1).execute()
+            if pref_res.data:
+                preferences = pref_res.data[0]
+                has_real_preferences = True
+
+        q_gender = (params.get("gender") or "").strip().lower()
+        q_age = (params.get("age_group") or "").strip().lower()
+        q_size = (params.get("size") or "").strip().lower()
+        q_location = (params.get("location") or "").strip()
+        q_energy = (params.get("energy") or "").strip().lower()
+        q_altered = (params.get("altered") or "").strip().lower()
+        q_dogs = (params.get("dogs") or "").strip().lower()
+        q_house_trained = (params.get("house_trained") or "").strip().lower()
+
+        if q_gender: preferences["gender"] = q_gender
+        if q_age: preferences["age_group"] = q_age
+        if q_size: preferences["size"] = q_size
+        if q_location: preferences["location"] = q_location
+        if q_energy: preferences["energy"] = q_energy
+        if q_altered: preferences["altered"] = q_altered
+        if q_dogs == "true": preferences["dogs"] = True
+        if q_house_trained == "true": preferences["house_trained"] = True
+
+        for k in ["gender", "age_group", "size", "location", "energy", "altered"]:
+            if not preferences.get(k):
+                preferences[k] = "any"
+        for k in ["dogs", "house_trained"]:
+            if not preferences.get(k):
+                preferences[k] = False
+
+        # Apply hard filters
+        valid_ids = apply_hard_filters(valid_ids, active_dogs, shelters_map, preferences)
+
+        # Fetch image data for matching dogs
+        animals_res = fetch_all_rows(client.table("animals").select("animal_id, image_file, image_public_url, shelter_image_url, shelter_name"))
+        animals_map = {a["animal_id"]: a for a in animals_res}
+
+        # Build the lightweight tile list
+        dogs_list = []
+        for aid in valid_ids:
+            active = active_dogs.get(aid, {})
+            facts = fact_map.get(aid, {})
+            animal = animals_map.get(aid, {})
+            shelter = shelters_map.get(active.get("shelter_id", ""), {})
+
+            img_file = animal.get("image_file")
+            if img_file and image_base_url:
+                image_url = image_base_url + img_file
+            elif animal.get("image_public_url"):
+                image_url = animal["image_public_url"]
+            elif animal.get("shelter_image_url"):
+                image_url = animal["shelter_image_url"]
+            else:
+                image_url = ""
+
+            dogs_list.append({
+                "animal_id": aid,
+                "name": facts.get("dog_name") or active.get("name") or "Unknown",
+                "shelter_name": animal.get("shelter_name") or shelter.get("shelter_name", ""),
+                "location": shelter.get("location_display_name", ""),
+                "image_url": image_url,
+                "relative_path": shelter.get("relative_path", ""),
+            })
+
+        # Sort alphabetically by name
+        dogs_list.sort(key=lambda d: d["name"].lower())
+
+        return JSONResponse(content={
+            "dogs": dogs_list,
+            "total": len(dogs_list),
+            "image_base_url": image_base_url,
+        })
+
+    except Exception as e:
+        logger.exception("browse_dogs error")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+# ──────────────────────────────────────────────────────────────────────
 # GET/POST /api/favorites
 # ──────────────────────────────────────────────────────────────────────
 
