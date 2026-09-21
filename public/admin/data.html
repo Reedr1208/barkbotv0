@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarkBot Data Insights</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-card: rgba(18, 18, 28, 0.9);
+      --bg-card-hover: rgba(25, 25, 40, 0.95);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --text-primary: #e8e8ef;
+      --text-secondary: #8888a0;
+      --text-dim: #555570;
+      --accent: #7c5cfc;
+      --accent-glow: rgba(124, 92, 252, 0.25);
+      --success: #34d399;
+      --success-bg: rgba(52, 211, 153, 0.1);
+      --error: #f87171;
+      --error-bg: rgba(248, 113, 113, 0.1);
+      --warning: #fbbf24;
+      --warning-bg: rgba(251, 191, 36, 0.1);
+      --running: #60a5fa;
+      --running-bg: rgba(96, 165, 250, 0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(124, 92, 252, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 90%, rgba(248, 113, 113, 0.04) 0%, transparent 50%);
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-left h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+    .header-left h1 span { color: var(--text-dim); font-weight: 400; }
+    .tab-nav {
+      display: flex; gap: 4px; margin-left: 16px;
+      background: rgba(255, 255, 255, 0.04); border-radius: 8px; padding: 3px;
+    }
+    .tab-link {
+      font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 6px;
+      color: var(--text-secondary); text-decoration: none; transition: all 0.2s;
+    }
+    .tab-link:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.04); }
+    .tab-link.active { background: var(--accent); color: #fff; }
+    .logout-btn {
+      background: none; border: 1px solid var(--border); color: var(--text-secondary);
+      padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+    /* ── Main ────────────────────────────────────── */
+    .main {
+      max-width: 1100px; margin: 28px auto; padding: 0 20px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* ── Filters ─────────────────────────────────── */
+    .filter-bar {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .filter-bar label {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-secondary);
+    }
+    .filter-bar select {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      color: var(--text-primary); padding: 7px 12px; border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 13px; cursor: pointer; min-width: 200px;
+    }
+    .filter-bar select:focus { outline: none; border-color: var(--accent); }
+    .filter-bar select option { background: #1a1a2e; color: var(--text-primary); }
+
+    /* ── KPI Row ──────────────────────────────────── */
+    .kpi-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;
+    }
+    .kpi-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px;
+      transition: border-color 0.2s;
+    }
+    .kpi-card:hover { border-color: var(--border-hover); }
+    .kpi-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .kpi-value {
+      font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
+      font-family: var(--font-mono);
+    }
+    .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+    /* ── Chart Cards ─────────────────────────────── */
+    .chart-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 768px) { .chart-row { grid-template-columns: 1fr; } }
+
+    .chart-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 22px;
+    }
+    .chart-card.full-width { grid-column: 1 / -1; }
+    .chart-title {
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .chart-container { position: relative; width: 100%; }
+    .chart-container canvas { width: 100% !important; }
+
+    /* ── Loading ──────────────────────────────────── */
+    .loading-overlay {
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px 0; color: var(--text-secondary); font-size: 14px; gap: 10px;
+    }
+    .spinner {
+      width: 18px; height: 18px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Shelter table ────────────────────────────── */
+    .data-table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    .data-table th {
+      text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-dim); padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--text-secondary);
+    }
+    .data-table tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
+    .data-table .num { text-align: right; font-family: var(--font-mono); font-size: 12px; }
+    .bar-cell { display: flex; align-items: center; gap: 8px; }
+    .bar-fill {
+      height: 6px; border-radius: 3px; min-width: 2px;
+      transition: width 0.4s ease;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>🐕 BarkBot <span>/ Admin</span></h1>
+      <nav class="tab-nav">
+        <a href="/admin/crons" class="tab-link">Crons</a>
+        <a href="/admin/monitors" class="tab-link">Monitors</a>
+        <a href="/admin/backfill" class="tab-link">Backfill</a>
+        <a href="/admin/data" class="tab-link active">Data</a>
+      </nav>
+    </div>
+    <form action="/admin/logout" method="post" style="display:inline">
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
+
+  <div class="main">
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <label>🔍 Filter by</label>
+      <select id="shelter-filter">
+        <option value="ALL">All Shelters</option>
+      </select>
+      <select id="location-filter">
+        <option value="ALL">All Locations</option>
+      </select>
+    </div>
+
+    <!-- KPI row -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Animals</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+        <div class="kpi-sub">In database</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Active Dogs</div>
+        <div class="kpi-value" id="kpi-active" style="color:var(--success)">—</div>
+        <div class="kpi-sub">Currently listed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Chatable Dogs</div>
+        <div class="kpi-value" id="kpi-chatable" style="color:var(--accent)">—</div>
+        <div class="kpi-sub">With system prompt</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Shelters</div>
+        <div class="kpi-value" id="kpi-shelters" style="color:var(--warning)">—</div>
+        <div class="kpi-sub">Active organizations</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Chat Coverage</div>
+        <div class="kpi-value" id="kpi-coverage" style="color:var(--running)">—</div>
+        <div class="kpi-sub">Active → chatable %</div>
+      </div>
+    </div>
+
+    <!-- Charts row 1 -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title">📊 Archetype Distribution</div>
+        <div class="chart-container"><canvas id="chart-archetypes"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📊 Archetype Distribution (%)</div>
+        <div class="chart-container"><canvas id="chart-archetypes-pct"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts row 2 -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title">📏 Bio Length Distribution</div>
+        <div class="chart-container"><canvas id="chart-bio"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🐕 Dogs by Shelter</div>
+        <div class="chart-container"><canvas id="chart-dogs-shelter"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Shelter breakdown table -->
+    <div class="chart-card full-width">
+      <div class="chart-title">📋 Shelter Breakdown</div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="shelter-table">
+          <thead>
+            <tr>
+              <th>Shelter</th>
+              <th>Location</th>
+              <th class="num">Total</th>
+              <th class="num">Active</th>
+              <th class="num">Chatable</th>
+              <th style="min-width:200px">Archetype Mix</th>
+            </tr>
+          </thead>
+          <tbody id="shelter-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+const ARCH_COLORS = {
+  boss_dog: '#f87171',
+  bull_in_china_shop: '#fbbf24',
+  cuddle_monster: '#a78bfa',
+  sage: '#34d399',
+  shy_wallflower: '#60a5fa'
+};
+
+let RAW_DATA = null;
+let chartArchetypes = null;
+let chartArchetypesPct = null;
+let chartBio = null;
+let chartDogsShelter = null;
+
+async function loadData() {
+  try {
+    const res = await fetch('/admin/api/data/stats');
+    if (!res.ok) throw new Error('Failed to load');
+    RAW_DATA = await res.json();
+    populateFilters();
+    render('ALL', 'ALL');
+  } catch (e) {
+    document.querySelector('.main').innerHTML =
+      `<div class="loading-overlay" style="color:var(--error)">❌ Failed to load data: ${e.message}</div>`;
+  }
+}
+
+function populateFilters() {
+  const shelterSelect = document.getElementById('shelter-filter');
+  const locationSelect = document.getElementById('location-filter');
+  const locations = new Set();
+
+  RAW_DATA.shelters.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.shelter_id;
+    opt.textContent = `${s.shelter_name} (${s.shelter_id})`;
+    shelterSelect.appendChild(opt);
+    if (s.location) locations.add(s.location);
+  });
+
+  [...locations].sort().forEach(loc => {
+    const opt = document.createElement('option');
+    opt.value = loc;
+    opt.textContent = loc;
+    locationSelect.appendChild(opt);
+  });
+
+  shelterSelect.addEventListener('change', () => {
+    locationSelect.value = 'ALL';
+    render(shelterSelect.value, 'ALL');
+  });
+  locationSelect.addEventListener('change', () => {
+    shelterSelect.value = 'ALL';
+    render('ALL', locationSelect.value);
+  });
+}
+
+function getFilteredShelters(shelterId, location) {
+  return RAW_DATA.shelters.filter(s => {
+    if (shelterId !== 'ALL') return s.shelter_id === shelterId;
+    if (location !== 'ALL') return s.location === location;
+    return true;
+  });
+}
+
+function aggregate(shelters) {
+  const agg = {
+    total: 0, active: 0, chatable: 0,
+    archetypes: {},
+    bio_histogram: {}
+  };
+  RAW_DATA.archetype_keys.forEach(k => agg.archetypes[k] = 0);
+  RAW_DATA.bio_histogram_labels.forEach(l => agg.bio_histogram[l] = 0);
+
+  shelters.forEach(s => {
+    agg.total += s.total_animals;
+    agg.active += s.active_dogs;
+    agg.chatable += s.chatable_dogs;
+    Object.entries(s.archetypes).forEach(([k, v]) => agg.archetypes[k] = (agg.archetypes[k] || 0) + v);
+    Object.entries(s.bio_histogram).forEach(([k, v]) => agg.bio_histogram[k] = (agg.bio_histogram[k] || 0) + v);
+  });
+  return agg;
+}
+
+function render(shelterId, location) {
+  const shelters = getFilteredShelters(shelterId, location);
+  const agg = aggregate(shelters);
+
+  // KPIs
+  document.getElementById('kpi-total').textContent = agg.total.toLocaleString();
+  document.getElementById('kpi-active').textContent = agg.active.toLocaleString();
+  document.getElementById('kpi-chatable').textContent = agg.chatable.toLocaleString();
+  document.getElementById('kpi-shelters').textContent = shelters.length;
+  const coverage = agg.active > 0 ? Math.round(agg.chatable / agg.active * 100) : 0;
+  document.getElementById('kpi-coverage').textContent = coverage + '%';
+
+  renderArchetypeChart(agg);
+  renderArchetypePctChart(agg);
+  renderBioChart(agg);
+  renderDogsShelterChart(shelters);
+  renderTable(shelters);
+}
+
+function renderArchetypeChart(agg) {
+  const ctx = document.getElementById('chart-archetypes');
+  const labels = RAW_DATA.archetype_keys.map(k => RAW_DATA.archetype_names[k] || k);
+  const data = RAW_DATA.archetype_keys.map(k => agg.archetypes[k] || 0);
+  const colors = RAW_DATA.archetype_keys.map(k => ARCH_COLORS[k] || '#888');
+
+  if (chartArchetypes) chartArchetypes.destroy();
+  chartArchetypes = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderRadius: 6, maxBarThickness: 48 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, aspectRatio: 1.6,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8888a0', font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { color: '#8888a0', font: { size: 10 }, maxRotation: 45 } }
+      }
+    }
+  });
+}
+
+function renderArchetypePctChart(agg) {
+  const ctx = document.getElementById('chart-archetypes-pct');
+  const total = Object.values(agg.archetypes).reduce((a, b) => a + b, 0) || 1;
+  const labels = RAW_DATA.archetype_keys.map(k => RAW_DATA.archetype_names[k] || k);
+  const data = RAW_DATA.archetype_keys.map(k => Math.round((agg.archetypes[k] || 0) / total * 1000) / 10);
+  const colors = RAW_DATA.archetype_keys.map(k => ARCH_COLORS[k] || '#888');
+
+  if (chartArchetypesPct) chartArchetypesPct.destroy();
+  chartArchetypesPct = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 8 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, aspectRatio: 1.6,
+      cutout: '55%',
+      plugins: {
+        legend: { position: 'right', labels: { color: '#8888a0', font: { size: 11 }, padding: 12 } },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}%` } }
+      }
+    }
+  });
+}
+
+function renderBioChart(agg) {
+  const ctx = document.getElementById('chart-bio');
+  const labels = RAW_DATA.bio_histogram_labels;
+  const data = labels.map(l => agg.bio_histogram[l] || 0);
+
+  if (chartBio) chartBio.destroy();
+  chartBio = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Dogs', data,
+        backgroundColor: 'rgba(124, 92, 252, 0.6)',
+        borderColor: 'rgba(124, 92, 252, 0.8)',
+        borderWidth: 1, borderRadius: 4, maxBarThickness: 40
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, aspectRatio: 1.6,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8888a0', font: { size: 11 } },
+             title: { display: true, text: 'Number of Dogs', color: '#555570', font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { color: '#8888a0', font: { size: 10 } },
+             title: { display: true, text: 'Bio Length (chars)', color: '#555570', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function renderDogsShelterChart(shelters) {
+  const ctx = document.getElementById('chart-dogs-shelter');
+  const sorted = [...shelters].sort((a, b) => b.active_dogs - a.active_dogs);
+  const labels = sorted.map(s => s.shelter_id);
+
+  if (chartDogsShelter) chartDogsShelter.destroy();
+  chartDogsShelter = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Active', data: sorted.map(s => s.active_dogs), backgroundColor: 'rgba(52,211,153,0.6)', borderRadius: 4, maxBarThickness: 36 },
+        { label: 'Chatable', data: sorted.map(s => s.chatable_dogs), backgroundColor: 'rgba(124,92,252,0.6)', borderRadius: 4, maxBarThickness: 36 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, aspectRatio: 1.6,
+      plugins: { legend: { labels: { color: '#8888a0', font: { size: 11 } } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8888a0', font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { color: '#8888a0', font: { size: 10 }, maxRotation: 45 } }
+      }
+    }
+  });
+}
+
+function renderTable(shelters) {
+  const tbody = document.getElementById('shelter-tbody');
+  const sorted = [...shelters].sort((a, b) => b.total_animals - a.total_animals);
+  const archKeys = RAW_DATA.archetype_keys;
+
+  tbody.innerHTML = sorted.map(s => {
+    const archTotal = Object.values(s.archetypes).reduce((a, b) => a + b, 0) || 1;
+    const barSegments = archKeys.map(k => {
+      const pct = (s.archetypes[k] || 0) / archTotal * 100;
+      const color = ARCH_COLORS[k] || '#888';
+      return `<div class="bar-fill" style="width:${Math.max(pct, 1)}%;background:${color}" title="${RAW_DATA.archetype_names[k]}: ${s.archetypes[k]} (${pct.toFixed(1)}%)"></div>`;
+    }).join('');
+
+    return `<tr>
+      <td style="color:var(--text-primary);font-weight:500">${s.shelter_name}</td>
+      <td>${s.location || '—'}</td>
+      <td class="num">${s.total_animals}</td>
+      <td class="num" style="color:var(--success)">${s.active_dogs}</td>
+      <td class="num" style="color:var(--accent)">${s.chatable_dogs}</td>
+      <td><div class="bar-cell" style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.04)">${barSegments}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+loadData();
+</script>
+
+</body>
+</html>

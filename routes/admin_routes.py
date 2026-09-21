@@ -146,6 +146,145 @@ async def admin_monitors_page(request: Request):
     return HTMLResponse("<h1>Monitors page not found</h1>", status_code=500)
 
 
+@router.get("/admin/data")
+async def admin_data_page(request: Request):
+    """Serve the data insights dashboard."""
+    if not _check_admin_auth(request):
+        return RedirectResponse(url="/admin/login", status_code=303)
+    data_path = os.path.join(os.path.dirname(__file__), "..", "public", "admin", "data.html")
+    if os.path.isfile(data_path):
+        return FileResponse(data_path, media_type="text/html")
+    return HTMLResponse("<h1>Data page not found</h1>", status_code=500)
+
+
+@router.get("/admin/api/data/stats")
+async def admin_data_stats(request: Request):
+    """Return aggregated stats for the data insights dashboard."""
+    if not _check_admin_auth(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    sb = get_supabase_client()
+
+    # 1. Get all animals with shelter info and bio
+    animals = []
+    offset = 0
+    while True:
+        res = sb.table("animals").select("animal_id, shelter_id, shelter_name, bio").range(offset, offset + 999).execute()
+        animals.extend(res.data)
+        if len(res.data) < 1000:
+            break
+        offset += 1000
+
+    # 2. Get all persona profiles
+    personas = []
+    offset = 0
+    while True:
+        res = sb.table("animal_persona_profiles").select("animal_id, primary_archetype_key").range(offset, offset + 999).execute()
+        personas.extend(res.data)
+        if len(res.data) < 1000:
+            break
+        offset += 1000
+
+    # 3. Get active (chatable) dogs
+    active = []
+    offset = 0
+    while True:
+        res = sb.table("active_dogs").select("animal_id, shelter_id").range(offset, offset + 999).execute()
+        active.extend(res.data)
+        if len(res.data) < 1000:
+            break
+        offset += 1000
+
+    # 4. Get system prompts (which dogs have prompts = truly chatable)
+    prompts = []
+    offset = 0
+    while True:
+        res = sb.table("system_prompts_v2").select("animal_id").range(offset, offset + 999).execute()
+        prompts.extend(res.data)
+        if len(res.data) < 1000:
+            break
+        offset += 1000
+    prompt_ids = {p["animal_id"] for p in prompts}
+
+    # Build lookups
+    animal_shelter = {a["animal_id"]: a.get("shelter_id", "unknown") for a in animals}
+    animal_shelter_name = {}
+    for a in animals:
+        sid = a.get("shelter_id", "unknown")
+        animal_shelter_name[sid] = a.get("shelter_name", sid)
+    persona_map = {p["animal_id"]: p.get("primary_archetype_key") for p in personas}
+    active_ids = {a["animal_id"] for a in active}
+
+    # Get archetype list
+    archetypes_res = sb.table("persona_archetypes").select("archetype_key, name").eq("active", True).execute()
+    archetype_keys = sorted([a["archetype_key"] for a in archetypes_res.data])
+    archetype_names = {a["archetype_key"]: a["name"] for a in archetypes_res.data}
+
+    # Get shelters list
+    shelters_res = sb.table("shelters").select("shelter_id, name, city, state").execute()
+    shelter_meta = {}
+    for s in shelters_res.data:
+        shelter_meta[s["shelter_id"]] = {
+            "name": s.get("name", s["shelter_id"]),
+            "city": s.get("city", ""),
+            "state": s.get("state", ""),
+            "location": f"{s.get('city', '')}, {s.get('state', '')}".strip(", "),
+        }
+
+    # ── Build per-shelter stats ──
+    shelter_stats = {}
+    for a in animals:
+        sid = a.get("shelter_id", "unknown")
+        if sid not in shelter_stats:
+            shelter_stats[sid] = {
+                "shelter_id": sid,
+                "shelter_name": shelter_meta.get(sid, {}).get("name", animal_shelter_name.get(sid, sid)),
+                "location": shelter_meta.get(sid, {}).get("location", ""),
+                "total_animals": 0,
+                "active_dogs": 0,
+                "chatable_dogs": 0,
+                "archetypes": {k: 0 for k in archetype_keys},
+                "bio_lengths": [],
+            }
+        stats = shelter_stats[sid]
+        stats["total_animals"] += 1
+        aid = a["animal_id"]
+        if aid in active_ids:
+            stats["active_dogs"] += 1
+        if aid in prompt_ids:
+            stats["chatable_dogs"] += 1
+        bio = a.get("bio") or ""
+        stats["bio_lengths"].append(len(bio))
+        arch = persona_map.get(aid)
+        if arch and arch in stats["archetypes"]:
+            stats["archetypes"][arch] += 1
+
+    # Build bio length histogram bins
+    bio_bins = [0, 50, 100, 200, 400, 800, 1500, 3000, 99999]
+    bio_labels = ["0-50", "51-100", "101-200", "201-400", "401-800", "801-1500", "1501-3000", "3000+"]
+
+    result_shelters = []
+    for sid in sorted(shelter_stats.keys()):
+        s = shelter_stats[sid]
+        # Compute bio histogram
+        bio_hist = [0] * len(bio_labels)
+        for bl in s["bio_lengths"]:
+            for i in range(len(bio_bins) - 1):
+                if bio_bins[i] <= bl < bio_bins[i + 1]:
+                    bio_hist[i] += 1
+                    break
+        s["bio_histogram"] = dict(zip(bio_labels, bio_hist))
+        del s["bio_lengths"]
+        result_shelters.append(s)
+
+    return JSONResponse(content={
+        "shelters": result_shelters,
+        "archetype_keys": archetype_keys,
+        "archetype_names": archetype_names,
+        "bio_histogram_labels": bio_labels,
+    })
+
+
 # ── API endpoints (all require auth) ───────────────────────────────
 
 @router.get("/admin/api/jobs")
