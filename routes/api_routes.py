@@ -95,7 +95,7 @@ def matches_gender(dog_gender, pref_gender):
 # POST /api/chat
 # ──────────────────────────────────────────────────────────────────────
 
-CHAT_MODEL = "gpt-5.4-mini"
+CHAT_MODEL = "gpt-5.6-luna"
 
 
 def _ensure_user_preferences(sb, email):
