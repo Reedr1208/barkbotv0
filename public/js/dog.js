@@ -502,7 +502,7 @@ async function initDogChat(dog, loadOptions, fetchId, isStaleFetch) {
     <div class="chat-intro-title">💬 Chat with ${currentDogName}</div>
     <p class="chat-intro-text">Start a chat with ${currentDogName}! Ask me anything about my personality, energy, or training.</p>
     <div class="chat-intro-disclaimer">
-      🔒 ChattyHound uses available shelter profile details to help you get to know each dog. Always confirm medical, behavioral, and adoption details directly with shelter staff.
+      🔒 Chats are AI-generated using shelter profile details and may be saved so you can continue them later. Avoid sharing sensitive personal info. Always confirm medical, behavioral, and adoption details with the shelter. <a href="/privacy.html" style="color:var(--teal); text-decoration:underline;">Privacy</a>
     </div>`;
   }
   introCard.style.display = 'none';
