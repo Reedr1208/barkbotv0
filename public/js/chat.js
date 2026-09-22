@@ -165,7 +165,7 @@ function updateSuggestions() {
         // Mark this prompt as used so it won't reappear
         suggestionState.usedPrompts.add(promptText);
 
-        trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
+        trackEvent('suggestion_clicked', { dog_name: currentDogName, animal_id: currentAnimalId, typed_vs_suggested: 'suggested' });
         sendMessage(promptText, promptText);
       }
     };
@@ -189,7 +189,7 @@ function appendMessage(role, content, avatarLetter = '🐾', shouldScroll = true
 
     const bubble = document.createElement('div');
     bubble.className = 'bubble bot';
-    bubble.innerHTML = marked.parse(content);
+    bubble.innerHTML = DOMPurify.sanitize(marked.parse(content));
     msgRow.appendChild(bubble);
   } else {
     const bubble = document.createElement('div');
@@ -246,9 +246,14 @@ async function sendMessage(customText = null, chosenPrompt = null) {
 
   const isFirstMessage = (conversationHistory.length === 0);
   appendMessage('user', text);
-  trackEvent('chat_message_sent', { dog_name: currentDogName, message_text: text });
+  trackEvent('chat_message_sent', {
+    dog_name: currentDogName,
+    animal_id: currentAnimalId,
+    turn_number: conversationHistory.length,
+    typed_vs_suggested: chosenPrompt ? 'suggested' : 'typed'
+  });
   if (isFirstMessage) {
-    trackEvent('first_chat_message_sent', { dog_name: currentDogName });
+    trackEvent('first_chat_message_sent', { dog_name: currentDogName, animal_id: currentAnimalId });
   }
   chatInput.value = '';
   chatInput.blur();
@@ -289,14 +294,17 @@ async function sendMessage(customText = null, chosenPrompt = null) {
     const firstLetter = currentDogName.charAt(0).toUpperCase();
     if (data.reply) {
       appendMessage('bot', data.reply, firstLetter);
+      trackEvent('chat_response_received', { dog_name: currentDogName, animal_id: currentAnimalId, turn_number: conversationHistory.length });
       updateSuggestions();
     } else {
       appendMessage('bot', '[Error: No reply received]', firstLetter);
+      trackEvent('chat_error', { dog_name: currentDogName, animal_id: currentAnimalId, error_type: 'empty_reply' });
     }
   } catch (err) {
     removeTypingIndicator();
     console.error(err);
     appendMessage('bot', '[Sorry, I had trouble responding to that.]', '!');
+    trackEvent('chat_error', { dog_name: currentDogName, animal_id: currentAnimalId, error_type: 'fetch_error' });
   } finally {
     chatInput.disabled = false;
     sendBtn.disabled = false;

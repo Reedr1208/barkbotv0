@@ -349,7 +349,11 @@ function renderCompatBadges(dog) {
     // Highlight badges — show all highlights from DB as green tags
     const highlights = dog.highlights || [];
     if (highlights.length > 0) {
-      badgeContainer.innerHTML = highlights.map(h => `<span class="fit-badge-tag">${h}</span>`).join('');
+      badgeContainer.innerHTML = highlights.map(h => {
+        const escaped = document.createElement('span');
+        escaped.textContent = h;
+        return `<span class="fit-badge-tag">${escaped.innerHTML}</span>`;
+      }).join('');
     } else {
       badgeContainer.innerHTML = '<span class="fit-badge-tag">Shelter Hero 🦸</span>';
     }

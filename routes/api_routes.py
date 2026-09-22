@@ -106,7 +106,7 @@ def _ensure_user_preferences(sb, email):
         pass  # Non-blocking — row may already exist
 
 
-def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_preview, ip_address="", location=""):
+def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_preview):
     """Upsert a chat_conversations row and return the conversation id."""
     try:
         _ensure_user_preferences(sb, email)
@@ -116,8 +116,6 @@ def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_pre
             "dog_name": dog_name or "",
             "dog_image_url": dog_image_url or "",
             "last_message_preview": last_preview[:200] if last_preview else "",
-            "ip_address": ip_address,
-            "location": location,
             "updated_at": "now()",
         }
         res = sb.table("chat_conversations").upsert(row, on_conflict="email,animal_id").execute()
@@ -133,25 +131,48 @@ def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_pre
         return None
 
 
-def _save_messages(sb, conversation_id, user_message, assistant_reply, ip_address="", location="", sugg_prompts=None, chosen_prompt=None):
+def _save_messages(sb, conversation_id, user_message, assistant_reply, sugg_prompts=None, chosen_prompt=None):
     """Append user + assistant messages to chat_messages."""
     try:
-        user_row = {"conversation_id": conversation_id, "role": "user", "content": user_message, "ip_address": ip_address, "location": location}
+        user_row = {"conversation_id": conversation_id, "role": "user", "content": user_message}
         if sugg_prompts is not None:
             user_row["sugg_prompts"] = sugg_prompts
         if chosen_prompt is not None:
             user_row["chosen_prompt"] = chosen_prompt
         sb.table("chat_messages").insert([
             user_row,
-            {"conversation_id": conversation_id, "role": "assistant", "content": assistant_reply, "ip_address": ip_address, "location": location},
+            {"conversation_id": conversation_id, "role": "assistant", "content": assistant_reply},
         ]).execute()
     except Exception:
         pass  # Non-blocking
+
+# ── Chat rate limiting ──────────────────────────────────────────────
+_chat_rate_store: dict[str, list[float]] = {}
+_CHAT_RATE_LIMIT = 20  # max requests per window
+_CHAT_RATE_WINDOW = 60  # seconds
+
+
+def _chat_is_rate_limited(ip: str) -> bool:
+    now = time.time()
+    timestamps = _chat_rate_store.get(ip, [])
+    timestamps = [t for t in timestamps if now - t < _CHAT_RATE_WINDOW]
+    _chat_rate_store[ip] = timestamps
+    if len(timestamps) >= _CHAT_RATE_LIMIT:
+        return True
+    timestamps.append(now)
+    return False
 
 
 @router.post("/api/chat")
 async def chat(request: Request):
     try:
+        # Rate limit by IP
+        ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+        if not ip:
+            ip = request.client.host if request.client else "unknown"
+        if _chat_is_rate_limited(ip):
+            return JSONResponse(status_code=429, content={"error": "Too many messages. Please wait a moment and try again."})
+
         body = await request.json()
 
         animal_id = body.get("animal_id")
@@ -164,18 +185,25 @@ async def chat(request: Request):
         dog_name = body.get("dog_name") or ""
         dog_image_url = body.get("dog_image_url") or ""
 
-        # IP/Location from forwarded headers (Railway sets x-forwarded-for)
-        ip_address = request.headers.get("x-forwarded-for") or request.headers.get("x-real-ip") or ""
-        # Check for geo headers from reverse proxy (if configured)
-        city = request.headers.get("x-geo-ip-city")
-        country = request.headers.get("x-geo-ip-country")
-        location = f"{city}, {country}" if city and country else (city or country or "")
+        # IP/Location — used only ephemerally for rate-limiting, NOT stored
+        # (geo headers come from Railway reverse proxy if configured)
 
         sugg_prompts = body.get("sugg_prompts")
         chosen_prompt = body.get("chosen_prompt")
 
         if not animal_id or not user_message:
             return JSONResponse(status_code=400, content={"error": "animal_id and message are required."})
+
+        # ── Server-side input validation (abuse controls) ──
+        MAX_MESSAGE_LENGTH = 2000
+        MAX_HISTORY_TURNS = 50
+        if len(user_message) > MAX_MESSAGE_LENGTH:
+            return JSONResponse(status_code=400, content={"error": f"Message too long (max {MAX_MESSAGE_LENGTH} characters)."})
+        if len(conversation_history) > MAX_HISTORY_TURNS:
+            conversation_history = conversation_history[-MAX_HISTORY_TURNS:]
+        # Validate history entries have valid roles
+        valid_roles = {"user", "assistant"}
+        conversation_history = [t for t in conversation_history if isinstance(t, dict) and t.get("role") in valid_roles and isinstance(t.get("content"), str)]
 
         sb_client = get_supabase_client()
         res = sb_client.table("system_prompts_v2").select("system_prompt").eq("animal_id", animal_id).order("created_at", desc=True).limit(1).execute()
@@ -195,17 +223,27 @@ async def chat(request: Request):
         openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
         try:
-            response = openai_client.chat.completions.create(model=CHAT_MODEL, messages=input_messages)
+            response = openai_client.chat.completions.create(model=CHAT_MODEL, messages=input_messages, max_completion_tokens=1024)
             output_text = response.choices[0].message.content
         except AttributeError:
             response = openai_client.responses.create(model=CHAT_MODEL, input=input_messages)
             output_text = response.output_text
 
-        # Persist conversation (non-blocking)
+        # Persist conversation (non-blocking) — skip if user disabled retention
         try:
-            conv_id = _upsert_conversation(sb_client, user_email, animal_id, dog_name, dog_image_url, output_text[:200], ip_address, location)
-            if conv_id:
-                _save_messages(sb_client, conv_id, user_message, output_text, ip_address, location, sugg_prompts, chosen_prompt)
+            # Check retention preference
+            _skip_save = False
+            try:
+                pref_res = sb_client.table("user_preferences").select("chat_retention").eq("email", user_email).limit(1).execute()
+                if pref_res.data and pref_res.data[0].get("chat_retention") is False:
+                    _skip_save = True
+            except Exception:
+                pass
+
+            if not _skip_save:
+                conv_id = _upsert_conversation(sb_client, user_email, animal_id, dog_name, dog_image_url, output_text[:200])
+                if conv_id:
+                    _save_messages(sb_client, conv_id, user_message, output_text, sugg_prompts, chosen_prompt)
         except Exception:
             import traceback
             traceback.print_exc()
@@ -880,15 +918,21 @@ async def chat_history(request: Request):
 
         sb = get_supabase_client()
 
+        # Fetch retention preference
+        pref_res = sb.table("user_preferences").select("chat_retention").eq("email", email).limit(1).execute()
+        chat_retention = True
+        if pref_res.data and pref_res.data[0].get("chat_retention") is False:
+            chat_retention = False
+
         if animal_id:
             conv_res = sb.table("chat_conversations").select("id").eq("email", email).eq("animal_id", animal_id).limit(1).execute()
             if not conv_res.data:
-                return JSONResponse(content={"messages": [], "conversation_id": None})
+                return JSONResponse(content={"messages": [], "conversation_id": None, "chat_retention": chat_retention})
 
             conv_id = conv_res.data[0]["id"]
             msg_res = sb.table("chat_messages").select("role, content, created_at").eq("conversation_id", conv_id).order("created_at", desc=False).execute()
 
-            return JSONResponse(content={"conversation_id": conv_id, "messages": msg_res.data or []})
+            return JSONResponse(content={"conversation_id": conv_id, "messages": msg_res.data or [], "chat_retention": chat_retention})
         else:
             conv_res = sb.table("chat_conversations") \
                 .select("animal_id, dog_name, dog_image_url, last_message_preview, updated_at") \
@@ -904,7 +948,74 @@ async def chat_history(request: Request):
                 for c in convs:
                     c["is_available"] = c["animal_id"] in active_set
 
-            return JSONResponse(content={"conversations": convs})
+            return JSONResponse(content={"conversations": convs, "chat_retention": chat_retention})
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.delete("/api/chat_history")
+async def delete_chat_history(request: Request):
+    """Delete individual conversation or all conversations for a user."""
+    try:
+        body = await request.json()
+        email = (body.get("email") or "").strip().lower()
+        animal_id = (body.get("animal_id") or "").strip()  # optional: delete specific conversation
+
+        if not email:
+            return JSONResponse(status_code=400, content={"error": "email is required"})
+
+        sb = get_supabase_client()
+
+        if animal_id:
+            # Delete a single conversation
+            conv_res = sb.table("chat_conversations").select("id").eq("email", email).eq("animal_id", animal_id).limit(1).execute()
+            if conv_res.data:
+                conv_id = conv_res.data[0]["id"]
+                sb.table("chat_messages").delete().eq("conversation_id", conv_id).execute()
+                sb.table("chat_conversations").delete().eq("id", conv_id).execute()
+            return JSONResponse(content={"status": "deleted", "animal_id": animal_id})
+        else:
+            # Delete ALL conversations for this user
+            conv_res = sb.table("chat_conversations").select("id").eq("email", email).execute()
+            conv_ids = [c["id"] for c in (conv_res.data or []) if c.get("id") is not None]
+            if conv_ids:
+                sb.table("chat_messages").delete().in_("conversation_id", conv_ids).execute()
+            sb.table("chat_conversations").delete().eq("email", email).execute()
+            return JSONResponse(content={"status": "deleted_all"})
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.post("/api/chat_retention")
+async def set_chat_retention(request: Request):
+    """Toggle chat retention preference for a user."""
+    try:
+        body = await request.json()
+        email = (body.get("email") or "").strip().lower()
+        retain = body.get("retain", True)  # True = keep history, False = never retain
+
+        if not email:
+            return JSONResponse(status_code=400, content={"error": "email is required"})
+
+        sb = get_supabase_client()
+        _ensure_user_preferences(sb, email)
+
+        sb.table("user_preferences").update({
+            "chat_retention": bool(retain),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }).eq("email", email).execute()
+
+        # If disabling retention, delete all existing conversations
+        if not retain:
+            conv_res = sb.table("chat_conversations").select("id").eq("email", email).execute()
+            conv_ids = [c["id"] for c in (conv_res.data or []) if c.get("id") is not None]
+            if conv_ids:
+                sb.table("chat_messages").delete().in_("conversation_id", conv_ids).execute()
+            sb.table("chat_conversations").delete().eq("email", email).execute()
+
+        return JSONResponse(content={"status": "ok", "chat_retention": bool(retain)})
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
@@ -916,7 +1027,8 @@ async def chat_history(request: Request):
 
 # Beta location restriction
 BETA_SHELTER_IDS = set()
-BETA_ALLOWED_EMAILS = {"reedr1208@gmail.com"}
+_beta_emails_str = os.environ.get("BETA_ALLOWED_EMAILS", "")
+BETA_ALLOWED_EMAILS = {e.strip().lower() for e in _beta_emails_str.split(",") if e.strip()}
 
 
 @router.get("/api/locations")
@@ -969,55 +1081,28 @@ _REGION_COORDS = {
     "Jacksonville, FL": (30.3322, -81.6557),
 }
 
+import math as _math
 import requests as _requests
-
-_geoip_cache = {}
-_GEOIP_TTL = 3600  # 1 hour
-
-
-def _geoip_lookup(ip: str):
-    """Look up lat/lon for an IP via ip-api.com. Cached by /24 subnet.
-    For private/localhost IPs, queries without a specific IP (auto-detects public IP)."""
-    is_private = (
-        not ip or ip.startswith("127.") or ip.startswith("10.")
-        or ip.startswith("192.168.") or ip.startswith("172.")
-        or ip == "::1"
-    )
-    # Use the IP if public, otherwise omit to let ip-api auto-detect
-    query_ip = "" if is_private else ip
-
-    parts = ip.split(".") if ip else ["local"]
-    cache_key = ".".join(parts[:3]) if len(parts) == 4 and not is_private else "_self"
-    cached = _geoip_cache.get(cache_key)
-    if cached:
-        ts, lat, lon = cached
-        if time.time() - ts < _GEOIP_TTL:
-            return lat, lon
-    try:
-        url = f"http://ip-api.com/json/{query_ip}?fields=status,lat,lon" if query_ip else "http://ip-api.com/json/?fields=status,lat,lon"
-        resp = _requests.get(url, timeout=2)
-        data = resp.json()
-        if data.get("status") == "success":
-            lat, lon = float(data["lat"]), float(data["lon"])
-            _geoip_cache[cache_key] = (time.time(), lat, lon)
-            return lat, lon
-    except Exception:
-        pass
-    return None, None
 
 
 @router.get("/api/detect_location")
 async def detect_location(request: Request):
-    """Return the nearest shelter location based on the user's IP address."""
+    """Return the nearest shelter location based on Railway geo headers or simple IP-free heuristic."""
     try:
-        client_ip = (
-            request.headers.get("x-forwarded-for", "").split(",")[0].strip()
-            or request.headers.get("x-real-ip", "")
-            or (request.client.host if request.client else "")
-        )
+        # Prefer geo info from Railway/CDN reverse proxy headers (no external API call needed)
+        geo_lat = request.headers.get("x-geo-ip-latitude")
+        geo_lon = request.headers.get("x-geo-ip-longitude")
+        geo_city = request.headers.get("x-geo-ip-city")
 
-        user_lat, user_lon = _geoip_lookup(client_ip)
+        user_lat, user_lon = None, None
+        if geo_lat and geo_lon:
+            try:
+                user_lat, user_lon = float(geo_lat), float(geo_lon)
+            except (ValueError, TypeError):
+                pass
+
         if user_lat is None:
+            # No geo headers available — return null and let user choose manually
             return JSONResponse(content={"location": None})
 
         # Fetch locations from DB
@@ -1180,7 +1265,6 @@ async def contact_form(request: Request):
         text_body = "\n".join([
             f"Subject: {subject}",
             f"From: {email or '(anonymous)'}",
-            f"IP: {ip}",
             "",
             "Message:",
             "─" * 40,

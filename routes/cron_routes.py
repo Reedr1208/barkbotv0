@@ -19,17 +19,25 @@ router = APIRouter()
 logger = logging.getLogger("barkbot.cron_routes")
 
 
+import hmac
+
+
 def _check_auth(request: Request) -> bool:
-    """Verify Bearer token matches CRON_SECRET."""
-    cron_secret = os.environ.get("CRON_SECRET")
+    """Verify Bearer token matches CRON_SECRET. Fails closed in production."""
+    cron_secret = os.environ.get("CRON_SECRET", "")
+    environment = os.environ.get("ENVIRONMENT", "production")
     if not cron_secret:
-        # No secret configured — allow all requests (dev mode)
-        return True
+        if environment == "development":
+            # Explicit dev mode — allow unauthenticated access
+            return True
+        # Production with no secret configured — deny all requests
+        logger.error("CRON_SECRET is not set — cron endpoints are disabled.")
+        return False
     auth = request.headers.get("authorization") or request.headers.get("Authorization")
     if not auth or not auth.startswith("Bearer "):
         return False
     token = auth.split(" ", 1)[1]
-    return token == cron_secret
+    return hmac.compare_digest(token, cron_secret)
 
 
 @router.get("/api/cron/status")

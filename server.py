@@ -55,13 +55,51 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow all origins (same as the previous Access-Control-Allow-Origin: *)
+# CORS — restrict to allowed origins in production
+_allowed_origins_str = os.environ.get("ALLOWED_ORIGINS", "")
+if _allowed_origins_str:
+    _allowed_origins = [o.strip() for o in _allowed_origins_str.split(",") if o.strip()]
+else:
+    # Local development fallback
+    _allowed_origins = ["*"]
+    logger.warning("CORS: ALLOWED_ORIGINS not set — allowing all origins (dev mode).")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ── Security headers (CSP + more) ──────────────────────────────────
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response as StarletteResponse
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response: StarletteResponse = await call_next(request)
+        # Content-Security-Policy — allow our CDN deps and Google Analytics
+        csp = "; ".join([
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: https: blob:",
+            "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com",
+            "frame-ancestors 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+        ])
+        response.headers["Content-Security-Policy"] = csp
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        return response
+
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 # ── Register route modules ──────────────────────────────────────────
 

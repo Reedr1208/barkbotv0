@@ -314,30 +314,55 @@ async function renderRecentChats(container) {
     if (!res.ok) throw new Error('Failed');
     const data = await res.json();
     const convs = data.conversations || [];
+    const chatRetention = data.chat_retention !== false; // default true
+
+    // ── Header with controls ──
+    const headerHtml = `
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+      <!-- Never retain toggle -->
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span style="font-size:0.82rem; font-weight:700; color:white;">Save chat history</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Resume conversations where you left off</span>
+        </div>
+        <label class="retention-toggle" style="position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0; cursor:pointer;">
+          <input type="checkbox" id="chatRetentionToggle" ${chatRetention ? 'checked' : ''} style="opacity:0; width:0; height:0;">
+          <span style="position:absolute; top:0; left:0; right:0; bottom:0; background:${chatRetention ? 'var(--teal)' : 'rgba(255,255,255,0.15)'}; border-radius:24px; transition:0.3s; display:block;">
+            <span style="position:absolute; content:''; height:18px; width:18px; left:${chatRetention ? '22px' : '3px'}; bottom:3px; background:white; border-radius:50%; transition:0.3s; display:block; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></span>
+          </span>
+        </label>
+      </div>
+      ${convs.length > 0 ? `
+      <!-- Delete all button -->
+      <button type="button" id="deleteAllChatsBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; padding:8px; border-radius:10px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.15); color:#ef4444; font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+        🗑️ Delete all conversations
+      </button>` : ''}
+    </div>`;
 
     if (convs.length === 0) {
-      container.innerHTML = `
-      <div style="text-align:center; padding:40px 24px;">
+      container.innerHTML = headerHtml + `
+      <div style="text-align:center; padding:32px 24px;">
         <div style="font-size:3rem; margin-bottom:12px;">💬</div>
         <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No chats yet</h3>
-        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">Start chatting with any dog to build your conversation history here.</p>
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">${chatRetention ? 'Start chatting with any dog to build your conversation history here.' : 'Chat history is turned off. Enable it above to save your conversations.'}</p>
         <button class="btn-primary meet-dogs-btn" style="padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--teal); color:var(--accent-text); border:none; box-shadow:0 4px 12px rgba(20,184,166,0.25);">Meet dogs</button>
       </div>`;
-      
+
+      _wireRetentionToggle(container);
       container.querySelector('.meet-dogs-btn')?.addEventListener('click', () => {
         closeSavedModal();
       });
       return;
     }
 
-    container.innerHTML = convs.map(c => {
+    const convsHtml = convs.map(c => {
       const dateStr = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
       const available = c.is_available !== false;
       const unavailBadge = available ? '' : '<span style="font-size:0.65rem; background:rgba(251,191,36,0.15); color:#fbbf24; padding:2px 6px; border-radius:6px; font-weight:700; white-space:nowrap;">Adopted 🎉</span>';
       const opacity = available ? '1' : '0.6';
       const cursorStyle = available ? 'cursor:pointer;' : 'cursor:default;';
       return `
-    <div class="saved-dog-card ${available ? '' : 'unavailable'}" data-animal-id="${c.animal_id}" data-available="${available}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:rgba(255,255,255,0.03); margin-bottom:10px; ${cursorStyle} transition:all 0.2s ease; border:1px solid rgba(255,255,255,0.06); opacity:${opacity};">
+    <div class="saved-dog-card ${available ? '' : 'unavailable'}" data-animal-id="${c.animal_id}" data-available="${available}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:rgba(255,255,255,0.03); margin-bottom:10px; ${cursorStyle} transition:all 0.2s ease; border:1px solid rgba(255,255,255,0.06); opacity:${opacity}; position:relative;">
       <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--bg-slate-800); border:1px solid rgba(255,255,255,0.08);">
         ${c.dog_image_url ? `<img src="${c.dog_image_url}" alt="${c.dog_name}" style="width:100%;height:100%;object-fit:cover;${available ? '' : 'filter:grayscale(40%);'}">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--bg-slate-800);">💬</div>'}
       </div>
@@ -348,20 +373,85 @@ async function renderRecentChats(container) {
         </div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${available ? (c.last_message_preview || 'Tap to continue') : 'No longer available for chat'}</div>
       </div>
-      ${available ? `<button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Share" style="width:28px; height:28px;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-      </button>` : ''}
-      <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; margin-left:4px;">${dateStr}</div>
+      <!-- Delete conversation button -->
+      <button type="button" class="delete-chat-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Delete chat with ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Delete chat" style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:transparent; border:1px solid rgba(239,68,68,0.2); border-radius:8px; color:rgba(239,68,68,0.6); font-size:0.75rem; cursor:pointer; flex-shrink:0; transition:all 0.2s;">
+        ✕
+      </button>
+      <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; margin-left:0px;">${dateStr}</div>
     </div>`;
     }).join('');
 
+    container.innerHTML = headerHtml + convsHtml;
+
+    // ── Wire retention toggle ──
+    _wireRetentionToggle(container);
+
+    // ── Wire delete all ──
+    const deleteAllBtn = container.querySelector('#deleteAllChatsBtn');
+    if (deleteAllBtn) {
+      deleteAllBtn.addEventListener('click', async () => {
+        if (!confirm('Delete all chat history? This cannot be undone.')) return;
+        deleteAllBtn.disabled = true;
+        deleteAllBtn.textContent = 'Deleting...';
+        try {
+          await fetch('/api/chat_history', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail })
+          });
+          showToast('All chats deleted.');
+          loadSavedTab('chats');
+        } catch (e) {
+          showToast('Failed to delete. Try again.');
+          deleteAllBtn.disabled = false;
+          deleteAllBtn.textContent = '🗑️ Delete all conversations';
+        }
+      });
+    }
+
+    // ── Wire individual delete buttons ──
+    container.querySelectorAll('.delete-chat-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const aid = btn.getAttribute('data-animal-id');
+        const dogName = btn.getAttribute('data-dog-name');
+        if (!confirm(`Delete your chat with ${dogName}?`)) return;
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          await fetch('/api/chat_history', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail, animal_id: aid })
+          });
+          // Remove the card with animation
+          const card = btn.closest('.saved-dog-card');
+          if (card) {
+            card.style.transition = 'all 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(40px)';
+            setTimeout(() => {
+              card.remove();
+              // If no cards left, reload tab
+              if (!container.querySelector('.saved-dog-card')) loadSavedTab('chats');
+            }, 300);
+          }
+          showToast(`Chat with ${dogName} deleted.`);
+        } catch (e) {
+          showToast('Failed to delete. Try again.');
+          btn.disabled = false;
+          btn.textContent = '✕';
+        }
+      });
+    });
+
+    // ── Wire conversation resume clicks ──
     container.querySelectorAll('.saved-dog-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.saved-card-share-btn')) return;
+        if (e.target.closest('.delete-chat-btn') || e.target.closest('.saved-card-share-btn')) return;
         const aid = card.getAttribute('data-animal-id');
         const available = card.getAttribute('data-available') !== 'false';
         if (!available) {
-          // Show a brief toast for unavailable dogs
           const toast = document.createElement('div');
           toast.textContent = 'This dog has been adopted or is no longer available 🎉';
           toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:white;padding:10px 20px;border-radius:12px;font-size:0.82rem;font-weight:600;z-index:10001;animation:fadeIn 0.2s ease;';
@@ -374,19 +464,51 @@ async function renderRecentChats(container) {
       });
     });
 
-    container.querySelectorAll('.saved-card-share-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const aid = btn.getAttribute('data-animal-id');
-        const name = btn.getAttribute('data-dog-name');
-        const loc = btn.getAttribute('data-location') || '';
-        shareCurrentDog(btn, { animal_id: aid, name, shelter_name: loc });
-      });
-    });
-
   } catch (e) {
     container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);">Unable to load chats. Please try again.</div>`;
   }
+}
+
+
+function _wireRetentionToggle(container) {
+  const toggle = container.querySelector('#chatRetentionToggle');
+  if (!toggle) return;
+
+  toggle.addEventListener('change', async () => {
+    const retain = toggle.checked;
+    const slider = toggle.nextElementSibling;
+    const knob = slider?.querySelector('span');
+
+    // Immediate visual update
+    slider.style.background = retain ? 'var(--teal)' : 'rgba(255,255,255,0.15)';
+    if (knob) knob.style.left = retain ? '22px' : '3px';
+
+    if (!retain) {
+      if (!confirm('Turn off chat history? This will delete all your existing conversations and stop saving new ones.')) {
+        // Revert
+        toggle.checked = true;
+        slider.style.background = 'var(--teal)';
+        if (knob) knob.style.left = '22px';
+        return;
+      }
+    }
+
+    try {
+      await fetch('/api/chat_retention', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, retain })
+      });
+      showToast(retain ? 'Chat history enabled.' : 'Chat history disabled — existing chats deleted.');
+      loadSavedTab('chats');
+    } catch (e) {
+      showToast('Failed to update. Try again.');
+      // Revert toggle
+      toggle.checked = !retain;
+      slider.style.background = !retain ? 'var(--teal)' : 'rgba(255,255,255,0.15)';
+      if (knob) knob.style.left = !retain ? '22px' : '3px';
+    }
+  });
 }
 
 async function fetchSpecificDog(animalId, resumeChat = false) {
