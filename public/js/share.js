@@ -102,21 +102,12 @@ async function copyDogShareLink(payload) {
       document.body.removeChild(ta);
     }
     showToast('Dog link copied.');
-    trackEvent('dog_share_copied_link', {
-      animal_id: payload.animal_id,
-      share_method: 'copy_link'
-    });
     trackEvent('dog_share_completed', {
       animal_id: payload.animal_id,
       share_method: 'copy_link'
     });
   } catch (err) {
     console.error('Copy failed:', err);
-    trackEvent('dog_share_failed', {
-      animal_id: payload.animal_id,
-      share_method: 'copy_link',
-      error: 'clipboard'
-    });
     showShareToast('Could not copy link. Please try again.');
   }
 }
@@ -198,4 +189,3 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeShareFallbackMenu();
 });
 wireShareButtons();
-trackEvent('visited_site');

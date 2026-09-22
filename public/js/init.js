@@ -268,14 +268,12 @@ const mobileChatBtn = document.getElementById('mobileChatBtn');
 if (mobileShuffleBtn) {
   mobileShuffleBtn.addEventListener('click', () => {
     _trackDogExit();
-    trackEvent('dog_shuffled');
     fetchRandomDog();
   });
 }
 
 if (mobileChatBtn) {
   mobileChatBtn.addEventListener('click', () => {
-    trackEvent('sticky_chat_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
     const chatSec = document.getElementById('chatSection');
     if (chatSec && scrollContent) {
       chatSec.scrollIntoView({ behavior: 'smooth' });

@@ -52,7 +52,6 @@ const askBtn = document.getElementById('askBtn');
 if (askBtn) {
   askBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    trackEvent('ask_cta_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
     if (window.innerWidth >= 800) {
       enterChatMode();
     } else {
@@ -95,7 +94,6 @@ function openModal() {
   if (modalStartBtn) {
     modalStartBtn.focus();
   }
-  trackEvent('about_modal_opened');
 }
 
 function closeModal() {
@@ -111,7 +109,6 @@ function closeModal() {
   if (aboutBtn) {
     aboutBtn.focus();
   }
-  trackEvent('about_modal_closed');
 }
 
 if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
@@ -246,7 +243,7 @@ function openPrefModal() {
   setupToggleBadge('prefOptDogs', lifestylePrefs.dogs);
   setupToggleBadge('prefOptHouseTrained', lifestylePrefs.houseTrained);
 
-  trackEvent('preferences_modal_opened');
+
 }
 
 function closePrefModal() {
@@ -261,7 +258,7 @@ function closePrefModal() {
   if (prefBtn) {
     prefBtn.focus();
   }
-  trackEvent('preferences_modal_closed');
+
 }
 
 function setupSelectorButtons(groupId, activeValue) {
@@ -420,7 +417,7 @@ async function resetPreferences() {
   setupSelectorButtons('prefAlteredGroup', 'any');
   lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
 
-  trackEvent('preferences_reset_all');
+
 
   // 4. Trigger a fresh match load
   await fetchRandomDog();

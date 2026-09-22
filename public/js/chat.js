@@ -338,14 +338,12 @@ function _trackDogExit() {
 
 nextBtn.addEventListener('click', () => {
   _trackDogExit();
-  trackEvent('dog_shuffled');
   fetchRandomDog();
 });
 const prevBtn = document.getElementById('prevBtn');
 if (prevBtn) {
   prevBtn.addEventListener('click', () => {
     _trackDogExit();
-    trackEvent('dog_back');
     goToPreviousDog();
   });
 }
