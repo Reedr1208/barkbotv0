@@ -1087,22 +1087,46 @@ import requests as _requests
 
 @router.get("/api/detect_location")
 async def detect_location(request: Request):
-    """Return the nearest shelter location based on Railway geo headers or simple IP-free heuristic."""
+    """Return the nearest shelter location using ephemeral IP geolocation.
+
+    Privacy note: The IP is read from request headers (standard server behavior),
+    used only in-memory for this single geo lookup, and is NEVER stored in any
+    database, log, or analytics system.
+    """
     try:
-        # Prefer geo info from Railway/CDN reverse proxy headers (no external API call needed)
+        user_lat, user_lon = None, None
+
+        # 1. Check for reverse-proxy geo headers first (no external call needed)
         geo_lat = request.headers.get("x-geo-ip-latitude")
         geo_lon = request.headers.get("x-geo-ip-longitude")
-        geo_city = request.headers.get("x-geo-ip-city")
-
-        user_lat, user_lon = None, None
         if geo_lat and geo_lon:
             try:
                 user_lat, user_lon = float(geo_lat), float(geo_lon)
             except (ValueError, TypeError):
                 pass
 
+        # 2. Fall back to HTTPS geo lookup using the request IP (ephemeral, not stored)
         if user_lat is None:
-            # No geo headers available — return null and let user choose manually
+            client_ip = (
+                request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+                or request.headers.get("x-real-ip", "")
+                or (request.client.host if request.client else "")
+            )
+            if client_ip and not client_ip.startswith(("127.", "10.", "192.168.", "172.")) and client_ip != "::1":
+                try:
+                    resp = _requests.get(
+                        f"https://ipapi.co/{client_ip}/json/",
+                        timeout=2,
+                        headers={"User-Agent": "ChattyHound/1.0"}
+                    )
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        if data.get("latitude") and data.get("longitude"):
+                            user_lat, user_lon = float(data["latitude"]), float(data["longitude"])
+                except Exception:
+                    pass  # Non-critical — user will just pick location manually
+
+        if user_lat is None:
             return JSONResponse(content={"location": None})
 
         # Fetch locations from DB
