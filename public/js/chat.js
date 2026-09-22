@@ -314,13 +314,37 @@ async function sendMessage(customText = null, chosenPrompt = null) {
   }
 }
 
+// ── Engagement tracking helper: fire before navigating away from a dog ──
+function _trackDogExit() {
+  if (!currentAnimalId) return;
+  const timeOnCard = window.__CH_DOG_VIEWED_AT__ ? Date.now() - window.__CH_DOG_VIEWED_AT__ : 0;
+  const turnCount = conversationHistory.length;
+
+  if (turnCount > 0) {
+    trackEvent('conversation_depth', {
+      animal_id: currentAnimalId,
+      dog_name: currentDogName,
+      turn_count: turnCount,
+      time_on_card_ms: timeOnCard
+    });
+  } else {
+    trackEvent('dog_skipped_without_chat', {
+      animal_id: currentAnimalId,
+      dog_name: currentDogName,
+      time_on_card_ms: timeOnCard
+    });
+  }
+}
+
 nextBtn.addEventListener('click', () => {
+  _trackDogExit();
   trackEvent('dog_shuffled');
   fetchRandomDog();
 });
 const prevBtn = document.getElementById('prevBtn');
 if (prevBtn) {
   prevBtn.addEventListener('click', () => {
+    _trackDogExit();
     trackEvent('dog_back');
     goToPreviousDog();
   });

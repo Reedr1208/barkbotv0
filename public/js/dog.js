@@ -689,7 +689,8 @@ async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
 
     if (!isStaleFetch()) {
       setAppState('dog_loaded');
-      trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId });
+      window.__CH_DOG_VIEWED_AT__ = Date.now();
+      trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId, shelter_name: dog.shelter_name || '' });
     }
   } catch (err) {
     if (isStaleFetch()) return;

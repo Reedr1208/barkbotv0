@@ -218,7 +218,7 @@ async function renderSavedDogs(container) {
           Chat 💬
         </button>
         ${shelterUrl
-          ? `<a href="${shelterUrl}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" style="text-decoration:none; padding:7px; border:1px solid rgba(255,255,255,0.12); border-radius:8px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
+          ? `<a href="${shelterUrl}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" data-animal-id="${d.animal_id}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" data-shelter-name="${(shelterName || '').replace(/"/g, '&quot;')}" style="text-decoration:none; padding:7px; border:1px solid rgba(255,255,255,0.12); border-radius:8px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
               Shelter Page 🔗
             </a>`
           : ''}
@@ -304,6 +304,18 @@ async function renderSavedDogs(container) {
       const aid = card.getAttribute('data-animal-id');
       closeSavedModal();
       fetchSpecificDog(aid);
+    });
+  });
+
+  // Track shelter link clicks in the modal
+  container.querySelectorAll('.modal-shelter-link').forEach(link => {
+    link.addEventListener('click', () => {
+      trackEvent('shelter_link_clicked', {
+        dog_name: link.getAttribute('data-dog-name') || '',
+        animal_id: link.getAttribute('data-animal-id') || '',
+        shelter_name: link.getAttribute('data-shelter-name') || '',
+        source: 'saved_modal'
+      });
     });
   });
 }

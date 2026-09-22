@@ -67,7 +67,12 @@ if (askBtn) {
 
 if (paccLink) {
   paccLink.addEventListener('click', () => {
-    trackEvent('view_profile_clicked', { dog_name: currentDogName, animal_id: currentAnimalId, url: paccLink.href });
+    trackEvent('shelter_link_clicked', {
+      dog_name: currentDogName,
+      animal_id: currentAnimalId,
+      shelter_name: currentDogData?.shelter_name || '',
+      source: 'dog_card'
+    });
   });
 }
 

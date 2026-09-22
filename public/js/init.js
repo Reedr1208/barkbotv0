@@ -76,11 +76,14 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
             const locObj = data.locations.find(l => l.relative_path === selectedPath);
             
             // Update preferences
+            const prevLocation = currentPrefs.location || 'any';
             const newLocName = locObj ? locObj.display_name : (selectedPath === 'all' ? 'all' : 'any');
             currentPrefs.location = newLocName;
             localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
             setupSelectorButtons('prefLocationGroup', newLocName);
             updateLocationIndicator();
+
+            trackEvent('location_changed', { from_location: prevLocation, to_location: newLocName });
             
             // Check if current dog matches new location
             let shouldKeepDog = false;
@@ -165,6 +168,7 @@ function personalizeForLocation(displayName) {
 // If city was injected server-side (e.g. /tucson route), personalize immediately
 if (window.__CH_DETECTED_CITY__) {
   personalizeForLocation(window.__CH_DETECTED_CITY__);
+  trackEvent('location_detected', { location: window.__CH_DETECTED_CITY__, method: 'route' });
 } else {
   // Race geo detection vs a short timeout.
   // Content stays hidden until one wins, then renders exactly once — no flash.
@@ -182,7 +186,12 @@ if (window.__CH_DETECTED_CITY__) {
   const _deadline = new Promise(resolve => setTimeout(() => resolve(null), 1200));
 
   Promise.race([_geoDetect, _deadline]).then(location => {
-    if (location) personalizeForLocation(location);
+    if (location) {
+      personalizeForLocation(location);
+      trackEvent('location_detected', { location, method: 'geo_ip' });
+    } else {
+      trackEvent('location_detected', { location: 'none', method: 'timeout_or_failed' });
+    }
     if (_landingCopy) _landingCopy.style.opacity = '1';
   });
 }
@@ -258,6 +267,7 @@ const mobileChatBtn = document.getElementById('mobileChatBtn');
 
 if (mobileShuffleBtn) {
   mobileShuffleBtn.addEventListener('click', () => {
+    _trackDogExit();
     trackEvent('dog_shuffled');
     fetchRandomDog();
   });
