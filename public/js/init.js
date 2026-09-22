@@ -166,10 +166,20 @@ function personalizeForLocation(displayName) {
 if (window.__CH_DETECTED_CITY__) {
   personalizeForLocation(window.__CH_DETECTED_CITY__);
 } else {
-  // Auto-detect from IP (non-blocking, fires on root "/" visits)
+  // Hide landing content until detection completes (prevents flash of un-personalized content)
+  const _landingCopy = document.querySelector('.landing-copy');
+  if (_landingCopy) {
+    _landingCopy.style.opacity = '0';
+    _landingCopy.style.transition = 'opacity 0.35s ease';
+  }
+
+  // Auto-detect from IP with a tight timeout so we don't delay the page too long
   (async () => {
     try {
-      const res = await fetch('/api/detect_location');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch('/api/detect_location', { signal: controller.signal });
+      clearTimeout(timeout);
       if (res.ok) {
         const data = await res.json();
         if (data.location) {
@@ -177,7 +187,10 @@ if (window.__CH_DETECTED_CITY__) {
         }
       }
     } catch (e) {
-      // Silent fail — generic landing page will show
+      // Timeout or network error — show generic landing page
+    } finally {
+      // Fade in regardless of outcome
+      if (_landingCopy) _landingCopy.style.opacity = '1';
     }
   })();
 }
