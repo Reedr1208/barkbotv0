@@ -166,33 +166,25 @@ function personalizeForLocation(displayName) {
 if (window.__CH_DETECTED_CITY__) {
   personalizeForLocation(window.__CH_DETECTED_CITY__);
 } else {
-  // Hide landing content until detection completes (prevents flash of un-personalized content)
+  // Race geo detection vs a short timeout.
+  // Content stays hidden until one wins, then renders exactly once — no flash.
   const _landingCopy = document.querySelector('.landing-copy');
   if (_landingCopy) {
     _landingCopy.style.opacity = '0';
-    _landingCopy.style.transition = 'opacity 0.35s ease';
+    _landingCopy.style.transition = 'opacity 0.4s ease';
   }
 
-  // Auto-detect from IP with a tight timeout so we don't delay the page too long
-  (async () => {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2500);
-      const res = await fetch('/api/detect_location', { signal: controller.signal });
-      clearTimeout(timeout);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.location) {
-          personalizeForLocation(data.location);
-        }
-      }
-    } catch (e) {
-      // Timeout or network error — show generic landing page
-    } finally {
-      // Fade in regardless of outcome
-      if (_landingCopy) _landingCopy.style.opacity = '1';
-    }
-  })();
+  const _geoDetect = fetch('/api/detect_location')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => d?.location || null)
+    .catch(() => null);
+
+  const _deadline = new Promise(resolve => setTimeout(() => resolve(null), 1200));
+
+  Promise.race([_geoDetect, _deadline]).then(location => {
+    if (location) personalizeForLocation(location);
+    if (_landingCopy) _landingCopy.style.opacity = '1';
+  });
 }
 
 // ─── Landing Page & Navigation Wiring ────────────────────────────────────
