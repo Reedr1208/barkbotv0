@@ -122,7 +122,8 @@ create table if not exists suggested_prompts (
   id bigint generated always as identity primary key,
   category text not null check (category in ('Informative', 'Whimsical')),
   prompt_text text not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  intro_point integer not null default 1
 );
 
 -- Additional columns on existing tables:

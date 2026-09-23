@@ -34,7 +34,6 @@ class FactProfileExtraction(BaseModel):
     good_with_dogs: Optional[str] = Field(description="Good with other dogs: 'yes' if explicitly confirmed, 'no' if explicitly stated, or 'unknown' if not mentioned or ambiguous.")
     house_trained: Optional[str] = Field(description="House trained / potty trained: 'yes' if explicitly confirmed, 'no' if explicitly stated, or 'unknown' if not mentioned or ambiguous.")
     evidence_jsonb: List[str] = Field(description="List of exact short quotes used as evidence.")
-    sugg_specific: List[str] = Field(description="Up to 5 short, clickbait-style suggested prompts specifically tailored to unique details in this dog's profile. These are leading questions designed like conversation hooks that are answerable from the dog's bio. Always phrase in 2nd person as if speaking directly to the dog (e.g. 'What commands do you know?' NOT 'What commands does Jax know?'). Fewer than 5 is acceptable if the bio is short — quality over quantity. Never make up unanswerable questions.")
 
 def extract_fact_profile(openai_client: OpenAI, animal_record: dict) -> FactProfileExtraction:
     """

@@ -5,7 +5,7 @@
 
 /**
  * Fetch the Informative/Whimsical prompt pools from the API (cached).
- * API returns: { informative: [{text, weight}, ...], whimsical: [{text, weight}, ...] }
+ * API returns: { informative: [{text, intro_point}, ...], whimsical: [{text, intro_point}, ...] }
  */
 async function fetchSuggestedPromptsIfNeeded() {
   if (suggestedPromptsCache) return suggestedPromptsCache;
@@ -29,117 +29,108 @@ async function fetchSuggestedPromptsIfNeeded() {
 function initSuggestionsForDog(dogData) {
   const cache = suggestedPromptsCache || { informative: [], whimsical: [] };
 
-  // Normalize: handle both old format (plain strings) and new format ({text, weight})
+  // Normalize: handle both old format (plain strings) and new format ({text, intro_point})
   function normalizePool(items) {
     return (items || []).map(item => {
-      if (typeof item === 'string') return { text: item, weight: 1.0 };
-      if (item && typeof item === 'object' && typeof item.text === 'string') return item;
-      // Unknown format — skip
+      if (typeof item === 'string') return { text: item, intro_point: 1 };
+      if (item && typeof item === 'object' && typeof item.text === 'string') {
+        return { text: item.text, intro_point: item.intro_point || 1 };
+      }
       return null;
     }).filter(Boolean);
   }
-
-  // Profile-specific prompts come as plain strings — give them weight=1.0
-  const profilePrompts = (dogData && dogData.sugg_specific)
-    ? dogData.sugg_specific.map(t => ({ text: String(t), weight: 1.0 }))
-    : [];
 
   suggestionState = {
     pools: {
       informative: normalizePool(cache.informative),
       whimsical: normalizePool(cache.whimsical),
-      profile: profilePrompts,
     },
     usedPrompts: new Set(),
+    selectionRound: 1,  // Reset counter for each new dog
   };
   activeSuggestions = [];
 }
 
 /**
- * Weighted random pick from a pool, excluding used prompts.
- * Returns the {text, weight} object or null if pool exhausted.
+ * Random pick from a pool, excluding used prompts and gated by selectionRound.
+ * Returns the {text, intro_point} object or null if pool exhausted.
  */
-function pickWeightedFromPool(category) {
+function pickFromPool(category) {
   const pool = suggestionState.pools[category];
-  const available = pool.filter(p => !suggestionState.usedPrompts.has(p.text));
+  const round = suggestionState.selectionRound;
+  const available = pool.filter(p =>
+    !suggestionState.usedPrompts.has(p.text) && p.intro_point <= round
+  );
   if (available.length === 0) return null;
-  if (available.length === 1) return available[0];
-
-  // Weighted random selection
-  const totalWeight = available.reduce((sum, p) => sum + p.weight, 0);
-  let r = Math.random() * totalWeight;
-  for (const p of available) {
-    r -= p.weight;
-    if (r <= 0) return p;
-  }
-  return available[available.length - 1]; // fallback
+  return available[Math.floor(Math.random() * available.length)];
 }
 
 /**
  * Core suggestion logic. Called on dog load and after EVERY chat turn.
- * Picks a fresh weighted-random prompt from each category every time.
+ * Serves 2 informative + 1 whimsical (gated by selectionRound).
  * Used (clicked) prompts are excluded. When a category is exhausted,
- * remaining slots fill from other categories.
+ * remaining slots fill from the other category.
  */
 function updateSuggestions() {
   const quickPromptsContainer = document.getElementById('quickPromptsContainer');
   if (!quickPromptsContainer) return;
 
-  const categories = ['informative', 'whimsical', 'profile'];
+  const round = suggestionState.selectionRound;
+  const usedTexts = new Set();
+  let finalPrompts = [];
 
-  // Check total availability
-  const totalAvailable = categories.reduce((sum, cat) => {
-    return sum + suggestionState.pools[cat].filter(p => !suggestionState.usedPrompts.has(p.text)).length;
-  }, 0);
+  // Slot 1 & 2: Informative
+  for (let i = 0; i < 2; i++) {
+    const pick = pickFromPool('informative');
+    if (pick && !usedTexts.has(pick.text)) {
+      finalPrompts.push({ text: pick.text, category: 'informative' });
+      usedTexts.add(pick.text);
+      // Temporarily mark as used so pickFromPool won't re-pick it
+      suggestionState.usedPrompts.add(pick.text);
+    }
+  }
+  // Undo the temporary marks (we only want clicked prompts permanently used)
+  for (const p of finalPrompts) {
+    suggestionState.usedPrompts.delete(p.text);
+  }
 
-  if (totalAvailable === 0) {
+  // Slot 3: Whimsical
+  const whimPick = pickFromPool('whimsical');
+  if (whimPick && !usedTexts.has(whimPick.text)) {
+    finalPrompts.push({ text: whimPick.text, category: 'whimsical' });
+    usedTexts.add(whimPick.text);
+  }
+
+  // If fewer than 3, fill from whichever pool has availability
+  if (finalPrompts.length < 3) {
+    for (const cat of ['informative', 'whimsical']) {
+      if (finalPrompts.length >= 3) break;
+      const pool = suggestionState.pools[cat];
+      const available = pool.filter(p =>
+        !suggestionState.usedPrompts.has(p.text) &&
+        !usedTexts.has(p.text) &&
+        p.intro_point <= round
+      );
+      for (const p of available) {
+        if (finalPrompts.length >= 3) break;
+        finalPrompts.push({ text: p.text, category: cat });
+        usedTexts.add(p.text);
+      }
+    }
+  }
+
+  // Check if we have anything to show
+  if (finalPrompts.length === 0) {
     quickPromptsContainer.innerHTML = '';
     activeSuggestions = [];
     return;
   }
 
-  // Pick one weighted-random prompt from each category
-  let finalPrompts = [];
-  const categoriesWithRoom = [];
-  const usedTexts = new Set();
-
-  for (const cat of categories) {
-    const pick = pickWeightedFromPool(cat);
-    if (pick && !usedTexts.has(pick.text)) {
-      finalPrompts.push({ text: pick.text, category: cat });
-      usedTexts.add(pick.text);
-      categoriesWithRoom.push(cat);
-    }
-  }
-
-  // If any category is exhausted and we have fewer than 3, fill from remaining
-  if (finalPrompts.length < 3) {
-    for (const cat of categoriesWithRoom) {
-      if (finalPrompts.length >= 3) break;
-      const pool = suggestionState.pools[cat];
-      const available = pool.filter(p =>
-        !suggestionState.usedPrompts.has(p.text) && !usedTexts.has(p.text)
-      );
-      // Pick additional via weighted random
-      for (let i = 0; i < available.length && finalPrompts.length < 3; i++) {
-        const totalW = available.reduce((s, p) => s + (usedTexts.has(p.text) ? 0 : p.weight), 0);
-        if (totalW <= 0) break;
-        let r = Math.random() * totalW;
-        let picked = null;
-        for (const p of available) {
-          if (usedTexts.has(p.text)) continue;
-          r -= p.weight;
-          if (r <= 0) { picked = p; break; }
-        }
-        if (!picked) break;
-        finalPrompts.push({ text: picked.text, category: cat });
-        usedTexts.add(picked.text);
-      }
-    }
-  }
-
   finalPrompts = finalPrompts.slice(0, 3);
   activeSuggestions = finalPrompts.map(p => p.text);
+
+  // Advance the round counter so more prompts unlock next time
+  suggestionState.selectionRound++;
 
   // Render the suggestion buttons
   quickPromptsContainer.innerHTML = '';
@@ -295,7 +286,6 @@ async function sendMessage(customText = null, chosenPrompt = null) {
     if (data.reply) {
       appendMessage('bot', data.reply, firstLetter);
       trackEvent('chat_response_received', { dog_name: currentDogName, animal_id: currentAnimalId, turn_number: conversationHistory.length });
-      updateSuggestions();
     } else {
       appendMessage('bot', '[Error: No reply received]', firstLetter);
       trackEvent('chat_error', { dog_name: currentDogName, animal_id: currentAnimalId, error_type: 'empty_reply' });

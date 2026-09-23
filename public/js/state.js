@@ -59,14 +59,15 @@ let savedActiveTab = 'dogs';
 
 // ─── Suggestion System State ────────────────────────────────────────────────
 // Cached from /api/suggested_prompts (fetched once, persisted across dogs)
-// Format: { informative: [{text, weight}, ...], whimsical: [{text, weight}, ...] }
+// Format: { informative: [{text, intro_point}, ...], whimsical: [{text, intro_point}, ...] }
 let suggestedPromptsCache = null;
 
 // Per-dog suggestion state (reset on each new dog)
-// Pools hold {text, weight} objects; profile pool has weight=1.0 by default.
+// Pools hold {text, intro_point} objects. 2 informative + 1 whimsical per round.
 let suggestionState = {
-  pools: { informative: [], whimsical: [], profile: [] },
+  pools: { informative: [], whimsical: [] },
   usedPrompts: new Set(),  // Set of text strings already clicked
+  selectionRound: 1,       // Increments each time prompts are served; gates intro_point
 };
 
 // The 3 suggestions currently displayed to the user (populated by updateSuggestions)
