@@ -153,6 +153,8 @@ def fetch_record(url: str, target: Dict[str, Any]) -> Dict[str, Any]:
         bio_parts.append(f"Spayed/Neutered: {fields['Spayed/Neutered']}")
     if fields.get("Housetrained") and fields["Housetrained"] != "Unknown":
         bio_parts.append(f"Housetrained: {fields['Housetrained']}")
+    if fields.get("Adoption Price"):
+        bio_parts.append(f"Adoption Fee: {fields['Adoption Price']}")
 
     narrative = _extract_bio(soup)
     if narrative:

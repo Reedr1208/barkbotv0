@@ -147,6 +147,22 @@ def is_probably_dog_record(row: Dict[str, Any]) -> bool:
         return False
     if SKIP_IMAGE_PATTERNS.search(joined):
         return False
+
+    # Reject donation pages, event flyers, and other non-dog records
+    _name_lower = name.lower()
+    _NON_DOG_PATTERNS = [
+        "support their", "donate", "donation", "big give",
+        "journey to adoption", "sponsor", "volunteer",
+        "wishlist", "wish list", "gift card", "gala",
+        "fundrais", "event", "newsletter",
+    ]
+    if any(pat in _name_lower for pat in _NON_DOG_PATTERNS):
+        return False
+    # Reject if profile URL points to a donation/checkout page
+    _profile_lower = profile.lower()
+    if any(kw in _profile_lower for kw in ["/give/", "/donate", "/checkout", "thebiggive.org"]):
+        return False
+
     if internal_id or "/embed/animal/" in profile.lower() or "shelterluv" in joined.lower():
         return True
     return False

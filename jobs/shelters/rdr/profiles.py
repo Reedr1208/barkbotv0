@@ -177,12 +177,18 @@ def fetch_record(url: str, target: Dict[str, Any]) -> Dict[str, Any]:
         if secondary_color:
             color += f" / {secondary_color}"
         bio_parts.append(f"Color: {color}")
+
+    # Adoption fee
+    adoption_fee = animal_data.get("adoptionFee", "")
+    if adoption_fee:
+        bio_parts.append(f"Adoption Fee: {adoption_fee}")
     
     # Narrative bio from kennel_description
     narrative = (animal_data.get("kennel_description") or "").strip()
     if narrative:
         # Clean HTML tags from narrative
         narrative = re.sub(r'<[^>]+>', ' ', narrative)
+        narrative = html.unescape(narrative)
         narrative = re.sub(r'\s+', ' ', narrative).strip()
         bio_parts.append("")
         bio_parts.append(narrative)

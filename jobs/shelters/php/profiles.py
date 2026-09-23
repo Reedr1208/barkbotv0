@@ -145,6 +145,11 @@ def _build_bio(animal_data: Dict[str, Any]) -> str:
     if attributes:
         sections.append(f"Attributes: {', '.join(attributes)}")
 
+    # Adoption fee
+    adoption_fee = animal_data.get("adoptionFee", "")
+    if adoption_fee:
+        sections.append(f"Adoption Fee: {adoption_fee}")
+
     # Main bio from kennel_description
     kennel_desc = animal_data.get("kennel_description", "")
     bio_text = _clean_bio(kennel_desc)

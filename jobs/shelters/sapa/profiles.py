@@ -165,6 +165,11 @@ def _build_bio(animal: Dict[str, Any]) -> str:
     if campus:
         sections.append(f"Campus: {campus}")
 
+    # Adoption fee
+    adoption_fee = animal.get("adoptionFee", "")
+    if adoption_fee:
+        sections.append(f"Adoption Fee: {adoption_fee}")
+
     # Main description / kennel notes
     kennel_desc = animal.get("kennel_description", "")
     if kennel_desc:
