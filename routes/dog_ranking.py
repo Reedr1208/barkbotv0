@@ -24,9 +24,9 @@ logger = logging.getLogger("barkbot.ranking")
 #  TUNABLE WEIGHTS — edit these to change ranking behavior
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-WEIGHT_ARCHETYPE_VARIETY = 0.40   # Bonus for archetype not in last 2 shown
-WEIGHT_BIO_RICHNESS      = 0.30   # Bonus for dogs with rich shelter bios
-WEIGHT_FRESHNESS         = 0.30   # Bonus for recently-updated profiles
+WEIGHT_ARCHETYPE_VARIETY = 0.70   # Bonus for archetype not in last 2 shown
+WEIGHT_BIO_RICHNESS      = 0.20   # Bonus for dogs with rich shelter bios
+WEIGHT_FRESHNESS         = 0.10   # Bonus for recently-updated profiles
 #                          ────
 #                          1.00   ← weights MUST sum to 1.0
 
