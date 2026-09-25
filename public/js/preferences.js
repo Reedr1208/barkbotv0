@@ -72,6 +72,7 @@ if (paccLink) {
       shelter_name: currentDogData?.shelter_name || '',
       source: 'dog_card'
     });
+    trackAdsShelterClick();
   });
 }
 

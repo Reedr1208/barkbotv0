@@ -245,6 +245,7 @@ async function sendMessage(customText = null, chosenPrompt = null) {
   });
   if (isFirstMessage) {
     trackEvent('first_chat_message_sent', { dog_name: currentDogName, animal_id: currentAnimalId });
+    trackAdsFirstMessage();
   }
   chatInput.value = '';
   chatInput.blur();

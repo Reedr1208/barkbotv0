@@ -27,3 +27,27 @@ function trackEvent(eventName, eventParams = {}) {
     console.error(`[GA Event ERROR] Failed to track ${eventName}:`, err);
   }
 }
+
+// ─── Google Ads Conversion Tracking ─────────────────────────────────────────
+
+/**
+ * Fire the primary Google Ads conversion: user's first chat message to a dog.
+ */
+function trackAdsFirstMessage() {
+  if (typeof gtag !== 'function') return;
+  gtag('event', 'conversion', {
+    'send_to': 'AW-18221330739/hZRVCIfIrYQdELPizfBD'
+  });
+  console.log('[Google Ads] Conversion fired: chat_first_message');
+}
+
+/**
+ * Fire the secondary Google Ads conversion: clicking the shelter listing link.
+ */
+function trackAdsShelterClick() {
+  if (typeof gtag !== 'function') return;
+  gtag('event', 'conversion', {
+    'send_to': 'AW-18221330739/x_EcCIrIrYQdELPizfBD'
+  });
+  console.log('[Google Ads] Conversion fired: shelter_listing_click');
+}

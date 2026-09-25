@@ -316,6 +316,7 @@ async function renderSavedDogs(container) {
         shelter_name: link.getAttribute('data-shelter-name') || '',
         source: 'saved_modal'
       });
+      trackAdsShelterClick();
     });
   });
 }
