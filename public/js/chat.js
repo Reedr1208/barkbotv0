@@ -235,7 +235,7 @@ async function sendMessage(customText = null, chosenPrompt = null) {
   // Capture the suggestions that were visible when this message is sent
   const currentSuggPrompts = [...activeSuggestions];
 
-  const isFirstMessage = (conversationHistory.length === 0);
+  const isFirstMessage = !conversationHistory.some(m => m.role === 'user');
   appendMessage('user', text);
   trackEvent('chat_message_sent', {
     dog_name: currentDogName,
