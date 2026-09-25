@@ -90,7 +90,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             " https://analytics.google.com"
             " https://www.google.com"
             " https://www.googleadservices.com"
-            " https://googleads.g.doubleclick.net",
+            " https://googleads.g.doubleclick.net"
+            " https://ad.doubleclick.net",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https: blob:",
@@ -100,7 +101,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             " https://www.googletagmanager.com"
             " https://www.google.com"
             " https://www.googleadservices.com"
-            " https://googleads.g.doubleclick.net",
+            " https://googleads.g.doubleclick.net"
+            " https://ad.doubleclick.net",
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'",
