@@ -216,8 +216,7 @@ def scrape_all_dogs() -> list[dict]:
 
 def save_to_supabase(dogs: list[dict]):
     if not dogs:
-        print("No dogs to save.")
-        return
+        raise RuntimeError("Scraped 0 dogs — page structure may have changed. Aborting.")
 
     if len(dogs) < 10:
         raise RuntimeError(f"Safety check failed: Only {len(dogs)} dogs scraped. Aborting.")

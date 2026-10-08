@@ -98,8 +98,7 @@ def upload_image(client, bucket: str, animal_id: str, image_url: str):
 
 def save_to_supabase(dogs: list):
     if not dogs:
-        logging.info("No dogs to save.")
-        return
+        raise RuntimeError("Scraped 0 dogs — page structure may have changed. Aborting.")
 
     client = get_supabase_client()
     bucket = os.getenv("SUPABASE_BUCKET", "animal-images")

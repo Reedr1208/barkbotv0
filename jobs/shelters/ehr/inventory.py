@@ -210,6 +210,11 @@ def scrape_inventory() -> None:
 
         logging.info(f"Total unique dogs: {len(unique_rows)}")
 
+        if not unique_rows:
+            raise RuntimeError(
+                f"Parsed 0 dogs for {SHELTER_ID} — page structure may have changed"
+            )
+
         if unique_rows:
             logging.info(f"Clearing existing active_dogs for {SHELTER_ID}...")
             client.table("active_dogs").delete().eq("shelter_id", SHELTER_ID).execute()

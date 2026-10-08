@@ -230,6 +230,10 @@ def scrape_inventory() -> None:
 
     print(f"Scraped {len(all_rows)} dogs.")
 
+    if not all_rows and not has_error:
+        print("ERROR: Scraped 0 dogs — page structure may have changed.")
+        has_error = True
+
     if all_rows and not has_error:
         print("Clearing existing active_dogs table data for HSSA...")
         client.table("active_dogs").delete().eq("shelter_id", "HSSA").execute()
@@ -241,6 +245,11 @@ def scrape_inventory() -> None:
 
     notes = {"scraped_count": len(all_rows), "error": has_error}
     record_run_finish(client, run_id, "success" if not has_error else "error", notes=json.dumps(notes))
+
+    if has_error:
+        # Scheduler status is driven by exceptions — raise so it shows "failed".
+        raise RuntimeError(f"HSSA inventory failed (scraped {len(all_rows)} dogs)")
+
     print("Done.")
 
 if __name__ == "__main__":

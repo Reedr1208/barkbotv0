@@ -49,6 +49,8 @@ def parse_listing_page(html_content: str, scraped_at: str) -> List[Dict]:
     for link in links:
         href = link.get("href", "")
         slug = href.split("/mutt/")[-1] if "/mutt/" in href else ""
+        # Strip query string / fragment (e.g. "?list_type=available_mutts")
+        slug = re.split(r"[?#]", slug, maxsplit=1)[0].strip("/")
         if not slug:
             continue
 
@@ -105,6 +107,14 @@ def scrape_inventory() -> None:
         all_rows = parse_listing_page(resp.text, scraped_at)
 
         logging.info(f"Parsed {len(all_rows)} dogs")
+
+        if not all_rows:
+            # A 200 response with zero dogs almost certainly means the page
+            # markup changed — fail loudly instead of reporting success.
+            raise RuntimeError(
+                f"Parsed 0 dogs from {LISTING_URL} (HTTP {resp.status_code}, "
+                f"{len(resp.text)} bytes) — page structure may have changed"
+            )
 
         if all_rows:
             logging.info(f"Clearing existing active_dogs for {SHELTER_ID}...")

@@ -145,8 +145,7 @@ def scrape_all_dogs() -> list[dict]:
 
 def save_to_supabase(dogs: list[dict]):
     if not dogs:
-        print("No dogs to save.")
-        return
+        raise RuntimeError("Scraped 0 dogs — page structure may have changed. Aborting.")
 
     # Safety check: ensure we have a meaningful amount of data before wiping the table
     if len(dogs) < 30:

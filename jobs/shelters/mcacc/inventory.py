@@ -187,11 +187,12 @@ def main() -> int:
     logging.info(f"Total dogs scraped: {len(dogs)}")
 
     if len(dogs) < MIN_DOG_THRESHOLD:
-        logging.error(
+        # Raise (not return 1) — the scheduler calls main() in-process and
+        # ignores the return value, so returning would look like success.
+        raise RuntimeError(
             f"Only {len(dogs)} dogs scraped — below safety threshold of {MIN_DOG_THRESHOLD}. "
             f"Aborting DB write to prevent data loss."
         )
-        return 1
 
     # Full-replace pattern: clear existing, then insert
     client = get_supabase_client()
