@@ -226,7 +226,18 @@ function removeTypingIndicator() {
   }
 }
 
-async function sendMessage(customText = null, chosenPrompt = null) {
+// User messages that should NOT count toward the first-message conversion
+// (e.g. auto-sent quick-fact chip prompts). WeakSet keeps the history objects
+// untouched (nothing extra is serialized to the API) and auto-resets whenever
+// conversationHistory is replaced on dog load / chat resume.
+const nonConversionUserMsgs = new WeakSet();
+
+/**
+ * @param {string|null} customText  Text to send (falls back to the input value)
+ * @param {string|null} chosenPrompt  Suggested prompt text, if one was clicked
+ * @param {string|null} source  Optional override: 'fact_chip' for quick-fact taps
+ */
+async function sendMessage(customText = null, chosenPrompt = null, source = null) {
   if (chatInput.disabled) return; // double-submit safeguard
 
   const text = (typeof customText === 'string' ? customText : chatInput.value).trim();
@@ -235,13 +246,19 @@ async function sendMessage(customText = null, chosenPrompt = null) {
   // Capture the suggestions that were visible when this message is sent
   const currentSuggPrompts = [...activeSuggestions];
 
-  const isFirstMessage = !conversationHistory.some(m => m.role === 'user');
+  const isFactChip = source === 'fact_chip';
+  // "First message" = first typed or suggested message (fact-chip taps excluded)
+  const isFirstMessage = !isFactChip &&
+    !conversationHistory.some(m => m.role === 'user' && !nonConversionUserMsgs.has(m));
   appendMessage('user', text);
+  if (isFactChip) {
+    nonConversionUserMsgs.add(conversationHistory[conversationHistory.length - 1]);
+  }
   trackEvent('chat_message_sent', {
     dog_name: currentDogName,
     animal_id: currentAnimalId,
     turn_number: conversationHistory.length,
-    typed_vs_suggested: chosenPrompt ? 'suggested' : 'typed'
+    typed_vs_suggested: isFactChip ? 'fact_chip' : (chosenPrompt ? 'suggested' : 'typed')
   });
   if (isFirstMessage) {
     trackEvent('first_chat_message_sent', { dog_name: currentDogName, animal_id: currentAnimalId });
@@ -303,6 +320,63 @@ async function sendMessage(customText = null, chosenPrompt = null) {
       chatInput.focus();
     }
   }
+}
+
+// ─── Quick-Fact Chip Prompts ────────────────────────────────────────────────────
+// Tapping a stat chip, highlight tag, or "My Human Should Know" chip auto-sends
+// `Your profile says "{fact}". Tell me more!` and jumps to the chat.
+
+function buildFactPrompt(chip) {
+  // Explicit full-prompt override (used by default "Ask About …" chips)
+  if (chip.dataset.factPrompt) return chip.dataset.factPrompt;
+
+  let fact = '';
+  if (chip.dataset.factLabel) {
+    // Stat chips: "Age: 4 yr"
+    const val = (chip.querySelector('.chip-val')?.textContent || '').trim();
+    if (!val) return '';
+    fact = `${chip.dataset.factLabel}: ${val}`;
+  } else {
+    fact = (chip.dataset.fact || chip.textContent || '').trim();
+  }
+  return fact ? `Your profile says "${fact}". Tell me more!` : '';
+}
+
+function sendFactPrompt(chip) {
+  if (!chip || !currentAnimalId || chatInput.disabled) return;
+  const prompt = buildFactPrompt(chip);
+  if (!prompt) return;
+
+  // Brief tap feedback
+  chip.classList.add('fact-chip-sent');
+  setTimeout(() => chip.classList.remove('fact-chip-sent'), 400);
+
+  trackEvent('fact_chip_clicked', {
+    dog_name: currentDogName,
+    animal_id: currentAnimalId,
+    chip_text: prompt.slice(0, 100)
+  });
+
+  // Same transition as tapping the chat input / "Ask me anything!" bar
+  enterChatMode();
+  sendMessage(prompt, null, 'fact_chip');
+}
+
+const detailsBoxEl = document.getElementById('detailsBox');
+if (detailsBoxEl) {
+  detailsBoxEl.addEventListener('click', (e) => {
+    const chip = e.target.closest('.fact-prompt-chip');
+    if (!chip || !detailsBoxEl.contains(chip)) return;
+    e.preventDefault();
+    sendFactPrompt(chip);
+  });
+  detailsBoxEl.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const chip = e.target.closest('.fact-prompt-chip');
+    if (!chip || !detailsBoxEl.contains(chip)) return;
+    e.preventDefault();
+    sendFactPrompt(chip);
+  });
 }
 
 // ── Engagement tracking helper: fire before navigating away from a dog ──

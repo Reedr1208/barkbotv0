@@ -26,6 +26,16 @@ if (footerOverlay) {
   });
 }
 
+// Hero chat bubble (next to Share/Heart) — same behavior as tapping the chat bar
+const heroChatBtn = document.getElementById('heroChatBtn');
+if (heroChatBtn) {
+  heroChatBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    trackEvent('hero_chat_btn_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
+    enterChatMode();
+  });
+}
+
 const stickyChatBtn = document.getElementById('stickyChatBtn');
 if (stickyChatBtn) {
   stickyChatBtn.addEventListener('click', () => {

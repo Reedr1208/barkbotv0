@@ -155,7 +155,7 @@ function resetProfileUI() {
   // Reset preference metadata (stat chip colors, compat dots)
   ['chipGender', 'chipAge', 'chipWeight'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.className = 'detail-chip';
+    if (el) el.classList.remove('matched', 'mismatched');
   });
   ['dotGender', 'dotAge', 'dotWeight', 'dotLocation'].forEach(id => {
     const el = document.getElementById(id);
@@ -284,7 +284,7 @@ function renderDogProfile(dog) {
     paccLink.setAttribute('aria-label', `Open ${currentDogName}'s official shelter page on 24Petconnect`);
   }
   updateShareButtonLabels();
-  if (chatInput) chatInput.placeholder = 'Ask about me!';
+  if (chatInput) chatInput.placeholder = 'Ask me anything!';
 
   // Sticky dog bar
   const stickyDogName = document.getElementById('stickyDogName');
@@ -346,17 +346,12 @@ function renderCompatBadges(dog) {
   if (badgeContainer) {
     badgeContainer.innerHTML = '';
 
-    // Highlight badges — show all highlights from DB as green tags
+    // Highlight badges — show all highlights from DB as green tags (tap to ask about it)
     const highlights = dog.highlights || [];
-    if (highlights.length > 0) {
-      badgeContainer.innerHTML = highlights.map(h => {
-        const escaped = document.createElement('span');
-        escaped.textContent = h;
-        return `<span class="fit-badge-tag">${escaped.innerHTML}</span>`;
-      }).join('');
-    } else {
-      badgeContainer.innerHTML = '<span class="fit-badge-tag">Shelter Hero 🦸</span>';
-    }
+    const tags = highlights.length > 0 ? highlights : ['Shelter Hero 🦸'];
+    tags.forEach(h => {
+      badgeContainer.appendChild(makeFactPromptChip('span', 'fit-badge-tag', h));
+    });
   }
 
   // Preference stat dots (green/yellow/gray) and Why Fit card
@@ -449,20 +444,34 @@ function renderTraitChips(dog) {
 
   if (facts.length > 0) {
     facts.forEach((fact) => {
-      const chip = document.createElement('span');
-      chip.className = 'trait-chip';
-      chip.textContent = fact;
-      traitChipsContainer.appendChild(chip);
+      traitChipsContainer.appendChild(makeFactPromptChip('span', 'trait-chip', fact));
     });
   } else {
-    // Default trait chips when no facts exist
+    // Default trait chips when no facts exist — send a direct question instead
+    // of quoting "Ask About …" back to the dog.
     ['Ask About House Training', 'Ask About Other Pets', 'Ask About Special Needs'].forEach(t => {
-      const chip = document.createElement('span');
-      chip.className = 'trait-chip';
-      chip.textContent = t;
-      traitChipsContainer.appendChild(chip);
+      const topic = t.replace(/^Ask About\s+/i, '').toLowerCase();
+      traitChipsContainer.appendChild(
+        makeFactPromptChip('span', 'trait-chip', t, `Tell me about ${topic}!`)
+      );
     });
   }
+}
+
+// ─── makeFactPromptChip: Tappable chip that auto-sends a chat prompt ───────────
+// Click/keyboard handling is delegated from #detailsBox in chat.js.
+
+function makeFactPromptChip(tag, className, text, fullPrompt = null) {
+  const chip = document.createElement(tag);
+  chip.className = `${className} fact-prompt-chip`;
+  chip.textContent = text;
+  chip.dataset.fact = text;
+  if (fullPrompt) chip.dataset.factPrompt = fullPrompt;
+  chip.setAttribute('role', 'button');
+  chip.setAttribute('tabindex', '0');
+  chip.setAttribute('aria-label', `Ask ${currentDogName} about "${text}"`);
+  chip.title = 'Tap to ask about this';
+  return chip;
 }
 
 // ─── renderBioSection: Meet [Dog] biography with truncation ─────────────────

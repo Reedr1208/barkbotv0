@@ -365,6 +365,14 @@
                 </div>
               </div>
               <div class="hero-actions real-el">
+                <button class="hero-chat-btn" id="heroChatBtn" type="button" aria-label="Chat with this dog"
+                  title="Chat">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    <line x1="8" y1="9" x2="16" y2="9" />
+                    <line x1="8" y1="13" x2="13" y2="13" />
+                  </svg>
+                </button>
                 <button class="share-btn" id="heroShareBtn" type="button" aria-label="Share this dog"
                   title="Share">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -452,17 +460,17 @@
                   ⚡ Quick Facts
                 </div>
                 <div class="details-stats-row">
-                  <span class="detail-chip" id="chipGender">
+                  <span class="detail-chip fact-prompt-chip" id="chipGender" data-fact-label="Sex" role="button" tabindex="0" title="Tap to ask about this" aria-label="Ask about sex">
                     <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Sex</span>
                     <span class="chip-val" id="dogGender" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
                   </span>
-                  <span class="detail-chip" id="chipAge">
+                  <span class="detail-chip fact-prompt-chip" id="chipAge" data-fact-label="Age" role="button" tabindex="0" title="Tap to ask about this" aria-label="Ask about age">
                     <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Age</span>
                     <span class="chip-val" id="dogAge" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
                   </span>
-                  <span class="detail-chip" id="chipWeight">
+                  <span class="detail-chip fact-prompt-chip" id="chipWeight" data-fact-label="Weight" role="button" tabindex="0" title="Tap to ask about this" aria-label="Ask about weight">
                     <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Weight</span>
                     <span class="chip-val" id="dogWeight" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
@@ -593,7 +601,7 @@
         <div id="footerOverlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; cursor: pointer;"></div>
         <div class="input-row">
           <div class="chat-input-wrapper" id="chatInputWrapper" style="position: relative; flex: 1; display: flex; min-width: 0;">
-            <input type="text" class="chat-input" id="chatInput" placeholder="Ask about me!" disabled
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything!" disabled
               aria-label="Type your question to the dog here" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
           <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send message">
