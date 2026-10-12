@@ -215,6 +215,21 @@ function showTypingIndicator() {
   bubble.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
   container.appendChild(bubble);
 
+  // Progressive caption for longer replies (e.g. when the dog is searching other shelters)
+  const caption = document.createElement('span');
+  caption.className = 'typing-caption';
+  container.appendChild(caption);
+  const setCaption = (text) => {
+    if (!container.isConnected) return;
+    caption.textContent = text;
+    caption.classList.add('visible');
+  };
+  container._captionTimers = [
+    setTimeout(() => setCaption('Sniffing around… 🐾'), 6000),
+    setTimeout(() => setCaption('Checking with the other shelter pups…'), 14000),
+    setTimeout(() => setCaption('Almost there — thanks for your patience!'), 26000),
+  ];
+
   chatHistory.appendChild(container);
   scrollToBottom();
 }
@@ -222,7 +237,280 @@ function showTypingIndicator() {
 function removeTypingIndicator() {
   const indicator = document.getElementById('typingIndicator');
   if (indicator) {
+    (indicator._captionTimers || []).forEach(clearTimeout);
     indicator.remove();
+  }
+}
+
+// ─── Dog Recommendations (agentic "find other dogs") ──────────────────────────────
+// When the dog's find_dog_matches tool runs, /api/chat returns
+// { recommendations: { dogs: [card, …], summary } }. Cards render below the
+// dog's reply; tapping one opens that dog.
+
+const RECOMMENDED_IDS_KEY = 'chattyhound_recommended_ids';
+const RECOMMENDED_IDS_CAP = 60;
+
+function getRecommendedIds() {
+  try {
+    const v = JSON.parse(localStorage.getItem(RECOMMENDED_IDS_KEY) || '[]');
+    return Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function rememberRecommendedIds(ids) {
+  const merged = getRecommendedIds().filter(id => !ids.includes(id)).concat(ids);
+  try {
+    localStorage.setItem(RECOMMENDED_IDS_KEY, JSON.stringify(merged.slice(-RECOMMENDED_IDS_CAP)));
+  } catch (_) {}
+}
+
+/** Context the recommender uses (saved prefs, what the user has already seen). */
+function buildRecContext() {
+  return {
+    prefs: currentPrefs || {},
+    lifestyle: lifestylePrefs || {},
+    viewed_ids: (viewedIds || []).slice(-40),
+    favorite_ids: (favoritesList || []).slice(-50),
+    recommended_ids: getRecommendedIds(),
+  };
+}
+
+/** Short note appended to the assistant turn so follow-ups ("tell me more about Bambi") have context. */
+function recommendationHistoryNote(recs) {
+  const dogs = (recs && recs.dogs) || [];
+  if (!dogs.length) return '';
+  const list = dogs.map(d => {
+    const loc = (d.location || '').replace(/[^\x20-\x7E]+/g, '').trim();
+    return `${d.name} (${[d.breed, d.age, loc].filter(Boolean).join(', ')})`;
+  }).join('; ');
+  return `\n\n[Dogs I recommended, shown as cards: ${list}]`;
+}
+
+function openRecommendedDog(dog, position) {
+  if (!dog || !dog.animal_id) return;
+  trackEvent('recommendation_clicked', {
+    from_animal_id: currentAnimalId,
+    from_dog_name: currentDogName,
+    animal_id: dog.animal_id,
+    dog_name: dog.name || '',
+    match_type: dog.match_type || '',
+    position: position + 1,
+  });
+  _trackDogExit();
+  fetchRandomDog(dog.animal_id);
+}
+
+const HEART_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.7-4.35-9.33-8.1C.6 9.9 1.9 5.6 5.6 4.6c2.1-.57 4.2.3 5.4 2.03L12 8l1-1.37c1.2-1.73 3.3-2.6 5.4-2.03 3.7 1 5 5.3 2.93 8.3C18.7 16.65 12 21 12 21z"/></svg>';
+
+function setRecHeartState(btn, saved, name) {
+  btn.classList.toggle('saved', saved);
+  btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+  const label = saved ? `Remove ${name} from My Dogs` : `Save ${name} to My Dogs`;
+  btn.setAttribute('aria-label', label);
+  btn.title = label;
+}
+
+/** Re-sync every recommendation-card heart with favoritesList (e.g. after changes in My Dogs). */
+function syncRecommendationHearts() {
+  document.querySelectorAll('.rec-fav[data-animal-id]').forEach(btn => {
+    setRecHeartState(btn, favoritesList.includes(btn.dataset.animalId), btn.dataset.dogName || 'this dog');
+  });
+}
+
+function buildRecommendationCard(dog, index) {
+  const card = document.createElement('div');
+  card.className = 'rec-card';
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.id = `recCard-${dog.animal_id}-${Date.now().toString(36)}-${index}`;
+  card.setAttribute('aria-label', `Meet ${dog.name || 'this dog'}`);
+  card.style.animationDelay = `${index * 90}ms`;
+
+  // Photo + badge
+  const photo = document.createElement('div');
+  photo.className = 'rec-photo';
+  const img = document.createElement('img');
+  img.alt = dog.name ? `${dog.name}, adoptable dog` : 'Adoptable dog';
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.src = dog.image_url || 'happy_rescue_pup.png';
+  img.addEventListener('error', () => {
+    if (!img.src.endsWith('happy_rescue_pup.png')) img.src = 'happy_rescue_pup.png';
+  }, { once: true });
+  photo.appendChild(img);
+
+  const badge = document.createElement('span');
+  const isExact = dog.match_type === 'exact';
+  badge.className = `rec-badge ${isExact ? 'exact' : 'close'}`;
+  badge.textContent = isExact ? '★ Great match' : '≈ Close match';
+  photo.appendChild(badge);
+
+  // Save-to-My-Dogs heart (doesn't navigate)
+  const fav = document.createElement('button');
+  fav.type = 'button';
+  fav.className = 'rec-fav';
+  fav.id = `recFav-${card.id.slice(8)}`;
+  fav.dataset.animalId = dog.animal_id;
+  fav.dataset.dogName = dog.name || 'this dog';
+  fav.innerHTML = HEART_SVG;
+  setRecHeartState(fav, favoritesList.includes(dog.animal_id), dog.name || 'this dog');
+  const onFav = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavoriteDog({ animal_id: dog.animal_id, name: dog.name, image_url: dog.image_url }, 'recommendation_card');
+    syncRecommendationHearts();
+    fav.classList.remove('pop');
+    void fav.offsetWidth; // restart animation
+    if (fav.classList.contains('saved')) fav.classList.add('pop');
+  };
+  fav.addEventListener('click', onFav);
+  fav.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); // don't trigger the card
+  });
+  photo.appendChild(fav);
+  card.appendChild(photo);
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'rec-body';
+
+  const name = document.createElement('div');
+  name.className = 'rec-name';
+  name.textContent = dog.name || 'Shelter Pup';
+  body.appendChild(name);
+
+  if (dog.breed) {
+    const breed = document.createElement('div');
+    breed.className = 'rec-breed';
+    breed.textContent = dog.breed;
+    body.appendChild(breed);
+  }
+
+  const metaBits = [dog.age, dog.weight, dog.sex].filter(Boolean);
+  if (metaBits.length) {
+    const meta = document.createElement('div');
+    meta.className = 'rec-meta';
+    meta.textContent = metaBits.join(' · ');
+    body.appendChild(meta);
+  }
+
+  if (dog.location) {
+    const loc = document.createElement('div');
+    loc.className = 'rec-loc';
+    loc.textContent = `📍 ${dog.location}`;
+    if (dog.shelter_name) loc.title = dog.shelter_name;
+    body.appendChild(loc);
+  }
+
+  if (dog.reason) {
+    const reason = document.createElement('p');
+    reason.className = 'rec-reason';
+    reason.textContent = dog.reason;
+    body.appendChild(reason);
+  }
+
+  const compromises = Array.isArray(dog.compromises) ? dog.compromises.filter(Boolean) : [];
+  if (compromises.length) {
+    const wrap = document.createElement('div');
+    wrap.className = 'rec-compromises';
+    compromises.slice(0, 3).forEach(c => {
+      const chip = document.createElement('span');
+      chip.className = 'rec-chip';
+      chip.textContent = c;
+      wrap.appendChild(chip);
+    });
+    body.appendChild(wrap);
+  }
+
+  const cta = document.createElement('span');
+  cta.className = 'rec-cta';
+  cta.textContent = `Chat with ${dog.name || 'me'} →`;
+  body.appendChild(cta);
+
+  card.appendChild(body);
+
+  card.addEventListener('click', () => openRecommendedDog(dog, index));
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openRecommendedDog(dog, index);
+    }
+  });
+  return card;
+}
+
+function renderRecommendationCards(recs, shouldScroll = true) {
+  const dogs = ((recs && recs.dogs) || []).filter(d => d && d.animal_id).slice(0, 3);
+  if (!dogs.length) return;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'rec-wrap';
+
+  const label = document.createElement('div');
+  label.className = 'rec-label';
+  label.textContent = dogs.length === 1 ? 'A pup you might like' : `${dogs.length} pups you might like`;
+  wrap.appendChild(label);
+
+  const rail = document.createElement('div');
+  rail.className = 'rec-rail';
+  rail.setAttribute('role', 'list');
+  dogs.forEach((d, i) => {
+    const card = buildRecommendationCard(d, i);
+    card.setAttribute('role', 'button');
+    const li = document.createElement('div');
+    li.className = 'rec-item';
+    li.setAttribute('role', 'listitem');
+    li.appendChild(card);
+    rail.appendChild(li);
+  });
+  wrap.appendChild(rail);
+  chatHistory.appendChild(wrap);
+  if (shouldScroll) scrollToBottom();
+}
+
+/** Scroll the chat so `anchorEl` (the dog's reply) sits near the top of the visible area. */
+function scrollChatToAnchor(anchorEl) {
+  if (!anchorEl) return;
+  if (typeof suppressScrollToBottom === 'function') suppressScrollToBottom(700);
+  const containers = [];
+  const scrollContent = document.getElementById('scrollContent');
+  if (scrollContent && window.innerWidth < 800) containers.push(scrollContent);
+  const profileBody = document.querySelector('.profile-body');
+  if (profileBody) containers.push(profileBody);
+  setTimeout(() => {
+    containers.forEach(c => {
+      const maxTop = c.scrollHeight - c.clientHeight;
+      if (maxTop <= 0) return;
+      const offset = window.innerWidth < 800 ? 72 : 16; // clear the mobile header
+      const target = c.scrollTop + (anchorEl.getBoundingClientRect().top - c.getBoundingClientRect().top) - offset;
+      c.scrollTo({ top: Math.max(0, Math.min(target, maxTop)), behavior: 'smooth' });
+    });
+  }, 60);
+}
+
+/** Append a bot reply plus (optional) recommendation cards. */
+function appendBotReply(content, recs, avatarLetter, shouldScroll = true) {
+  const dogs = (recs && recs.dogs) || [];
+  if (!dogs.length) {
+    appendMessage('bot', content, avatarLetter, shouldScroll);
+    return;
+  }
+  appendMessage('bot', content, avatarLetter, false);
+  const replyRow = chatHistory.lastElementChild;
+  const last = conversationHistory[conversationHistory.length - 1];
+  if (last && last.role === 'assistant') last.content += recommendationHistoryNote(recs);
+  renderRecommendationCards(recs, false);
+  if (shouldScroll) scrollChatToAnchor(replyRow);
+}
+
+/** Render a stored chat_history message (used when resuming a chat). */
+function renderStoredMessage(m) {
+  if (m.role === 'assistant') {
+    appendBotReply(m.content, m.recommendations, currentDogName.charAt(0).toUpperCase(), false);
+  } else {
+    appendMessage('user', m.content, undefined, false);
   }
 }
 
@@ -291,7 +579,8 @@ async function sendMessage(customText = null, chosenPrompt = null, source = null
         dog_name: currentDogName,
         dog_image_url: currentImageUrl,
         sugg_prompts: currentSuggPrompts.length > 0 ? currentSuggPrompts : null,
-        chosen_prompt: chosenPrompt || null
+        chosen_prompt: chosenPrompt || null,
+        rec_context: buildRecContext()
       })
     });
 
@@ -302,8 +591,18 @@ async function sendMessage(customText = null, chosenPrompt = null, source = null
     const data = await response.json();
     const firstLetter = currentDogName.charAt(0).toUpperCase();
     if (data.reply) {
-      appendMessage('bot', data.reply, firstLetter);
+      const recs = data.recommendations;
+      appendBotReply(data.reply, recs, firstLetter);
       trackEvent('chat_response_received', { dog_name: currentDogName, animal_id: currentAnimalId, turn_number: conversationHistory.length });
+      if (recs && Array.isArray(recs.dogs) && recs.dogs.length) {
+        rememberRecommendedIds(recs.dogs.map(d => d.animal_id).filter(Boolean));
+        trackEvent('dog_recommendations_shown', {
+          dog_name: currentDogName,
+          animal_id: currentAnimalId,
+          rec_count: recs.dogs.length,
+          exact_count: recs.dogs.filter(d => d.match_type === 'exact').length
+        });
+      }
     } else {
       appendMessage('bot', '[Error: No reply received]', firstLetter);
       trackEvent('chat_error', { dog_name: currentDogName, animal_id: currentAnimalId, error_type: 'empty_reply' });

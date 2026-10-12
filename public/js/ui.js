@@ -202,10 +202,19 @@ function exitChatMode() {
   if (footerOverlay) footerOverlay.style.display = 'block';
 }
 
+// Callers can briefly suppress auto scroll-to-bottom (e.g. recommendation cards
+// anchor the view at the dog's reply; the input refocus shouldn't undo that).
+let _suppressScrollToBottomUntil = 0;
+function suppressScrollToBottom(ms) {
+  _suppressScrollToBottomUntil = Date.now() + ms;
+}
+
 function scrollToBottom() {
+  if (Date.now() < _suppressScrollToBottomUntil) return;
   const scrollContent = document.getElementById('scrollContent');
   if (scrollContent && window.innerWidth < 800) {
     setTimeout(() => {
+      if (Date.now() < _suppressScrollToBottomUntil) return;
       scrollContent.scrollTop = scrollContent.scrollHeight;
     }, 50); // small delay to allow DOM updates (like prompt rendering)
   }

@@ -3310,3 +3310,288 @@
     .contact-status-error {
       color: #ef4444;
     }
+
+    /* ─── Typing indicator caption (long replies / recommendation search) ─── */
+    .typing-caption {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--teal);
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .typing-caption.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ─── Dog recommendation cards (agentic "find other dogs") ─── */
+    .rec-wrap {
+      margin: -2px 0 4px 44px; /* align with bot bubble (avatar 34px + gap 10px) */
+      container-type: inline-size;
+      min-width: 0;
+    }
+
+    .rec-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin: 0 0 8px 2px;
+    }
+
+    .rec-rail {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 2px 2px 10px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .rec-rail::-webkit-scrollbar { height: 6px; }
+    .rec-rail::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 9999px; }
+
+    .rec-item {
+      flex: 0 0 72%;
+      max-width: 240px;
+      scroll-snap-align: start;
+      display: flex;
+    }
+
+    @container (min-width: 560px) {
+      .rec-item {
+        flex: 1 1 0;
+        max-width: none;
+      }
+    }
+
+    .rec-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 40%),
+        var(--bg-slate-900);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      overflow: hidden;
+      cursor: pointer;
+      text-align: left;
+      box-shadow: 0 8px 22px rgba(2, 6, 23, 0.35);
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      animation: recCardIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .rec-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--teal-border);
+      box-shadow: 0 14px 30px rgba(2, 6, 23, 0.5), 0 0 0 1px rgba(20, 184, 166, 0.25);
+    }
+
+    .rec-card:active { transform: scale(0.985); }
+
+    .rec-card:focus-visible {
+      outline: 2px solid var(--teal);
+      outline-offset: 2px;
+    }
+
+    @keyframes recCardIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .rec-photo {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      background: var(--bg-slate-800);
+      overflow: hidden;
+    }
+
+    .rec-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .rec-card:hover .rec-photo img { transform: scale(1.04); }
+
+    .rec-photo::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 40%;
+      background: linear-gradient(0deg, rgba(15, 23, 42, 0.55), transparent);
+      pointer-events: none;
+    }
+
+    .rec-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 1;
+      padding: 4px 9px;
+      border-radius: 9999px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .rec-badge.exact {
+      background: rgba(20, 184, 166, 0.88);
+      color: #04201c;
+    }
+
+    .rec-badge.close {
+      background: rgba(245, 158, 11, 0.9);
+      color: var(--accent-text);
+    }
+
+    .rec-body {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 10px 12px 12px;
+      flex: 1;
+    }
+
+    .rec-name {
+      font-size: 0.98rem;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .rec-breed {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--accent-hover);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rec-meta,
+    .rec-loc {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rec-reason {
+      margin-top: 5px;
+      font-size: 0.76rem;
+      line-height: 1.4;
+      color: #e2e8f0;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .rec-compromises {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .rec-chip {
+      font-size: 0.66rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #fcd34d;
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      border-radius: 8px;
+      padding: 3px 7px;
+    }
+
+    .rec-cta {
+      margin-top: auto;
+      padding-top: 8px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--teal);
+      transition: letter-spacing 0.2s ease;
+    }
+
+    .rec-card:hover .rec-cta { letter-spacing: 0.01em; }
+
+    /* Save-to-My-Dogs heart on recommendation cards */
+    .rec-fav {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 2;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .rec-fav svg {
+      width: 18px;
+      height: 18px;
+      fill: transparent;
+      stroke: currentColor;
+      stroke-width: 2;
+      transition: fill 0.2s ease, stroke 0.2s ease;
+    }
+
+    .rec-fav:hover {
+      background: rgba(15, 23, 42, 0.8);
+      transform: scale(1.06);
+    }
+
+    .rec-fav:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .rec-fav.saved {
+      border-color: rgba(245, 158, 11, 0.6);
+    }
+
+    .rec-fav.saved svg {
+      fill: var(--accent);
+      stroke: var(--accent);
+    }
+
+    .rec-fav.pop svg { animation: recHeartPop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1.4); }
+
+    @keyframes recHeartPop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .rec-card { animation: none; transition: none; }
+      .rec-photo img { transition: none; }
+    }

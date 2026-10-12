@@ -12,9 +12,11 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 
 from routes.deps import get_supabase_client, get_image_base_url
 from routes.dog_ranking import apply_hard_filters, score_candidates, select_dog
+from routes import recommender
 
 router = APIRouter()
 logger = logging.getLogger("barkbot.api")
@@ -131,20 +133,28 @@ def _upsert_conversation(sb, email, animal_id, dog_name, dog_image_url, last_pre
         return None
 
 
-def _save_messages(sb, conversation_id, user_message, assistant_reply, sugg_prompts=None, chosen_prompt=None):
+def _save_messages(sb, conversation_id, user_message, assistant_reply, sugg_prompts=None, chosen_prompt=None,
+                   recommendations=None):
     """Append user + assistant messages to chat_messages."""
+    user_row = {"conversation_id": conversation_id, "role": "user", "content": user_message}
+    if sugg_prompts is not None:
+        user_row["sugg_prompts"] = sugg_prompts
+    if chosen_prompt is not None:
+        user_row["chosen_prompt"] = chosen_prompt
+    assistant_row = {"conversation_id": conversation_id, "role": "assistant", "content": assistant_reply}
+    if recommendations:
+        assistant_row["recommendations"] = recommendations
     try:
-        user_row = {"conversation_id": conversation_id, "role": "user", "content": user_message}
-        if sugg_prompts is not None:
-            user_row["sugg_prompts"] = sugg_prompts
-        if chosen_prompt is not None:
-            user_row["chosen_prompt"] = chosen_prompt
-        sb.table("chat_messages").insert([
-            user_row,
-            {"conversation_id": conversation_id, "role": "assistant", "content": assistant_reply},
-        ]).execute()
+        sb.table("chat_messages").insert([user_row, assistant_row]).execute()
     except Exception:
-        pass  # Non-blocking
+        if "recommendations" not in assistant_row:
+            return  # Non-blocking
+        # Retry without the recommendations column (e.g. migration not applied)
+        assistant_row.pop("recommendations", None)
+        try:
+            sb.table("chat_messages").insert([user_row, assistant_row]).execute()
+        except Exception:
+            pass  # Non-blocking
 
 # ── Chat rate limiting ──────────────────────────────────────────────
 _chat_rate_store: dict[str, list[float]] = {}
@@ -161,6 +171,169 @@ def _chat_is_rate_limited(ip: str) -> bool:
         return True
     timestamps.append(now)
     return False
+
+
+# ── Agentic tool: find other dogs ──────────────────────────────────────────────
+CHAT_MAX_OUTPUT_TOKENS = 1024
+
+FIND_DOG_MATCHES_TOOL = {
+    "type": "function",
+    "name": "find_dog_matches",
+    "description": (
+        "Search ChattyHound's network of adoptable shelter dogs for OTHER dogs that fit what the user "
+        "is looking for (breed, puppies/age, size, energy, good with kids/cats/dogs, location, etc.). "
+        "Call this when the user describes the kind of dog they want, asks whether other dogs are "
+        "available, accepts your offer to look, or reveals a dealbreaker that you (the current dog) "
+        "clearly don't meet. Do NOT call it for ordinary questions about you."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "request": {
+                "type": "string",
+                "description": (
+                    "What the user is looking for, in their own words, plus any relevant preferences or "
+                    "household facts they stated earlier in this chat (e.g. 'has a cat', 'small apartment', "
+                    "'young kids'). If triggered by an incompatibility with you, state the requirement you "
+                    "don't meet (e.g. 'needs a dog that is good with cats'). Do not add constraints they "
+                    "didn't express."
+                ),
+            },
+        },
+        "required": ["request"],
+        "additionalProperties": False,
+    },
+    "strict": True,
+}
+
+FIND_DOG_MATCHES_GUIDANCE = (
+    "[Tool available: find_dog_matches]\n"
+    "Besides chatting about yourself, you can help the user find OTHER adoptable dogs in the ChattyHound "
+    "network. Helping them find their best fit is kind, not disloyal — a good home for every dog matters "
+    "more than being picked yourself. Call find_dog_matches at most once per message.\n"
+    "\n"
+    "Call it right away when:\n"
+    "- The user says what kind of dog they're looking for or asks if there are other dogs — e.g. "
+    "\"I'm looking for a shih tzu\", \"are there any puppies?\", \"do you know any dogs that are good with cats?\".\n"
+    "- The user accepts your offer to look (\"yes please\", \"sure, show me\").\n"
+    "- The user reveals a clear dealbreaker that your profile says you don't meet — e.g. they have a cat "
+    "and you're not cat-friendly, they need a small dog and you're large, they have young kids and you need "
+    "an adult-only home, they want a calm couch buddy and you're very high-energy. Be honest and kind about "
+    "the mismatch in your reply and search for dogs who DO fit their need.\n"
+    "\n"
+    "Offer (don't search yet) when the mismatch is soft or uncertain — e.g. your profile doesn't say how you "
+    "are with cats, they'd prefer something you only partly match, or they ASK about something you don't "
+    "meet (\"are you good with cats?\" when you aren't, \"are you a small dog?\" when you're big, \"are you calm?\" "
+    "when you're high-energy) without saying it's a must. Answer honestly, then you "
+    "MUST end your reply with a one-line offer to look for dogs who do fit, like \"Want me to sniff around for "
+    "pups who are known to be cat-friendly?\" Never skip this offer when your honest answer is 'no' or 'not sure'.\n"
+    "\n"
+    "Don't call it or offer it for ordinary questions about you that you're compatible with or that don't hint "
+    "at a need (e.g. \"do you like walks?\", \"what's your favorite toy?\")."
+)
+
+RECOMMENDATION_REPLY_GUIDANCE = (
+    "Reply to the user in character, in 2–4 short sentences. If this search was triggered by a mismatch with "
+    "you, briefly and warmly acknowledge it first (no guilt-tripping). Mention the recommended dogs by name and "
+    "why they could fit, and be honest about any compromises (e.g. a different breed, farther away). "
+    "Their photo cards will appear right below your message — invite the user to tap one to chat with them "
+    "or tap the heart to save them. "
+    "Do not list every detail (the cards show them) and never invent facts beyond the data given. "
+    "If status is not 'ok', kindly explain you couldn't find a good match right now and offer to keep chatting."
+)
+
+
+def _current_dog_summary(sb, animal_id: str) -> dict:
+    try:
+        r = sb.table("animal_fact_profiles") \
+            .select("dog_name, breed_or_description, age_summary, weight_summary, sex") \
+            .eq("animal_id", animal_id).limit(1).execute()
+        if r.data:
+            f = r.data[0]
+            return {"animal_id": animal_id, "name": f.get("dog_name"), "breed": f.get("breed_or_description"),
+                    "age": f.get("age_summary"), "weight": f.get("weight_summary"), "sex": f.get("sex")}
+    except Exception:
+        pass
+    return {"animal_id": animal_id}
+
+
+def _dog_responses_call(openai_client, input_items, tools, tool_choice):
+    kwargs = dict(
+        model=CHAT_MODEL,
+        input=input_items,
+        max_output_tokens=CHAT_MAX_OUTPUT_TOKENS,
+        store=False,
+        include=["reasoning.encrypted_content"],
+    )
+    if tools:
+        kwargs["tools"] = tools
+        kwargs["tool_choice"] = tool_choice
+        kwargs["parallel_tool_calls"] = False
+    return openai_client.responses.create(**kwargs)
+
+
+def _run_dog_chat(*, openai_client, sb, input_messages, user_message, conversation_history,
+                  animal_id, user_email, ip, rec_ctx):
+    """
+    Blocking. Runs the dog's reply, including the optional find_dog_matches tool round-trip.
+    Returns (reply_text, recommendations_payload_or_None).
+    """
+    tools = [FIND_DOG_MATCHES_TOOL] if recommender.is_configured() else []
+    items = list(input_messages)
+    if tools:
+        # Insert tool guidance right after the persona prompt
+        items.insert(1, {"role": "developer", "content": FIND_DOG_MATCHES_GUIDANCE})
+
+    resp = _dog_responses_call(openai_client, items, tools, "auto")
+    call = next((o for o in resp.output if getattr(o, "type", "") == "function_call"
+                 and o.name == "find_dog_matches"), None)
+    if call is None:
+        return resp.output_text or "", None
+
+    try:
+        req_text = (json.loads(call.arguments or "{}").get("request") or user_message)[:600]
+    except json.JSONDecodeError:
+        req_text = user_message[:600]
+
+    recommendations = None
+    limited = recommender.check_and_consume_rate_limit(user_email, ip, animal_id)
+    if limited:
+        logger.info(f"recommender rate-limited ({limited}) for {user_email}")
+        tool_output = {"status": "limit_reached",
+                       "note": "Search limit reached for now. Tell the user you can look again a bit later."}
+    else:
+        recent_turns = conversation_history[-6:] + [{"role": "user", "content": user_message}]
+        rec = recommender.run_recommender(
+            openai_client=openai_client, sb=sb, image_base_url=get_image_base_url(),
+            request_text=req_text, email=user_email, current_animal_id=animal_id,
+            current_dog=_current_dog_summary(sb, animal_id), recent_turns=recent_turns, rec_ctx=rec_ctx,
+        )
+        tool_output = {
+            "status": rec["status"],
+            "search_summary": rec.get("summary", ""),
+            "recommended_dogs": [
+                {k: d.get(k) for k in ("name", "breed", "age", "sex", "location", "match_type", "reason", "compromises")}
+                for d in rec["dogs"]
+            ],
+        }
+        if rec["dogs"]:
+            recommendations = {"dogs": rec["dogs"], "summary": rec.get("summary", "")}
+    tool_output["how_to_reply"] = RECOMMENDATION_REPLY_GUIDANCE
+
+    items.extend(resp.output)
+    items.append({"type": "function_call_output", "call_id": call.call_id,
+                  "output": json.dumps(tool_output, ensure_ascii=False)})
+    try:
+        resp2 = _dog_responses_call(openai_client, items, tools, "none")
+        reply = resp2.output_text or ""
+    except Exception:
+        logger.exception("dog follow-up after recommender failed")
+        reply = ""
+    if not reply:
+        reply = ("I sniffed around and found a few pups you might like — tap one below to say hi!"
+                 if recommendations else
+                 "I looked around but couldn't find a great match right now. Want to keep chatting?")
+    return reply, recommendations
 
 
 @router.post("/api/chat")
@@ -222,33 +395,44 @@ async def chat(request: Request):
         from openai import OpenAI
         openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-        try:
-            response = openai_client.chat.completions.create(model=CHAT_MODEL, messages=input_messages, max_completion_tokens=1024)
-            output_text = response.choices[0].message.content
-        except AttributeError:
-            response = openai_client.responses.create(model=CHAT_MODEL, input=input_messages)
-            output_text = response.output_text
+        rec_ctx = body.get("rec_context")
+        if not isinstance(rec_ctx, dict):
+            rec_ctx = {}
+
+        # Blocking OpenAI / DB work runs in a worker thread so a long recommender
+        # search never stalls the event loop for other users.
+        output_text, recommendations = await run_in_threadpool(
+            lambda: _run_dog_chat(
+                openai_client=openai_client, sb=sb_client, input_messages=input_messages,
+                user_message=user_message, conversation_history=conversation_history,
+                animal_id=animal_id, user_email=user_email, ip=ip, rec_ctx=rec_ctx,
+            )
+        )
 
         # Persist conversation (non-blocking) — skip if user disabled retention
-        try:
-            # Check retention preference
-            _skip_save = False
+        def _persist():
             try:
-                pref_res = sb_client.table("user_preferences").select("chat_retention").eq("email", user_email).limit(1).execute()
-                if pref_res.data and pref_res.data[0].get("chat_retention") is False:
-                    _skip_save = True
+                # Check retention preference
+                _skip_save = False
+                try:
+                    pref_res = sb_client.table("user_preferences").select("chat_retention").eq("email", user_email).limit(1).execute()
+                    if pref_res.data and pref_res.data[0].get("chat_retention") is False:
+                        _skip_save = True
+                except Exception:
+                    pass
+
+                if not _skip_save:
+                    conv_id = _upsert_conversation(sb_client, user_email, animal_id, dog_name, dog_image_url, output_text[:200])
+                    if conv_id:
+                        _save_messages(sb_client, conv_id, user_message, output_text, sugg_prompts, chosen_prompt,
+                                       recommendations)
             except Exception:
-                pass
+                import traceback
+                traceback.print_exc()
 
-            if not _skip_save:
-                conv_id = _upsert_conversation(sb_client, user_email, animal_id, dog_name, dog_image_url, output_text[:200])
-                if conv_id:
-                    _save_messages(sb_client, conv_id, user_message, output_text, sugg_prompts, chosen_prompt)
-        except Exception:
-            import traceback
-            traceback.print_exc()
+        await run_in_threadpool(_persist)
 
-        return JSONResponse(content={"reply": output_text})
+        return JSONResponse(content={"reply": output_text, "recommendations": recommendations})
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
@@ -928,7 +1112,10 @@ async def chat_history(request: Request):
                 return JSONResponse(content={"messages": [], "conversation_id": None, "chat_retention": chat_retention})
 
             conv_id = conv_res.data[0]["id"]
-            msg_res = sb.table("chat_messages").select("role, content, created_at").eq("conversation_id", conv_id).order("created_at", desc=False).execute()
+            try:
+                msg_res = sb.table("chat_messages").select("role, content, created_at, recommendations").eq("conversation_id", conv_id).order("created_at", desc=False).execute()
+            except Exception:
+                msg_res = sb.table("chat_messages").select("role, content, created_at").eq("conversation_id", conv_id).order("created_at", desc=False).execute()
 
             return JSONResponse(content={"conversation_id": conv_id, "messages": msg_res.data or [], "chat_retention": chat_retention})
         else:

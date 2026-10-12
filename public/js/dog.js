@@ -33,54 +33,69 @@ if (chatInput && !localStorage.getItem('has_interacted_with_chat')) {
 }
 
 // ─── Favorite Heart Toggle ──────────────────────────────────────────────────
+
+/**
+ * Save/unsave any dog to My Dogs (local + backend sync).
+ * @param {{animal_id: string, name?: string, image_url?: string}} dog
+ * @param {string} source  analytics source ('profile' | 'recommendation_card')
+ * @returns {boolean} true if the dog is now saved
+ */
+function toggleFavoriteDog(dog, source = 'profile') {
+  const aid = dog && dog.animal_id;
+  if (!aid) return false;
+  const name = dog.name || 'this dog';
+  const index = favoritesList.indexOf(aid);
+  const removing = index > -1;
+
+  if (removing) {
+    favoritesList.splice(index, 1);
+    trackEvent('dog_unfavorited', { dog_name: name, animal_id: aid, source });
+    showToast(`Removed from My Dogs.`);
+  } else {
+    favoritesList.push(aid);
+    trackEvent('dog_favorited', { dog_name: name, animal_id: aid, source });
+    showToast(`Saved to My Dogs.`);
+  }
+  localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
+  updateSavedNavBadge();
+
+  // Keep the profile heart in sync if this is the dog on screen
+  if (favBtn && aid === currentAnimalId) {
+    favBtn.classList.toggle('favorited', !removing);
+    favBtn.setAttribute('aria-label', removing ? `Save ${name} to My Dogs` : `Remove ${name} from My Dogs`);
+  }
+
+  // Refresh the modal if open
+  const modal = document.getElementById('savedModal');
+  if (modal && modal.classList.contains('active') && savedActiveTab === 'dogs') {
+    loadSavedTab('dogs');
+  }
+
+  // Backend sync if logged in (non-blocking)
+  if (userEmail) {
+    fetch('/api/favorites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: userEmail,
+        animal_id: aid,
+        dog_name: dog.name || '',
+        dog_image_url: dog.image_url || '',
+        action: removing ? 'remove' : 'save'
+      })
+    }).catch(e => console.warn('Favorites sync failed:', e));
+  }
+  return !removing;
+}
+
 if (favBtn) {
-  favBtn.addEventListener('click', async () => {
+  favBtn.addEventListener('click', () => {
     if (!currentAnimalId) return;
-    const index = favoritesList.indexOf(currentAnimalId);
-    const removing = index > -1;
-
-    // Optimistic UI update
-    if (removing) {
-      favoritesList.splice(index, 1);
-      favBtn.classList.remove('favorited');
-      favBtn.setAttribute('aria-label', `Save ${currentDogName} to My Dogs`);
-      trackEvent('dog_unfavorited', { dog_name: currentDogName, animal_id: currentAnimalId });
-      showToast(`Removed from My Dogs.`);
-    } else {
-      favoritesList.push(currentAnimalId);
-      favBtn.classList.add('favorited');
-      favBtn.setAttribute('aria-label', `Remove ${currentDogName} from My Dogs`);
-      trackEvent('dog_favorited', { dog_name: currentDogName, animal_id: currentAnimalId });
-      showToast(`Saved to My Dogs.`);
-    }
-    localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
-    updateSavedNavBadge();
-
-    // Refresh the modal if open
-    const modal = document.getElementById('savedModal');
-    if (modal && modal.classList.contains('active') && savedActiveTab === 'dogs') {
-      loadSavedTab('dogs');
-    }
-
-    // Backend sync if logged in
-    if (userEmail) {
-      try {
-        const currentImageUrl = document.getElementById('dogImage')?.src || '';
-        await fetch('/api/favorites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: userEmail,
-            animal_id: currentAnimalId,
-            dog_name: currentDogName,
-            dog_image_url: currentImageUrl,
-            action: removing ? 'remove' : 'save'
-          })
-        });
-      } catch (e) {
-        console.warn('Favorites sync failed:', e);
-      }
-    }
+    toggleFavoriteDog({
+      animal_id: currentAnimalId,
+      name: currentDogName,
+      image_url: document.getElementById('dogImage')?.src || ''
+    }, 'profile');
   });
 }
 
@@ -531,14 +546,7 @@ async function initDogChat(dog, loadOptions, fetchId, isStaleFetch) {
         const msgs = (histData.messages || []).filter(m => m.role !== 'system');
         resumeMsgsLoaded = msgs.length;
         conversationHistory = [];
-        msgs.forEach(m => {
-          appendMessage(
-            m.role === 'assistant' ? 'bot' : 'user',
-            m.content,
-            m.role === 'assistant' ? currentDogName.charAt(0).toUpperCase() : undefined,
-            false
-          );
-        });
+        msgs.forEach(m => renderStoredMessage(m));
         const introP = introCard.querySelector('p');
         if (introP) {
           introP.textContent = msgs.length > 0
@@ -558,7 +566,7 @@ async function initDogChat(dog, loadOptions, fetchId, isStaleFetch) {
   // Send initial greeting
   if (!loadOptions.resumeChat || resumeMsgsLoaded === 0) {
     const firstLetter = currentDogName.charAt(0).toUpperCase();
-    appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetter, false);
+    appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything! I can also help you find your perfect match if you tell me what you're looking for. 🐾`, firstLetter, false);
   }
 
   // Check for previous chat — show resume banner (non-blocking)
@@ -607,14 +615,7 @@ async function initDogChat(dog, loadOptions, fetchId, isStaleFetch) {
               lastChild.remove();
             }
             conversationHistory = [];
-            prevMsgs.forEach(m => {
-              appendMessage(
-                m.role === 'assistant' ? 'bot' : 'user',
-                m.content,
-                m.role === 'assistant' ? currentDogName.charAt(0).toUpperCase() : undefined,
-                false
-              );
-            });
+            prevMsgs.forEach(m => renderStoredMessage(m));
             resumeBanner.remove();
             scrollToBottom();
             trackEvent('resume_chat_loaded', { dog_name: currentDogName, animal_id: currentAnimalId, msg_count: prevMsgs.length });

@@ -3,29 +3,6 @@
 
 <head>
   <meta charset="UTF-8">
-  <!-- FullStory Snippet -->
-  <script>
-  window['_fs_host'] = 'fullstory.com';
-  window['_fs_script'] = 'edge.fullstory.com/s/fs.js';
-  window['_fs_org'] = 'ZKPBZ';
-  window['_fs_namespace'] = 'FS';
-  !function(m,n,e,t,l,o,g,y){var s,f,a=function(h){
-  return!(h in m)||(m.console&&m.console.log&&m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].'),!1)}(e)
-  ;function p(b){var h,d=[];function j(){h&&(d.forEach((function(b){var d;try{d=b[h[0]]&&b[h[0]](h[1])}catch(h){return void(b[3]&&b[3](h))}
-  d&&d.then?d.then(b[2],b[3]):b[2]&&b[2](d)})),d.length=0)}function r(b){return function(d){h||(h=[b,d],j())}}return b(r(0),r(1)),{
-  then:function(b,h){return p((function(r,i){d.push([b,h,r,i]),j()}))}}}a&&(g=m[e]=function(){var b=function(b,d,j,r){function i(i,c){
-  h(b,d,j,i,c,r)}r=r||2;var c,u=/Async$/;return u.test(b)?(b=b.replace(u,""),"function"==typeof Promise?new Promise(i):p(i)):h(b,d,j,c,c,r)}
-  ;function h(h,d,j,r,i,c){return b._api?b._api(h,d,j,r,i,c):(b.q&&b.q.push([h,d,j,r,i,c]),null)}return b.q=[],b}(),y=function(b){function h(h){
-  "function"==typeof h[4]&&h[4](new Error(b))}var d=g.q;if(d){for(var j=0;j<d.length;j++)h(d[j]);d.length=0,d.push=h}},function(){
-  (o=n.createElement(t)).async=!0,o.crossOrigin="anonymous",o.src="https://"+l,o.onerror=function(){y("Error loading "+l)}
-  ;var b=n.getElementsByTagName(t)[0];b&&b.parentNode?b.parentNode.insertBefore(o,b):n.head.appendChild(o)}(),function(){function b(){}
-  function h(b,h,d){g(b,h,d,1)}function d(b,d,j){h("setProperties",{type:b,properties:d},j)}function j(b,h){d("user",b,h)}function r(b,h,d){j({
-  uid:b},d),h&&j(h,d)}g.identify=r,g.setUserVars=j,g.identifyAccount=b,g.clearUserCookie=b,g.setVars=d,g.event=function(b,d,j){h("trackEvent",{
-  name:b,properties:d},j)},g.anonymize=function(){r(!1)},g.shutdown=function(){h("shutdown")},g.restart=function(){h("restart")},
-  g.log=function(b,d){h("log",{level:b,msg:d})},g.consent=function(b){h("setIdentity",{consent:!arguments.length||b})}}(),s="fetch",
-  f="XMLHttpRequest",g._w={},g._w[f]=m[f],g._w[s]=m[s],m[s]&&(m[s]=function(){return g._w[s].apply(this,arguments)}),g._v="2.0.0")
-  }(window,document,window._fs_namespace,"script",window._fs_script);
-  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChattyHound – Chat With Adoptable Shelter Dogs 🐾</title>
   <meta name="description"
@@ -56,7 +33,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js"></script>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-4GRL2M87SZ"></script>
@@ -66,6 +44,7 @@
     gtag('js', new Date());
 
     gtag('config', 'G-4GRL2M87SZ');
+    gtag('config', 'AW-18221330739');
   </script>
 
   <style>
@@ -551,6 +530,95 @@
     .share-btn.compact svg {
       width: 16px;
       height: 16px;
+    }
+
+    /* Hero chat bubble — primary entry point into chat, sits left of Share */
+    .hero-chat-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+      color: var(--accent-text);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 20px -3px rgba(245, 158, 11, 0.45);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hero-chat-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 24px -3px rgba(245, 158, 11, 0.6);
+    }
+
+    .hero-chat-btn:active {
+      transform: scale(0.95);
+    }
+
+    .hero-chat-btn:focus-visible {
+      outline: 2px solid var(--accent-hover);
+      outline-offset: 3px;
+    }
+
+    .hero-chat-btn svg {
+      width: 21px;
+      height: 21px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Quick-fact chips that auto-send a chat prompt when tapped */
+    .fact-prompt-chip {
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fact-prompt-chip:active {
+      transform: scale(0.96);
+    }
+
+    .fact-prompt-chip:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (hover: hover) {
+      .fit-badge-tag.fact-prompt-chip:hover {
+        background: rgba(20, 184, 166, 0.26);
+        border-color: rgba(20, 184, 166, 0.6);
+        transform: translateY(-1px);
+      }
+
+      .trait-chip.fact-prompt-chip:hover {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.5);
+        color: #fff;
+        transform: translateY(-1px);
+      }
+
+      .detail-chip.fact-prompt-chip:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+    }
+
+    .fact-prompt-chip.fact-chip-sent {
+      animation: factChipSent 0.4s ease;
+    }
+
+    @keyframes factChipSent {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
+      100% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
     }
 
     .chat-section-header {
@@ -1705,6 +1773,14 @@
       .share-btn svg {
         width: 22px !important;
         height: 22px !important;
+      }
+      .hero-chat-btn {
+        width: 54px;
+        height: 54px;
+      }
+      .hero-chat-btn svg {
+        width: 23px;
+        height: 23px;
       }
 
       /* Desktop Right column spacing */
@@ -3285,6 +3361,291 @@
       color: #ef4444;
     }
 
+    /* ─── Typing indicator caption (long replies / recommendation search) ─── */
+    .typing-caption {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--teal);
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .typing-caption.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ─── Dog recommendation cards (agentic "find other dogs") ─── */
+    .rec-wrap {
+      margin: -2px 0 4px 44px; /* align with bot bubble (avatar 34px + gap 10px) */
+      container-type: inline-size;
+      min-width: 0;
+    }
+
+    .rec-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin: 0 0 8px 2px;
+    }
+
+    .rec-rail {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 2px 2px 10px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .rec-rail::-webkit-scrollbar { height: 6px; }
+    .rec-rail::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 9999px; }
+
+    .rec-item {
+      flex: 0 0 72%;
+      max-width: 240px;
+      scroll-snap-align: start;
+      display: flex;
+    }
+
+    @container (min-width: 560px) {
+      .rec-item {
+        flex: 1 1 0;
+        max-width: none;
+      }
+    }
+
+    .rec-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 40%),
+        var(--bg-slate-900);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      overflow: hidden;
+      cursor: pointer;
+      text-align: left;
+      box-shadow: 0 8px 22px rgba(2, 6, 23, 0.35);
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      animation: recCardIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .rec-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--teal-border);
+      box-shadow: 0 14px 30px rgba(2, 6, 23, 0.5), 0 0 0 1px rgba(20, 184, 166, 0.25);
+    }
+
+    .rec-card:active { transform: scale(0.985); }
+
+    .rec-card:focus-visible {
+      outline: 2px solid var(--teal);
+      outline-offset: 2px;
+    }
+
+    @keyframes recCardIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .rec-photo {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      background: var(--bg-slate-800);
+      overflow: hidden;
+    }
+
+    .rec-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .rec-card:hover .rec-photo img { transform: scale(1.04); }
+
+    .rec-photo::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 40%;
+      background: linear-gradient(0deg, rgba(15, 23, 42, 0.55), transparent);
+      pointer-events: none;
+    }
+
+    .rec-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 1;
+      padding: 4px 9px;
+      border-radius: 9999px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .rec-badge.exact {
+      background: rgba(20, 184, 166, 0.88);
+      color: #04201c;
+    }
+
+    .rec-badge.close {
+      background: rgba(245, 158, 11, 0.9);
+      color: var(--accent-text);
+    }
+
+    .rec-body {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 10px 12px 12px;
+      flex: 1;
+    }
+
+    .rec-name {
+      font-size: 0.98rem;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .rec-breed {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--accent-hover);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rec-meta,
+    .rec-loc {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rec-reason {
+      margin-top: 5px;
+      font-size: 0.76rem;
+      line-height: 1.4;
+      color: #e2e8f0;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .rec-compromises {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .rec-chip {
+      font-size: 0.66rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #fcd34d;
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      border-radius: 8px;
+      padding: 3px 7px;
+    }
+
+    .rec-cta {
+      margin-top: auto;
+      padding-top: 8px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--teal);
+      transition: letter-spacing 0.2s ease;
+    }
+
+    .rec-card:hover .rec-cta { letter-spacing: 0.01em; }
+
+    /* Save-to-My-Dogs heart on recommendation cards */
+    .rec-fav {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 2;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .rec-fav svg {
+      width: 18px;
+      height: 18px;
+      fill: transparent;
+      stroke: currentColor;
+      stroke-width: 2;
+      transition: fill 0.2s ease, stroke 0.2s ease;
+    }
+
+    .rec-fav:hover {
+      background: rgba(15, 23, 42, 0.8);
+      transform: scale(1.06);
+    }
+
+    .rec-fav:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .rec-fav.saved {
+      border-color: rgba(245, 158, 11, 0.6);
+    }
+
+    .rec-fav.saved svg {
+      fill: var(--accent);
+      stroke: var(--accent);
+    }
+
+    .rec-fav.pop svg { animation: recHeartPop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1.4); }
+
+    @keyframes recHeartPop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .rec-card { animation: none; transition: none; }
+      .rec-photo img { transition: none; }
+    }
+
     </style>
 </head>
 
@@ -3603,6 +3964,14 @@
                 </div>
               </div>
               <div class="hero-actions real-el">
+                <button class="hero-chat-btn" id="heroChatBtn" type="button" aria-label="Chat with this dog"
+                  title="Chat">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    <line x1="8" y1="9" x2="16" y2="9" />
+                    <line x1="8" y1="13" x2="13" y2="13" />
+                  </svg>
+                </button>
                 <button class="share-btn" id="heroShareBtn" type="button" aria-label="Share this dog"
                   title="Share">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -3690,17 +4059,17 @@
                   ⚡ Quick Facts
                 </div>
                 <div class="details-stats-row">
-                  <span class="detail-chip" id="chipGender">
+                  <span class="detail-chip fact-prompt-chip" id="chipGender" data-fact-label="Sex" role="button" tabindex="0" title="Tap to ask about this" aria-label="Ask about sex">
                     <span class="compat-dot gray" id="dotGender" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Sex</span>
                     <span class="chip-val" id="dogGender" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
                   </span>
-                  <span class="detail-chip" id="chipAge">
+                  <span class="detail-chip fact-prompt-chip" id="chipAge" data-fact-label="Age" role="button" tabindex="0" title="Tap to ask about this" aria-label="Ask about age">
                     <span class="compat-dot gray" id="dotAge" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Age</span>
                     <span class="chip-val" id="dogAge" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
                   </span>
-                  <span class="detail-chip" id="chipWeight">
+                  <span class="detail-chip fact-prompt-chip" id="chipWeight" data-fact-label="Weight" role="button" tabindex="0" title="Tap to ask about this" aria-label="Ask about weight">
                     <span class="compat-dot gray" id="dotWeight" style="display:none;"></span>
                     <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em;">Weight</span>
                     <span class="chip-val" id="dogWeight" style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"></span>
@@ -3831,7 +4200,7 @@
         <div id="footerOverlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; cursor: pointer;"></div>
         <div class="input-row">
           <div class="chat-input-wrapper" id="chatInputWrapper" style="position: relative; flex: 1; display: flex; min-width: 0;">
-            <input type="text" class="chat-input" id="chatInput" placeholder="Ask about me!" disabled
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything!" disabled
               aria-label="Type your question to the dog here" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
           <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send message">
@@ -3911,6 +4280,9 @@
         </div>
         <div class="modal-footer">
           <button class="modal-start-btn" id="modalStartBtn">Start Sniffing 🐶</button>
+        </div>
+        <div style="text-align:center; padding:16px 0 4px;">
+          <a href="/privacy.html" style="font-size:0.75rem; color:var(--text-muted); text-decoration:none; opacity:0.6;">Privacy Policy</a>
         </div>
       </div>
     </div>
@@ -4222,14 +4594,15 @@ let savedActiveTab = 'dogs';
 
 // ─── Suggestion System State ────────────────────────────────────────────────
 // Cached from /api/suggested_prompts (fetched once, persisted across dogs)
-// Format: { informative: [{text, weight}, ...], whimsical: [{text, weight}, ...] }
+// Format: { informative: [{text, intro_point}, ...], whimsical: [{text, intro_point}, ...] }
 let suggestedPromptsCache = null;
 
 // Per-dog suggestion state (reset on each new dog)
-// Pools hold {text, weight} objects; profile pool has weight=1.0 by default.
+// Pools hold {text, intro_point} objects. 2 informative + 1 whimsical per round.
 let suggestionState = {
-  pools: { informative: [], whimsical: [], profile: [] },
+  pools: { informative: [], whimsical: [] },
   usedPrompts: new Set(),  // Set of text strings already clicked
+  selectionRound: 1,       // Increments each time prompts are served; gates intro_point
 };
 
 // The 3 suggestions currently displayed to the user (populated by updateSuggestions)
@@ -4241,17 +4614,55 @@ let activeSuggestions = [];
 // ─── Analytics ──────────────────────────────────────────────────────────────
 // Helper to send Google Analytics events safely and log them for debugging
 
+// Auto-detected context injected into every event
+const _isMobile = /Mobi|Android/i.test(navigator.userAgent);
+const _isTablet = /iPad|Android(?!.*Mobi)/i.test(navigator.userAgent);
+const _deviceType = _isTablet ? 'tablet' : (_isMobile ? 'mobile' : 'desktop');
+
 function trackEvent(eventName, eventParams = {}) {
   try {
+    // Auto-inject device type and user region into every event
+    const enriched = {
+      device_type: _deviceType,
+      ...eventParams
+    };
+    // Attach detected region if available (set by location detection)
+    if (window.__CH_DETECTED_CITY__) {
+      enriched.user_region = window.__CH_DETECTED_CITY__;
+    }
     if (typeof gtag === 'function') {
-      gtag('event', eventName, eventParams);
-      console.log(`[GA Event] ${eventName}:`, eventParams);
+      gtag('event', eventName, enriched);
+      console.log(`[GA Event] ${eventName}:`, enriched);
     } else {
-      console.warn(`[GA Event WARNING] gtag not defined. Tried to track ${eventName}:`, eventParams);
+      console.warn(`[GA Event WARNING] gtag not defined. Tried to track ${eventName}:`, enriched);
     }
   } catch (err) {
     console.error(`[GA Event ERROR] Failed to track ${eventName}:`, err);
   }
+}
+
+// ─── Google Ads Conversion Tracking ─────────────────────────────────────────
+
+/**
+ * Fire the primary Google Ads conversion: user's first chat message to a dog.
+ */
+function trackAdsFirstMessage() {
+  if (typeof gtag !== 'function') return;
+  gtag('event', 'conversion', {
+    'send_to': 'AW-18221330739/hZRVCIfIrYQdELPizfBD'
+  });
+  console.log('[Google Ads] Conversion fired: chat_first_message');
+}
+
+/**
+ * Fire the secondary Google Ads conversion: clicking the shelter listing link.
+ */
+function trackAdsShelterClick() {
+  if (typeof gtag !== 'function') return;
+  gtag('event', 'conversion', {
+    'send_to': 'AW-18221330739/x_EcCIrIrYQdELPizfBD'
+  });
+  console.log('[Google Ads] Conversion fired: shelter_listing_click');
 }
 
     </script>
@@ -4574,10 +4985,19 @@ function exitChatMode() {
   if (footerOverlay) footerOverlay.style.display = 'block';
 }
 
+// Callers can briefly suppress auto scroll-to-bottom (e.g. recommendation cards
+// anchor the view at the dog's reply; the input refocus shouldn't undo that).
+let _suppressScrollToBottomUntil = 0;
+function suppressScrollToBottom(ms) {
+  _suppressScrollToBottomUntil = Date.now() + ms;
+}
+
 function scrollToBottom() {
+  if (Date.now() < _suppressScrollToBottomUntil) return;
   const scrollContent = document.getElementById('scrollContent');
   if (scrollContent && window.innerWidth < 800) {
     setTimeout(() => {
+      if (Date.now() < _suppressScrollToBottomUntil) return;
       scrollContent.scrollTop = scrollContent.scrollHeight;
     }, 50); // small delay to allow DOM updates (like prompt rendering)
   }
@@ -4697,21 +5117,12 @@ async function copyDogShareLink(payload) {
       document.body.removeChild(ta);
     }
     showToast('Dog link copied.');
-    trackEvent('dog_share_copied_link', {
-      animal_id: payload.animal_id,
-      share_method: 'copy_link'
-    });
     trackEvent('dog_share_completed', {
       animal_id: payload.animal_id,
       share_method: 'copy_link'
     });
   } catch (err) {
     console.error('Copy failed:', err);
-    trackEvent('dog_share_failed', {
-      animal_id: payload.animal_id,
-      share_method: 'copy_link',
-      error: 'clipboard'
-    });
     showShareToast('Could not copy link. Please try again.');
   }
 }
@@ -4793,7 +5204,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeShareFallbackMenu();
 });
 wireShareButtons();
-trackEvent('visited_site');
 
     </script>
     <script>
@@ -4832,54 +5242,69 @@ if (chatInput && !localStorage.getItem('has_interacted_with_chat')) {
 }
 
 // ─── Favorite Heart Toggle ──────────────────────────────────────────────────
+
+/**
+ * Save/unsave any dog to My Dogs (local + backend sync).
+ * @param {{animal_id: string, name?: string, image_url?: string}} dog
+ * @param {string} source  analytics source ('profile' | 'recommendation_card')
+ * @returns {boolean} true if the dog is now saved
+ */
+function toggleFavoriteDog(dog, source = 'profile') {
+  const aid = dog && dog.animal_id;
+  if (!aid) return false;
+  const name = dog.name || 'this dog';
+  const index = favoritesList.indexOf(aid);
+  const removing = index > -1;
+
+  if (removing) {
+    favoritesList.splice(index, 1);
+    trackEvent('dog_unfavorited', { dog_name: name, animal_id: aid, source });
+    showToast(`Removed from My Dogs.`);
+  } else {
+    favoritesList.push(aid);
+    trackEvent('dog_favorited', { dog_name: name, animal_id: aid, source });
+    showToast(`Saved to My Dogs.`);
+  }
+  localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
+  updateSavedNavBadge();
+
+  // Keep the profile heart in sync if this is the dog on screen
+  if (favBtn && aid === currentAnimalId) {
+    favBtn.classList.toggle('favorited', !removing);
+    favBtn.setAttribute('aria-label', removing ? `Save ${name} to My Dogs` : `Remove ${name} from My Dogs`);
+  }
+
+  // Refresh the modal if open
+  const modal = document.getElementById('savedModal');
+  if (modal && modal.classList.contains('active') && savedActiveTab === 'dogs') {
+    loadSavedTab('dogs');
+  }
+
+  // Backend sync if logged in (non-blocking)
+  if (userEmail) {
+    fetch('/api/favorites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: userEmail,
+        animal_id: aid,
+        dog_name: dog.name || '',
+        dog_image_url: dog.image_url || '',
+        action: removing ? 'remove' : 'save'
+      })
+    }).catch(e => console.warn('Favorites sync failed:', e));
+  }
+  return !removing;
+}
+
 if (favBtn) {
-  favBtn.addEventListener('click', async () => {
+  favBtn.addEventListener('click', () => {
     if (!currentAnimalId) return;
-    const index = favoritesList.indexOf(currentAnimalId);
-    const removing = index > -1;
-
-    // Optimistic UI update
-    if (removing) {
-      favoritesList.splice(index, 1);
-      favBtn.classList.remove('favorited');
-      favBtn.setAttribute('aria-label', `Save ${currentDogName} to My Dogs`);
-      trackEvent('dog_unfavorited', { dog_name: currentDogName, animal_id: currentAnimalId });
-      showToast(`Removed from My Dogs.`);
-    } else {
-      favoritesList.push(currentAnimalId);
-      favBtn.classList.add('favorited');
-      favBtn.setAttribute('aria-label', `Remove ${currentDogName} from My Dogs`);
-      trackEvent('dog_favorited', { dog_name: currentDogName, animal_id: currentAnimalId });
-      showToast(`Saved to My Dogs.`);
-    }
-    localStorage.setItem('chattyhound_favorites', JSON.stringify(favoritesList));
-    updateSavedNavBadge();
-
-    // Refresh the modal if open
-    const modal = document.getElementById('savedModal');
-    if (modal && modal.classList.contains('active') && savedActiveTab === 'dogs') {
-      loadSavedTab('dogs');
-    }
-
-    // Backend sync if logged in
-    if (userEmail) {
-      try {
-        const currentImageUrl = document.getElementById('dogImage')?.src || '';
-        await fetch('/api/favorites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: userEmail,
-            animal_id: currentAnimalId,
-            dog_name: currentDogName,
-            dog_image_url: currentImageUrl,
-            action: removing ? 'remove' : 'save'
-          })
-        });
-      } catch (e) {
-        console.warn('Favorites sync failed:', e);
-      }
-    }
+    toggleFavoriteDog({
+      animal_id: currentAnimalId,
+      name: currentDogName,
+      image_url: document.getElementById('dogImage')?.src || ''
+    }, 'profile');
   });
 }
 
@@ -4954,7 +5379,7 @@ function resetProfileUI() {
   // Reset preference metadata (stat chip colors, compat dots)
   ['chipGender', 'chipAge', 'chipWeight'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.className = 'detail-chip';
+    if (el) el.classList.remove('matched', 'mismatched');
   });
   ['dotGender', 'dotAge', 'dotWeight', 'dotLocation'].forEach(id => {
     const el = document.getElementById(id);
@@ -5083,7 +5508,7 @@ function renderDogProfile(dog) {
     paccLink.setAttribute('aria-label', `Open ${currentDogName}'s official shelter page on 24Petconnect`);
   }
   updateShareButtonLabels();
-  if (chatInput) chatInput.placeholder = 'Ask about me!';
+  if (chatInput) chatInput.placeholder = 'Ask me anything!';
 
   // Sticky dog bar
   const stickyDogName = document.getElementById('stickyDogName');
@@ -5145,13 +5570,12 @@ function renderCompatBadges(dog) {
   if (badgeContainer) {
     badgeContainer.innerHTML = '';
 
-    // Highlight badges — show all highlights from DB as green tags
+    // Highlight badges — show all highlights from DB as green tags (tap to ask about it)
     const highlights = dog.highlights || [];
-    if (highlights.length > 0) {
-      badgeContainer.innerHTML = highlights.map(h => `<span class="fit-badge-tag">${h}</span>`).join('');
-    } else {
-      badgeContainer.innerHTML = '<span class="fit-badge-tag">Shelter Hero 🦸</span>';
-    }
+    const tags = highlights.length > 0 ? highlights : ['Shelter Hero 🦸'];
+    tags.forEach(h => {
+      badgeContainer.appendChild(makeFactPromptChip('span', 'fit-badge-tag', h));
+    });
   }
 
   // Preference stat dots (green/yellow/gray) and Why Fit card
@@ -5244,20 +5668,34 @@ function renderTraitChips(dog) {
 
   if (facts.length > 0) {
     facts.forEach((fact) => {
-      const chip = document.createElement('span');
-      chip.className = 'trait-chip';
-      chip.textContent = fact;
-      traitChipsContainer.appendChild(chip);
+      traitChipsContainer.appendChild(makeFactPromptChip('span', 'trait-chip', fact));
     });
   } else {
-    // Default trait chips when no facts exist
+    // Default trait chips when no facts exist — send a direct question instead
+    // of quoting "Ask About …" back to the dog.
     ['Ask About House Training', 'Ask About Other Pets', 'Ask About Special Needs'].forEach(t => {
-      const chip = document.createElement('span');
-      chip.className = 'trait-chip';
-      chip.textContent = t;
-      traitChipsContainer.appendChild(chip);
+      const topic = t.replace(/^Ask About\s+/i, '').toLowerCase();
+      traitChipsContainer.appendChild(
+        makeFactPromptChip('span', 'trait-chip', t, `Tell me about ${topic}!`)
+      );
     });
   }
+}
+
+// ─── makeFactPromptChip: Tappable chip that auto-sends a chat prompt ───────────
+// Click/keyboard handling is delegated from #detailsBox in chat.js.
+
+function makeFactPromptChip(tag, className, text, fullPrompt = null) {
+  const chip = document.createElement(tag);
+  chip.className = `${className} fact-prompt-chip`;
+  chip.textContent = text;
+  chip.dataset.fact = text;
+  if (fullPrompt) chip.dataset.factPrompt = fullPrompt;
+  chip.setAttribute('role', 'button');
+  chip.setAttribute('tabindex', '0');
+  chip.setAttribute('aria-label', `Ask ${currentDogName} about "${text}"`);
+  chip.title = 'Tap to ask about this';
+  return chip;
 }
 
 // ─── renderBioSection: Meet [Dog] biography with truncation ─────────────────
@@ -5297,7 +5735,7 @@ async function initDogChat(dog, loadOptions, fetchId, isStaleFetch) {
     <div class="chat-intro-title">💬 Chat with ${currentDogName}</div>
     <p class="chat-intro-text">Start a chat with ${currentDogName}! Ask me anything about my personality, energy, or training.</p>
     <div class="chat-intro-disclaimer">
-      🔒 ChattyHound uses available shelter profile details to help you get to know each dog. Always confirm medical, behavioral, and adoption details directly with shelter staff.
+      🔒 Chats are AI-generated using shelter profile details and may be saved so you can continue them later. Avoid sharing sensitive personal info. Always confirm medical, behavioral, and adoption details with the shelter. <a href="/privacy.html" style="color:var(--teal); text-decoration:underline;">Privacy</a>
     </div>`;
   }
   introCard.style.display = 'none';
@@ -5317,14 +5755,7 @@ async function initDogChat(dog, loadOptions, fetchId, isStaleFetch) {
         const msgs = (histData.messages || []).filter(m => m.role !== 'system');
         resumeMsgsLoaded = msgs.length;
         conversationHistory = [];
-        msgs.forEach(m => {
-          appendMessage(
-            m.role === 'assistant' ? 'bot' : 'user',
-            m.content,
-            m.role === 'assistant' ? currentDogName.charAt(0).toUpperCase() : undefined,
-            false
-          );
-        });
+        msgs.forEach(m => renderStoredMessage(m));
         const introP = introCard.querySelector('p');
         if (introP) {
           introP.textContent = msgs.length > 0
@@ -5344,7 +5775,7 @@ async function initDogChat(dog, loadOptions, fetchId, isStaleFetch) {
   // Send initial greeting
   if (!loadOptions.resumeChat || resumeMsgsLoaded === 0) {
     const firstLetter = currentDogName.charAt(0).toUpperCase();
-    appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything!`, firstLetter, false);
+    appendMessage('bot', `Hi there! I'm ${currentDogName}. Ask me anything! I can also help you find your perfect match if you tell me what you're looking for. 🐾`, firstLetter, false);
   }
 
   // Check for previous chat — show resume banner (non-blocking)
@@ -5393,14 +5824,7 @@ async function initDogChat(dog, loadOptions, fetchId, isStaleFetch) {
               lastChild.remove();
             }
             conversationHistory = [];
-            prevMsgs.forEach(m => {
-              appendMessage(
-                m.role === 'assistant' ? 'bot' : 'user',
-                m.content,
-                m.role === 'assistant' ? currentDogName.charAt(0).toUpperCase() : undefined,
-                false
-              );
-            });
+            prevMsgs.forEach(m => renderStoredMessage(m));
             resumeBanner.remove();
             scrollToBottom();
             trackEvent('resume_chat_loaded', { dog_name: currentDogName, animal_id: currentAnimalId, msg_count: prevMsgs.length });
@@ -5484,7 +5908,8 @@ async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
 
     if (!isStaleFetch()) {
       setAppState('dog_loaded');
-      trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId });
+      window.__CH_DOG_VIEWED_AT__ = Date.now();
+      trackEvent('dog_viewed', { dog_name: currentDogName, animal_id: currentAnimalId, shelter_name: dog.shelter_name || '' });
     }
   } catch (err) {
     if (isStaleFetch()) return;
@@ -5503,7 +5928,7 @@ async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
 
 /**
  * Fetch the Informative/Whimsical prompt pools from the API (cached).
- * API returns: { informative: [{text, weight}, ...], whimsical: [{text, weight}, ...] }
+ * API returns: { informative: [{text, intro_point}, ...], whimsical: [{text, intro_point}, ...] }
  */
 async function fetchSuggestedPromptsIfNeeded() {
   if (suggestedPromptsCache) return suggestedPromptsCache;
@@ -5527,117 +5952,108 @@ async function fetchSuggestedPromptsIfNeeded() {
 function initSuggestionsForDog(dogData) {
   const cache = suggestedPromptsCache || { informative: [], whimsical: [] };
 
-  // Normalize: handle both old format (plain strings) and new format ({text, weight})
+  // Normalize: handle both old format (plain strings) and new format ({text, intro_point})
   function normalizePool(items) {
     return (items || []).map(item => {
-      if (typeof item === 'string') return { text: item, weight: 1.0 };
-      if (item && typeof item === 'object' && typeof item.text === 'string') return item;
-      // Unknown format — skip
+      if (typeof item === 'string') return { text: item, intro_point: 1 };
+      if (item && typeof item === 'object' && typeof item.text === 'string') {
+        return { text: item.text, intro_point: item.intro_point || 1 };
+      }
       return null;
     }).filter(Boolean);
   }
-
-  // Profile-specific prompts come as plain strings — give them weight=1.0
-  const profilePrompts = (dogData && dogData.sugg_specific)
-    ? dogData.sugg_specific.map(t => ({ text: String(t), weight: 1.0 }))
-    : [];
 
   suggestionState = {
     pools: {
       informative: normalizePool(cache.informative),
       whimsical: normalizePool(cache.whimsical),
-      profile: profilePrompts,
     },
     usedPrompts: new Set(),
+    selectionRound: 1,  // Reset counter for each new dog
   };
   activeSuggestions = [];
 }
 
 /**
- * Weighted random pick from a pool, excluding used prompts.
- * Returns the {text, weight} object or null if pool exhausted.
+ * Random pick from a pool, excluding used prompts and gated by selectionRound.
+ * Returns the {text, intro_point} object or null if pool exhausted.
  */
-function pickWeightedFromPool(category) {
+function pickFromPool(category) {
   const pool = suggestionState.pools[category];
-  const available = pool.filter(p => !suggestionState.usedPrompts.has(p.text));
+  const round = suggestionState.selectionRound;
+  const available = pool.filter(p =>
+    !suggestionState.usedPrompts.has(p.text) && p.intro_point <= round
+  );
   if (available.length === 0) return null;
-  if (available.length === 1) return available[0];
-
-  // Weighted random selection
-  const totalWeight = available.reduce((sum, p) => sum + p.weight, 0);
-  let r = Math.random() * totalWeight;
-  for (const p of available) {
-    r -= p.weight;
-    if (r <= 0) return p;
-  }
-  return available[available.length - 1]; // fallback
+  return available[Math.floor(Math.random() * available.length)];
 }
 
 /**
  * Core suggestion logic. Called on dog load and after EVERY chat turn.
- * Picks a fresh weighted-random prompt from each category every time.
+ * Serves 2 informative + 1 whimsical (gated by selectionRound).
  * Used (clicked) prompts are excluded. When a category is exhausted,
- * remaining slots fill from other categories.
+ * remaining slots fill from the other category.
  */
 function updateSuggestions() {
   const quickPromptsContainer = document.getElementById('quickPromptsContainer');
   if (!quickPromptsContainer) return;
 
-  const categories = ['informative', 'whimsical', 'profile'];
+  const round = suggestionState.selectionRound;
+  const usedTexts = new Set();
+  let finalPrompts = [];
 
-  // Check total availability
-  const totalAvailable = categories.reduce((sum, cat) => {
-    return sum + suggestionState.pools[cat].filter(p => !suggestionState.usedPrompts.has(p.text)).length;
-  }, 0);
+  // Slot 1 & 2: Informative
+  for (let i = 0; i < 2; i++) {
+    const pick = pickFromPool('informative');
+    if (pick && !usedTexts.has(pick.text)) {
+      finalPrompts.push({ text: pick.text, category: 'informative' });
+      usedTexts.add(pick.text);
+      // Temporarily mark as used so pickFromPool won't re-pick it
+      suggestionState.usedPrompts.add(pick.text);
+    }
+  }
+  // Undo the temporary marks (we only want clicked prompts permanently used)
+  for (const p of finalPrompts) {
+    suggestionState.usedPrompts.delete(p.text);
+  }
 
-  if (totalAvailable === 0) {
+  // Slot 3: Whimsical
+  const whimPick = pickFromPool('whimsical');
+  if (whimPick && !usedTexts.has(whimPick.text)) {
+    finalPrompts.push({ text: whimPick.text, category: 'whimsical' });
+    usedTexts.add(whimPick.text);
+  }
+
+  // If fewer than 3, fill from whichever pool has availability
+  if (finalPrompts.length < 3) {
+    for (const cat of ['informative', 'whimsical']) {
+      if (finalPrompts.length >= 3) break;
+      const pool = suggestionState.pools[cat];
+      const available = pool.filter(p =>
+        !suggestionState.usedPrompts.has(p.text) &&
+        !usedTexts.has(p.text) &&
+        p.intro_point <= round
+      );
+      for (const p of available) {
+        if (finalPrompts.length >= 3) break;
+        finalPrompts.push({ text: p.text, category: cat });
+        usedTexts.add(p.text);
+      }
+    }
+  }
+
+  // Check if we have anything to show
+  if (finalPrompts.length === 0) {
     quickPromptsContainer.innerHTML = '';
     activeSuggestions = [];
     return;
   }
 
-  // Pick one weighted-random prompt from each category
-  let finalPrompts = [];
-  const categoriesWithRoom = [];
-  const usedTexts = new Set();
-
-  for (const cat of categories) {
-    const pick = pickWeightedFromPool(cat);
-    if (pick && !usedTexts.has(pick.text)) {
-      finalPrompts.push({ text: pick.text, category: cat });
-      usedTexts.add(pick.text);
-      categoriesWithRoom.push(cat);
-    }
-  }
-
-  // If any category is exhausted and we have fewer than 3, fill from remaining
-  if (finalPrompts.length < 3) {
-    for (const cat of categoriesWithRoom) {
-      if (finalPrompts.length >= 3) break;
-      const pool = suggestionState.pools[cat];
-      const available = pool.filter(p =>
-        !suggestionState.usedPrompts.has(p.text) && !usedTexts.has(p.text)
-      );
-      // Pick additional via weighted random
-      for (let i = 0; i < available.length && finalPrompts.length < 3; i++) {
-        const totalW = available.reduce((s, p) => s + (usedTexts.has(p.text) ? 0 : p.weight), 0);
-        if (totalW <= 0) break;
-        let r = Math.random() * totalW;
-        let picked = null;
-        for (const p of available) {
-          if (usedTexts.has(p.text)) continue;
-          r -= p.weight;
-          if (r <= 0) { picked = p; break; }
-        }
-        if (!picked) break;
-        finalPrompts.push({ text: picked.text, category: cat });
-        usedTexts.add(picked.text);
-      }
-    }
-  }
-
   finalPrompts = finalPrompts.slice(0, 3);
   activeSuggestions = finalPrompts.map(p => p.text);
+
+  // Advance the round counter so more prompts unlock next time
+  suggestionState.selectionRound++;
 
   // Render the suggestion buttons
   quickPromptsContainer.innerHTML = '';
@@ -5663,7 +6079,7 @@ function updateSuggestions() {
         // Mark this prompt as used so it won't reappear
         suggestionState.usedPrompts.add(promptText);
 
-        trackEvent('suggestion_clicked', { dog_name: currentDogName, prompt_text: promptText });
+        trackEvent('suggestion_clicked', { dog_name: currentDogName, animal_id: currentAnimalId, typed_vs_suggested: 'suggested' });
         sendMessage(promptText, promptText);
       }
     };
@@ -5687,7 +6103,7 @@ function appendMessage(role, content, avatarLetter = '🐾', shouldScroll = true
 
     const bubble = document.createElement('div');
     bubble.className = 'bubble bot';
-    bubble.innerHTML = marked.parse(content);
+    bubble.innerHTML = DOMPurify.sanitize(marked.parse(content));
     msgRow.appendChild(bubble);
   } else {
     const bubble = document.createElement('div');
@@ -5722,6 +6138,21 @@ function showTypingIndicator() {
   bubble.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
   container.appendChild(bubble);
 
+  // Progressive caption for longer replies (e.g. when the dog is searching other shelters)
+  const caption = document.createElement('span');
+  caption.className = 'typing-caption';
+  container.appendChild(caption);
+  const setCaption = (text) => {
+    if (!container.isConnected) return;
+    caption.textContent = text;
+    caption.classList.add('visible');
+  };
+  container._captionTimers = [
+    setTimeout(() => setCaption('Sniffing around… 🐾'), 6000),
+    setTimeout(() => setCaption('Checking with the other shelter pups…'), 14000),
+    setTimeout(() => setCaption('Almost there — thanks for your patience!'), 26000),
+  ];
+
   chatHistory.appendChild(container);
   scrollToBottom();
 }
@@ -5729,11 +6160,295 @@ function showTypingIndicator() {
 function removeTypingIndicator() {
   const indicator = document.getElementById('typingIndicator');
   if (indicator) {
+    (indicator._captionTimers || []).forEach(clearTimeout);
     indicator.remove();
   }
 }
 
-async function sendMessage(customText = null, chosenPrompt = null) {
+// ─── Dog Recommendations (agentic "find other dogs") ──────────────────────────────
+// When the dog's find_dog_matches tool runs, /api/chat returns
+// { recommendations: { dogs: [card, …], summary } }. Cards render below the
+// dog's reply; tapping one opens that dog.
+
+const RECOMMENDED_IDS_KEY = 'chattyhound_recommended_ids';
+const RECOMMENDED_IDS_CAP = 60;
+
+function getRecommendedIds() {
+  try {
+    const v = JSON.parse(localStorage.getItem(RECOMMENDED_IDS_KEY) || '[]');
+    return Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function rememberRecommendedIds(ids) {
+  const merged = getRecommendedIds().filter(id => !ids.includes(id)).concat(ids);
+  try {
+    localStorage.setItem(RECOMMENDED_IDS_KEY, JSON.stringify(merged.slice(-RECOMMENDED_IDS_CAP)));
+  } catch (_) {}
+}
+
+/** Context the recommender uses (saved prefs, what the user has already seen). */
+function buildRecContext() {
+  return {
+    prefs: currentPrefs || {},
+    lifestyle: lifestylePrefs || {},
+    viewed_ids: (viewedIds || []).slice(-40),
+    favorite_ids: (favoritesList || []).slice(-50),
+    recommended_ids: getRecommendedIds(),
+  };
+}
+
+/** Short note appended to the assistant turn so follow-ups ("tell me more about Bambi") have context. */
+function recommendationHistoryNote(recs) {
+  const dogs = (recs && recs.dogs) || [];
+  if (!dogs.length) return '';
+  const list = dogs.map(d => {
+    const loc = (d.location || '').replace(/[^\x20-\x7E]+/g, '').trim();
+    return `${d.name} (${[d.breed, d.age, loc].filter(Boolean).join(', ')})`;
+  }).join('; ');
+  return `\n\n[Dogs I recommended, shown as cards: ${list}]`;
+}
+
+function openRecommendedDog(dog, position) {
+  if (!dog || !dog.animal_id) return;
+  trackEvent('recommendation_clicked', {
+    from_animal_id: currentAnimalId,
+    from_dog_name: currentDogName,
+    animal_id: dog.animal_id,
+    dog_name: dog.name || '',
+    match_type: dog.match_type || '',
+    position: position + 1,
+  });
+  _trackDogExit();
+  fetchRandomDog(dog.animal_id);
+}
+
+const HEART_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.7-4.35-9.33-8.1C.6 9.9 1.9 5.6 5.6 4.6c2.1-.57 4.2.3 5.4 2.03L12 8l1-1.37c1.2-1.73 3.3-2.6 5.4-2.03 3.7 1 5 5.3 2.93 8.3C18.7 16.65 12 21 12 21z"/></svg>';
+
+function setRecHeartState(btn, saved, name) {
+  btn.classList.toggle('saved', saved);
+  btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+  const label = saved ? `Remove ${name} from My Dogs` : `Save ${name} to My Dogs`;
+  btn.setAttribute('aria-label', label);
+  btn.title = label;
+}
+
+/** Re-sync every recommendation-card heart with favoritesList (e.g. after changes in My Dogs). */
+function syncRecommendationHearts() {
+  document.querySelectorAll('.rec-fav[data-animal-id]').forEach(btn => {
+    setRecHeartState(btn, favoritesList.includes(btn.dataset.animalId), btn.dataset.dogName || 'this dog');
+  });
+}
+
+function buildRecommendationCard(dog, index) {
+  const card = document.createElement('div');
+  card.className = 'rec-card';
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.id = `recCard-${dog.animal_id}-${Date.now().toString(36)}-${index}`;
+  card.setAttribute('aria-label', `Meet ${dog.name || 'this dog'}`);
+  card.style.animationDelay = `${index * 90}ms`;
+
+  // Photo + badge
+  const photo = document.createElement('div');
+  photo.className = 'rec-photo';
+  const img = document.createElement('img');
+  img.alt = dog.name ? `${dog.name}, adoptable dog` : 'Adoptable dog';
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.src = dog.image_url || 'happy_rescue_pup.png';
+  img.addEventListener('error', () => {
+    if (!img.src.endsWith('happy_rescue_pup.png')) img.src = 'happy_rescue_pup.png';
+  }, { once: true });
+  photo.appendChild(img);
+
+  const badge = document.createElement('span');
+  const isExact = dog.match_type === 'exact';
+  badge.className = `rec-badge ${isExact ? 'exact' : 'close'}`;
+  badge.textContent = isExact ? '★ Great match' : '≈ Close match';
+  photo.appendChild(badge);
+
+  // Save-to-My-Dogs heart (doesn't navigate)
+  const fav = document.createElement('button');
+  fav.type = 'button';
+  fav.className = 'rec-fav';
+  fav.id = `recFav-${card.id.slice(8)}`;
+  fav.dataset.animalId = dog.animal_id;
+  fav.dataset.dogName = dog.name || 'this dog';
+  fav.innerHTML = HEART_SVG;
+  setRecHeartState(fav, favoritesList.includes(dog.animal_id), dog.name || 'this dog');
+  const onFav = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavoriteDog({ animal_id: dog.animal_id, name: dog.name, image_url: dog.image_url }, 'recommendation_card');
+    syncRecommendationHearts();
+    fav.classList.remove('pop');
+    void fav.offsetWidth; // restart animation
+    if (fav.classList.contains('saved')) fav.classList.add('pop');
+  };
+  fav.addEventListener('click', onFav);
+  fav.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); // don't trigger the card
+  });
+  photo.appendChild(fav);
+  card.appendChild(photo);
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'rec-body';
+
+  const name = document.createElement('div');
+  name.className = 'rec-name';
+  name.textContent = dog.name || 'Shelter Pup';
+  body.appendChild(name);
+
+  if (dog.breed) {
+    const breed = document.createElement('div');
+    breed.className = 'rec-breed';
+    breed.textContent = dog.breed;
+    body.appendChild(breed);
+  }
+
+  const metaBits = [dog.age, dog.weight, dog.sex].filter(Boolean);
+  if (metaBits.length) {
+    const meta = document.createElement('div');
+    meta.className = 'rec-meta';
+    meta.textContent = metaBits.join(' · ');
+    body.appendChild(meta);
+  }
+
+  if (dog.location) {
+    const loc = document.createElement('div');
+    loc.className = 'rec-loc';
+    loc.textContent = `📍 ${dog.location}`;
+    if (dog.shelter_name) loc.title = dog.shelter_name;
+    body.appendChild(loc);
+  }
+
+  if (dog.reason) {
+    const reason = document.createElement('p');
+    reason.className = 'rec-reason';
+    reason.textContent = dog.reason;
+    body.appendChild(reason);
+  }
+
+  const compromises = Array.isArray(dog.compromises) ? dog.compromises.filter(Boolean) : [];
+  if (compromises.length) {
+    const wrap = document.createElement('div');
+    wrap.className = 'rec-compromises';
+    compromises.slice(0, 3).forEach(c => {
+      const chip = document.createElement('span');
+      chip.className = 'rec-chip';
+      chip.textContent = c;
+      wrap.appendChild(chip);
+    });
+    body.appendChild(wrap);
+  }
+
+  const cta = document.createElement('span');
+  cta.className = 'rec-cta';
+  cta.textContent = `Chat with ${dog.name || 'me'} →`;
+  body.appendChild(cta);
+
+  card.appendChild(body);
+
+  card.addEventListener('click', () => openRecommendedDog(dog, index));
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openRecommendedDog(dog, index);
+    }
+  });
+  return card;
+}
+
+function renderRecommendationCards(recs, shouldScroll = true) {
+  const dogs = ((recs && recs.dogs) || []).filter(d => d && d.animal_id).slice(0, 3);
+  if (!dogs.length) return;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'rec-wrap';
+
+  const label = document.createElement('div');
+  label.className = 'rec-label';
+  label.textContent = dogs.length === 1 ? 'A pup you might like' : `${dogs.length} pups you might like`;
+  wrap.appendChild(label);
+
+  const rail = document.createElement('div');
+  rail.className = 'rec-rail';
+  rail.setAttribute('role', 'list');
+  dogs.forEach((d, i) => {
+    const card = buildRecommendationCard(d, i);
+    card.setAttribute('role', 'button');
+    const li = document.createElement('div');
+    li.className = 'rec-item';
+    li.setAttribute('role', 'listitem');
+    li.appendChild(card);
+    rail.appendChild(li);
+  });
+  wrap.appendChild(rail);
+  chatHistory.appendChild(wrap);
+  if (shouldScroll) scrollToBottom();
+}
+
+/** Scroll the chat so `anchorEl` (the dog's reply) sits near the top of the visible area. */
+function scrollChatToAnchor(anchorEl) {
+  if (!anchorEl) return;
+  if (typeof suppressScrollToBottom === 'function') suppressScrollToBottom(700);
+  const containers = [];
+  const scrollContent = document.getElementById('scrollContent');
+  if (scrollContent && window.innerWidth < 800) containers.push(scrollContent);
+  const profileBody = document.querySelector('.profile-body');
+  if (profileBody) containers.push(profileBody);
+  setTimeout(() => {
+    containers.forEach(c => {
+      const maxTop = c.scrollHeight - c.clientHeight;
+      if (maxTop <= 0) return;
+      const offset = window.innerWidth < 800 ? 72 : 16; // clear the mobile header
+      const target = c.scrollTop + (anchorEl.getBoundingClientRect().top - c.getBoundingClientRect().top) - offset;
+      c.scrollTo({ top: Math.max(0, Math.min(target, maxTop)), behavior: 'smooth' });
+    });
+  }, 60);
+}
+
+/** Append a bot reply plus (optional) recommendation cards. */
+function appendBotReply(content, recs, avatarLetter, shouldScroll = true) {
+  const dogs = (recs && recs.dogs) || [];
+  if (!dogs.length) {
+    appendMessage('bot', content, avatarLetter, shouldScroll);
+    return;
+  }
+  appendMessage('bot', content, avatarLetter, false);
+  const replyRow = chatHistory.lastElementChild;
+  const last = conversationHistory[conversationHistory.length - 1];
+  if (last && last.role === 'assistant') last.content += recommendationHistoryNote(recs);
+  renderRecommendationCards(recs, false);
+  if (shouldScroll) scrollChatToAnchor(replyRow);
+}
+
+/** Render a stored chat_history message (used when resuming a chat). */
+function renderStoredMessage(m) {
+  if (m.role === 'assistant') {
+    appendBotReply(m.content, m.recommendations, currentDogName.charAt(0).toUpperCase(), false);
+  } else {
+    appendMessage('user', m.content, undefined, false);
+  }
+}
+
+// User messages that should NOT count toward the first-message conversion
+// (e.g. auto-sent quick-fact chip prompts). WeakSet keeps the history objects
+// untouched (nothing extra is serialized to the API) and auto-resets whenever
+// conversationHistory is replaced on dog load / chat resume.
+const nonConversionUserMsgs = new WeakSet();
+
+/**
+ * @param {string|null} customText  Text to send (falls back to the input value)
+ * @param {string|null} chosenPrompt  Suggested prompt text, if one was clicked
+ * @param {string|null} source  Optional override: 'fact_chip' for quick-fact taps
+ */
+async function sendMessage(customText = null, chosenPrompt = null, source = null) {
   if (chatInput.disabled) return; // double-submit safeguard
 
   const text = (typeof customText === 'string' ? customText : chatInput.value).trim();
@@ -5742,11 +6457,23 @@ async function sendMessage(customText = null, chosenPrompt = null) {
   // Capture the suggestions that were visible when this message is sent
   const currentSuggPrompts = [...activeSuggestions];
 
-  const isFirstMessage = (conversationHistory.length === 0);
+  const isFactChip = source === 'fact_chip';
+  // "First message" = first typed or suggested message (fact-chip taps excluded)
+  const isFirstMessage = !isFactChip &&
+    !conversationHistory.some(m => m.role === 'user' && !nonConversionUserMsgs.has(m));
   appendMessage('user', text);
-  trackEvent('chat_message_sent', { dog_name: currentDogName, message_text: text });
+  if (isFactChip) {
+    nonConversionUserMsgs.add(conversationHistory[conversationHistory.length - 1]);
+  }
+  trackEvent('chat_message_sent', {
+    dog_name: currentDogName,
+    animal_id: currentAnimalId,
+    turn_number: conversationHistory.length,
+    typed_vs_suggested: isFactChip ? 'fact_chip' : (chosenPrompt ? 'suggested' : 'typed')
+  });
   if (isFirstMessage) {
-    trackEvent('first_chat_message_sent', { dog_name: currentDogName });
+    trackEvent('first_chat_message_sent', { dog_name: currentDogName, animal_id: currentAnimalId });
+    trackAdsFirstMessage();
   }
   chatInput.value = '';
   chatInput.blur();
@@ -5775,7 +6502,8 @@ async function sendMessage(customText = null, chosenPrompt = null) {
         dog_name: currentDogName,
         dog_image_url: currentImageUrl,
         sugg_prompts: currentSuggPrompts.length > 0 ? currentSuggPrompts : null,
-        chosen_prompt: chosenPrompt || null
+        chosen_prompt: chosenPrompt || null,
+        rec_context: buildRecContext()
       })
     });
 
@@ -5786,15 +6514,27 @@ async function sendMessage(customText = null, chosenPrompt = null) {
     const data = await response.json();
     const firstLetter = currentDogName.charAt(0).toUpperCase();
     if (data.reply) {
-      appendMessage('bot', data.reply, firstLetter);
-      updateSuggestions();
+      const recs = data.recommendations;
+      appendBotReply(data.reply, recs, firstLetter);
+      trackEvent('chat_response_received', { dog_name: currentDogName, animal_id: currentAnimalId, turn_number: conversationHistory.length });
+      if (recs && Array.isArray(recs.dogs) && recs.dogs.length) {
+        rememberRecommendedIds(recs.dogs.map(d => d.animal_id).filter(Boolean));
+        trackEvent('dog_recommendations_shown', {
+          dog_name: currentDogName,
+          animal_id: currentAnimalId,
+          rec_count: recs.dogs.length,
+          exact_count: recs.dogs.filter(d => d.match_type === 'exact').length
+        });
+      }
     } else {
       appendMessage('bot', '[Error: No reply received]', firstLetter);
+      trackEvent('chat_error', { dog_name: currentDogName, animal_id: currentAnimalId, error_type: 'empty_reply' });
     }
   } catch (err) {
     removeTypingIndicator();
     console.error(err);
     appendMessage('bot', '[Sorry, I had trouble responding to that.]', '!');
+    trackEvent('chat_error', { dog_name: currentDogName, animal_id: currentAnimalId, error_type: 'fetch_error' });
   } finally {
     chatInput.disabled = false;
     sendBtn.disabled = false;
@@ -5804,14 +6544,93 @@ async function sendMessage(customText = null, chosenPrompt = null) {
   }
 }
 
+// ─── Quick-Fact Chip Prompts ────────────────────────────────────────────────────
+// Tapping a stat chip, highlight tag, or "My Human Should Know" chip auto-sends
+// `Your profile says "{fact}". Tell me more!` and jumps to the chat.
+
+function buildFactPrompt(chip) {
+  // Explicit full-prompt override (used by default "Ask About …" chips)
+  if (chip.dataset.factPrompt) return chip.dataset.factPrompt;
+
+  let fact = '';
+  if (chip.dataset.factLabel) {
+    // Stat chips: "Age: 4 yr"
+    const val = (chip.querySelector('.chip-val')?.textContent || '').trim();
+    if (!val) return '';
+    fact = `${chip.dataset.factLabel}: ${val}`;
+  } else {
+    fact = (chip.dataset.fact || chip.textContent || '').trim();
+  }
+  return fact ? `Your profile says "${fact}". Tell me more!` : '';
+}
+
+function sendFactPrompt(chip) {
+  if (!chip || !currentAnimalId || chatInput.disabled) return;
+  const prompt = buildFactPrompt(chip);
+  if (!prompt) return;
+
+  // Brief tap feedback
+  chip.classList.add('fact-chip-sent');
+  setTimeout(() => chip.classList.remove('fact-chip-sent'), 400);
+
+  trackEvent('fact_chip_clicked', {
+    dog_name: currentDogName,
+    animal_id: currentAnimalId,
+    chip_text: prompt.slice(0, 100)
+  });
+
+  // Same transition as tapping the chat input / "Ask me anything!" bar
+  enterChatMode();
+  sendMessage(prompt, null, 'fact_chip');
+}
+
+const detailsBoxEl = document.getElementById('detailsBox');
+if (detailsBoxEl) {
+  detailsBoxEl.addEventListener('click', (e) => {
+    const chip = e.target.closest('.fact-prompt-chip');
+    if (!chip || !detailsBoxEl.contains(chip)) return;
+    e.preventDefault();
+    sendFactPrompt(chip);
+  });
+  detailsBoxEl.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const chip = e.target.closest('.fact-prompt-chip');
+    if (!chip || !detailsBoxEl.contains(chip)) return;
+    e.preventDefault();
+    sendFactPrompt(chip);
+  });
+}
+
+// ── Engagement tracking helper: fire before navigating away from a dog ──
+function _trackDogExit() {
+  if (!currentAnimalId) return;
+  const timeOnCard = window.__CH_DOG_VIEWED_AT__ ? Date.now() - window.__CH_DOG_VIEWED_AT__ : 0;
+  const turnCount = conversationHistory.length;
+
+  if (turnCount > 0) {
+    trackEvent('conversation_depth', {
+      animal_id: currentAnimalId,
+      dog_name: currentDogName,
+      turn_count: turnCount,
+      time_on_card_ms: timeOnCard
+    });
+  } else {
+    trackEvent('dog_skipped_without_chat', {
+      animal_id: currentAnimalId,
+      dog_name: currentDogName,
+      time_on_card_ms: timeOnCard
+    });
+  }
+}
+
 nextBtn.addEventListener('click', () => {
-  trackEvent('dog_shuffled');
+  _trackDogExit();
   fetchRandomDog();
 });
 const prevBtn = document.getElementById('prevBtn');
 if (prevBtn) {
   prevBtn.addEventListener('click', () => {
-    trackEvent('dog_back');
+    _trackDogExit();
     goToPreviousDog();
   });
 }
@@ -5897,6 +6716,16 @@ if (footerOverlay) {
   });
 }
 
+// Hero chat bubble (next to Share/Heart) — same behavior as tapping the chat bar
+const heroChatBtn = document.getElementById('heroChatBtn');
+if (heroChatBtn) {
+  heroChatBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    trackEvent('hero_chat_btn_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
+    enterChatMode();
+  });
+}
+
 const stickyChatBtn = document.getElementById('stickyChatBtn');
 if (stickyChatBtn) {
   stickyChatBtn.addEventListener('click', () => {
@@ -5923,7 +6752,6 @@ const askBtn = document.getElementById('askBtn');
 if (askBtn) {
   askBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    trackEvent('ask_cta_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
     if (window.innerWidth >= 800) {
       enterChatMode();
     } else {
@@ -5938,7 +6766,13 @@ if (askBtn) {
 
 if (paccLink) {
   paccLink.addEventListener('click', () => {
-    trackEvent('view_profile_clicked', { dog_name: currentDogName, animal_id: currentAnimalId, url: paccLink.href });
+    trackEvent('shelter_link_clicked', {
+      dog_name: currentDogName,
+      animal_id: currentAnimalId,
+      shelter_name: currentDogData?.shelter_name || '',
+      source: 'dog_card'
+    });
+    trackAdsShelterClick();
   });
 }
 
@@ -5961,7 +6795,6 @@ function openModal() {
   if (modalStartBtn) {
     modalStartBtn.focus();
   }
-  trackEvent('about_modal_opened');
 }
 
 function closeModal() {
@@ -5977,7 +6810,6 @@ function closeModal() {
   if (aboutBtn) {
     aboutBtn.focus();
   }
-  trackEvent('about_modal_closed');
 }
 
 if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
@@ -6112,7 +6944,7 @@ function openPrefModal() {
   setupToggleBadge('prefOptDogs', lifestylePrefs.dogs);
   setupToggleBadge('prefOptHouseTrained', lifestylePrefs.houseTrained);
 
-  trackEvent('preferences_modal_opened');
+
 }
 
 function closePrefModal() {
@@ -6127,7 +6959,7 @@ function closePrefModal() {
   if (prefBtn) {
     prefBtn.focus();
   }
-  trackEvent('preferences_modal_closed');
+
 }
 
 function setupSelectorButtons(groupId, activeValue) {
@@ -6286,7 +7118,7 @@ async function resetPreferences() {
   setupSelectorButtons('prefAlteredGroup', 'any');
   lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
 
-  trackEvent('preferences_reset_all');
+
 
   // 4. Trigger a fresh match load
   await fetchRandomDog();
@@ -6748,7 +7580,7 @@ async function renderSavedDogs(container) {
           Chat 💬
         </button>
         ${shelterUrl
-          ? `<a href="${shelterUrl}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" style="text-decoration:none; padding:7px; border:1px solid rgba(255,255,255,0.12); border-radius:8px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
+          ? `<a href="${shelterUrl}" target="_blank" rel="noopener noreferrer" class="modal-shelter-link" data-animal-id="${d.animal_id}" data-dog-name="${(d.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" data-shelter-name="${(shelterName || '').replace(/"/g, '&quot;')}" style="text-decoration:none; padding:7px; border:1px solid rgba(255,255,255,0.12); border-radius:8px; background:rgba(255,255,255,0.04); color:var(--text-main); font-weight:800; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.2s ease;">
               Shelter Page 🔗
             </a>`
           : ''}
@@ -6792,6 +7624,8 @@ async function renderSavedDogs(container) {
         favBtn.classList.remove('favorited');
         favBtn.setAttribute('aria-label', `Save ${currentDogName} to My Dogs`);
       }
+      // Sync hearts on any in-chat recommendation cards
+      if (typeof syncRecommendationHearts === 'function') syncRecommendationHearts();
 
       showToast("Removed from My Dogs.");
 
@@ -6836,6 +7670,19 @@ async function renderSavedDogs(container) {
       fetchSpecificDog(aid);
     });
   });
+
+  // Track shelter link clicks in the modal
+  container.querySelectorAll('.modal-shelter-link').forEach(link => {
+    link.addEventListener('click', () => {
+      trackEvent('shelter_link_clicked', {
+        dog_name: link.getAttribute('data-dog-name') || '',
+        animal_id: link.getAttribute('data-animal-id') || '',
+        shelter_name: link.getAttribute('data-shelter-name') || '',
+        source: 'saved_modal'
+      });
+      trackAdsShelterClick();
+    });
+  });
 }
 
 async function renderRecentChats(container) {
@@ -6844,30 +7691,55 @@ async function renderRecentChats(container) {
     if (!res.ok) throw new Error('Failed');
     const data = await res.json();
     const convs = data.conversations || [];
+    const chatRetention = data.chat_retention !== false; // default true
+
+    // ── Header with controls ──
+    const headerHtml = `
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+      <!-- Never retain toggle -->
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span style="font-size:0.82rem; font-weight:700; color:white;">Save chat history</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Resume conversations where you left off</span>
+        </div>
+        <label class="retention-toggle" style="position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0; cursor:pointer;">
+          <input type="checkbox" id="chatRetentionToggle" ${chatRetention ? 'checked' : ''} style="opacity:0; width:0; height:0;">
+          <span style="position:absolute; top:0; left:0; right:0; bottom:0; background:${chatRetention ? 'var(--teal)' : 'rgba(255,255,255,0.15)'}; border-radius:24px; transition:0.3s; display:block;">
+            <span style="position:absolute; content:''; height:18px; width:18px; left:${chatRetention ? '22px' : '3px'}; bottom:3px; background:white; border-radius:50%; transition:0.3s; display:block; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></span>
+          </span>
+        </label>
+      </div>
+      ${convs.length > 0 ? `
+      <!-- Delete all button -->
+      <button type="button" id="deleteAllChatsBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; padding:8px; border-radius:10px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.15); color:#ef4444; font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+        🗑️ Delete all conversations
+      </button>` : ''}
+    </div>`;
 
     if (convs.length === 0) {
-      container.innerHTML = `
-      <div style="text-align:center; padding:40px 24px;">
+      container.innerHTML = headerHtml + `
+      <div style="text-align:center; padding:32px 24px;">
         <div style="font-size:3rem; margin-bottom:12px;">💬</div>
         <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:8px;">No chats yet</h3>
-        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">Start chatting with any dog to build your conversation history here.</p>
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">${chatRetention ? 'Start chatting with any dog to build your conversation history here.' : 'Chat history is turned off. Enable it above to save your conversations.'}</p>
         <button class="btn-primary meet-dogs-btn" style="padding:10px 24px; border-radius:9999px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--teal); color:var(--accent-text); border:none; box-shadow:0 4px 12px rgba(20,184,166,0.25);">Meet dogs</button>
       </div>`;
-      
+
+      _wireRetentionToggle(container);
       container.querySelector('.meet-dogs-btn')?.addEventListener('click', () => {
         closeSavedModal();
       });
       return;
     }
 
-    container.innerHTML = convs.map(c => {
+    const convsHtml = convs.map(c => {
       const dateStr = c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
       const available = c.is_available !== false;
       const unavailBadge = available ? '' : '<span style="font-size:0.65rem; background:rgba(251,191,36,0.15); color:#fbbf24; padding:2px 6px; border-radius:6px; font-weight:700; white-space:nowrap;">Adopted 🎉</span>';
       const opacity = available ? '1' : '0.6';
       const cursorStyle = available ? 'cursor:pointer;' : 'cursor:default;';
       return `
-    <div class="saved-dog-card ${available ? '' : 'unavailable'}" data-animal-id="${c.animal_id}" data-available="${available}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:rgba(255,255,255,0.03); margin-bottom:10px; ${cursorStyle} transition:all 0.2s ease; border:1px solid rgba(255,255,255,0.06); opacity:${opacity};">
+    <div class="saved-dog-card ${available ? '' : 'unavailable'}" data-animal-id="${c.animal_id}" data-available="${available}" style="display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:rgba(255,255,255,0.03); margin-bottom:10px; ${cursorStyle} transition:all 0.2s ease; border:1px solid rgba(255,255,255,0.06); opacity:${opacity}; position:relative;">
       <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--bg-slate-800); border:1px solid rgba(255,255,255,0.08);">
         ${c.dog_image_url ? `<img src="${c.dog_image_url}" alt="${c.dog_name}" style="width:100%;height:100%;object-fit:cover;${available ? '' : 'filter:grayscale(40%);'}">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--bg-slate-800);">💬</div>'}
       </div>
@@ -6878,20 +7750,85 @@ async function renderRecentChats(container) {
         </div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${available ? (c.last_message_preview || 'Tap to continue') : 'No longer available for chat'}</div>
       </div>
-      ${available ? `<button type="button" class="share-btn compact saved-card-share-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Share ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Share" style="width:28px; height:28px;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-      </button>` : ''}
-      <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; margin-left:4px;">${dateStr}</div>
+      <!-- Delete conversation button -->
+      <button type="button" class="delete-chat-btn" data-animal-id="${c.animal_id}" data-dog-name="${(c.dog_name || 'Shelter Pup').replace(/"/g, '&quot;')}" aria-label="Delete chat with ${(c.dog_name || 'this dog').replace(/"/g, '')}" title="Delete chat" style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:transparent; border:1px solid rgba(239,68,68,0.2); border-radius:8px; color:rgba(239,68,68,0.6); font-size:0.75rem; cursor:pointer; flex-shrink:0; transition:all 0.2s;">
+        ✕
+      </button>
+      <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; margin-left:0px;">${dateStr}</div>
     </div>`;
     }).join('');
 
+    container.innerHTML = headerHtml + convsHtml;
+
+    // ── Wire retention toggle ──
+    _wireRetentionToggle(container);
+
+    // ── Wire delete all ──
+    const deleteAllBtn = container.querySelector('#deleteAllChatsBtn');
+    if (deleteAllBtn) {
+      deleteAllBtn.addEventListener('click', async () => {
+        if (!confirm('Delete all chat history? This cannot be undone.')) return;
+        deleteAllBtn.disabled = true;
+        deleteAllBtn.textContent = 'Deleting...';
+        try {
+          await fetch('/api/chat_history', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail })
+          });
+          showToast('All chats deleted.');
+          loadSavedTab('chats');
+        } catch (e) {
+          showToast('Failed to delete. Try again.');
+          deleteAllBtn.disabled = false;
+          deleteAllBtn.textContent = '🗑️ Delete all conversations';
+        }
+      });
+    }
+
+    // ── Wire individual delete buttons ──
+    container.querySelectorAll('.delete-chat-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const aid = btn.getAttribute('data-animal-id');
+        const dogName = btn.getAttribute('data-dog-name');
+        if (!confirm(`Delete your chat with ${dogName}?`)) return;
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          await fetch('/api/chat_history', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail, animal_id: aid })
+          });
+          // Remove the card with animation
+          const card = btn.closest('.saved-dog-card');
+          if (card) {
+            card.style.transition = 'all 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(40px)';
+            setTimeout(() => {
+              card.remove();
+              // If no cards left, reload tab
+              if (!container.querySelector('.saved-dog-card')) loadSavedTab('chats');
+            }, 300);
+          }
+          showToast(`Chat with ${dogName} deleted.`);
+        } catch (e) {
+          showToast('Failed to delete. Try again.');
+          btn.disabled = false;
+          btn.textContent = '✕';
+        }
+      });
+    });
+
+    // ── Wire conversation resume clicks ──
     container.querySelectorAll('.saved-dog-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.saved-card-share-btn')) return;
+        if (e.target.closest('.delete-chat-btn') || e.target.closest('.saved-card-share-btn')) return;
         const aid = card.getAttribute('data-animal-id');
         const available = card.getAttribute('data-available') !== 'false';
         if (!available) {
-          // Show a brief toast for unavailable dogs
           const toast = document.createElement('div');
           toast.textContent = 'This dog has been adopted or is no longer available 🎉';
           toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:white;padding:10px 20px;border-radius:12px;font-size:0.82rem;font-weight:600;z-index:10001;animation:fadeIn 0.2s ease;';
@@ -6904,19 +7841,51 @@ async function renderRecentChats(container) {
       });
     });
 
-    container.querySelectorAll('.saved-card-share-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const aid = btn.getAttribute('data-animal-id');
-        const name = btn.getAttribute('data-dog-name');
-        const loc = btn.getAttribute('data-location') || '';
-        shareCurrentDog(btn, { animal_id: aid, name, shelter_name: loc });
-      });
-    });
-
   } catch (e) {
     container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);">Unable to load chats. Please try again.</div>`;
   }
+}
+
+
+function _wireRetentionToggle(container) {
+  const toggle = container.querySelector('#chatRetentionToggle');
+  if (!toggle) return;
+
+  toggle.addEventListener('change', async () => {
+    const retain = toggle.checked;
+    const slider = toggle.nextElementSibling;
+    const knob = slider?.querySelector('span');
+
+    // Immediate visual update
+    slider.style.background = retain ? 'var(--teal)' : 'rgba(255,255,255,0.15)';
+    if (knob) knob.style.left = retain ? '22px' : '3px';
+
+    if (!retain) {
+      if (!confirm('Turn off chat history? This will delete all your existing conversations and stop saving new ones.')) {
+        // Revert
+        toggle.checked = true;
+        slider.style.background = 'var(--teal)';
+        if (knob) knob.style.left = '22px';
+        return;
+      }
+    }
+
+    try {
+      await fetch('/api/chat_retention', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, retain })
+      });
+      showToast(retain ? 'Chat history enabled.' : 'Chat history disabled — existing chats deleted.');
+      loadSavedTab('chats');
+    } catch (e) {
+      showToast('Failed to update. Try again.');
+      // Revert toggle
+      toggle.checked = !retain;
+      slider.style.background = !retain ? 'var(--teal)' : 'rgba(255,255,255,0.15)';
+      if (knob) knob.style.left = !retain ? '22px' : '3px';
+    }
+  });
 }
 
 async function fetchSpecificDog(animalId, resumeChat = false) {
@@ -7342,11 +8311,14 @@ window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
             const locObj = data.locations.find(l => l.relative_path === selectedPath);
             
             // Update preferences
+            const prevLocation = currentPrefs.location || 'any';
             const newLocName = locObj ? locObj.display_name : (selectedPath === 'all' ? 'all' : 'any');
             currentPrefs.location = newLocName;
             localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
             setupSelectorButtons('prefLocationGroup', newLocName);
             updateLocationIndicator();
+
+            trackEvent('location_changed', { from_location: prevLocation, to_location: newLocName });
             
             // Check if current dog matches new location
             let shouldKeepDog = false;
@@ -7431,21 +8403,32 @@ function personalizeForLocation(displayName) {
 // If city was injected server-side (e.g. /tucson route), personalize immediately
 if (window.__CH_DETECTED_CITY__) {
   personalizeForLocation(window.__CH_DETECTED_CITY__);
+  trackEvent('location_detected', { location: window.__CH_DETECTED_CITY__, method: 'route' });
 } else {
-  // Auto-detect from IP (non-blocking, fires on root "/" visits)
-  (async () => {
-    try {
-      const res = await fetch('/api/detect_location');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.location) {
-          personalizeForLocation(data.location);
-        }
-      }
-    } catch (e) {
-      // Silent fail — generic landing page will show
+  // Race geo detection vs a short timeout.
+  // Content stays hidden until one wins, then renders exactly once — no flash.
+  const _landingCopy = document.querySelector('.landing-copy');
+  if (_landingCopy) {
+    _landingCopy.style.opacity = '0';
+    _landingCopy.style.transition = 'opacity 0.4s ease';
+  }
+
+  const _geoDetect = fetch('/api/detect_location')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => d?.location || null)
+    .catch(() => null);
+
+  const _deadline = new Promise(resolve => setTimeout(() => resolve(null), 1200));
+
+  Promise.race([_geoDetect, _deadline]).then(location => {
+    if (location) {
+      personalizeForLocation(location);
+      trackEvent('location_detected', { location, method: 'geo_ip' });
+    } else {
+      trackEvent('location_detected', { location: 'none', method: 'timeout_or_failed' });
     }
-  })();
+    if (_landingCopy) _landingCopy.style.opacity = '1';
+  });
 }
 
 // ─── Landing Page & Navigation Wiring ────────────────────────────────────
@@ -7519,14 +8502,13 @@ const mobileChatBtn = document.getElementById('mobileChatBtn');
 
 if (mobileShuffleBtn) {
   mobileShuffleBtn.addEventListener('click', () => {
-    trackEvent('dog_shuffled');
+    _trackDogExit();
     fetchRandomDog();
   });
 }
 
 if (mobileChatBtn) {
   mobileChatBtn.addEventListener('click', () => {
-    trackEvent('sticky_chat_clicked', { dog_name: currentDogName, animal_id: currentAnimalId });
     const chatSec = document.getElementById('chatSection');
     if (chatSec && scrollContent) {
       chatSec.scrollIntoView({ behavior: 'smooth' });

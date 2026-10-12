@@ -262,6 +262,8 @@ async function renderSavedDogs(container) {
         favBtn.classList.remove('favorited');
         favBtn.setAttribute('aria-label', `Save ${currentDogName} to My Dogs`);
       }
+      // Sync hearts on any in-chat recommendation cards
+      if (typeof syncRecommendationHearts === 'function') syncRecommendationHearts();
 
       showToast("Removed from My Dogs.");
 
