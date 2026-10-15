@@ -80,7 +80,8 @@ from starlette.responses import Response as StarletteResponse
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response: StarletteResponse = await call_next(request)
-        # Content-Security-Policy — allow our CDN deps, Google Analytics, and Google Ads
+        # Content-Security-Policy — allow our CDN deps, Google Analytics, Google Ads,
+        # and the OpenAI (ChatGPT) Ads measurement pixel
         csp = "; ".join([
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline'"
@@ -90,7 +91,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             " https://analytics.google.com"
             " https://www.google.com"
             " https://www.googleadservices.com"
-            " https://*.doubleclick.net",
+            " https://*.doubleclick.net"
+            " https://bzrcdn.openai.com",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https: blob:",
@@ -101,7 +103,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             " https://www.googletagmanager.com"
             " https://www.google.com"
             " https://www.googleadservices.com"
-            " https://*.doubleclick.net",
+            " https://*.doubleclick.net"
+            " https://bzr.openai.com"
+            " https://bzrcdn.openai.com",
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'",
@@ -121,11 +125,13 @@ from routes.api_routes import router as api_router
 from routes.dog_meta_routes import router as dog_meta_router
 from routes.cron_routes import router as cron_router
 from routes.admin_routes import router as admin_router
+from routes.ads_conversions import router as ads_conversions_router
 
 app.include_router(api_router)
 app.include_router(dog_meta_router)
 app.include_router(cron_router)
 app.include_router(admin_router)
+app.include_router(ads_conversions_router)
 
 # ── Static files ────────────────────────────────────────────────────
 # Mount public/ directory for CSS, JS, images. This must come AFTER

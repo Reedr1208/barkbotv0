@@ -22,3 +22,6 @@ api/index.html
 .cursorrules
 
 debug/
+
+# Internal architecture reference (local only)
+docs/ARCHITECTURE.md
