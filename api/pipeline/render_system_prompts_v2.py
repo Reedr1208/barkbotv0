@@ -73,6 +73,9 @@ def render_system_prompt(fact_profile: Dict[str, Any], persona_profile: Dict[str
         "ADOPTION_PROCESS_NOTES": fact_profile.get("adoption_process_notes", ""),
         "FULL_BIO": fact_profile.get("full_bio", ""),
         "FULL_DESCRIPTION": fact_profile.get("full_description", ""),
+
+        # Only set for limited-profile (generic persona) dogs; empty otherwise
+        "PROFILE_COMPLETENESS_NOTE": persona_profile.get("profile_completeness_note", ""),
     }
 
     # Replace placeholders

@@ -1,26 +1,62 @@
 """
 Generate prompts job — extracted from api/generate_prompts.py for serverful execution.
 
-Runs the full pipeline (fact extraction → persona scoring → prompt rendering)
-for all eligible dogs that need new or refreshed prompts. Called directly
-by APScheduler — no HTTP handler, no subprocess.
+Runs the full pipeline (fact extraction → persona → prompt rendering) for every
+active dog that needs a new or refreshed prompt. Called directly by
+APScheduler — no HTTP handler, no subprocess.
+
+All active dogs are enriched (and therefore chattable). Dogs whose bio is below
+their shelter's minimum length get the generic "limited profile" persona
+instead of an LLM-scored archetype — see jobs/lib/enrichment.py.
 """
 
 import os
-import sys
 import time
 import logging
 from datetime import datetime, timezone, timedelta
 
 from openai import OpenAI
-from pydantic import BaseModel, Field
 
 from jobs.lib.db import get_supabase_client
+from jobs.lib.enrichment import (
+    enrich_dog,
+    is_generic_archetype,
+    is_limited_profile,
+    load_archetypes,
+    load_shelter_distributions,
+)
 
 logger = logging.getLogger("barkbot.jobs.generate_prompts")
 
 # Allow up to 15 minutes per run.
 MAX_EXECUTION_TIME = 900
+PROMPT_REFRESH_DAYS = 3
+
+# Target priorities (lower runs first)
+PRIORITY_RICH_NEW = 0      # rich-bio dog with no prompt, or upgrading from generic
+PRIORITY_LIMITED_NEW = 1   # limited dog with no prompt, or downgrading to generic
+PRIORITY_STALE = 2         # routine refresh of prompts older than PROMPT_REFRESH_DAYS
+
+
+def _fetch_all(query_builder, page_size=1000):
+    rows, offset = [], 0
+    while True:
+        res = query_builder.range(offset, offset + page_size - 1).execute()
+        rows.extend(res.data)
+        if len(res.data) < page_size:
+            return rows
+        offset += page_size
+
+
+def _parse_ts(dt_str):
+    if not dt_str:
+        return datetime.min.replace(tzinfo=timezone.utc)
+    try:
+        if dt_str.endswith("Z"):
+            dt_str = dt_str[:-1] + "+00:00"
+        return datetime.fromisoformat(dt_str)
+    except ValueError:
+        return datetime.min.replace(tzinfo=timezone.utc)
 
 
 def run():
@@ -32,257 +68,90 @@ def run():
         sb_client = get_supabase_client()
         openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-        # Fetch catalogs
-        archetypes_res = sb_client.table("persona_archetypes").select("*").eq("active", True).execute()
-        archetypes = archetypes_res.data
+        scoring_archetypes, generic_archetype = load_archetypes(sb_client)
 
-        # 1. Fetch active dogs (paginated)
-        active_data = []
-        start_row = 0
-        while True:
-            res = sb_client.table("active_dogs").select("animal_id, shelter_id").range(start_row, start_row + 999).execute()
-            active_data.extend(res.data)
-            if len(res.data) < 1000:
-                break
-            start_row += 1000
-
-        active_dogs_map = {row["animal_id"]: row.get("shelter_id") for row in active_data}
-
+        # 1. Active dogs
+        active_rows = _fetch_all(sb_client.table("active_dogs").select("animal_id, shelter_id"))
+        active_dogs_map = {r["animal_id"]: r.get("shelter_id") for r in active_rows}
         if not active_dogs_map:
             logger.info("No active dogs found in active_dogs.")
             return {"ok": True, "processed": 0, "message": "No active dogs found"}
 
-        # 2. Fetch animals data in chunks
+        # 2. Bio lengths (only dogs with a scraped `animals` row can be enriched)
         active_ids = list(active_dogs_map.keys())
-        animals_data = []
+        bio_lengths = {}
         for i in range(0, len(active_ids), 100):
-            chunk = active_ids[i:i+100]
-            res = sb_client.table("animals").select("animal_id, bio").in_("animal_id", chunk).execute()
-            animals_data.extend(res.data)
+            res = sb_client.table("animals").select("animal_id, bio_length") \
+                .in_("animal_id", active_ids[i:i + 100]).execute()
+            for r in res.data:
+                bio_lengths[r["animal_id"]] = r.get("bio_length") or 0
 
-        eligible_animal_ids = []
-        for row in animals_data:
-            aid = row["animal_id"]
-            bio = row.get("bio") or ""
-            desc = row.get("bio") or ""
-            shelter_id = active_dogs_map.get(aid)
+        # 3. Existing prompts + personas
+        prompt_updated = {r["animal_id"]: r.get("updated_at")
+                          for r in _fetch_all(sb_client.table("system_prompts_v2").select("animal_id, updated_at"))}
+        persona_rows = _fetch_all(sb_client.table("animal_persona_profiles").select("animal_id, primary_archetype_key"))
+        persona_keys = {r["animal_id"]: r.get("primary_archetype_key") for r in persona_rows}
 
-            if shelter_id:
-                s_id_upper = shelter_id.upper()
-                bio_len = len(bio)
-                desc_len = len(desc)
-                if s_id_upper in ("NYCACC", "MUDDYPAWS", "PIMA"):
-                    if bio_len < 1500 and desc_len < 1500:
-                        continue
-                elif s_id_upper == "HSSA":
-                    if bio_len < 500 and desc_len < 500:
-                        continue
-                elif s_id_upper == "PAWSCH":
-                    if bio_len < 1200 and desc_len < 1200:
-                        continue
-                elif s_id_upper in ("WWLA", "HHS", "PHP", "SAPA"):
-                    if bio_len < 1000 and desc_len < 1000:
-                        continue
-                elif s_id_upper in ("RCHS", "DPA", "NHS", "EHR", "MV", "RDR"):
-                    if bio_len < 500 and desc_len < 500:
-                        continue
-                elif s_id_upper == "MCACC":
-                    if bio_len < 6000 and desc_len < 6000:
-                        continue
-                else:
-                    if max(bio_len, desc_len) <= 400:
-                        continue
-
-                eligible_animal_ids.append(aid)
-
-        if not eligible_animal_ids:
-            logger.info("No active eligible dogs found.")
-            return {"ok": True, "processed": 0, "message": "No eligible dogs found"}
-
-        # 3. Fetch existing prompts in chunks
-        prompts_data = []
-        for i in range(0, len(eligible_animal_ids), 100):
-            chunk = eligible_animal_ids[i:i+100]
-            res = sb_client.table("system_prompts_v2").select("animal_id, updated_at").in_("animal_id", chunk).execute()
-            prompts_data.extend(res.data)
-
-        existing_prompts = {row["animal_id"]: row["updated_at"] for row in prompts_data}
-
-        # 4. Filter and sort targets
-        three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
+        # 4. Build prioritized target list
+        stale_before = datetime.now(timezone.utc) - timedelta(days=PROMPT_REFRESH_DAYS)
         targets = []
-        for aid in eligible_animal_ids:
-            if aid not in existing_prompts:
-                targets.append((aid, datetime.min.replace(tzinfo=timezone.utc)))
+        limited_total = 0
+        for aid, bio_len in bio_lengths.items():
+            limited = is_limited_profile(active_dogs_map.get(aid), bio_len)
+            limited_total += limited
+            has_prompt = aid in prompt_updated and aid in persona_keys
+            tier_mismatch = has_prompt and (is_generic_archetype(persona_keys[aid]) != limited)
+            updated_at = _parse_ts(prompt_updated.get(aid))
+
+            if not has_prompt or tier_mismatch:
+                priority = PRIORITY_LIMITED_NEW if limited else PRIORITY_RICH_NEW
+            elif updated_at < stale_before:
+                priority = PRIORITY_STALE
             else:
-                dt_str = existing_prompts[aid]
-                try:
-                    if dt_str.endswith("Z"):
-                        dt_str = dt_str[:-1] + "+00:00"
-                    updated_at = datetime.fromisoformat(dt_str)
-                except ValueError:
-                    updated_at = datetime.min.replace(tzinfo=timezone.utc)
-                if updated_at < three_days_ago:
-                    targets.append((aid, updated_at))
-
-        # Priority 2: active dogs with stale prompts that are no longer eligible
-        eligible_set = set(eligible_animal_ids)
-        all_active_ids = list(active_dogs_map.keys())
-        stale_prompts_data = []
-        for i in range(0, len(all_active_ids), 100):
-            chunk = all_active_ids[i:i+100]
-            res = sb_client.table("system_prompts_v2").select("animal_id, updated_at").in_("animal_id", chunk).execute()
-            stale_prompts_data.extend(res.data)
-
-        for row in stale_prompts_data:
-            aid = row["animal_id"]
-            if aid in eligible_set:
                 continue
-            dt_str = row["updated_at"]
-            try:
-                if dt_str.endswith("Z"):
-                    dt_str = dt_str[:-1] + "+00:00"
-                updated_at = datetime.fromisoformat(dt_str)
-            except ValueError:
-                updated_at = datetime.min.replace(tzinfo=timezone.utc)
-            if updated_at < three_days_ago:
-                targets.append((aid, updated_at))
+            targets.append((priority, updated_at, aid))
 
-        targets.sort(key=lambda x: x[1])
-        target_ids = [t[0] for t in targets]
-        logger.info(f"Found {len(target_ids)} dogs requiring prompt generation.")
+        targets.sort()
+        target_ids = [t[2] for t in targets]
+        by_priority = {p: sum(1 for t in targets if t[0] == p) for p in (0, 1, 2)}
+        logger.info(
+            f"Found {len(target_ids)} dogs requiring prompt generation "
+            f"(rich-new/upgrade={by_priority[0]}, limited-new/downgrade={by_priority[1]}, stale={by_priority[2]}); "
+            f"{limited_total}/{len(bio_lengths)} profiled active dogs are limited-profile."
+        )
+
+        if not target_ids:
+            return {"ok": True, "processed": 0, "message": "Nothing to refresh"}
+
+        # 5. Per-shelter archetype distribution (excludes generic dogs)
+        shelter_distributions = load_shelter_distributions(sb_client, persona_rows)
 
         processed_count = 0
-
-        # 5. Process loop — import pipeline modules
-        # The pipeline modules live in api/pipeline/ — ensure they're importable
-        api_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "api")
-        if api_dir not in sys.path:
-            sys.path.insert(0, api_dir)
-
-        from pipeline.extract_fact_profiles import extract_fact_profile
-        from pipeline.build_persona_profiles import build_persona_profile
-        from pipeline.render_system_prompts_v2 import render_system_prompt, validate_system_prompt
-
-        # Fetch current per-shelter distribution
-        # We need to join persona profiles with animals to get shelter_id
-        dist_data = []
-        dist_offset = 0
-        while True:
-            dist_res = sb_client.table("animal_persona_profiles").select("animal_id, primary_archetype_key").range(dist_offset, dist_offset + 999).execute()
-            dist_data.extend(dist_res.data)
-            if len(dist_res.data) < 1000:
-                break
-            dist_offset += 1000
-
-        # Build animal_id -> shelter_id lookup
-        all_persona_aids = [r["animal_id"] for r in dist_data if r.get("animal_id")]
-        shelter_lookup = {}
-        for i in range(0, len(all_persona_aids), 500):
-            batch = all_persona_aids[i:i+500]
-            shelter_res = sb_client.table("animals").select("animal_id, shelter_id").in_("animal_id", batch).execute()
-            for r in shelter_res.data:
-                shelter_lookup[r["animal_id"]] = r.get("shelter_id", "unknown")
-
-        # Build per-shelter distribution: {shelter_id: {archetype_key: count}}
-        shelter_distributions = {}
-        for row in dist_data:
-            aid_key = row.get("animal_id")
-            arch_key = row.get("primary_archetype_key")
-            sid = shelter_lookup.get(aid_key, "unknown")
-            if sid not in shelter_distributions:
-                shelter_distributions[sid] = {}
-            if arch_key:
-                shelter_distributions[sid][arch_key] = shelter_distributions[sid].get(arch_key, 0) + 1
-
+        limited_count = 0
         for aid in target_ids:
             if time.time() - start_time > MAX_EXECUTION_TIME:
                 logger.info("Nearing execution time limit. Halting gracefully.")
                 break
 
             logger.info(f"Processing animal_id: {aid}")
-
-            animal_record_res = sb_client.table("animals").select("*").eq("animal_id", aid).limit(1).execute()
-            if not animal_record_res.data:
+            animal_res = sb_client.table("animals").select("*").eq("animal_id", aid).limit(1).execute()
+            if not animal_res.data:
                 continue
 
-            animal_record = animal_record_res.data[0]
-            record_hash = animal_record.get("record_hash", "none")
-            updated_at = animal_record.get("updated_at")
-            adoption_url = animal_record.get("shelter_profile_url")
-            shelter_name = animal_record.get("shelter_name")
-            shelter_id = animal_record.get("shelter_id", "unknown")
-
-            internal_keys = ["id", "record_hash", "created_at", "updated_at", "last_scrape_run_id"]
-            for key in internal_keys:
-                animal_record.pop(key, None)
-
             try:
-                # 1. Fact Extraction
-                fact_profile_obj = extract_fact_profile(openai_client, animal_record)
-                fact_profile = fact_profile_obj.model_dump()
-                fact_profile["animal_id"] = aid
-                fact_profile["source_record_hash"] = record_hash
-                fact_profile["schema_version"] = "fact_v1"
-                fact_profile["extraction_model"] = "gpt-5.4-mini"
-                fact_profile["extraction_params_jsonb"] = {"temperature": 0.2}
-                fact_profile["info_refreshed_at"] = updated_at
-                fact_profile["adoption_url"] = adoption_url
-                fact_profile["shelter_name"] = shelter_name
-                sb_client.table("animal_fact_profiles").upsert(fact_profile).execute()
-
-                fact_profile["full_bio"] = animal_record.get("bio", "")
-
-                # 2. Persona Scoring (per-shelter distribution for balance)
-                this_shelter_dist = shelter_distributions.get(shelter_id, {})
-                persona_profile = build_persona_profile(openai_client, fact_profile, archetypes, this_shelter_dist)
-
-                assigned_key = persona_profile.get("primary_archetype_key")
-                if assigned_key:
-                    # Update the in-memory shelter distribution for subsequent dogs
-                    if shelter_id not in shelter_distributions:
-                        shelter_distributions[shelter_id] = {}
-                    shelter_distributions[shelter_id][assigned_key] = shelter_distributions[shelter_id].get(assigned_key, 0) + 1
-                persona_profile["source_record_hash"] = record_hash
-
-                db_persona = {
-                    "animal_id": persona_profile.get("animal_id"),
-                    "source_record_hash": persona_profile.get("source_record_hash"),
-                    "primary_archetype_key": persona_profile.get("primary_archetype_key"),
-                    "selection_reasoning": persona_profile.get("selection_reasoning"),
-                }
-                sb_client.table("animal_persona_profiles").upsert(db_persona).execute()
-
-                # 3. Prompt Rendering
-                system_prompt = render_system_prompt(fact_profile, persona_profile)
-                validation = validate_system_prompt(system_prompt)
-
-                render_context = {
-                    "fact_profile_used": True,
-                    "persona_profile_used": True,
-                    "archetype": persona_profile.get("primary_archetype_key")
-                }
-
-                prompt_record = {
-                    "animal_id": aid,
-                    "prompt_version": "v3",
-                    "source_record_hash": record_hash,
-                    "system_prompt": system_prompt,
-                    "render_context_jsonb": render_context,
-                    "validation_results_jsonb": validation,
-                    "is_active": True
-                }
-
-                sb_client.table("system_prompts_v2").upsert(prompt_record).execute()
-
+                result = enrich_dog(
+                    sb_client, openai_client, animal_res.data[0],
+                    scoring_archetypes, generic_archetype, shelter_distributions,
+                    shelter_id_fallback=active_dogs_map.get(aid),
+                )
                 processed_count += 1
-
+                limited_count += result["limited"]
             except Exception as gen_exc:
                 logger.error(f"Failed to generate/upsert for {aid}: {gen_exc}")
 
         elapsed = time.time() - start_time
-        logger.info(f"Job completed. Processed {processed_count} prompts in {elapsed:.2f}s.")
-        return {"ok": True, "processed": processed_count, "elapsed_seconds": elapsed}
+        logger.info(f"Job completed. Processed {processed_count} prompts ({limited_count} limited-profile) in {elapsed:.2f}s.")
+        return {"ok": True, "processed": processed_count, "limited": limited_count, "elapsed_seconds": elapsed}
 
     except Exception as e:
         logger.exception("An unexpected error occurred in generate_prompts.")

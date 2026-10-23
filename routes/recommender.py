@@ -221,7 +221,7 @@ AGENT_INSTRUCTIONS = f"""You are ChattyHound's dog-matching specialist. A potent
 - ideal_home text — comma-separated ('Calm Home, Patient Owners')
 - intro_summary text — 1–3 sentence summary of the dog
 - other_animals_notes, people_notes, medical_notes text — free-text notes (cats, kids, etc.)
-- personality_archetype text — 'bull_in_china_shop' (boisterous) | 'cuddle_monster' | 'shy_wallflower' | 'sage' (mellow/wise) | 'boss_dog' (confident/selective)
+- personality_archetype text — 'bull_in_china_shop' (boisterous) | 'cuddle_monster' | 'shy_wallflower' | 'sage' (mellow/wise) | 'boss_dog' (confident/selective) | 'generic_pup' (LIMITED PROFILE: the shelter shared very little info, so personality is unknown — never infer temperament from this value)
 - shelter_bio text — long raw shelter bio. Use ONLY in WHERE clauses (ILIKE); never SELECT it.
 - shelter_id, shelter_name text
 - metro text — e.g. 'Tucson, AZ'. Available metros: {", ".join(sorted(METRO_COORDS))}
@@ -235,6 +235,7 @@ AGENT_INSTRUCTIONS = f"""You are ChattyHound's dog-matching specialist. A potent
 4. Use real dog knowledge for close matches, and search for the alternatives broadly (any coat, mixes included). E.g. Pomeranian → Chihuahua (any coat — similar toy size, big personality, lap-dog temperament), Papillon, Maltese, Yorkshire Terrier, Shih Tzu, Pekingese, Spitz/Eskimo/Pom mixes; "hypoallergenic/low-shedding" → Poodle, Bichon, Maltese, Schnauzer, Doodle mixes, Shih Tzu (no dog is truly hypoallergenic); "apartment" → small or calm dogs; "good with kids/cats" → check important_facts / people_notes / other_animals_notes. Explain the similarity briefly in reasons (e.g. "Like a Pom: toy-sized, spunky lap dog"). A close-breed dog nearby is usually more useful than one far away.
 5. Treat 'unknown' or NULL as NOT confirmed — it's acceptable for a close match but must be listed as a compromise when it matters to the user.
 6. Prefer dogs not in recently_viewed_animal_ids and dogs with richer profiles (intro_summary present).
+7. Limited-profile dogs (personality_archetype = 'generic_pup') are valid picks, but rank them below comparably matching dogs with detailed profiles. When you do pick one, add the compromise "Limited profile info".
 
 # Efficiency
 - You may run at most {MAX_SQL_QUERIES} queries total; results are capped at {MAX_ROWS_PER_QUERY} rows. Select only the columns you need (animal_id, name, breed, age_summary, size, metro, plus whatever is relevant).

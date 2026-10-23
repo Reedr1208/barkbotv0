@@ -17,6 +17,8 @@ import random
 import re
 from datetime import datetime, timezone, timedelta
 
+from jobs.lib.enrichment import GENERIC_ARCHETYPE_KEY
+
 logger = logging.getLogger("barkbot.ranking")
 
 
@@ -188,13 +190,14 @@ def score_candidates(candidates, persona_data, viewed_list, client):
         if len(last_2_archetypes) >= 2:
             break
 
-    # Fetch bio lengths in one batch query
+    # Fetch bio lengths (chunked to keep PostgREST URLs short)
     bio_lengths = {}
     try:
-        res = client.table("animals").select("animal_id, bio").in_("animal_id", candidates).execute()
-        bio_lengths = {row["animal_id"]: len(row.get("bio") or "") for row in res.data}
+        for i in range(0, len(candidates), 200):
+            res = client.table("animals").select("animal_id, bio_length").in_("animal_id", candidates[i:i + 200]).execute()
+            bio_lengths.update({row["animal_id"]: row.get("bio_length") or 0 for row in res.data})
     except Exception:
-        pass  # all bio scores will be 0
+        pass  # missing bio scores will be 0
 
     scores = {}
     for aid in candidates:
@@ -220,6 +223,35 @@ def score_candidates(candidates, persona_data, viewed_list, client):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  SELECTION  (pick one dog from scored candidates)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def is_limited_profile_dog(aid, persona_data):
+    """True for dogs on the generic persona (bio too short for an archetype)."""
+    return persona_data.get(aid, {}).get("primary_archetype_key") == GENERIC_ARCHETYPE_KEY
+
+
+def build_selection_pool(candidates, persona_data, viewed_ids):
+    """
+    Narrow the filtered candidates to the tier we should serve next.
+
+    Limited-profile dogs are de-prioritized below every other dog that passed
+    the user's hard filters:
+      1. unviewed rich-profile dogs
+      2. unviewed limited-profile dogs (only once tier 1 is exhausted)
+      3. everything viewed → loop over rich-profile dogs (or limited if none)
+    """
+    viewed_set = viewed_ids if isinstance(viewed_ids, set) else set(viewed_ids)
+    rich, limited = [], []
+    for aid in candidates:
+        (limited if is_limited_profile_dog(aid, persona_data) else rich).append(aid)
+
+    unviewed_rich = [aid for aid in rich if aid not in viewed_set]
+    if unviewed_rich:
+        return unviewed_rich
+    unviewed_limited = [aid for aid in limited if aid not in viewed_set]
+    if unviewed_limited:
+        return unviewed_limited
+    return rich or limited
+
 
 def select_dog(candidates, scores, persona_data, viewed_ids, client):
     """

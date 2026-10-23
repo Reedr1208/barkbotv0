@@ -52,6 +52,8 @@ FULL SHELTER BIO
 FULL SHELTER DESCRIPTION
 {FULL_DESCRIPTION}
 
+{PROFILE_COMPLETENESS_NOTE}
+
 Describe the backstory in character but with honesty. Do not make the dog sound broken, scary, ashamed, or magically fixed. 
 
 IMPORTANT FACTS TO PRESERVE

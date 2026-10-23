@@ -312,7 +312,14 @@
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </button>
           </div>
-          <div class="sticky-dog-meta" id="stickyDogMeta">—</div>
+          <div class="sticky-dog-meta-row">
+            <div class="sticky-dog-meta" id="stickyDogMeta">—</div>
+            <button class="limited-info-chip icon-only" id="stickyLimitedInfoBadge" type="button" hidden
+              aria-haspopup="dialog" aria-controls="limitedInfoPopover" aria-expanded="false"
+              aria-label="Limited info: learn more" title="Limited info">
+              <span aria-hidden="true">⚠️</span>
+            </button>
+          </div>
         </div>
         <div class="sticky-actions" id="stickyActionsGroup">
           <button class="sticky-chat-btn" id="stickyChatBtn" aria-label="Scroll to chat panel">Chat 💬</button>
@@ -567,6 +574,11 @@
           <section class="chat-section real-el" id="chatSection" style="display: none;" aria-hidden="true">
             <div class="chat-section-header" style="margin-bottom: 8px;">
               <h3 class="chat-section-title">Chat with <span id="chatTitleName">...</span></h3>
+              <button class="limited-info-chip" id="limitedInfoBadge" type="button" hidden
+                aria-haspopup="dialog" aria-controls="limitedInfoPopover" aria-expanded="false"
+                aria-label="Limited info: learn more">
+                <span aria-hidden="true">⚠️</span><span class="limited-info-chip-text">Limited info</span>
+              </button>
               <button class="share-btn compact" id="chatShareBtn" type="button" aria-label="Share this dog"
                 title="Share">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -841,6 +853,15 @@
     </div>
 
     <div id="shareFallbackMenu" class="share-fallback-menu" role="menu" aria-label="Share options" hidden></div>
+    <div id="limitedInfoPopover" class="limited-info-popover" role="dialog" aria-labelledby="limitedInfoTitle" hidden>
+      <button type="button" class="limited-info-popover-close" id="limitedInfoCloseBtn" aria-label="Close">&times;</button>
+      <div class="limited-info-popover-title" id="limitedInfoTitle"><span aria-hidden="true">⚠️</span> Limited info</div>
+      <p class="limited-info-popover-text">
+        Limited information is available from this dog's shelter profile, so the richness of the chat experience may be impacted.
+        Reach out to the shelter for more info!
+      </p>
+      <a href="#" target="_blank" rel="noopener" class="limited-info-popover-link" id="limitedInfoShelterLink">View shelter page →</a>
+    </div>
     <div id="shareToast" class="share-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- 3. BROWSE ALL DOGS VIEW ──────────────────── -->

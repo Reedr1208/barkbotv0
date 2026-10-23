@@ -635,6 +635,125 @@
       margin-bottom: 0;
     }
 
+    /* ── Limited-info badge (generic-persona dogs with short shelter bios) ── */
+    .limited-info-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.14);
+      color: #fcd34d;
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    }
+    .limited-info-chip:hover,
+    .limited-info-chip[aria-expanded="true"] {
+      background: rgba(245, 158, 11, 0.26);
+      border-color: rgba(245, 158, 11, 0.75);
+    }
+    .limited-info-chip:active { transform: scale(0.95); }
+    .limited-info-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .limited-info-chip[hidden] { display: none !important; }
+    .chat-section-header .limited-info-chip { margin-right: auto; }
+
+    /* Icon-only variant (sticky bar): sits on the age/weight line so it never
+       competes with the dog's name for space. */
+    .limited-info-chip.icon-only {
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      gap: 0;
+      justify-content: center;
+      font-size: 0.66rem;
+    }
+    .sticky-dog-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      margin-top: 2px;
+    }
+    .sticky-dog-meta-row .sticky-dog-meta {
+      margin-top: 0;
+      min-width: 0;
+    }
+
+    /* Mobile: collapse the chat-header badge to just the emoji too */
+    @media (max-width: 800px) {
+      .limited-info-chip .limited-info-chip-text { display: none; }
+      .limited-info-chip:not(.icon-only) {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        gap: 0;
+        justify-content: center;
+        font-size: 0.75rem;
+      }
+    }
+
+    .limited-info-popover {
+      position: fixed;
+      z-index: 12000;
+      padding: 14px 16px 14px;
+      border-radius: 14px;
+      background: rgba(30, 41, 59, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(245, 158, 11, 0.08);
+      color: var(--text-main, #f8fafc);
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      transform-origin: top left;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .limited-info-popover.open { opacity: 1; transform: translateY(0) scale(1); }
+    .limited-info-popover[hidden] { display: none !important; }
+    .limited-info-popover-title {
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: #fcd34d;
+      margin: 0 24px 6px 0;
+    }
+    .limited-info-popover-text {
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--text-muted, #cbd5e1);
+    }
+    .limited-info-popover-link {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .limited-info-popover-link:hover { text-decoration: underline; }
+    .limited-info-popover-close {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--text-muted, #cbd5e1);
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .limited-info-popover-close:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
     .share-fallback-menu {
       position: fixed;
       z-index: 12000;
@@ -3911,7 +4030,14 @@
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </button>
           </div>
-          <div class="sticky-dog-meta" id="stickyDogMeta">—</div>
+          <div class="sticky-dog-meta-row">
+            <div class="sticky-dog-meta" id="stickyDogMeta">—</div>
+            <button class="limited-info-chip icon-only" id="stickyLimitedInfoBadge" type="button" hidden
+              aria-haspopup="dialog" aria-controls="limitedInfoPopover" aria-expanded="false"
+              aria-label="Limited info: learn more" title="Limited info">
+              <span aria-hidden="true">⚠️</span>
+            </button>
+          </div>
         </div>
         <div class="sticky-actions" id="stickyActionsGroup">
           <button class="sticky-chat-btn" id="stickyChatBtn" aria-label="Scroll to chat panel">Chat 💬</button>
@@ -4166,6 +4292,11 @@
           <section class="chat-section real-el" id="chatSection" style="display: none;" aria-hidden="true">
             <div class="chat-section-header" style="margin-bottom: 8px;">
               <h3 class="chat-section-title">Chat with <span id="chatTitleName">...</span></h3>
+              <button class="limited-info-chip" id="limitedInfoBadge" type="button" hidden
+                aria-haspopup="dialog" aria-controls="limitedInfoPopover" aria-expanded="false"
+                aria-label="Limited info: learn more">
+                <span aria-hidden="true">⚠️</span><span class="limited-info-chip-text">Limited info</span>
+              </button>
               <button class="share-btn compact" id="chatShareBtn" type="button" aria-label="Share this dog"
                 title="Share">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -4440,6 +4571,15 @@
     </div>
 
     <div id="shareFallbackMenu" class="share-fallback-menu" role="menu" aria-label="Share options" hidden></div>
+    <div id="limitedInfoPopover" class="limited-info-popover" role="dialog" aria-labelledby="limitedInfoTitle" hidden>
+      <button type="button" class="limited-info-popover-close" id="limitedInfoCloseBtn" aria-label="Close">&times;</button>
+      <div class="limited-info-popover-title" id="limitedInfoTitle"><span aria-hidden="true">⚠️</span> Limited info</div>
+      <p class="limited-info-popover-text">
+        Limited information is available from this dog's shelter profile, so the richness of the chat experience may be impacted.
+        Reach out to the shelter for more info!
+      </p>
+      <a href="#" target="_blank" rel="noopener" class="limited-info-popover-link" id="limitedInfoShelterLink">View shelter page →</a>
+    </div>
     <div id="shareToast" class="share-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- 3. BROWSE ALL DOGS VIEW ──────────────────── -->
@@ -5397,6 +5537,80 @@ function getDogImageUrl(dog) {
   return 'happy_rescue_pup.png';
 }
 
+// ─── Limited-info badge: dogs whose shelter bio is too short for a full ─────
+// archetype get a generic persona; flag that on the chat banner with a popover.
+
+const LIMITED_INFO_BADGE_IDS = ['limitedInfoBadge', 'stickyLimitedInfoBadge'];
+const limitedInfoPopover = document.getElementById('limitedInfoPopover');
+
+function closeLimitedInfoPopover() {
+  if (!limitedInfoPopover || limitedInfoPopover.hidden) return;
+  limitedInfoPopover.hidden = true;
+  limitedInfoPopover.classList.remove('open');
+  LIMITED_INFO_BADGE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function openLimitedInfoPopover(anchorEl) {
+  if (!limitedInfoPopover || !anchorEl) return;
+  const link = document.getElementById('limitedInfoShelterLink');
+  const url = window.currentDogData?.shelter_profile_url;
+  if (link) {
+    link.style.display = url ? 'inline-block' : 'none';
+    if (url) link.href = url;
+  }
+  limitedInfoPopover.hidden = false;
+  const rect = anchorEl.getBoundingClientRect();
+  const width = Math.min(300, window.innerWidth - 24);
+  limitedInfoPopover.style.width = `${width}px`;
+  limitedInfoPopover.style.top = `${rect.bottom + 8}px`;
+  limitedInfoPopover.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - width - 12))}px`;
+  requestAnimationFrame(() => limitedInfoPopover.classList.add('open'));
+  anchorEl.setAttribute('aria-expanded', 'true');
+  trackEvent('limited_info_opened', { dog_name: currentDogName, animal_id: currentAnimalId });
+}
+
+function setLimitedInfoBadge(dog) {
+  const show = !!(dog && dog.limited_info);
+  LIMITED_INFO_BADGE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = !show;
+  });
+  if (!show) closeLimitedInfoPopover();
+}
+
+LIMITED_INFO_BADGE_IDS.forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpenHere = limitedInfoPopover && !limitedInfoPopover.hidden && el.getAttribute('aria-expanded') === 'true';
+    closeLimitedInfoPopover();
+    if (!isOpenHere) openLimitedInfoPopover(el);
+  });
+});
+
+if (limitedInfoPopover) {
+  limitedInfoPopover.addEventListener('click', (e) => e.stopPropagation());
+  document.getElementById('limitedInfoCloseBtn')?.addEventListener('click', closeLimitedInfoPopover);
+  document.getElementById('limitedInfoShelterLink')?.addEventListener('click', () => {
+    trackEvent('shelter_link_clicked', {
+      dog_name: currentDogName,
+      animal_id: currentAnimalId,
+      shelter_name: window.currentDogData?.shelter_name || '',
+      source: 'limited_info_popover'
+    });
+    trackAdsShelterClick();
+    closeLimitedInfoPopover();
+  });
+  document.addEventListener('click', closeLimitedInfoPopover);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLimitedInfoPopover(); });
+  window.addEventListener('resize', closeLimitedInfoPopover);
+  window.addEventListener('scroll', closeLimitedInfoPopover, true);
+}
+
 // ─── resetProfileUI: Clear all DOM before loading a new dog ─────────────────
 
 function resetProfileUI() {
@@ -5430,6 +5644,7 @@ function resetProfileUI() {
 
   paccLink.style.display = 'none';
   chatTitleName.textContent = '...';
+  setLimitedInfoBadge(null);
   currentDogName = 'this dog';
   chatHistory.innerHTML = '';
   conversationHistory = [];
@@ -5533,6 +5748,7 @@ function renderDogProfile(dog) {
   }
 
   chatTitleName.textContent = currentDogName;
+  setLimitedInfoBadge(dog);
 
   // Animal ID display (e.g. "A902682 • PACC")
   const idParts = dog.animal_id ? dog.animal_id.split('-') : [];

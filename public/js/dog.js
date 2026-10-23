@@ -124,6 +124,80 @@ function getDogImageUrl(dog) {
   return 'happy_rescue_pup.png';
 }
 
+// ─── Limited-info badge: dogs whose shelter bio is too short for a full ─────
+// archetype get a generic persona; flag that on the chat banner with a popover.
+
+const LIMITED_INFO_BADGE_IDS = ['limitedInfoBadge', 'stickyLimitedInfoBadge'];
+const limitedInfoPopover = document.getElementById('limitedInfoPopover');
+
+function closeLimitedInfoPopover() {
+  if (!limitedInfoPopover || limitedInfoPopover.hidden) return;
+  limitedInfoPopover.hidden = true;
+  limitedInfoPopover.classList.remove('open');
+  LIMITED_INFO_BADGE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function openLimitedInfoPopover(anchorEl) {
+  if (!limitedInfoPopover || !anchorEl) return;
+  const link = document.getElementById('limitedInfoShelterLink');
+  const url = window.currentDogData?.shelter_profile_url;
+  if (link) {
+    link.style.display = url ? 'inline-block' : 'none';
+    if (url) link.href = url;
+  }
+  limitedInfoPopover.hidden = false;
+  const rect = anchorEl.getBoundingClientRect();
+  const width = Math.min(300, window.innerWidth - 24);
+  limitedInfoPopover.style.width = `${width}px`;
+  limitedInfoPopover.style.top = `${rect.bottom + 8}px`;
+  limitedInfoPopover.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - width - 12))}px`;
+  requestAnimationFrame(() => limitedInfoPopover.classList.add('open'));
+  anchorEl.setAttribute('aria-expanded', 'true');
+  trackEvent('limited_info_opened', { dog_name: currentDogName, animal_id: currentAnimalId });
+}
+
+function setLimitedInfoBadge(dog) {
+  const show = !!(dog && dog.limited_info);
+  LIMITED_INFO_BADGE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = !show;
+  });
+  if (!show) closeLimitedInfoPopover();
+}
+
+LIMITED_INFO_BADGE_IDS.forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpenHere = limitedInfoPopover && !limitedInfoPopover.hidden && el.getAttribute('aria-expanded') === 'true';
+    closeLimitedInfoPopover();
+    if (!isOpenHere) openLimitedInfoPopover(el);
+  });
+});
+
+if (limitedInfoPopover) {
+  limitedInfoPopover.addEventListener('click', (e) => e.stopPropagation());
+  document.getElementById('limitedInfoCloseBtn')?.addEventListener('click', closeLimitedInfoPopover);
+  document.getElementById('limitedInfoShelterLink')?.addEventListener('click', () => {
+    trackEvent('shelter_link_clicked', {
+      dog_name: currentDogName,
+      animal_id: currentAnimalId,
+      shelter_name: window.currentDogData?.shelter_name || '',
+      source: 'limited_info_popover'
+    });
+    trackAdsShelterClick();
+    closeLimitedInfoPopover();
+  });
+  document.addEventListener('click', closeLimitedInfoPopover);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLimitedInfoPopover(); });
+  window.addEventListener('resize', closeLimitedInfoPopover);
+  window.addEventListener('scroll', closeLimitedInfoPopover, true);
+}
+
 // ─── resetProfileUI: Clear all DOM before loading a new dog ─────────────────
 
 function resetProfileUI() {
@@ -157,6 +231,7 @@ function resetProfileUI() {
 
   paccLink.style.display = 'none';
   chatTitleName.textContent = '...';
+  setLimitedInfoBadge(null);
   currentDogName = 'this dog';
   chatHistory.innerHTML = '';
   conversationHistory = [];
@@ -260,6 +335,7 @@ function renderDogProfile(dog) {
   }
 
   chatTitleName.textContent = currentDogName;
+  setLimitedInfoBadge(dog);
 
   // Animal ID display (e.g. "A902682 • PACC")
   const idParts = dog.animal_id ? dog.animal_id.split('-') : [];

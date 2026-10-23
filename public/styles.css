@@ -583,6 +583,125 @@
       margin-bottom: 0;
     }
 
+    /* ── Limited-info badge (generic-persona dogs with short shelter bios) ── */
+    .limited-info-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.14);
+      color: #fcd34d;
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    }
+    .limited-info-chip:hover,
+    .limited-info-chip[aria-expanded="true"] {
+      background: rgba(245, 158, 11, 0.26);
+      border-color: rgba(245, 158, 11, 0.75);
+    }
+    .limited-info-chip:active { transform: scale(0.95); }
+    .limited-info-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .limited-info-chip[hidden] { display: none !important; }
+    .chat-section-header .limited-info-chip { margin-right: auto; }
+
+    /* Icon-only variant (sticky bar): sits on the age/weight line so it never
+       competes with the dog's name for space. */
+    .limited-info-chip.icon-only {
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      gap: 0;
+      justify-content: center;
+      font-size: 0.66rem;
+    }
+    .sticky-dog-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      margin-top: 2px;
+    }
+    .sticky-dog-meta-row .sticky-dog-meta {
+      margin-top: 0;
+      min-width: 0;
+    }
+
+    /* Mobile: collapse the chat-header badge to just the emoji too */
+    @media (max-width: 800px) {
+      .limited-info-chip .limited-info-chip-text { display: none; }
+      .limited-info-chip:not(.icon-only) {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        gap: 0;
+        justify-content: center;
+        font-size: 0.75rem;
+      }
+    }
+
+    .limited-info-popover {
+      position: fixed;
+      z-index: 12000;
+      padding: 14px 16px 14px;
+      border-radius: 14px;
+      background: rgba(30, 41, 59, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(245, 158, 11, 0.08);
+      color: var(--text-main, #f8fafc);
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      transform-origin: top left;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .limited-info-popover.open { opacity: 1; transform: translateY(0) scale(1); }
+    .limited-info-popover[hidden] { display: none !important; }
+    .limited-info-popover-title {
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: #fcd34d;
+      margin: 0 24px 6px 0;
+    }
+    .limited-info-popover-text {
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--text-muted, #cbd5e1);
+    }
+    .limited-info-popover-link {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .limited-info-popover-link:hover { text-decoration: underline; }
+    .limited-info-popover-close {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--text-muted, #cbd5e1);
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .limited-info-popover-close:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
     .share-fallback-menu {
       position: fixed;
       z-index: 12000;

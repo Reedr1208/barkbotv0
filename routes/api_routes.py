@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 from routes.deps import get_supabase_client, get_image_base_url
-from routes.dog_ranking import apply_hard_filters, score_candidates, select_dog
+from routes.dog_ranking import apply_hard_filters, build_selection_pool, is_limited_profile_dog, score_candidates, select_dog
 from routes import recommender
 
 router = APIRouter()
@@ -529,6 +529,7 @@ async def random_dog(request: Request):
             prompts_res = client.table("system_prompts_v2").select("animal_id").eq("animal_id", animal_id_override).limit(1).execute()
             profile_res = client.table("animals").select("*").eq("animal_id", animal_id_override).limit(1).execute()
             fact_res = client.table("animal_fact_profiles").select("dog_name, breed_or_description, intro_summary, important_facts_jsonb, backstory_summary, risk_flags_jsonb, challenges_jsonb, ideal_home_jsonb, other_animals_notes, people_notes, containment_notes, medical_notes, adoption_process_notes, unknowns_jsonb, info_refreshed_at, sex, age_bucket, weight_class, altered_status, age_summary, weight_summary, highlights").eq("animal_id", animal_id_override).limit(1).execute()
+            persona_res = client.table("animal_persona_profiles").select("animal_id, primary_archetype_key").eq("animal_id", animal_id_override).limit(1).execute()
 
             if not active_res.data or not profile_res.data:
                 return JSONResponse(status_code=404, content={"error": "Dog not found."})
@@ -563,6 +564,8 @@ async def random_dog(request: Request):
             profile["preferences_matched"] = False
             profile["user_has_preferences"] = False
             profile["match_details"] = {}
+            override_persona = {r["animal_id"]: r for r in (persona_res.data or [])}
+            profile["limited_info"] = is_limited_profile_dog(animal_id_override, override_persona)
 
             # Add shelter relative_path for share URL construction
             dog_sid = active_dog.get("shelter_id", "")
@@ -657,11 +660,14 @@ async def random_dog(request: Request):
         if not valid_ids:
             return JSONResponse(status_code=404, content={"error": "No dogs match your current preferences.", "no_matches": True})
 
+        # ── Tiering: limited-profile dogs only after all richer matches ──
+        pool = build_selection_pool(valid_ids, persona_data, viewed_ids)
+
         # ── Soft scoring (delegated to dog_ranking) ───────────────────
-        scored_dogs = score_candidates(valid_ids, persona_data, viewed_list, client)
+        scored_dogs = score_candidates(pool, persona_data, viewed_list, client)
 
         # ── Selection (delegated to dog_ranking) ──────────────────────
-        random_id = select_dog(valid_ids, scored_dogs, persona_data, viewed_ids, client)
+        random_id = select_dog(pool, scored_dogs, persona_data, viewed_ids, client)
 
         if not random_id:
             return JSONResponse(status_code=404, content={"error": "Could not select a dog."})
@@ -744,6 +750,7 @@ async def random_dog(request: Request):
         profile["preferences_matched"] = preferences_matched
         profile["user_has_preferences"] = has_real_preferences
         profile["match_details"] = best_match_details.get(random_id, {})
+        profile["limited_info"] = is_limited_profile_dog(random_id, persona_data)
 
         # Add shelter relative_path for share URL construction
         dog_shelter_id = active_dogs[random_id].get("shelter_id", "")
