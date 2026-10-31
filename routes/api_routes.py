@@ -16,7 +16,7 @@ from starlette.concurrency import run_in_threadpool
 
 from routes.deps import get_supabase_client, get_image_base_url
 from routes.dog_ranking import apply_hard_filters, build_selection_pool, is_limited_profile_dog, score_candidates, select_dog
-from routes import recommender
+from routes import recommender, shelter_info
 
 router = APIRouter()
 logger = logging.getLogger("barkbot.api")
@@ -98,6 +98,9 @@ def matches_gender(dog_gender, pref_gender):
 # ──────────────────────────────────────────────────────────────────────
 
 CHAT_MODEL = "gpt-5.6-luna"
+
+# Columns needed by the per-request dog-serving paths (avoid pulling shelters.process_details jsonb).
+_SHELTER_LIST_COLUMNS = "shelter_id, shelter_name, city, state, location_name, location_display_name, relative_path"
 
 
 def _ensure_user_preferences(sb, email):
@@ -243,6 +246,128 @@ RECOMMENDATION_REPLY_GUIDANCE = (
 )
 
 
+# ── Agentic tool: shelter adoption info ─────────────────────────────────────────
+FIND_SHELTER_INFO_TOOL = {
+    "type": "function",
+    "name": "find_shelter_info",
+    "description": (
+        "Get your shelter/rescue's official adoption info (checked daily from their website): adoption fees, "
+        "how to adopt (application, steps, timeline), adopter requirements, how to meet/visit you, hours, "
+        "address, phone/email and policies (holds, returns, out-of-state). Call this only when the user asks "
+        "about these and your profile doesn't already clearly answer it. Do NOT call it for questions about "
+        "your personality, health or history."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "question": {
+                "type": "string",
+                "description": "The user's adoption-logistics question, rephrased to stand on its own "
+                               "(e.g. 'What is the adoption fee for an adult dog and what does it include?').",
+            },
+        },
+        "required": ["question"],
+        "additionalProperties": False,
+    },
+    "strict": True,
+}
+
+FIND_SHELTER_INFO_GUIDANCE = (
+    "[Tool available: find_shelter_info]\n"
+    "When the user asks about practical adoption logistics — adoption fee/cost, how to adopt or apply, "
+    "requirements (renting, fenced yard, ID, home visit), how to meet you or visit, hours, address, phone/email, "
+    "or holds/return policy — check your profile above first. If it clearly answers the question (e.g. it states "
+    "your adoption fee), answer from it directly. Otherwise call find_shelter_info. Never guess fees, hours, "
+    "phone numbers, requirements or policies. Call at most one tool per message."
+)
+
+SHELTER_INFO_REPLY_GUIDANCE = (
+    "Reply to the user in character, in 2–5 short sentences (a short bullet list is fine for steps or fees). "
+    "Answer their question using ONLY facts in this result plus your own profile — never invent or estimate "
+    "fees, hours, phone numbers, requirements or policies. If fees are tiered, use your own age/size from your "
+    "profile to point out the tier that applies to you. If your profile states your own fee, that wins. "
+    "Write prices, phone numbers, emails and URLs exactly. Only share the details relevant to their question. "
+    "Include the most relevant link(s) as markdown, e.g. [Adoption process](https://...), or the official site. "
+    "Briefly mention that details can change, so it's worth confirming with the shelter (more so if 'stale' is true). "
+    "If status is not 'ok' or the info doesn't answer the question, say honestly you don't have that "
+    "detail and point them to the official site (and contact info if available)."
+)
+
+
+def _handle_find_dog_matches(*, args, openai_client, sb, user_message, conversation_history,
+                             animal_id, user_email, ip, rec_ctx):
+    """Runs the recommender agent. Returns (tool_output, recommendations_or_None)."""
+    req_text = (args.get("request") or user_message)[:600]
+    recommendations = None
+    limited = recommender.check_and_consume_rate_limit(user_email, ip, animal_id)
+    if limited:
+        logger.info(f"recommender rate-limited ({limited}) for {user_email}")
+        tool_output = {"status": "limit_reached",
+                       "note": "Search limit reached for now. Tell the user you can look again a bit later."}
+    else:
+        recent_turns = conversation_history[-6:] + [{"role": "user", "content": user_message}]
+        rec = recommender.run_recommender(
+            openai_client=openai_client, sb=sb, image_base_url=get_image_base_url(),
+            request_text=req_text, email=user_email, current_animal_id=animal_id,
+            current_dog=_current_dog_summary(sb, animal_id), recent_turns=recent_turns, rec_ctx=rec_ctx,
+        )
+        tool_output = {
+            "status": rec["status"],
+            "search_summary": rec.get("summary", ""),
+            "recommended_dogs": [
+                {k: d.get(k) for k in ("name", "breed", "age", "sex", "location", "match_type", "reason", "compromises")}
+                for d in rec["dogs"]
+            ],
+        }
+        if rec["dogs"]:
+            recommendations = {"dogs": rec["dogs"], "summary": rec.get("summary", "")}
+    tool_output["how_to_reply"] = RECOMMENDATION_REPLY_GUIDANCE
+    return tool_output, recommendations
+
+
+def _handle_find_shelter_info(*, args, sb, animal_id):
+    """Reads the shelter's stored daily adoption-info pack. Returns (tool_output, result)."""
+    t0 = time.time()
+    res = shelter_info.get_shelter_info(sb, animal_id)
+    tool_output = {
+        "status": res["status"],
+        "shelter_name": res["shelter_name"],
+        "official_site": res["official_site"],
+        "this_dogs_listing": res["dog_listing"],
+        "last_checked": res["last_checked"],
+        "stale": res["stale"],
+    }
+    if res["info"]:
+        info = {k: v for k, v in res["info"].items() if k != "found" and v not in ("", [], None)}
+        contact = {k: v for k, v in (info.pop("contact", None) or {}).items() if v}
+        if contact:
+            info["contact"] = contact
+        tool_output["info"] = info
+    tool_output["how_to_reply"] = SHELTER_INFO_REPLY_GUIDANCE
+    logger.info("find_shelter_info: " + json.dumps({
+        "animal_id": animal_id, "shelter_id": res["shelter_id"], "status": res["status"],
+        "last_checked": res["last_checked"], "question": (args.get("question") or "")[:200],
+        "secs": round(time.time() - t0, 2),
+    }))
+    return tool_output, res
+
+
+def _ensure_shelter_link(reply: str, res: dict) -> str:
+    """Guarantee the reply links to at least one official page (append one if the model didn't)."""
+    candidates = [l["url"] for l in ((res.get("info") or {}).get("links") or [])]
+    candidates += [u for u in (res.get("official_site"), res.get("dog_listing")) if u]
+    if not candidates or any(u.rstrip("/") in reply for u in candidates):
+        return reply
+    if res.get("official_site"):
+        label, url = f"{res.get('shelter_name') or 'Shelter'} website", res["official_site"]
+    else:
+        label, url = "My shelter listing", candidates[0]
+    return f"{reply.rstrip()}\n\n🔗 Official info: [{label}]({url})"
+
+
+_DOG_CHAT_TOOL_NAMES = {"find_dog_matches", "find_shelter_info"}
+
+
 def _current_dog_summary(sb, animal_id: str) -> dict:
     try:
         r = sb.table("animal_fact_profiles") \
@@ -275,50 +400,44 @@ def _dog_responses_call(openai_client, input_items, tools, tool_choice):
 def _run_dog_chat(*, openai_client, sb, input_messages, user_message, conversation_history,
                   animal_id, user_email, ip, rec_ctx):
     """
-    Blocking. Runs the dog's reply, including the optional find_dog_matches tool round-trip.
+    Blocking. Runs the dog's reply, including an optional tool round-trip
+    (find_dog_matches → recommender agent, find_shelter_info → shelter info agent).
     Returns (reply_text, recommendations_payload_or_None).
     """
-    tools = [FIND_DOG_MATCHES_TOOL] if recommender.is_configured() else []
+    tools, guidance = [], []
+    if recommender.is_configured():
+        tools.append(FIND_DOG_MATCHES_TOOL)
+        guidance.append(FIND_DOG_MATCHES_GUIDANCE)
+    if shelter_info.is_configured():
+        tools.append(FIND_SHELTER_INFO_TOOL)
+        guidance.append(FIND_SHELTER_INFO_GUIDANCE)
     items = list(input_messages)
     if tools:
         # Insert tool guidance right after the persona prompt
-        items.insert(1, {"role": "developer", "content": FIND_DOG_MATCHES_GUIDANCE})
+        items.insert(1, {"role": "developer", "content": "\n\n".join(guidance)})
 
     resp = _dog_responses_call(openai_client, items, tools, "auto")
     call = next((o for o in resp.output if getattr(o, "type", "") == "function_call"
-                 and o.name == "find_dog_matches"), None)
+                 and o.name in _DOG_CHAT_TOOL_NAMES), None)
     if call is None:
         return resp.output_text or "", None
 
     try:
-        req_text = (json.loads(call.arguments or "{}").get("request") or user_message)[:600]
+        args = json.loads(call.arguments or "{}")
+        if not isinstance(args, dict):
+            args = {}
     except json.JSONDecodeError:
-        req_text = user_message[:600]
+        args = {}
 
-    recommendations = None
-    limited = recommender.check_and_consume_rate_limit(user_email, ip, animal_id)
-    if limited:
-        logger.info(f"recommender rate-limited ({limited}) for {user_email}")
-        tool_output = {"status": "limit_reached",
-                       "note": "Search limit reached for now. Tell the user you can look again a bit later."}
+    recommendations, shelter_res = None, None
+    if call.name == "find_shelter_info":
+        tool_output, shelter_res = _handle_find_shelter_info(args=args, sb=sb, animal_id=animal_id)
     else:
-        recent_turns = conversation_history[-6:] + [{"role": "user", "content": user_message}]
-        rec = recommender.run_recommender(
-            openai_client=openai_client, sb=sb, image_base_url=get_image_base_url(),
-            request_text=req_text, email=user_email, current_animal_id=animal_id,
-            current_dog=_current_dog_summary(sb, animal_id), recent_turns=recent_turns, rec_ctx=rec_ctx,
+        tool_output, recommendations = _handle_find_dog_matches(
+            args=args, openai_client=openai_client, sb=sb, user_message=user_message,
+            conversation_history=conversation_history, animal_id=animal_id, user_email=user_email, ip=ip,
+            rec_ctx=rec_ctx,
         )
-        tool_output = {
-            "status": rec["status"],
-            "search_summary": rec.get("summary", ""),
-            "recommended_dogs": [
-                {k: d.get(k) for k in ("name", "breed", "age", "sex", "location", "match_type", "reason", "compromises")}
-                for d in rec["dogs"]
-            ],
-        }
-        if rec["dogs"]:
-            recommendations = {"dogs": rec["dogs"], "summary": rec.get("summary", "")}
-    tool_output["how_to_reply"] = RECOMMENDATION_REPLY_GUIDANCE
 
     items.extend(resp.output)
     items.append({"type": "function_call_output", "call_id": call.call_id,
@@ -327,8 +446,14 @@ def _run_dog_chat(*, openai_client, sb, input_messages, user_message, conversati
         resp2 = _dog_responses_call(openai_client, items, tools, "none")
         reply = resp2.output_text or ""
     except Exception:
-        logger.exception("dog follow-up after recommender failed")
+        logger.exception(f"dog follow-up after {call.name} failed")
         reply = ""
+
+    if shelter_res is not None:
+        if not reply:
+            reply = "I couldn't fetch those details right now, but my shelter can help you with that!"
+        return _ensure_shelter_link(reply, shelter_res), None
+
     if not reply:
         reply = ("I sniffed around and found a few pups you might like — tap one below to say hi!"
                  if recommendations else
@@ -589,7 +714,7 @@ async def random_dog(request: Request):
         active_dogs = {row["animal_id"]: row for row in active_data}
 
         # Fetch shelters
-        shelters_res = client.table("shelters").select("*").execute()
+        shelters_res = client.table("shelters").select(_SHELTER_LIST_COLUMNS).execute()
         shelters_map = {s["shelter_id"]: s for s in shelters_res.data} if shelters_res.data else {}
 
         # Fetch from animal_persona_profiles to get archetype data and freshness
@@ -791,7 +916,7 @@ async def browse_dogs(request: Request):
         active_dogs = {row["animal_id"]: row for row in active_data}
 
         # Fetch shelters
-        shelters_res = client.table("shelters").select("*").execute()
+        shelters_res = client.table("shelters").select(_SHELTER_LIST_COLUMNS).execute()
         shelters_map = {s["shelter_id"]: s for s in shelters_res.data} if shelters_res.data else {}
 
         # Fetch persona profiles (needed to filter to dogs with personas)

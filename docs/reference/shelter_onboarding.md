@@ -17,6 +17,7 @@
 | URL slug | `/denver` | `shelters.relative_path`; reuse the metro's slug if it already exists |
 | Shelter acronym | `PAWSCO` | Unique `shelter_id`. `animal_id = {ACRONYM}-{stable internal id}`. Must not be a prefix of another ID used in `LIKE '{ID}-%'` queries |
 | Bio-length threshold | `1000` | Below this a dog gets the generic "limited info" persona (see Phase 5) |
+| Official website | `https://pawsco.org/` | `shelters.website_url`. The shelter's OWN homepage (not a 24petconnect/shelterluv/adoptapet listing host). The daily `shelter_process_details` job researches adoption fees/process/contact on this domain for the chat `find_shelter_info` tool |
 
 ---
 
@@ -102,7 +103,14 @@ get_supabase_client().table("shelters").upsert({
     "location_name": "{City}, {ST}",
     "location_display_name": "{City}, {ST} {emoji}",
     "relative_path": "/{slug}",
+    "website_url": "https://{official-site}/",
 }, on_conflict="shelter_id").execute()
+```
+
+Also add the shelter to `SHELTER_WEBSITES` in `scripts/migrate_shelter_info.py` so the list stays the source of truth, then populate its adoption info right away (otherwise it fills at the next daily run, 09:30 UTC):
+
+```bash
+python -m jobs.shelter_process_details_job --force {ACRONYM}
 ```
 
 **Emoji conventions (existing):** Tucson/Phoenix 🌵, NYC 🗽, LA/Jacksonville 🌴, Chicago 🫘, Texas 🤠, Philly 🔔, San Diego 🏖️, SF 🌉, Seattle 🌲, Dover 🐾, Denver 🏔️
@@ -126,7 +134,7 @@ get_supabase_client().table("shelters").upsert({
 3. Check bio lengths: `SELECT animal_id, bio_length FROM animals WHERE shelter_id = '{ACRONYM}' ORDER BY 2;`
 4. **All active dogs become chattable.** Dogs whose bio is shorter than the shelter threshold get the generic `generic_pup` persona and a "⚠️ Limited info" badge, and are served after richer matches. Pick the threshold so that dogs with genuinely thin bios fall below it (typical range 500–1500; MCACC is 6000 because evaluation notes inflate bios).
 5. Enrichment: `generate_prompts` (every 30 min on Railway) picks new dogs up automatically, or use Admin → Backfill for the shelter to run facts → persona → prompt immediately.
-6. Verify: `/api/random_dog?location={display name}`, Browse All with the location filter, chat with a rich and a limited dog, and an agent recommendation for the metro.
+6. Verify: `/api/random_dog?location={display name}`, Browse All with the location filter, chat with a rich and a limited dog, an agent recommendation for the metro, and ask a dog "how much is your adoption fee?" (should answer from `shelters.process_details` with an official link).
 
 ---
 
@@ -146,5 +154,5 @@ get_supabase_client().table("shelters").upsert({
 - [ ] `routes/admin_routes.py` (backfill job maps)
 - [ ] `monitors.py` (`KNOWN_SHELTERS`)
 - [ ] New metro: `routes/api_routes.py`, `public/js/preferences.js` (+ `node build.js`), `routes/recommender.py`
-- [ ] `shelters` table row
+- [ ] `shelters` table row (incl. `website_url`) + `scripts/migrate_shelter_info.py`; run `shelter_process_details` for it
 - [ ] Backfill inventory → profiles → enrichment; verify in UI

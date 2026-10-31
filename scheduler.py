@@ -164,6 +164,12 @@ def _run_monitors():
         run_all_monitors()
 
 
+def _run_shelter_process_details():
+    from jobs.shelter_process_details_job import run
+    with _clean_argv():
+        run()
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Registry: maps job_id → callable
 # Auto-generated from SHELTER_JOBS + explicit non-shelter entries
@@ -176,6 +182,7 @@ JOB_REGISTRY = {
 JOB_REGISTRY["generate_prompts"] = _run_generate_prompts
 JOB_REGISTRY["cleanup_inactive_dogs"] = _run_cleanup_inactive_dogs
 JOB_REGISTRY["monitors"] = _run_monitors
+JOB_REGISTRY["shelter_process_details"] = _run_shelter_process_details
 
 
 def run_job_by_id(job_id: str, triggered_by: str = "manual"):
@@ -209,6 +216,8 @@ def setup_schedules():
     scheduler.add_job(_run_generate_prompts, CronTrigger.from_crontab("*/30 * * * *"), id="generate_prompts", replace_existing=True)
     scheduler.add_job(_run_cleanup_inactive_dogs, CronTrigger.from_crontab("15 */4 * * *"), id="cleanup_inactive_dogs", replace_existing=True)
     scheduler.add_job(_run_monitors, CronTrigger.from_crontab("0 14 * * *"), id="monitors", replace_existing=True)
+    # Daily official adoption-info refresh (fees/process/contact) for the chat find_shelter_info tool
+    scheduler.add_job(_run_shelter_process_details, CronTrigger.from_crontab("30 9 * * *"), id="shelter_process_details", replace_existing=True)
 
     logger.info(f"Registered {len(scheduler.get_jobs())} scheduled jobs.")
 

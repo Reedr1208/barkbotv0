@@ -1100,6 +1100,30 @@
       font-weight: 800;
     }
 
+    .bubble.bot a {
+      color: var(--teal);
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-color: rgba(255, 255, 255, 0.25);
+      text-underline-offset: 3px;
+      transition: color 0.2s ease, text-decoration-color 0.2s ease;
+    }
+
+    .bubble.bot a:hover {
+      color: var(--accent);
+      text-decoration-color: currentColor;
+    }
+
+    .bubble.bot ul,
+    .bubble.bot ol {
+      margin: 4px 0 8px;
+      padding-left: 18px;
+    }
+
+    .bubble.bot li {
+      margin-bottom: 3px;
+    }
+
     .bubble.user {
       background: var(--accent);
       color: var(--accent-text);

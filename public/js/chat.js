@@ -168,6 +168,18 @@ function updateSuggestions() {
 
 // scrollToBottom is defined in ui.js
 
+// Links in dog replies (e.g. official shelter adoption pages) open in a new tab
+// so the user doesn't lose their chat.
+if (window.DOMPurify && !window._chLinkHookAdded) {
+  window._chLinkHookAdded = true;
+  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+    if (node.tagName === 'A' && node.getAttribute('href')) {
+      node.setAttribute('target', '_blank');
+      node.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+}
+
 function appendMessage(role, content, avatarLetter = '🐾', shouldScroll = true) {
   const msgRow = document.createElement('div');
   msgRow.className = `msg-row ${role === 'bot' ? 'bot' : 'user'}`;
@@ -226,7 +238,7 @@ function showTypingIndicator() {
   };
   container._captionTimers = [
     setTimeout(() => setCaption('Sniffing around… 🐾'), 6000),
-    setTimeout(() => setCaption('Checking with the other shelter pups…'), 14000),
+    setTimeout(() => setCaption('Digging up the details…'), 14000),
     setTimeout(() => setCaption('Almost there — thanks for your patience!'), 26000),
   ];
 
