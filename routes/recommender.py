@@ -66,6 +66,7 @@ _ANIMAL_ID_RE = re.compile(r"^[A-Za-z0-9_\-]{1,48}$")
 METRO_COORDS = {
     "Chicago, IL": (41.8781, -87.6298),
     "Dallas, TX": (32.7767, -96.7970),
+    "Denver, CO": (39.7392, -104.9903),
     "Dover, NJ": (40.8834, -74.5621),
     "Houston, TX": (29.7604, -95.3698),
     "Jacksonville, FL": (30.3322, -81.6557),

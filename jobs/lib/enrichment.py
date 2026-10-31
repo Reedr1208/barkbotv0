@@ -34,7 +34,7 @@ _BIO_MIN_LENGTH = {
     "PACC": 800,    # Pima Animal Care Center
     "MCACC": 6000,
     "PAWSCH": 1200,
-    "WWLA": 1000, "HHS": 1000, "PHP": 1000, "SAPA": 1000,
+    "WWLA": 1000, "HHS": 1000, "PHP": 1000, "SAPA": 1000, "PAWSCO": 1000,
     "HSSA": 500,
     "RCHS": 500, "DPA": 500, "NHS": 500, "EHR": 500, "MV": 500, "RDR": 500,
 }

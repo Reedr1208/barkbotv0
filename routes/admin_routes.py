@@ -555,6 +555,8 @@ SHELTER_INVENTORY_JOBS = {
     "PHP": "php_inventory",
     "HHS": "hhs_inventory",
     "SAPA": "sapa_inventory",
+    "DGS": "dgs_inventory",
+    "PAWSCO": "pawsco_inventory",
 }
 
 SHELTER_PROFILES_JOBS = {
@@ -574,6 +576,8 @@ SHELTER_PROFILES_JOBS = {
     "PHP": "php_profiles",
     "HHS": "hhs_profiles",
     "SAPA": "sapa_profiles",
+    "DGS": "dgs_profiles",
+    "PAWSCO": "pawsco_profiles",
 }
 
 

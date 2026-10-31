@@ -1271,6 +1271,9 @@ _REGION_COORDS = {
     "San Diego, CA": (32.7157, -117.1611),
     "San Francisco, CA": (37.7749, -122.4194),
     "Jacksonville, FL": (30.3322, -81.6557),
+    "Seattle, WA": (47.6062, -122.3321),
+    "Dover, NJ": (40.8834, -74.5621),
+    "Denver, CO": (39.7392, -104.9903),
 }
 
 import math as _math

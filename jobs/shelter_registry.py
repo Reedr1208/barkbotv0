@@ -108,6 +108,10 @@ SHELTER_JOBS = [
     # ── SAPA ──
     {"job_id": "sapa_inventory",   "module": "jobs.shelters.sapa.inventory",   "call": "main",             "cron": "0 */4 * * *"},
     {"job_id": "sapa_profiles",    "module": "jobs.shelters.sapa.profiles",    "call": "main",             "cron": "15 * * * *"},
+
+    # ── PAWSCO (PawsCo, Denver) ──
+    {"job_id": "pawsco_inventory", "module": "jobs.shelters.pawsco.inventory", "call": "scrape_inventory", "cron": "20 */4 * * *"},
+    {"job_id": "pawsco_profiles",  "module": "jobs.shelters.pawsco.profiles",  "call": "main",             "cron": "28 * * * *"},
 ]
 
 # Build a lookup dict for run_shelter_job and the scheduler
