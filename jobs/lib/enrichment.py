@@ -33,6 +33,7 @@ _BIO_MIN_LENGTH = {
     "MP": 1000,     # Muddy Paws
     "PACC": 800,    # Pima Animal Care Center
     "BDW": 800,     # Bideawee (~280 chars of structured header + ≥~500 chars narrative)
+    "SFSPCA": 600,  # SF SPCA (~150 chars header + ≥~450 narrative; templated litter bios fall below)
     "MCACC": 6000,
     "PAWSCH": 1200,
     "WWLA": 1000, "HHS": 1000, "PHP": 1000, "SAPA": 1000, "PAWSCO": 1000,

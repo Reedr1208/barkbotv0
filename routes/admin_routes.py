@@ -558,6 +558,7 @@ SHELTER_INVENTORY_JOBS = {
     "DGS": "dgs_inventory",
     "PAWSCO": "pawsco_inventory",
     "BDW": "bdw_inventory",
+    "SFSPCA": "sfspca_inventory",
 }
 
 SHELTER_PROFILES_JOBS = {
@@ -580,6 +581,7 @@ SHELTER_PROFILES_JOBS = {
     "DGS": "dgs_profiles",
     "PAWSCO": "pawsco_profiles",
     "BDW": "bdw_profiles",
+    "SFSPCA": "sfspca_profiles",
 }
 
 

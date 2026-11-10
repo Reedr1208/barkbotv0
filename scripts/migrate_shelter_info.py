@@ -52,6 +52,7 @@ SHELTER_WEBSITES = {
     "RCHS": "https://rchumanesociety.org/",
     "RDR": "https://www.rocketdogrescue.org/",
     "SAPA": "https://sanantoniopetsalive.org/",
+    "SFSPCA": "https://www.sfspca.org/",
     "WWLA": "https://www.wagsandwalks.org/",
 }
 

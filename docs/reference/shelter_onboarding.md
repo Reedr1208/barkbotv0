@@ -49,6 +49,14 @@
 - Build the bio from the structured fields (breed/sex/age/weight/size/location/published `Attributes`/`AdoptionFeeGroup`) plus the `Description` HTML with repeated adoption-process sentences removed.
   See `jobs/shelters/bdw/`.
 
+### Custom WordPress REST grid (e.g. SF SPCA / `SFSPCA`)
+- Look for a localized JS config (`var xxxUserContent = {"restURL": ".../wp-json/{ns}/v1/..."`) next to the grid script, and replay the grid's request.
+  SF SPCA's dogs page excludes cats by sending the page's `ignoredTerms` (species/site term IDs). Read them from the page at runtime rather than hard-coding them.
+- Cloudflare there rejects bare user agents. Send full browser headers (`Accept`, `Accept-Language`, `Referer`, `X-Requested-With` for the JSON call).
+- Profiles are server-rendered Elementor posts. Confirm species from the body/post classes (`sfspca-adoption-species-dog`).
+  Take the name from the post-title widget, **not** the first `<h1>`: site-wide announcement banners (e.g. holiday hours) are also `<h1>`s.
+  See `jobs/shelters/sfspca/`.
+
 ---
 
 ## Phase 2: Scraper Modules

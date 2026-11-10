@@ -116,6 +116,10 @@ SHELTER_JOBS = [
     # ── BDW (Bideawee, NYC) — Shelterluv API ──
     {"job_id": "bdw_inventory",    "module": "jobs.shelters.bdw.inventory",    "call": "scrape_inventory", "cron": "25 */4 * * *"},
     {"job_id": "bdw_profiles",     "module": "jobs.shelters.bdw.profiles",     "call": "main",             "cron": "52 * * * *"},
+
+    # ── SFSPCA (San Francisco SPCA) — custom WP REST endpoint ──
+    {"job_id": "sfspca_inventory", "module": "jobs.shelters.sfspca.inventory", "call": "scrape_inventory", "cron": "35 */4 * * *"},
+    {"job_id": "sfspca_profiles",  "module": "jobs.shelters.sfspca.profiles",  "call": "main",             "cron": "57 * * * *"},
 ]
 
 # Build a lookup dict for run_shelter_job and the scheduler
