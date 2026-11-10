@@ -26,9 +26,12 @@ SHELTER_NAME = "Rancho Coastal Humane Society"
 CITY = "San Diego"
 STATE = "CA"
 
-# WordPress REST API endpoint — category 38 = "Dogs"
+# WordPress REST API endpoints. Dogs are posts in the "dogs" category.
+# The category ID is resolved by slug at runtime: a site migration (Nov 2026)
+# renumbered it from 38 → 12 and the hardcoded ID silently matched 0 posts.
 WP_API_URL = "https://rchumanesociety.org/wp-json/wp/v2/posts"
-WP_CATEGORY_ID = 38
+WP_CATEGORIES_URL = "https://rchumanesociety.org/wp-json/wp/v2/categories"
+WP_DOG_CATEGORY_SLUG = "dogs"
 
 HEADERS = {
     "User-Agent": (
@@ -105,15 +108,35 @@ def extract_dog_info(content_text: str) -> Dict[str, Optional[str]]:
     return info
 
 
+def resolve_dog_category_id() -> int:
+    """Look up the WordPress category ID for the 'dogs' slug."""
+    resp = requests.get(
+        WP_CATEGORIES_URL,
+        params={"slug": WP_DOG_CATEGORY_SLUG, "_fields": "id,slug,name,count"},
+        headers=HEADERS,
+        timeout=30,
+    )
+    resp.raise_for_status()
+    cats = resp.json()
+    if not cats:
+        raise RuntimeError(
+            f"WordPress category '{WP_DOG_CATEGORY_SLUG}' not found for {SHELTER_ID} — site structure may have changed"
+        )
+    cat = cats[0]
+    logging.info(f"Resolved '{WP_DOG_CATEGORY_SLUG}' category → id {cat['id']} ({cat.get('count')} posts)")
+    return int(cat["id"])
+
+
 def fetch_inventory() -> List[Dict]:
     """Fetch all dogs from the WordPress REST API."""
+    category_id = resolve_dog_category_id()
     all_posts = []
     page = 1
     per_page = 100  # Max allowed by WP
     
     while True:
         params = {
-            "categories": WP_CATEGORY_ID,
+            "categories": category_id,
             "per_page": per_page,
             "page": page,
             "_fields": "id,title,link,content,slug,date",

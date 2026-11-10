@@ -7,6 +7,13 @@ for richer biographical data.
 
 This is a WordPress-based site — all data available via HTTP.
 Runs via APScheduler using the shared profiles_runner.
+
+Page structure (Elementor theme since Nov 2026):
+  • content  — div.elementor-widget-theme-post-content ("Pet Details" block
+               with Breed:/Sex:/Age:/Weight: labels, then the bio)
+  • photos   — div.sdpets-gallery img (no og:image any more)
+  • report   — a.sdpets-pet-button--report-card (PDF)
+The older <article> / og:image layout is kept as a fallback.
 """
 
 import io
@@ -36,6 +43,39 @@ HEADERS = {
 }
 
 
+def _is_photo_url(url: str) -> bool:
+    low = url.lower()
+    return (
+        "wp-content/uploads" in url
+        and not any(bad in low for bad in ("logo", "brand", "seal", "charity-navigator", "_paw_", "bbb"))
+    )
+
+
+def _img_src(img) -> str:
+    return img.get("src") or img.get("data-src") or img.get("data-lazy-src") or ""
+
+
+def _find_content(soup: BeautifulSoup):
+    """The post-content container (new Elementor theme first, then legacy layouts)."""
+    return (
+        soup.find(class_="elementor-widget-theme-post-content")
+        or soup.find("article")
+        or soup.find(class_="entry-content")
+    )
+
+
+def _extract_gallery_image(soup: BeautifulSoup) -> Optional[str]:
+    """First photo in the pet gallery (new theme)."""
+    gallery = soup.find(class_="sdpets-gallery")
+    if not gallery:
+        return None
+    for img in gallery.find_all("img"):
+        src = _img_src(img)
+        if src and _is_photo_url(src):
+            return src
+    return None
+
+
 def _extract_og_image(soup: BeautifulSoup) -> Optional[str]:
     """Extract og:image URL from meta tags."""
     meta = soup.find("meta", property="og:image")
@@ -48,26 +88,27 @@ def _extract_og_image(soup: BeautifulSoup) -> Optional[str]:
 
 
 def _extract_article_image(soup: BeautifulSoup) -> Optional[str]:
-    """Extract the main dog image from the article content."""
-    article = soup.find("article")
-    if not article:
+    """Extract the main dog image from the post content."""
+    content = _find_content(soup)
+    if not content:
         return None
     
-    for img in article.find_all("img"):
-        src = img.get("src", "")
+    for img in content.find_all("img"):
+        src = _img_src(img)
         # Look for uploads that are actual dog photos (not logos, icons, etc.)
-        if "wp-content/uploads" in src and "logo" not in src.lower() and "BBB" not in src:
+        if src and _is_photo_url(src):
             return src
     return None
 
 
 def _extract_report_card_url(soup: BeautifulSoup) -> Optional[str]:
     """Find the Pet Report Card PDF link."""
-    for link in soup.find_all("a", href=True):
+    links = soup.select("a.sdpets-pet-button--report-card[href]") or soup.find_all("a", href=True)
+    for link in links:
         href = link["href"]
-        if href.endswith(".pdf") and "wp-content/uploads" in href:
+        if href.lower().endswith(".pdf") and "wp-content/uploads" in href:
             # Skip "coming soon" placeholders
-            if "coming-soon" in href.lower() or "Coming-Soon" in href:
+            if "coming-soon" in href.lower():
                 continue
             return href
     return None
@@ -99,27 +140,36 @@ def _extract_pdf_text(url: str) -> str:
 
 
 def _extract_bio_from_article(soup: BeautifulSoup) -> str:
-    """Extract the dog bio from the article content."""
-    article = soup.find("article")
+    """Extract the dog bio from the post content."""
+    article = _find_content(soup)
     if not article:
         return ""
     
     # Get all text content from the article
     # Remove script/style elements
-    for tag in article.find_all(["script", "style", "nav"]):
+    for tag in article.find_all(["script", "style", "nav", "noscript", "svg"]):
         tag.decompose()
     
     text = article.get_text(separator="\n", strip=True)
+
+    # Merge "Label:" lines with their value ("Breed:\nTerrier mix" → "Breed: Terrier mix")
+    merged: list[str] = []
+    for raw in text.split("\n"):
+        line = raw.strip()
+        if merged and merged[-1].endswith(":") and len(merged[-1]) <= 20 and line:
+            merged[-1] = f"{merged[-1]} {line}"
+        else:
+            merged.append(line)
     
     # Clean up the text — remove navigation breadcrumbs, social share, etc.
-    lines = text.split("\n")
+    lines = merged
     cleaned_lines = []
     skip_patterns = [
         r"^Home\s*/", r"^Back To Home", r"^Submit",
         r"^Shelter Hours:", r"^Address:", r"^389 Requeza",
         r"^See Pet Report Card", r"^Click here for detailed",
         r"^Share this", r"^Facebook", r"^Twitter", r"^Pinterest",
-        r"^Dogs$", r"^\d{4}$",
+        r"^Dogs$", r"^\d{4}$", r"^Pet Details$",
     ]
     
     for line in lines:
@@ -139,9 +189,18 @@ def fetch_record(url: str, target: Dict[str, Any]) -> Dict[str, Any]:
     resp.raise_for_status()
     
     soup = BeautifulSoup(resp.text, "html.parser")
+
+    # Guard against silent layout changes: without this, a theme change saves
+    # blank bios / null images over good data (happened Nov 2026). Raising keeps
+    # the existing record, counts as a scrape error, and the stale-profile
+    # monitor alerts.
+    if _find_content(soup) is None:
+        raise ValueError(f"RCHS page structure changed: no post-content container at {url}")
     
-    # Extract image
-    image_url = _extract_og_image(soup) or _extract_article_image(soup)
+    # Extract image (new gallery first, then legacy og:image / in-content image)
+    image_url = _extract_gallery_image(soup) or _extract_og_image(soup) or _extract_article_image(soup)
+    if not image_url and soup.find(class_="sdpets-gallery") is None:
+        raise ValueError(f"RCHS page structure changed: no photo gallery found at {url}")
     
     # Extract bio from the article
     bio = _extract_bio_from_article(soup)
