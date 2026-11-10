@@ -28,7 +28,7 @@ logger = logging.getLogger("barkbot.monitors")
 KNOWN_SHELTERS = [
     "PACC", "PAWSCH", "MCACC", "RCHS", "DPA", "NHS", "EHR",
     "MV", "RDR", "MP", "WWLA", "PHP", "HSSA", "HHS", "NYCACC", "SAPA",
-    "DGS", "PAWSCO",
+    "DGS", "PAWSCO", "BDW",
 ]
 
 # ── Monitor state (toggles persisted to Supabase) ──────────────────

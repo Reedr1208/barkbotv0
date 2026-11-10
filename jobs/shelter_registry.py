@@ -112,6 +112,10 @@ SHELTER_JOBS = [
     # ── PAWSCO (PawsCo, Denver) ──
     {"job_id": "pawsco_inventory", "module": "jobs.shelters.pawsco.inventory", "call": "scrape_inventory", "cron": "20 */4 * * *"},
     {"job_id": "pawsco_profiles",  "module": "jobs.shelters.pawsco.profiles",  "call": "main",             "cron": "28 * * * *"},
+
+    # ── BDW (Bideawee, NYC) — Shelterluv API ──
+    {"job_id": "bdw_inventory",    "module": "jobs.shelters.bdw.inventory",    "call": "scrape_inventory", "cron": "25 */4 * * *"},
+    {"job_id": "bdw_profiles",     "module": "jobs.shelters.bdw.profiles",     "call": "main",             "cron": "52 * * * *"},
 ]
 
 # Build a lookup dict for run_shelter_job and the scheduler

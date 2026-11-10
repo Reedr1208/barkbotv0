@@ -557,6 +557,7 @@ SHELTER_INVENTORY_JOBS = {
     "SAPA": "sapa_inventory",
     "DGS": "dgs_inventory",
     "PAWSCO": "pawsco_inventory",
+    "BDW": "bdw_inventory",
 }
 
 SHELTER_PROFILES_JOBS = {
@@ -578,6 +579,7 @@ SHELTER_PROFILES_JOBS = {
     "SAPA": "sapa_profiles",
     "DGS": "dgs_profiles",
     "PAWSCO": "pawsco_profiles",
+    "BDW": "bdw_profiles",
 }
 
 

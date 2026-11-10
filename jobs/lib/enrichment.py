@@ -32,6 +32,7 @@ _BIO_MIN_LENGTH = {
     "NYCACC": 1500,
     "MP": 1000,     # Muddy Paws
     "PACC": 800,    # Pima Animal Care Center
+    "BDW": 800,     # Bideawee (~280 chars of structured header + ≥~500 chars narrative)
     "MCACC": 6000,
     "PAWSCH": 1200,
     "WWLA": 1000, "HHS": 1000, "PHP": 1000, "SAPA": 1000, "PAWSCO": 1000,

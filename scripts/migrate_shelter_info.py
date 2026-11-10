@@ -34,6 +34,7 @@ from jobs.lib.db import load_env  # noqa: E402
 import psycopg2  # noqa: E402
 
 SHELTER_WEBSITES = {
+    "BDW": "https://www.bideawee.org/",
     "DGS": "https://doggoneseattle.org/",
     "DPA": "https://dallaspetsalive.org/",
     "EHR": "https://ehrdogs.org/",

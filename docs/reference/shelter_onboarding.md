@@ -40,6 +40,15 @@
 - Profile JSON embedded in the `:animal` attribute of `<iframe-animal>`
 - Inventory usually needs Playwright; profiles can use plain HTTP
 
+### Shelterluv v1 API with a public key (e.g. Bideawee / `BDW`)
+- Some sites (often WordPress themes) render their grid client-side by calling
+  `https://www.shelterluv.com/api/v1/animals?status_type=publishable` with an `X-Api-Key`
+  header that's in their public JS. Search the theme JS for `shelterluv.com/api` / `X-Api-Key`.
+- That's the best case: one JSON request for inventory, `GET /api/v1/animals/{Internal-ID}` per profile, no Playwright.
+  Filter on `Type == "Dog"` (the feed includes cats). Honour any site-side hide rules too (Bideawee hides the `Adopted for Gallery` attribute).
+- Build the bio from the structured fields (breed/sex/age/weight/size/location/published `Attributes`/`AdoptionFeeGroup`) plus the `Description` HTML with repeated adoption-process sentences removed.
+  See `jobs/shelters/bdw/`.
+
 ---
 
 ## Phase 2: Scraper Modules
