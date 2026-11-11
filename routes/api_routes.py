@@ -17,6 +17,7 @@ from starlette.concurrency import run_in_threadpool
 from routes.deps import get_supabase_client, get_image_base_url
 from routes.dog_ranking import apply_hard_filters, build_selection_pool, is_limited_profile_dog, score_candidates, select_dog
 from routes import recommender, shelter_info
+from routes.shelter_slugs import build_shelter_slug_index
 
 router = APIRouter()
 logger = logging.getLogger("barkbot.api")
@@ -694,6 +695,7 @@ async def random_dog(request: Request):
 
             # Add shelter relative_path for share URL construction
             dog_sid = active_dog.get("shelter_id", "")
+            profile["shelter_id"] = dog_sid or profile.get("shelter_id") or ""
             if dog_sid:
                 shelter_res = client.table("shelters").select("relative_path").eq("shelter_id", dog_sid).limit(1).execute()
                 profile["relative_path"] = (shelter_res.data[0].get("relative_path", "") if shelter_res.data else "")
@@ -762,7 +764,9 @@ async def random_dog(request: Request):
         q_altered = (params.get("altered") or "").strip().lower()
         q_dogs = (params.get("dogs") or "").strip().lower()
         q_house_trained = (params.get("house_trained") or "").strip().lower()
+        q_shelter = (params.get("shelter") or "").strip()
 
+        if q_shelter: preferences["shelter"] = q_shelter; has_real_preferences = True
         if q_gender: preferences["gender"] = q_gender; has_real_preferences = True
         if q_age: preferences["age_group"] = q_age; has_real_preferences = True
         if q_size: preferences["size"] = q_size; has_real_preferences = True
@@ -879,6 +883,7 @@ async def random_dog(request: Request):
 
         # Add shelter relative_path for share URL construction
         dog_shelter_id = active_dogs[random_id].get("shelter_id", "")
+        profile["shelter_id"] = dog_shelter_id or profile.get("shelter_id") or ""
         profile["relative_path"] = shelters_map.get(dog_shelter_id, {}).get("relative_path", "")
 
         for key in ["id", "record_hash", "created_at", "last_scrape_run_id"]:
@@ -962,7 +967,9 @@ async def browse_dogs(request: Request):
         q_altered = (params.get("altered") or "").strip().lower()
         q_dogs = (params.get("dogs") or "").strip().lower()
         q_house_trained = (params.get("house_trained") or "").strip().lower()
+        q_shelter = (params.get("shelter") or "").strip()
 
+        if q_shelter: preferences["shelter"] = q_shelter
         if q_gender: preferences["gender"] = q_gender
         if q_age: preferences["age_group"] = q_age
         if q_size: preferences["size"] = q_size
@@ -1007,6 +1014,7 @@ async def browse_dogs(request: Request):
             dogs_list.append({
                 "animal_id": aid,
                 "name": facts.get("dog_name") or active.get("name") or "Unknown",
+                "shelter_id": active.get("shelter_id", ""),
                 "shelter_name": animal.get("shelter_name") or shelter.get("shelter_name", ""),
                 "location": shelter.get("location_display_name", ""),
                 "image_url": image_url,
@@ -1356,9 +1364,11 @@ async def locations(request: Request):
         user_email = (request.query_params.get("email") or "").strip().lower()
         is_beta_user = user_email in BETA_ALLOWED_EMAILS
 
-        res = client.table("shelters").select("shelter_id, location_display_name, relative_path").execute()
+        res = client.table("shelters").select("shelter_id, shelter_name, location_display_name, relative_path").execute()
+        _, slug_by_id = build_shelter_slug_index(res.data or [])
 
         locations_map = {}
+        shelters_list = []
         for row in res.data:
             shelter_id = row.get("shelter_id", "")
             disp = row.get("location_display_name")
@@ -1369,9 +1379,13 @@ async def locations(request: Request):
             if disp not in locations_map:
                 locations_map[disp] = {"display_name": disp, "relative_path": row.get("relative_path") or "", "shelter_ids": []}
             locations_map[disp]["shelter_ids"].append(shelter_id)
+            slug_entry = slug_by_id.get(shelter_id)
+            if slug_entry:
+                shelters_list.append(dict(slug_entry))
 
         locations_list = sorted(locations_map.values(), key=lambda x: x["display_name"])
-        return JSONResponse(content={"locations": locations_list})
+        shelters_list.sort(key=lambda s: (s["name"].lower(), s["shelter_id"]))
+        return JSONResponse(content={"locations": locations_list, "shelters": shelters_list})
 
     except Exception as e:
         logger.error(f"Error fetching locations: {e}")

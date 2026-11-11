@@ -30,6 +30,7 @@ const jsFiles = [
   'js/utils.js',
   'js/ui.js',
   'js/share.js',
+  'js/filters.js',
   'js/dog.js',
   'js/chat.js',
   'js/preferences.js',

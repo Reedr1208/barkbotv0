@@ -85,7 +85,7 @@ function handleSearchInput(e) {
     resultsEl.innerHTML = shown.map(dog => `
       <button class="search-result-item" data-animal-id="${dog.id}" onclick="selectSearchDog('${dog.id}')">
         <img class="search-result-avatar" src="${dog.image_url}" alt="${dog.name}" 
-             onerror="this.src='happy_rescue_pup.png'" loading="lazy" />
+             onerror="this.src='/happy_rescue_pup.png'" loading="lazy" />
         <div class="search-result-info">
           <span class="search-result-name">${escapeHtml(dog.name)}</span>
           <span class="search-result-meta">${escapeHtml(dog.city)}${dog.state ? ', ' + dog.state : ''} · ${dog.shelter_id}</span>

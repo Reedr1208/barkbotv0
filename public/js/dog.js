@@ -121,7 +121,7 @@ function updateBackBtnVisibility() {
 function getDogImageUrl(dog) {
   if (dog.image_file && dog.image_base_url) return dog.image_base_url + dog.image_file;
   if (dog.shelter_image_url) return dog.shelter_image_url;
-  return 'happy_rescue_pup.png';
+  return '/happy_rescue_pup.png';
 }
 
 // ─── Limited-info badge: dogs whose shelter bio is too short for a full ─────
@@ -218,7 +218,7 @@ function resetProfileUI() {
   const rotateDogPhoto = document.getElementById('rotateDogPhoto');
   const rotateDogTitle = document.getElementById('rotateDogTitle');
   const rotateDogText = document.getElementById('rotateDogText');
-  if (rotateDogPhoto) rotateDogPhoto.src = 'happy_rescue_pup.png';
+  if (rotateDogPhoto) rotateDogPhoto.src = '/happy_rescue_pup.png';
   if (rotateDogTitle) rotateDogTitle.innerHTML = 'Find your perfect match! 🐶';
   if (rotateDogText) rotateDogText.textContent = 'ChattyHound is optimized for portrait mode. Spin your device around to continue finding and chatting with shelter dogs! 🐾';
 
@@ -284,6 +284,7 @@ async function fetchDogData(forcedAnimalId) {
   if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.push('age_group=' + encodeURIComponent(currentPrefs.age_group));
   if (currentPrefs.size && currentPrefs.size !== 'any') params.push('size=' + encodeURIComponent(currentPrefs.size));
   if (currentPrefs.location && currentPrefs.location !== 'any' && currentPrefs.location !== 'all') params.push('location=' + encodeURIComponent(currentPrefs.location));
+  if (currentPrefs.shelter) params.push('shelter=' + encodeURIComponent(currentPrefs.shelter));
   if (lifestylePrefs.energy && lifestylePrefs.energy !== 'any') params.push('energy=' + encodeURIComponent(lifestylePrefs.energy));
   if (lifestylePrefs.altered && lifestylePrefs.altered !== 'any') params.push('altered=' + encodeURIComponent(lifestylePrefs.altered));
   if (lifestylePrefs.dogs) params.push('dogs=true');
@@ -292,30 +293,27 @@ async function fetchDogData(forcedAnimalId) {
   return fetch('/api/random_dog?' + params.join('&'));
 }
 
-// ─── syncLocationDropdown: Update header location select to match loaded dog ─
+// ─── syncLocationDropdown: Reconcile Location/Shelter filter with a force-loaded dog ─
+// (shared links, saved dogs, back button). If the dog falls outside the current scope:
+//   • a specific shelter is dropped back to that location's all-shelters scope, and
+//   • a specific location switches to the dog's location (unless the user chose All locations).
 
 function syncLocationDropdown(dog, forcedAnimalId) {
-  const hs = document.getElementById('headerLocationSelect');
-  if (!hs || !window.__CH_LOCATIONS_DATA__ || !dog.shelter_id) return;
+  if (!forcedAnimalId || !dog || !dog.shelter_id || typeof getFilterState !== 'function') return;
+  if (!window.__CH_LOCATIONS_DATA__ || !window.__CH_LOCATIONS_DATA__.length) return;
+
+  const st = getFilterState();
+  const neverChose = currentPrefs.location === 'any';
+  if (!neverChose && dogMatchesFilter(dog, st)) return;
 
   const dogLocObj = window.__CH_LOCATIONS_DATA__.find(l =>
     l.shelter_ids && l.shelter_ids.includes(dog.shelter_id)
   );
-
-  // If user explicitly chose "All Locations", don't override dropdown to dog's specific location
-  const userChoseAll = currentPrefs.location === 'all' || hs.value === 'all';
-
-  if (forcedAnimalId && dogLocObj && !userChoseAll) {
-    // Only sync to dog's location when user hasn't explicitly chosen "All Locations"
-    hs.value = dogLocObj.relative_path;
-    currentPrefs.location = dogLocObj.display_name;
-    localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-    if (typeof setupSelectorButtons === 'function') {
-      setupSelectorButtons('prefLocationGroup', dogLocObj.display_name);
-    }
-  } else if (!dog.user_has_preferences && hs.value === 'any') {
-    hs.value = 'all';
-  }
+  if (neverChose && !dogLocObj) return;
+  const next = (st.location === 'all' && !neverChose)
+    ? { location: 'all', shelter: null }
+    : { location: dogLocObj ? dogLocObj.display_name : st.location, shelter: null };
+  setFilterState(next, { source: 'dog', track: false });
 }
 
 // ─── renderDogProfile: Populate all profile DOM elements ────────────────────
@@ -753,12 +751,12 @@ async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
     }
     updateBackBtnVisibility();
 
+    // Reconcile Location/Shelter filter with a force-loaded dog (before URL/meta use it)
+    syncLocationDropdown(dog, forcedAnimalId);
+
     // Update document metadata & URL
     updateDocumentMetaForDog(dog);
     if (dog.animal_id) updateDogShareUrl(dog.animal_id, true);
-
-    // Sync location dropdown
-    syncLocationDropdown(dog, forcedAnimalId);
 
     // Render all profile sections
     renderDogProfile(dog);

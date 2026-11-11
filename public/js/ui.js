@@ -2,6 +2,7 @@
 // Core UI state transitions, view switching, toasts, and DOM meta updates
 
 function setAppState(state) {
+  document.body.dataset.chAppState = state;
   const profilePanel = document.getElementById('profilePanel');
   const dogUnavailableCard = document.getElementById('dogUnavailableCard');
   const emptyStateCard = document.getElementById('emptyStateCard');
@@ -110,7 +111,7 @@ function showDogUnavailableState(fetchId) {
   const rotateDogPhoto = document.getElementById('rotateDogPhoto');
   const rotateDogTitle = document.getElementById('rotateDogTitle');
   const rotateDogText = document.getElementById('rotateDogText');
-  if (rotateDogPhoto) rotateDogPhoto.src = 'happy_rescue_pup.png';
+  if (rotateDogPhoto) rotateDogPhoto.src = '/happy_rescue_pup.png';
   if (rotateDogTitle) rotateDogTitle.innerHTML = `Dog Unavailable 🐾`;
   if (rotateDogText) rotateDogText.textContent = `This pup is no longer available. Spin your device around to meet other adoptable dogs!`;
 }

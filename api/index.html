@@ -281,18 +281,557 @@
       white-space: nowrap;
     }
 
-    .header-location-select {
-      padding: 8px 30px 8px 12px;
-      font-size: 0.85rem;
-      font-weight: 800;
-      appearance: none;
-      background: rgba(255, 255, 255, 0.1) url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 4px center;
-      color: var(--text-main);
+    /* ── Location + Shelter filter chip (header + browse) ── */
+    .chf-chip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      max-width: 230px;
+      padding: 6px 12px 6px 10px;
+      border-radius: 9999px;
       border: 1px solid rgba(255, 255, 255, 0.15);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05));
+      color: var(--text-main);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      flex-shrink: 1;
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    }
+
+    .chf-chip:hover {
+      border-color: rgba(245, 158, 11, 0.55);
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    .chf-chip:active { transform: scale(0.98); }
+
+    .chf-chip:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.6);
+    }
+
+    .chf-chip[aria-expanded="true"] {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-shadow);
+    }
+
+    .chf-chip__pin {
+      flex-shrink: 0;
+      color: var(--accent);
+    }
+
+    .chf-chip__text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      line-height: 1.1;
+    }
+
+    .chf-chip__loc {
+      font-size: 0.82rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chf-chip__shelter {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.85;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chf-chip.has-shelter .chf-chip__shelter {
+      color: var(--teal);
+      opacity: 1;
+    }
+
+    .chf-chip__chev {
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+
+    .chf-chip[aria-expanded="true"] .chf-chip__chev { transform: rotate(180deg); }
+
+    .chf-chip__dot {
+      display: none;
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 0 2px var(--bg-slate-950);
+    }
+
+    /* ── Shared Location/Shelter picker (desktop popover · mobile bottom sheet) ── */
+    .chf-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 13990;
+      background: rgba(2, 6, 23, 0);
+      transition: background 0.2s ease;
+    }
+
+    .chf-backdrop.is-open { background: rgba(2, 6, 23, 0.28); }
+
+    .chf-panel {
+      position: fixed;
+      z-index: 14000;
+      display: flex;
+      flex-direction: column;
+      max-height: 560px;
+      background: linear-gradient(180deg, rgba(34, 47, 72, 0.985) 0%, rgba(24, 34, 53, 0.985) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 22px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(245, 158, 11, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      transform-origin: top right;
+      transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+      overflow: hidden;
+      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(18px);
+    }
+
+    .chf-panel.is-staged { transform-origin: top left; }
+    .chf-panel.is-open { opacity: 1; transform: none; }
+    .chf-panel:focus { outline: none; }
+
+    .chf-panel.is-sheet {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: auto;
+      width: auto;
+      max-height: min(88dvh, 720px);
+      border-radius: 24px 24px 0 0;
+      border-bottom: none;
+      transform: translateY(100%);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .chf-panel.is-sheet.is-open { transform: translateY(0); }
+
+    .chf-grab {
+      display: none;
+      width: 42px;
+      height: 5px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.22);
+      margin: 8px auto 0;
+      flex-shrink: 0;
+    }
+
+    .chf-panel.is-sheet .chf-grab { display: block; }
+
+    .chf-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px 6px;
+      flex-shrink: 0;
+    }
+
+    .chf-title {
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .chf-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .chf-close {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .chf-close:hover { background: rgba(255, 255, 255, 0.12); transform: rotate(90deg); }
+    .chf-close:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.6); }
+
+    .chf-body {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 8px 18px 12px;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .chf-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .chf-field--shelter {
+      min-height: 0;
+      flex: 1;
+    }
+
+    .chf-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .chf-select-wrap { position: relative; }
+
+    .chf-select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      width: 14px;
+      height: 14px;
+      transform: translateY(-50%);
+      pointer-events: none;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>') no-repeat center / contain;
+    }
+
+    .chf-select,
+    .chf-search-input,
+    .chf-field-btn {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      color: var(--text-main);
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .chf-select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding: 11px 40px 11px 14px;
+      cursor: pointer;
+    }
+
+    .chf-select option { color: #0f172a; background: #ffffff; }
+
+    .chf-select:hover,
+    .chf-field-btn:hover,
+    .chf-search-input:hover { border-color: rgba(255, 255, 255, 0.26); }
+
+    .chf-select:focus-visible,
+    .chf-field-btn:focus-visible,
+    .chf-search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-shadow);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .chf-search {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .chf-search-icon {
+      position: absolute;
+      left: 13px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .chf-search-input {
+      padding: 11px 40px 11px 38px;
+      font-weight: 600;
+    }
+
+    .chf-search-input::placeholder { color: rgba(203, 213, 225, 0.55); font-weight: 600; }
+
+    .chf-search-clear {
+      position: absolute;
+      right: 8px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .chf-search-clear[hidden] { display: none; }
+    .chf-search-clear:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+
+    .chf-list {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      margin: 4px -8px 0;
+      padding: 2px 8px 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    }
+
+    .chf-opt {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      margin-top: 2px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease;
+      user-select: none;
+    }
+
+    .chf-opt__icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .chf-opt--scope-location .chf-opt__icon,
+    .chf-opt--scope-all .chf-opt__icon {
+      background: rgba(20, 184, 166, 0.13);
+      box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.25);
+    }
+
+    .chf-opt__text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .chf-opt__name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .chf-opt--scope-location .chf-opt__name,
+    .chf-opt--scope-all .chf-opt__name { font-weight: 800; }
+
+    .chf-opt__meta {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      opacity: 0.8;
+      margin-top: 1px;
+      line-height: 1.25;
+    }
+
+    .chf-opt mark {
+      background: rgba(245, 158, 11, 0.22);
+      color: var(--accent-hover);
+      border-radius: 3px;
+      padding: 0 1px;
+    }
+
+    .chf-opt__check {
+      flex-shrink: 0;
+      color: var(--accent);
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    .chf-opt.is-active { background: rgba(255, 255, 255, 0.07); }
+
+    .chf-field--shelter:focus-within .chf-opt.is-active {
+      box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 0.75);
+    }
+
+    .chf-opt[aria-selected="true"] {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    .chf-opt[aria-selected="true"] .chf-opt__name { color: var(--cream-highlight); }
+    .chf-opt[aria-selected="true"] .chf-opt__check { opacity: 1; transform: none; }
+
+    .chf-group { margin-top: 6px; }
+
+    .chf-group-label {
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(203, 213, 225, 0.6);
+      padding: 10px 10px 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chf-group-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-soft);
+    }
+
+    .chf-empty {
+      padding: 18px 10px 10px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .chf-foot {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border-soft);
+      padding: 8px 14px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .chf-foot[hidden] { display: none; }
+
+    .chf-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      border: none;
+      background: transparent;
+      color: var(--teal);
+      font: inherit;
+      font-weight: 800;
+      font-size: 0.82rem;
+      padding: 8px 14px;
       border-radius: 9999px;
       cursor: pointer;
-      max-width: 200px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .chf-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chf-copy:hover { background: var(--teal-bg); }
+    .chf-copy:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--teal); }
+    .chf-copy.is-copied { color: var(--accent); }
+
+    .chf-sr-only {
+      position: absolute !important;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Fit modal → Preferred Area: Location + Shelter fields */
+    .pref-area-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .pref-area-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .pref-area-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+
+    .chf-field-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 11px 14px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .chf-field-btn svg { flex-shrink: 0; color: var(--text-muted); }
+
+    .chf-field-btn__text {
+      overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chf-field-btn.has-shelter { border-color: rgba(20, 184, 166, 0.45); }
+    .chf-field-btn.has-shelter .chf-field-btn__text { color: var(--teal); }
+
+    @media (max-width: 520px) {
+      .pref-area-fields { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 799px) {
+      .chf-backdrop.is-open {
+        background: rgba(2, 6, 23, 0.62);
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+      }
+      /* 16px inputs stop iOS from zooming on focus; roomier rows for touch */
+      .chf-select,
+      .chf-search-input,
+      .chf-field-btn { font-size: 16px; }
+      .chf-opt { padding: 10px 10px; min-height: 48px; }
+      .chf-head { padding-top: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .chf-panel,
+      .chf-backdrop,
+      .chf-chip,
+      .chf-close { transition: none; }
+    }
+
+    /* Narrow desktop: make room for the filter chip next to tabs + Next */
+    @media (min-width: 800px) and (max-width: 1100px) {
+      .header .browse-all-btn .hide-mobile { display: none; }
+      .chf-chip { max-width: 180px; }
     }
 
     .shuffle-btn {
@@ -1630,8 +2169,10 @@
       box-shadow: 0 6px 16px var(--accent-shadow);
     }
 
-    /* ── Mobile header: compact icon-only layout ── */
-    @media (max-width: 480px) {
+    /* ── Mobile header: compact icon-only layout ──
+       (applies below the 800px desktop split-pane breakpoint, where the app renders
+       as the 460px phone container and the full header can't fit) */
+    @media (max-width: 799px) {
       .header {
         padding: 8px 8px;
         gap: 4px;
@@ -1677,22 +2218,33 @@
         height: 16px;
       }
 
-      .header-location-select {
-        color: transparent;
+      /* Filter chip collapses to a pin button; ring = specific location, dot = specific shelter */
+      .chf-chip {
         width: 40px;
         min-width: 40px;
         height: 40px;
         padding: 0;
-        background: rgba(255, 255, 255, 0.1) url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center center;
+        gap: 0;
+        justify-content: center;
         border-radius: 50%;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.1);
       }
-      .header-location-select.location-active {
+      .chf-chip__text,
+      .chf-chip__chev {
+        display: none;
+      }
+      .chf-chip__pin {
+        width: 19px;
+        height: 19px;
+        color: var(--text-main);
+      }
+      .chf-chip.is-scoped {
         border-color: var(--accent);
         box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent-shadow);
       }
-      .header-location-select option {
-        color: black;
-      }
+      .chf-chip.is-scoped .chf-chip__pin { color: var(--accent); }
+      .chf-chip.has-shelter .chf-chip__dot { display: block; }
 
       .shuffle-btn {
         padding: 0;
@@ -4020,9 +4572,18 @@
             </svg>
             <span class="hide-mobile">Your Matches</span>
           </button>
-          <select class="header-location-select" id="headerLocationSelect" aria-label="Filter by location">
-            <option value="any" style="color: black;">All Locations 🌎</option>
-          </select>
+          <button type="button" class="chf-chip" id="headerFilterChip" data-ch-filter-chip="header" aria-haspopup="dialog" aria-expanded="false" aria-label="Change location or shelter">
+            <svg class="chf-chip__pin" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+              <circle cx="12" cy="9.5" r="2.5" />
+            </svg>
+            <span class="chf-chip__text" aria-hidden="true">
+              <span class="chf-chip__loc">All locations 🌎</span>
+              <span class="chf-chip__shelter">All shelters</span>
+            </span>
+            <svg class="chf-chip__chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            <span class="chf-chip__dot" aria-hidden="true"></span>
+          </button>
           <button class="shuffle-btn prev-btn" id="prevBtn" aria-label="Go back to previous dog" style="display: none;">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"
               stroke-linecap="round" stroke-linejoin="round">
@@ -4570,7 +5131,7 @@
                 </div>
               </div>
 
-              <!-- Location Row (bottom) -->
+              <!-- Location Row (bottom) — Location + Shelter, staged until Save -->
               <div class="pref-row"
                 style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
@@ -4578,8 +5139,22 @@
                   <span
                     style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Preferred Area</span>
                 </div>
-                <div class="pref-selector-group" id="prefLocationGroup" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                  <button class="pref-btn" data-value="all">All Locations 🌎</button>
+                <div class="pref-area-fields" id="prefAreaFields">
+                  <div class="pref-area-field">
+                    <label class="pref-area-label" for="prefLocationSelect">Location</label>
+                    <div class="chf-select-wrap">
+                      <select id="prefLocationSelect" class="chf-select">
+                        <option value="all">All locations 🌎</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="pref-area-field">
+                    <span class="pref-area-label" id="prefShelterLabel">Shelter</span>
+                    <button type="button" class="chf-field-btn" id="prefShelterBtn" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="prefShelterLabel prefShelterBtnText">
+                      <span class="chf-field-btn__text" id="prefShelterBtnText">All shelters everywhere</span>
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4657,9 +5232,18 @@
           </button>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <select class="header-location-select" id="browseLocationSelect" aria-label="Filter by location">
-            <option value="any" style="color: black;">All Locations 🌎</option>
-          </select>
+          <button type="button" class="chf-chip" id="browseFilterChip" data-ch-filter-chip="browse" aria-haspopup="dialog" aria-expanded="false" aria-label="Change location or shelter">
+            <svg class="chf-chip__pin" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+              <circle cx="12" cy="9.5" r="2.5" />
+            </svg>
+            <span class="chf-chip__text" aria-hidden="true">
+              <span class="chf-chip__loc">All locations 🌎</span>
+              <span class="chf-chip__shelter">All shelters</span>
+            </span>
+            <svg class="chf-chip__chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            <span class="chf-chip__dot" aria-hidden="true"></span>
+          </button>
           <button class="shuffle-btn browse-all-btn" id="browseMeetOneBtn" aria-label="Meet a single dog" title="Meet One">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="4" y="3" width="16" height="18" rx="3" />
@@ -4955,39 +5539,45 @@ function pronounForGender(genderStr) {
   return 'them';
 }
 
+// Dog routes: /dogs/<id>, /dogs/<loc>/<id>, /dogs/<loc>/<shelterSlug>/<id>.
+// /dogs/<loc> and /dogs/<loc>/<shelterSlug> are scope-only (no dog).
 function getDogIdFromPath(pathname) {
   const path = pathname || window.location.pathname;
-  const matchWithLoc = path.match(/^\/dogs\/[^/]+\/([^/?#]+)\/?$/);
-  if (matchWithLoc) return decodeURIComponent(matchWithLoc[1]);
-  const match = path.match(/^\/dogs\/([^/?#]+)\/?$/);
-  if (match) {
-    const val = decodeURIComponent(match[1]);
+  const segs = path.split(/[?#]/)[0].split('/').filter(Boolean);
+  if (segs[0] !== 'dogs') return null;
+  const rest = segs.slice(1).map(s => { try { return decodeURIComponent(s); } catch (_) { return s; } });
+  if (rest.length >= 3) return rest[2];
+  if (rest.length === 2) {
+    if (typeof isShelterSlugPath === 'function' && isShelterSlugPath(rest[0], rest[1])) return null;
+    return rest[1];
+  }
+  if (rest.length === 1) {
+    const val = rest[0];
     if (window.__CH_INITIAL_LOCATION__ === '/' + val) return null;
+    if (typeof isLocationPathSegment === 'function' && isLocationPathSegment(val)) return null;
     return val;
   }
   return null;
 }
 
+// Canonical / share URL — location-only by design (subsequent dogs come from the whole location).
 function getCanonicalDogUrl(animalId, locationPathOverride) {
   let locPath;
   if (locationPathOverride !== undefined) {
     locPath = locationPathOverride;
   } else {
-    const sel = document.getElementById('headerLocationSelect');
-    locPath = sel && sel.value !== 'any' ? sel.value : '';
+    locPath = currentPrefs.location === 'any' ? '' : getFilterLocationPath();
   }
   if (locPath === 'all') locPath = '/alldogs';
   if (!animalId) return CH_CANONICAL_ORIGIN + '/';
   return `${CH_CANONICAL_ORIGIN}/dogs${locPath}/${encodeURIComponent(animalId)}`;
 }
 
+// Address bar — includes the shelter slug when a shelter filter is active.
 function updateDogShareUrl(animalId, replace) {
   if (!animalId) return;
-  const sel = document.getElementById('headerLocationSelect');
-  let locPath = sel && sel.value !== 'any' ? sel.value : '';
-  if (locPath === 'all') locPath = '/alldogs';
-  const target = `/dogs${locPath}/${encodeURIComponent(animalId)}`;
-  const state = { dogId: animalId, locationPath: locPath };
+  const target = buildFilterUrl(undefined, animalId);
+  const state = { dogId: animalId, filter: getFilterState() };
   if (replace) {
     history.replaceState(state, '', target);
   } else {
@@ -5013,6 +5603,7 @@ function getDogImageUrl(dog) {
 // Core UI state transitions, view switching, toasts, and DOM meta updates
 
 function setAppState(state) {
+  document.body.dataset.chAppState = state;
   const profilePanel = document.getElementById('profilePanel');
   const dogUnavailableCard = document.getElementById('dogUnavailableCard');
   const emptyStateCard = document.getElementById('emptyStateCard');
@@ -5121,7 +5712,7 @@ function showDogUnavailableState(fetchId) {
   const rotateDogPhoto = document.getElementById('rotateDogPhoto');
   const rotateDogTitle = document.getElementById('rotateDogTitle');
   const rotateDogText = document.getElementById('rotateDogText');
-  if (rotateDogPhoto) rotateDogPhoto.src = 'happy_rescue_pup.png';
+  if (rotateDogPhoto) rotateDogPhoto.src = '/happy_rescue_pup.png';
   if (rotateDogTitle) rotateDogTitle.innerHTML = `Dog Unavailable 🐾`;
   if (rotateDogText) rotateDogText.textContent = `This pup is no longer available. Spin your device around to meet other adoptable dogs!`;
 }
@@ -5435,6 +6026,798 @@ wireShareButtons();
 
     </script>
     <script>
+// ─── Location & Shelter Filters ─────────────────────────────────────────────
+// Single source of truth for the Location + Shelter filter:
+//   • state  — currentPrefs.location (display_name | 'all' | 'any') + currentPrefs.shelter (shelter_id | null)
+//   • rules  — cascading transitions from WorkingFiles/ChattyHound-Location-and-Shelter-Filters.md
+//   • UI     — header/browse filter chips + one shared picker panel
+//              (anchored popover on desktop, bottom sheet on narrow screens)
+//   • URLs   — /dogs/<loc>[/<shelterSlug>][/<dogId>] in the address bar; dog share links stay location-only
+//
+// Shelter data (id, name, slug, location) comes from /api/locations — the same shelters
+// table that drives dog listings.
+
+window.__CH_SHELTERS_DATA__ = window.__CH_SHELTERS_DATA__ || [];
+
+const CHF_DESKTOP_MIN_WIDTH = 800;
+
+// ─── Data helpers ───────────────────────────────────────────────────────────
+
+function chfLocations() { return window.__CH_LOCATIONS_DATA__ || []; }
+function chfShelters() { return window.__CH_SHELTERS_DATA__ || []; }
+function chfIsAll(loc) { return !loc || loc === 'all' || loc === 'any'; }
+
+function chfStripEmoji(s) {
+  return String(s || '')
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{20E3}]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function chfLocationPlain(name) { return chfIsAll(name) ? 'All locations' : chfStripEmoji(name); }
+function chfCity(name) { return chfStripEmoji(name).replace(/,.*$/, '').trim(); }
+
+function findLocationByName(name) {
+  if (chfIsAll(name)) return null;
+  const clean = chfStripEmoji(name).toLowerCase();
+  return chfLocations().find(l => l.display_name === name)
+    || chfLocations().find(l => chfStripEmoji(l.display_name).toLowerCase() === clean)
+    || null;
+}
+
+function findLocationByPath(path) {
+  if (!path) return null;
+  const p = ('/' + String(path).replace(/^\/+/, '')).toLowerCase();
+  return chfLocations().find(l => (l.relative_path || '').toLowerCase() === p) || null;
+}
+
+function findShelterById(id) {
+  if (!id) return null;
+  const want = String(id).toUpperCase();
+  return chfShelters().find(s => String(s.shelter_id).toUpperCase() === want) || null;
+}
+
+function findShelterBySlug(locPath, slug) {
+  if (!locPath || !slug) return null;
+  const p = ('/' + String(locPath).replace(/^\/+/, '')).toLowerCase();
+  const sl = String(slug).toLowerCase();
+  return chfShelters().find(s => (s.relative_path || '').toLowerCase() === p && s.slug === sl) || null;
+}
+
+function isShelterSlugPath(locSeg, slugSeg) {
+  if (!locSeg || !slugSeg) return false;
+  if (window.__CH_INITIAL_LOCATION__ === '/' + locSeg && window.__CH_INITIAL_SHELTER__ === slugSeg) return true;
+  return !!findShelterBySlug('/' + locSeg, slugSeg);
+}
+
+function isLocationPathSegment(seg) {
+  if (!seg) return false;
+  if (seg === 'alldogs') return true;
+  if (window.__CH_INITIAL_LOCATION__ === '/' + seg) return true;
+  return !!findLocationByPath('/' + seg);
+}
+
+function chfSortByName(list) {
+  return list.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+}
+
+function sheltersInLocation(locName) {
+  const loc = findLocationByName(locName);
+  if (!loc) return [];
+  return chfSortByName(chfShelters().filter(s => s.location === loc.display_name));
+}
+
+// ─── State ──────────────────────────────────────────────────────────────────
+
+function getFilterState() {
+  return {
+    location: chfIsAll(currentPrefs.location) ? 'all' : currentPrefs.location,
+    shelter: currentPrefs.shelter || null,
+  };
+}
+
+// Enforce consistency: a shelter implies its location; unknown shelters fall back to the location scope.
+function normalizeFilterState(s) {
+  let location = chfIsAll(s && s.location) ? 'all' : s.location;
+  let shelter = (s && s.shelter) || null;
+  const haveShelterData = chfShelters().length > 0;
+  const haveLocationData = chfLocations().length > 0;
+
+  if (shelter && haveShelterData) {
+    const sh = findShelterById(shelter);
+    if (!sh) shelter = null;
+    else { shelter = sh.shelter_id; location = sh.location; }
+  }
+  if (location !== 'all' && haveLocationData) {
+    const loc = findLocationByName(location);
+    location = loc ? loc.display_name : 'all';
+    if (!loc) shelter = null;
+  }
+  return { location, shelter };
+}
+
+function dogMatchesFilter(dog, state) {
+  if (!dog || !dog.shelter_id) return false;
+  const st = state || getFilterState();
+  if (st.shelter) return String(dog.shelter_id).toUpperCase() === String(st.shelter).toUpperCase();
+  if (chfIsAll(st.location)) return true;
+  const loc = findLocationByName(st.location);
+  return !!(loc && (loc.shelter_ids || []).includes(dog.shelter_id));
+}
+
+function describeShelterScope(state) {
+  const st = state || getFilterState();
+  if (st.shelter) {
+    const sh = findShelterById(st.shelter);
+    return sh ? sh.name : 'Selected shelter';
+  }
+  return chfIsAll(st.location) ? 'All shelters everywhere' : `All shelters in ${chfLocationPlain(st.location)}`;
+}
+
+/**
+ * Apply a new Location/Shelter state.
+ * opts.source  — analytics source label ('header' | 'browse' | 'prefs' | 'route' | 'dog' | 'detect' | 'init')
+ * opts.apply   — refresh results (dog / browse grid) + push a history entry
+ * opts.persist — write to localStorage (default true)
+ * opts.track   — fire analytics events (default true)
+ */
+function setFilterState(next, opts = {}) {
+  const prev = getFilterState();
+  const state = normalizeFilterState(next);
+
+  // Preserve the "never chosen" marker ('any') unless the user actually picked something.
+  const keepAny = chfIsAll(state.location) && currentPrefs.location === 'any' && opts.source !== 'header' && opts.source !== 'browse' && opts.source !== 'prefs';
+  currentPrefs.location = keepAny ? 'any' : state.location;
+  currentPrefs.shelter = state.shelter || null;
+  if (opts.persist !== false) localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+
+  renderFilterControls();
+
+  const locChanged = prev.location !== state.location;
+  const shelterChanged = prev.shelter !== state.shelter;
+  if ((locChanged || shelterChanged) && opts.track !== false && typeof trackEvent === 'function') {
+    if (locChanged) trackEvent('location_changed', { from_location: prev.location, to_location: state.location, source: opts.source || '' });
+    if (shelterChanged || locChanged) {
+      trackEvent('shelter_changed', {
+        from_shelter: prev.shelter || (chfIsAll(prev.location) ? 'all_everywhere' : 'all_in_location'),
+        to_shelter: state.shelter || (chfIsAll(state.location) ? 'all_everywhere' : 'all_in_location'),
+        location: state.location,
+        source: opts.source || '',
+      });
+    }
+  }
+
+  if ((locChanged || shelterChanged) && opts.apply) applyFilterChange(state);
+  return state;
+}
+
+// Refresh results after a live filter change (SPA — no full page reload).
+function applyFilterChange(state) {
+  const inBrowse = typeof isBrowseMode !== 'undefined' && isBrowseMode;
+  const appState = document.body.dataset.chAppState || '';
+  const keepDog = !inBrowse && currentDogData && appState === 'dog_loaded' && dogMatchesFilter(currentDogData, state);
+
+  const url = buildFilterUrl(state, keepDog ? currentDogData.animal_id : null);
+  try { history.pushState({ filter: state }, '', url); } catch (_) {}
+
+  if (inBrowse) {
+    openBrowseView();
+    return;
+  }
+  if (keepDog) {
+    if (typeof updateDocumentMetaForDog === 'function') updateDocumentMetaForDog(currentDogData);
+    return;
+  }
+  fetchRandomDog();
+}
+
+// ─── URLs ───────────────────────────────────────────────────────────────────
+
+function getFilterLocationPath(state) {
+  const st = state || getFilterState();
+  if (chfIsAll(st.location)) return '/alldogs';
+  const loc = findLocationByName(st.location);
+  return loc ? loc.relative_path : '';
+}
+
+function getFilterShelterSlug(state) {
+  const st = state || getFilterState();
+  const sh = st.shelter ? findShelterById(st.shelter) : null;
+  return sh ? sh.slug : '';
+}
+
+// Address-bar path: /dogs/<loc>[/<shelterSlug>][/<dogId>]
+// (When no location was ever chosen — currentPrefs.location === 'any' — keep the legacy /dogs/<id>.)
+function buildFilterUrl(state, dogId) {
+  const unset = !state && currentPrefs.location === 'any';
+  const st = state || getFilterState();
+  let path = '/dogs' + (unset ? '' : getFilterLocationPath(st));
+  const slug = getFilterShelterSlug(st);
+  if (slug && !chfIsAll(st.location)) path += '/' + slug;
+  if (dogId) path += '/' + encodeURIComponent(dogId);
+  return path === '/dogs' ? '/' : path;
+}
+
+// Shareable link for the current scope: /<loc>/<shelterSlug>, /<loc>, or /dogs/alldogs
+function buildShareableScopeUrl(state) {
+  const st = state || getFilterState();
+  if (chfIsAll(st.location)) return CH_CANONICAL_ORIGIN + '/dogs/alldogs';
+  const locPath = getFilterLocationPath(st);
+  const slug = getFilterShelterSlug(st);
+  return CH_CANONICAL_ORIGIN + (locPath || '') + (slug ? '/' + slug : '');
+}
+
+// Parse location/shelter scope from a path. Returns null when the path carries no scope.
+function parseFilterFromPath(pathname) {
+  const segs = String(pathname || '').split('/').filter(Boolean).map(s => { try { return decodeURIComponent(s); } catch (_) { return s; } });
+  if (!segs.length) return null;
+  let rest = segs;
+  if (segs[0] === 'dogs') rest = segs.slice(1);
+  else if (segs.length > 2) return null;
+  if (!rest.length) return null;
+
+  if (rest[0] === 'alldogs') return { location: 'all', shelter: null };
+  const loc = findLocationByPath('/' + rest[0]);
+  if (!loc) return null;
+  const sh = rest[1] ? findShelterBySlug(loc.relative_path, rest[1]) : null;
+  return { location: loc.display_name, shelter: sh ? sh.shelter_id : null };
+}
+
+// Apply the scope encoded in the current URL (used on back/forward). No history push, no refetch.
+function applyFilterFromPath(pathname) {
+  const parsed = parseFilterFromPath(pathname || window.location.pathname);
+  if (parsed) setFilterState(parsed, { source: 'route', track: false, persist: false });
+}
+
+// Initial state once /api/locations has loaded: URL scope wins, else stored preferences.
+function initFilterState() {
+  const initLoc = window.__CH_INITIAL_LOCATION__ || null;
+  if (initLoc) {
+    let state;
+    if (initLoc === '/alldogs') {
+      state = { location: 'all', shelter: null };
+    } else {
+      const loc = findLocationByPath(initLoc);
+      state = { location: loc ? loc.display_name : 'all', shelter: null };
+      const sh = window.__CH_INITIAL_SHELTER__ ? findShelterBySlug(initLoc, window.__CH_INITIAL_SHELTER__) : null;
+      if (sh) state.shelter = sh.shelter_id;
+    }
+    setFilterState(state, { source: 'init', track: false, persist: false });
+    if (initLoc === '/alldogs') currentPrefs.location = 'all';
+    return;
+  }
+  const stored = { location: currentPrefs.location, shelter: currentPrefs.shelter || null };
+  const norm = normalizeFilterState(stored);
+  const changed = (norm.shelter || null) !== (stored.shelter || null) || (!chfIsAll(stored.location) && norm.location !== stored.location);
+  setFilterState(stored, { source: 'init', track: false, persist: changed });
+}
+
+// ─── Chips (header + browse) ────────────────────────────────────────────────
+
+function renderFilterControls() {
+  const st = getFilterState();
+  const locText = chfIsAll(st.location) ? 'All locations 🌎' : st.location;
+  const sh = st.shelter ? findShelterById(st.shelter) : null;
+  const shelterText = sh ? sh.name : 'All shelters';
+  const scopeText = describeShelterScope(st);
+  const aria = `Filters. Location: ${chfLocationPlain(st.location)}. Shelter: ${scopeText}. Change location or shelter`;
+
+  document.querySelectorAll('[data-ch-filter-chip]').forEach(chip => {
+    const locEl = chip.querySelector('.chf-chip__loc');
+    const shEl = chip.querySelector('.chf-chip__shelter');
+    if (locEl) locEl.textContent = locText;
+    if (shEl) shEl.textContent = shelterText;
+    chip.setAttribute('aria-label', aria);
+    chip.title = `${chfLocationPlain(st.location)} · ${scopeText}`;
+    chip.classList.toggle('is-scoped', !chfIsAll(st.location));
+    chip.classList.toggle('has-shelter', !!sh);
+  });
+
+  if (chfPanel.el && chfPanel.open && chfPanel.mode === 'live') {
+    chfPanel.state = st;
+    renderFilterPanel();
+  }
+}
+
+// ─── Shared picker panel ────────────────────────────────────────────────────
+
+const chfPanel = {
+  el: null, backdrop: null, open: false, mode: 'live',
+  state: { location: 'all', shelter: null }, onChange: null,
+  trigger: null, query: '', activeId: null, source: 'header',
+};
+
+function chfEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function chfFold(s) {
+  return String(s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function chfHighlight(text, query) {
+  if (!query) return chfEsc(text);
+  const i = chfFold(text).indexOf(chfFold(query));
+  if (i < 0) return chfEsc(text);
+  return chfEsc(text.slice(0, i)) + '<mark>' + chfEsc(text.slice(i, i + query.length)) + '</mark>' + chfEsc(text.slice(i + query.length));
+}
+
+function ensureFilterPanel() {
+  if (chfPanel.el) return chfPanel.el;
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'chf-backdrop';
+  backdrop.hidden = true;
+  backdrop.addEventListener('click', () => closeFilterPanel());
+
+  const el = document.createElement('div');
+  el.className = 'chf-panel';
+  el.id = 'chFilterPanel';
+  el.hidden = true;
+  el.tabIndex = -1;
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  el.setAttribute('aria-labelledby', 'chfTitle');
+  el.setAttribute('aria-describedby', 'chfSub');
+  el.innerHTML = `
+    <div class="chf-grab" aria-hidden="true"></div>
+    <div class="chf-head">
+      <div class="chf-head-text">
+        <h2 class="chf-title" id="chfTitle">Where should we look?</h2>
+        <p class="chf-sub" id="chfSub">Pick a location, then narrow it to one shelter if you like.</p>
+      </div>
+      <button type="button" class="chf-close" id="chfCloseBtn" aria-label="Close filters">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="chf-body">
+      <div class="chf-field">
+        <label class="chf-label" for="chfLocation"><span aria-hidden="true">📍</span> Location</label>
+        <div class="chf-select-wrap">
+          <select id="chfLocation" class="chf-select"></select>
+        </div>
+      </div>
+      <div class="chf-field chf-field--shelter">
+        <label class="chf-label" for="chfSearch" id="chfShelterLabel"><span aria-hidden="true">🏠</span> Shelter</label>
+        <div class="chf-search">
+          <svg class="chf-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="chfSearch" class="chf-search-input" type="text" role="combobox"
+            aria-autocomplete="list" aria-expanded="true" aria-controls="chfList" aria-describedby="chfSearchHint"
+            placeholder="Search shelters or cities" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+          <button type="button" class="chf-search-clear" id="chfSearchClear" aria-label="Clear shelter search" hidden>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <p class="chf-sr-only" id="chfSearchHint">Type to filter shelters. Use the up and down arrow keys to move through choices and Enter to select.</p>
+        <div class="chf-list" id="chfList" role="listbox" aria-labelledby="chfShelterLabel"></div>
+      </div>
+    </div>
+    <div class="chf-foot" id="chfFoot">
+      <button type="button" class="chf-copy" id="chfCopyBtn">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+        <span id="chfCopyText">Copy link</span>
+      </button>
+    </div>
+    <div class="chf-sr-only" id="chfLive" aria-live="polite" aria-atomic="true"></div>
+  `;
+
+  document.body.appendChild(backdrop);
+  document.body.appendChild(el);
+  chfPanel.el = el;
+  chfPanel.backdrop = backdrop;
+
+  el.querySelector('#chfCloseBtn').addEventListener('click', () => closeFilterPanel());
+  el.querySelector('#chfLocation').addEventListener('change', (e) => {
+    chfCommit({ location: e.target.value, shelter: null }, { close: false });
+  });
+
+  const search = el.querySelector('#chfSearch');
+  search.addEventListener('input', () => {
+    chfPanel.query = search.value;
+    chfPanel.activeId = null;
+    renderFilterPanel();
+    const firstShelter = chfVisibleOptions().find(o => o.dataset.kind === 'shelter');
+    if (chfPanel.query && firstShelter) chfSetActive(firstShelter.id);
+    else chfSetActive((chfVisibleOptions().find(o => o.getAttribute('aria-selected') === 'true') || chfVisibleOptions()[0] || {}).id);
+  });
+  search.addEventListener('keydown', chfOnSearchKeydown);
+
+  el.querySelector('#chfSearchClear').addEventListener('click', () => {
+    search.value = '';
+    chfPanel.query = '';
+    renderFilterPanel();
+    search.focus();
+  });
+
+  const list = el.querySelector('#chfList');
+  list.addEventListener('click', (e) => {
+    const opt = e.target.closest('[role="option"]');
+    if (opt) chfSelectOption(opt);
+  });
+  list.addEventListener('mousemove', (e) => {
+    const opt = e.target.closest('[role="option"]');
+    if (opt && opt.id !== chfPanel.activeId) chfSetActive(opt.id, { scroll: false });
+  });
+
+  el.querySelector('#chfCopyBtn').addEventListener('click', chfCopyLink);
+
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      e.preventDefault();
+      if (document.activeElement === search && search.value) {
+        search.value = '';
+        chfPanel.query = '';
+        renderFilterPanel();
+      } else {
+        closeFilterPanel();
+      }
+      return;
+    }
+    if (e.key === 'Tab') chfTrapFocus(e);
+  });
+
+  window.addEventListener('resize', () => { if (chfPanel.open) chfPosition(); });
+  return el;
+}
+
+function chfIsDesktop() { return window.innerWidth >= CHF_DESKTOP_MIN_WIDTH; }
+
+/**
+ * Open the picker.
+ * opts.trigger  — element that opened it (focus returns here; anchors the desktop popover)
+ * opts.mode     — 'live' (apply immediately) | 'staged' (report via onChange, e.g. Fit modal)
+ * opts.state    — starting state for staged mode
+ * opts.onChange — staged-mode callback(state)
+ * opts.focus    — 'search' | 'location'
+ */
+function openFilterPanel(opts = {}) {
+  const el = ensureFilterPanel();
+  chfPanel.mode = opts.mode || 'live';
+  chfPanel.onChange = opts.onChange || null;
+  chfPanel.trigger = opts.trigger || null;
+  chfPanel.source = opts.source || 'header';
+  chfPanel.state = normalizeFilterState(opts.state || getFilterState());
+  chfPanel.query = '';
+  chfPanel.activeId = null;
+  el.querySelector('#chfSearch').value = '';
+  el.querySelector('#chfFoot').hidden = chfPanel.mode !== 'live';
+  el.classList.toggle('is-staged', chfPanel.mode !== 'live');
+
+  renderFilterPanel();
+  const selected = el.querySelector('[role="option"][aria-selected="true"]');
+  chfSetActive(selected ? selected.id : null);
+
+  chfPanel.open = true;
+  el.hidden = false;
+  chfPanel.backdrop.hidden = false;
+  el.classList.toggle('is-sheet', !chfIsDesktop());
+  chfPosition();
+  requestAnimationFrame(() => {
+    el.classList.add('is-open');
+    chfPanel.backdrop.classList.add('is-open');
+  });
+  if (chfPanel.trigger) chfPanel.trigger.setAttribute('aria-expanded', 'true');
+
+  // Desktop: straight into type-ahead. Touch/narrow: focus the dialog (avoids popping the keyboard).
+  const focusTarget = opts.focus === 'location'
+    ? el.querySelector('#chfLocation')
+    : (chfIsDesktop() ? el.querySelector('#chfSearch') : el);
+  setTimeout(() => { try { focusTarget.focus({ preventScroll: true }); } catch (_) { focusTarget.focus(); } }, 30);
+  if (selected) setTimeout(() => selected.scrollIntoView({ block: 'nearest' }), 60);
+}
+
+function closeFilterPanel(opts = {}) {
+  if (!chfPanel.el || !chfPanel.open) return;
+  const el = chfPanel.el;
+  chfPanel.open = false;
+  el.classList.remove('is-open');
+  chfPanel.backdrop.classList.remove('is-open');
+  const done = () => { if (!chfPanel.open) { el.hidden = true; chfPanel.backdrop.hidden = true; } };
+  setTimeout(done, 220);
+  if (chfPanel.trigger) {
+    chfPanel.trigger.setAttribute('aria-expanded', 'false');
+    if (opts.returnFocus !== false) {
+      try { chfPanel.trigger.focus({ preventScroll: true }); } catch (_) { chfPanel.trigger.focus(); }
+    }
+  }
+}
+
+function chfPosition() {
+  const el = chfPanel.el;
+  if (!el) return;
+  const sheet = !chfIsDesktop();
+  el.classList.toggle('is-sheet', sheet);
+  if (sheet || !chfPanel.trigger) {
+    el.style.top = el.style.left = el.style.right = el.style.maxHeight = el.style.width = '';
+    return;
+  }
+  const r = chfPanel.trigger.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const width = Math.min(400, vw - 24);
+  let left = r.right - width;
+  if (chfPanel.mode !== 'live') left = r.left;
+  left = Math.max(12, Math.min(left, vw - width - 12));
+  let top = r.bottom + 8;
+  const spaceBelow = vh - top - 12;
+  // Flip above the trigger if there's clearly more room there (e.g. Fit modal near the bottom).
+  if (spaceBelow < 340 && r.top - 20 > spaceBelow) {
+    const maxH = Math.min(560, r.top - 20);
+    top = r.top - 8 - maxH;
+    el.style.maxHeight = maxH + 'px';
+  } else {
+    el.style.maxHeight = Math.min(560, spaceBelow) + 'px';
+  }
+  el.style.width = width + 'px';
+  el.style.left = left + 'px';
+  el.style.right = 'auto';
+  el.style.top = Math.max(12, top) + 'px';
+}
+
+function chfTrapFocus(e) {
+  const el = chfPanel.el;
+  const focusables = Array.from(el.querySelectorAll('button:not([hidden]), select, input'))
+    .filter(n => !n.disabled && n.offsetParent !== null && !n.closest('[hidden]'));
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (e.shiftKey && (document.activeElement === first || document.activeElement === el)) { last.focus(); e.preventDefault(); }
+  else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+}
+
+function chfOption({ id, kind, value, icon, name, meta, selected, query }) {
+  return `
+    <div role="option" id="${id}" class="chf-opt chf-opt--${kind}" data-kind="${kind}" data-value="${chfEsc(value)}" aria-selected="${selected ? 'true' : 'false'}">
+      <span class="chf-opt__icon" aria-hidden="true">${icon}</span>
+      <span class="chf-opt__text">
+        <span class="chf-opt__name">${kind === 'shelter' ? chfHighlight(name, query) : chfEsc(name)}</span>
+        ${meta ? `<span class="chf-opt__meta">${kind === 'shelter' ? chfHighlight(meta, query) : chfEsc(meta)}</span>` : ''}
+      </span>
+      <svg class="chf-opt__check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>`;
+}
+
+function chfGroup(id, label, optionsHtml) {
+  if (!optionsHtml) return '';
+  return `<div role="group" class="chf-group" aria-labelledby="${id}"><div class="chf-group-label" id="${id}" role="presentation">${chfEsc(label)}</div>${optionsHtml}</div>`;
+}
+
+function chfOptId(kind, value) {
+  return 'chf-opt-' + kind + '-' + String(value || 'x').replace(/[^A-Za-z0-9_-]/g, '_');
+}
+
+function renderFilterPanel() {
+  const el = chfPanel.el;
+  if (!el) return;
+  const st = chfPanel.state;
+  const q = (chfPanel.query || '').trim();
+  const fq = chfFold(q);
+  const matches = (s) => !fq || chfFold(s.name).includes(fq) || chfFold(chfStripEmoji(s.location)).includes(fq) || chfFold(s.shelter_id).includes(fq);
+
+  // Location select
+  const sel = el.querySelector('#chfLocation');
+  const locOpts = ['<option value="all">All locations 🌎</option>']
+    .concat(chfLocations().map(l => `<option value="${chfEsc(l.display_name)}">${chfEsc(l.display_name)}</option>`));
+  sel.innerHTML = locOpts.join('');
+  sel.value = chfIsAll(st.location) ? 'all' : st.location;
+
+  // Search affordances
+  el.querySelector('#chfSearchClear').hidden = !q;
+
+  // Shelter list
+  const all = chfSortByName(chfShelters());
+  const total = all.length;
+  let html = '';
+  let shown = 0;
+
+  if (!chfIsAll(st.location)) {
+    const locPlain = chfLocationPlain(st.location);
+    const inLoc = all.filter(s => s.location === st.location);
+    const elsewhere = all.filter(s => s.location !== st.location);
+    const inLocShown = inLoc.filter(matches);
+    const elsewhereShown = elsewhere.filter(matches);
+    shown = inLocShown.length + elsewhereShown.length;
+
+    html += chfOption({
+      id: chfOptId('scope', 'location'), kind: 'scope-location', value: st.location, icon: '📍',
+      name: `All shelters in ${locPlain}`,
+      meta: `${inLoc.length} shelter${inLoc.length === 1 ? '' : 's'}`,
+      selected: !st.shelter,
+    });
+    html += chfGroup('chf-g-in', `Shelters in ${locPlain}`, inLocShown.map(s => chfOption({
+      id: chfOptId('shelter', s.shelter_id), kind: 'shelter', value: s.shelter_id, icon: '🏠',
+      name: s.name, meta: '', selected: st.shelter === s.shelter_id, query: q,
+    })).join(''));
+    html += chfOption({
+      id: chfOptId('scope', 'all'), kind: 'scope-all', value: 'all', icon: '🌎',
+      name: 'All shelters everywhere',
+      meta: `${total} shelters · switches to All locations`,
+      selected: false,
+    });
+    html += chfGroup('chf-g-other', 'Shelters in other locations', elsewhereShown.map(s => chfOption({
+      id: chfOptId('shelter', s.shelter_id), kind: 'shelter', value: s.shelter_id, icon: '🏠',
+      name: s.name, meta: chfLocationPlain(s.location), selected: st.shelter === s.shelter_id, query: q,
+    })).join(''));
+  } else {
+    const allShown = all.filter(matches);
+    shown = allShown.length;
+    html += chfOption({
+      id: chfOptId('scope', 'all'), kind: 'scope-all', value: 'all', icon: '🌎',
+      name: 'All shelters everywhere', meta: `${total} shelters`, selected: !st.shelter,
+    });
+    html += chfGroup('chf-g-all', 'All shelters', allShown.map(s => chfOption({
+      id: chfOptId('shelter', s.shelter_id), kind: 'shelter', value: s.shelter_id, icon: '🏠',
+      name: s.name, meta: chfLocationPlain(s.location), selected: st.shelter === s.shelter_id, query: q,
+    })).join(''));
+  }
+
+  if (q && shown === 0) {
+    html += `<div class="chf-empty" role="presentation">No shelters match “${chfEsc(q)}”.</div>`;
+  }
+
+  const list = el.querySelector('#chfList');
+  list.innerHTML = html;
+
+  if (chfPanel.activeId && !document.getElementById(chfPanel.activeId)) chfPanel.activeId = null;
+  chfSetActive(chfPanel.activeId, { scroll: false });
+
+  if (q) chfAnnounce(shown === 0 ? `No shelters match ${q}` : `${shown} shelter${shown === 1 ? '' : 's'} found`);
+
+  // Copy-link label (live mode)
+  const copyText = el.querySelector('#chfCopyText');
+  if (copyText && !copyText.dataset.flash) {
+    const sh = st.shelter ? findShelterById(st.shelter) : null;
+    copyText.textContent = sh ? `Copy link to ${sh.name}` : (chfIsAll(st.location) ? 'Copy link to all dogs' : `Copy link to ${chfCity(st.location)} dogs`);
+  }
+}
+
+function chfVisibleOptions() {
+  return chfPanel.el ? Array.from(chfPanel.el.querySelectorAll('#chfList [role="option"]')) : [];
+}
+
+function chfSetActive(id, opts = {}) {
+  const el = chfPanel.el;
+  if (!el) return;
+  chfPanel.activeId = id || null;
+  const search = el.querySelector('#chfSearch');
+  chfVisibleOptions().forEach(o => o.classList.toggle('is-active', o.id === id));
+  if (id) {
+    search.setAttribute('aria-activedescendant', id);
+    if (opts.scroll !== false) {
+      const node = document.getElementById(id);
+      if (node) node.scrollIntoView({ block: 'nearest' });
+    }
+  } else {
+    search.removeAttribute('aria-activedescendant');
+  }
+}
+
+function chfOnSearchKeydown(e) {
+  const opts = chfVisibleOptions();
+  if (!opts.length) return;
+  const idx = opts.findIndex(o => o.id === chfPanel.activeId);
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    chfSetActive(opts[Math.min(opts.length - 1, idx + 1)].id);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    chfSetActive(opts[Math.max(0, idx - 1)].id);
+  } else if (e.key === 'PageDown') {
+    e.preventDefault();
+    chfSetActive(opts[Math.min(opts.length - 1, Math.max(0, idx) + 6)].id);
+  } else if (e.key === 'PageUp') {
+    e.preventDefault();
+    chfSetActive(opts[Math.max(0, idx - 6)].id);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const active = opts[idx];
+    if (active) chfSelectOption(active);
+  }
+}
+
+function chfSelectOption(opt) {
+  const kind = opt.dataset.kind;
+  const st = chfPanel.state;
+  if (kind === 'scope-location') {
+    chfCommit({ location: st.location, shelter: null });
+  } else if (kind === 'scope-all') {
+    chfCommit({ location: 'all', shelter: null });
+  } else if (kind === 'shelter') {
+    const sh = findShelterById(opt.dataset.value);
+    if (sh) chfCommit({ location: sh.location, shelter: sh.shelter_id });
+  }
+}
+
+function chfCommit(next, opts = {}) {
+  const close = opts.close !== false;
+  const prev = chfPanel.state;
+  const state = normalizeFilterState(next);
+  chfPanel.state = state;
+
+  if (chfPanel.mode === 'live') {
+    setFilterState(state, { source: chfPanel.source, apply: true });
+  } else if (typeof chfPanel.onChange === 'function') {
+    chfPanel.onChange(state);
+  }
+
+  const scope = describeShelterScope(state);
+  const msg = prev.location !== state.location
+    ? `Location set to ${chfLocationPlain(state.location)}. Shelter: ${scope}.`
+    : `Shelter: ${scope}.`;
+  chfAnnounce(msg);
+
+  if (close) {
+    closeFilterPanel();
+    if (chfPanel.mode === 'live' && typeof showShareToast === 'function' && !chfIsDesktop()) {
+      showShareToast(state.shelter ? `Showing dogs from ${scope}` : (chfIsAll(state.location) ? 'Showing dogs everywhere' : `Showing dogs in ${chfLocationPlain(state.location)}`));
+    }
+  } else {
+    chfPanel.query = '';
+    const search = chfPanel.el.querySelector('#chfSearch');
+    if (search) search.value = '';
+    chfPanel.activeId = null;
+    renderFilterPanel();
+    const selected = chfPanel.el.querySelector('[role="option"][aria-selected="true"]');
+    chfSetActive(selected ? selected.id : null);
+  }
+}
+
+function chfAnnounce(msg) {
+  const live = chfPanel.el && chfPanel.el.querySelector('#chfLive');
+  if (!live) return;
+  live.textContent = '';
+  setTimeout(() => { live.textContent = msg; }, 30);
+}
+
+async function chfCopyLink() {
+  const url = buildShareableScopeUrl(chfPanel.state);
+  const textEl = chfPanel.el.querySelector('#chfCopyText');
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(url);
+    ok = true;
+  } catch (_) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      ok = document.execCommand('copy');
+      ta.remove();
+    } catch (_) {}
+  }
+  if (typeof trackEvent === 'function') trackEvent('filter_link_copied', { url, ok });
+  if (textEl) {
+    textEl.dataset.flash = '1';
+    textEl.textContent = ok ? 'Link copied!' : url;
+    chfPanel.el.querySelector('#chfCopyBtn').classList.toggle('is-copied', ok);
+    chfAnnounce(ok ? 'Link copied to clipboard' : 'Copy this link: ' + url);
+    setTimeout(() => {
+      delete textEl.dataset.flash;
+      chfPanel.el.querySelector('#chfCopyBtn').classList.remove('is-copied');
+      renderFilterPanel();
+    }, 2000);
+  }
+}
+
+// ─── Wiring ─────────────────────────────────────────────────────────────────
+
+document.querySelectorAll('[data-ch-filter-chip]').forEach(chip => {
+  chip.addEventListener('click', async () => {
+    if (chfPanel.open && chfPanel.trigger === chip) { closeFilterPanel(); return; }
+    if (window.__CH_LOCATIONS_PROMISE__) await window.__CH_LOCATIONS_PROMISE__;
+    openFilterPanel({ trigger: chip, mode: 'live', source: chip.dataset.chFilterChip || 'header' });
+  });
+});
+
+renderFilterControls();
+
+    </script>
+    <script>
 // ─── Dog Profile Loading ────────────────────────────────────────────────────
 // fetchRandomDog, favorite handling, and marked configuration
 
@@ -5558,7 +6941,7 @@ function updateBackBtnVisibility() {
 function getDogImageUrl(dog) {
   if (dog.image_file && dog.image_base_url) return dog.image_base_url + dog.image_file;
   if (dog.shelter_image_url) return dog.shelter_image_url;
-  return 'happy_rescue_pup.png';
+  return '/happy_rescue_pup.png';
 }
 
 // ─── Limited-info badge: dogs whose shelter bio is too short for a full ─────
@@ -5655,7 +7038,7 @@ function resetProfileUI() {
   const rotateDogPhoto = document.getElementById('rotateDogPhoto');
   const rotateDogTitle = document.getElementById('rotateDogTitle');
   const rotateDogText = document.getElementById('rotateDogText');
-  if (rotateDogPhoto) rotateDogPhoto.src = 'happy_rescue_pup.png';
+  if (rotateDogPhoto) rotateDogPhoto.src = '/happy_rescue_pup.png';
   if (rotateDogTitle) rotateDogTitle.innerHTML = 'Find your perfect match! 🐶';
   if (rotateDogText) rotateDogText.textContent = 'ChattyHound is optimized for portrait mode. Spin your device around to continue finding and chatting with shelter dogs! 🐾';
 
@@ -5721,6 +7104,7 @@ async function fetchDogData(forcedAnimalId) {
   if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.push('age_group=' + encodeURIComponent(currentPrefs.age_group));
   if (currentPrefs.size && currentPrefs.size !== 'any') params.push('size=' + encodeURIComponent(currentPrefs.size));
   if (currentPrefs.location && currentPrefs.location !== 'any' && currentPrefs.location !== 'all') params.push('location=' + encodeURIComponent(currentPrefs.location));
+  if (currentPrefs.shelter) params.push('shelter=' + encodeURIComponent(currentPrefs.shelter));
   if (lifestylePrefs.energy && lifestylePrefs.energy !== 'any') params.push('energy=' + encodeURIComponent(lifestylePrefs.energy));
   if (lifestylePrefs.altered && lifestylePrefs.altered !== 'any') params.push('altered=' + encodeURIComponent(lifestylePrefs.altered));
   if (lifestylePrefs.dogs) params.push('dogs=true');
@@ -5729,30 +7113,27 @@ async function fetchDogData(forcedAnimalId) {
   return fetch('/api/random_dog?' + params.join('&'));
 }
 
-// ─── syncLocationDropdown: Update header location select to match loaded dog ─
+// ─── syncLocationDropdown: Reconcile Location/Shelter filter with a force-loaded dog ─
+// (shared links, saved dogs, back button). If the dog falls outside the current scope:
+//   • a specific shelter is dropped back to that location's all-shelters scope, and
+//   • a specific location switches to the dog's location (unless the user chose All locations).
 
 function syncLocationDropdown(dog, forcedAnimalId) {
-  const hs = document.getElementById('headerLocationSelect');
-  if (!hs || !window.__CH_LOCATIONS_DATA__ || !dog.shelter_id) return;
+  if (!forcedAnimalId || !dog || !dog.shelter_id || typeof getFilterState !== 'function') return;
+  if (!window.__CH_LOCATIONS_DATA__ || !window.__CH_LOCATIONS_DATA__.length) return;
+
+  const st = getFilterState();
+  const neverChose = currentPrefs.location === 'any';
+  if (!neverChose && dogMatchesFilter(dog, st)) return;
 
   const dogLocObj = window.__CH_LOCATIONS_DATA__.find(l =>
     l.shelter_ids && l.shelter_ids.includes(dog.shelter_id)
   );
-
-  // If user explicitly chose "All Locations", don't override dropdown to dog's specific location
-  const userChoseAll = currentPrefs.location === 'all' || hs.value === 'all';
-
-  if (forcedAnimalId && dogLocObj && !userChoseAll) {
-    // Only sync to dog's location when user hasn't explicitly chosen "All Locations"
-    hs.value = dogLocObj.relative_path;
-    currentPrefs.location = dogLocObj.display_name;
-    localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-    if (typeof setupSelectorButtons === 'function') {
-      setupSelectorButtons('prefLocationGroup', dogLocObj.display_name);
-    }
-  } else if (!dog.user_has_preferences && hs.value === 'any') {
-    hs.value = 'all';
-  }
+  if (neverChose && !dogLocObj) return;
+  const next = (st.location === 'all' && !neverChose)
+    ? { location: 'all', shelter: null }
+    : { location: dogLocObj ? dogLocObj.display_name : st.location, shelter: null };
+  setFilterState(next, { source: 'dog', track: false });
 }
 
 // ─── renderDogProfile: Populate all profile DOM elements ────────────────────
@@ -6190,12 +7571,12 @@ async function fetchRandomDog(forcedAnimalId = null, loadOptions = {}) {
     }
     updateBackBtnVisibility();
 
+    // Reconcile Location/Shelter filter with a force-loaded dog (before URL/meta use it)
+    syncLocationDropdown(dog, forcedAnimalId);
+
     // Update document metadata & URL
     updateDocumentMetaForDog(dog);
     if (dog.animal_id) updateDogShareUrl(dog.animal_id, true);
-
-    // Sync location dropdown
-    syncLocationDropdown(dog, forcedAnimalId);
 
     // Render all profile sections
     renderDogProfile(dog);
@@ -6574,9 +7955,9 @@ function buildRecommendationCard(dog, index) {
   img.alt = dog.name ? `${dog.name}, adoptable dog` : 'Adoptable dog';
   img.loading = 'lazy';
   img.decoding = 'async';
-  img.src = dog.image_url || 'happy_rescue_pup.png';
+  img.src = dog.image_url || '/happy_rescue_pup.png';
   img.addEventListener('error', () => {
-    if (!img.src.endsWith('happy_rescue_pup.png')) img.src = 'happy_rescue_pup.png';
+    if (!img.src.endsWith('happy_rescue_pup.png')) img.src = '/happy_rescue_pup.png';
   }, { once: true });
   photo.appendChild(img);
 
@@ -7184,21 +8565,12 @@ function updateProfileButton() {
 }
 
 function getEffectiveLocation() {
-  // 1. If a location preference is already set, use it
+  // 1. If a location preference is already set (or derived from the URL), use it
   if (currentPrefs.location && currentPrefs.location !== 'any') {
     return currentPrefs.location;
   }
 
-  // 2. Check the header dropdown for the active session location
-  const headerSelect = document.getElementById('headerLocationSelect');
-  if (headerSelect && headerSelect.value && headerSelect.value !== 'any') {
-    if (headerSelect.value === 'all') return 'all';
-    const locations = window.__CH_LOCATIONS_DATA__ || [];
-    const locObj = locations.find(l => l.relative_path === headerSelect.value);
-    if (locObj) return locObj.display_name;
-  }
-
-  // 3. Compute closest location from user coordinates (same logic as random_dog.py)
+  // 2. Compute closest location from user coordinates (same logic as random_dog.py)
   if (userCoords) {
     const regionCoords = {
       'Tucson, AZ 🌵': { lat: 32.2226, lon: -110.9747 },
@@ -7248,14 +8620,18 @@ function openPrefModal() {
   // Always show the wizard directly (no login gate)
   if (prefLoggedInState) prefLoggedInState.style.display = 'block';
 
-  // Compute effective location default
+  // Compute effective location default and stage Location + Shelter together
   const effectiveLocation = getEffectiveLocation();
+  prefStagedFilter = normalizeFilterState({
+    location: effectiveLocation,
+    shelter: (currentPrefs.location && currentPrefs.location !== 'any') ? (currentPrefs.shelter || null) : null,
+  });
+  renderPrefAreaControls();
 
   // Setup initial button states from current preferences
   setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
   setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
   setupSelectorButtons('prefSizeGroup', currentPrefs.size);
-  setupSelectorButtons('prefLocationGroup', effectiveLocation);
   setupSelectorButtons('prefEnergyGroup', lifestylePrefs.energy || 'any');
   setupSelectorButtons('prefAlteredGroup', lifestylePrefs.altered || 'any');
 
@@ -7264,6 +8640,53 @@ function openPrefModal() {
   setupToggleBadge('prefOptHouseTrained', lifestylePrefs.houseTrained);
 
 
+}
+
+// ─── Fit modal: Preferred Area (Location + Shelter, staged until Save) ───────────
+let prefStagedFilter = { location: 'all', shelter: null };
+
+function renderPrefAreaControls() {
+  const sel = document.getElementById('prefLocationSelect');
+  const btnText = document.getElementById('prefShelterBtnText');
+  const btn = document.getElementById('prefShelterBtn');
+  const st = prefStagedFilter;
+  if (sel) {
+    const opts = ['<option value="all">All locations 🌎</option>']
+      .concat((window.__CH_LOCATIONS_DATA__ || []).map(l => {
+        const v = String(l.display_name).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        return `<option value="${v}">${v}</option>`;
+      }));
+    sel.innerHTML = opts.join('');
+    sel.value = (!st.location || st.location === 'all' || st.location === 'any') ? 'all' : st.location;
+  }
+  if (btnText) btnText.textContent = typeof describeShelterScope === 'function' ? describeShelterScope(st) : 'All shelters';
+  if (btn) btn.classList.toggle('has-shelter', !!st.shelter);
+}
+
+const prefLocationSelect = document.getElementById('prefLocationSelect');
+if (prefLocationSelect) {
+  prefLocationSelect.addEventListener('change', (e) => {
+    // Choosing a location resets the shelter to that location's all-shelters scope
+    prefStagedFilter = normalizeFilterState({ location: e.target.value, shelter: null });
+    renderPrefAreaControls();
+  });
+}
+
+const prefShelterBtn = document.getElementById('prefShelterBtn');
+if (prefShelterBtn) {
+  prefShelterBtn.addEventListener('click', async () => {
+    if (window.__CH_LOCATIONS_PROMISE__) await window.__CH_LOCATIONS_PROMISE__;
+    openFilterPanel({
+      trigger: prefShelterBtn,
+      mode: 'staged',
+      source: 'prefs',
+      state: prefStagedFilter,
+      onChange: (state) => {
+        prefStagedFilter = state;
+        renderPrefAreaControls();
+      },
+    });
+  });
 }
 
 function closePrefModal() {
@@ -7319,14 +8742,12 @@ function handleSelectorClick(e) {
 const prefGenderGroup = document.getElementById('prefGenderGroup');
 const prefAgeGroup = document.getElementById('prefAgeGroup');
 const prefSizeGroup = document.getElementById('prefSizeGroup');
-const prefLocationGroup = document.getElementById('prefLocationGroup');
 const prefEnergyGroup = document.getElementById('prefEnergyGroup');
 const prefAlteredGroup = document.getElementById('prefAlteredGroup');
 
 if (prefGenderGroup) prefGenderGroup.addEventListener('click', handleSelectorClick);
 if (prefAgeGroup) prefAgeGroup.addEventListener('click', handleSelectorClick);
 if (prefSizeGroup) prefSizeGroup.addEventListener('click', handleSelectorClick);
-if (prefLocationGroup) prefLocationGroup.addEventListener('click', handleSelectorClick);
 if (prefEnergyGroup) prefEnergyGroup.addEventListener('click', handleSelectorClick);
 if (prefAlteredGroup) prefAlteredGroup.addEventListener('click', handleSelectorClick);
 
@@ -7354,12 +8775,10 @@ async function handleSavePreferences() {
   const genderActive = document.getElementById('prefGenderGroup').querySelector('.pref-btn.active');
   const ageActive = document.getElementById('prefAgeGroup').querySelector('.pref-btn.active');
   const sizeActive = document.getElementById('prefSizeGroup').querySelector('.pref-btn.active');
-  const locationActive = document.getElementById('prefLocationGroup').querySelector('.pref-btn.active');
 
   const gender = genderActive ? genderActive.getAttribute('data-value') : 'any';
   const age_group = ageActive ? ageActive.getAttribute('data-value') : 'any';
   const size = sizeActive ? sizeActive.getAttribute('data-value') : 'any';
-  const location = locationActive ? locationActive.getAttribute('data-value') : 'any';
 
   // Save advanced lifestyle preferences
   const energyActive = document.getElementById('prefEnergyGroup').querySelector('.pref-btn.active');
@@ -7371,8 +8790,10 @@ async function handleSavePreferences() {
   savePrefBtn.disabled = true;
   savePrefBtn.textContent = 'Saving...';
 
-  currentPrefs = { gender, age_group, size, location };
-  localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+  currentPrefs = { ...currentPrefs, gender, age_group, size };
+  // Apply the staged Location + Shelter together (persists currentPrefs, re-renders chips)
+  const areaState = setFilterState(prefStagedFilter, { source: 'prefs' });
+  const location = areaState.location;
 
   // Sync to backend (non-blocking)
   fetch('/api/save_preferences', {
@@ -7381,19 +8802,8 @@ async function handleSavePreferences() {
     body: JSON.stringify({ email: userEmail, preferences: { gender, age_group, size, location } })
   }).catch(() => {});
 
-  // Sync header location dropdown with preference center selection
-  const headerSelect = document.getElementById('headerLocationSelect');
-  if (headerSelect && window.__CH_LOCATIONS_DATA__) {
-    if (location === 'any' || location === 'all') {
-      headerSelect.value = location === 'any' ? 'all' : 'all';
-    } else {
-      const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === location);
-      if (locObj) headerSelect.value = locObj.relative_path;
-    }
-  }
-
   closePrefModal();
-  trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
+  trackEvent('preferences_saved', { gender, age_group, size, location, shelter: areaState.shelter || 'all', ...lifestylePrefs });
 
   // If in browse mode, stay in browse and refresh results; otherwise go to app view
   if (typeof isBrowseMode !== 'undefined' && isBrowseMode) {
@@ -7409,7 +8819,7 @@ async function handleSavePreferences() {
 
 async function resetPreferences() {
   // 1. Clear local state
-  currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
+  currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any', shelter: null };
   lifestylePrefs = {
     energy: 'any',
     altered: 'any',
@@ -7432,7 +8842,9 @@ async function resetPreferences() {
   setupSelectorButtons('prefGenderGroup', 'any');
   setupSelectorButtons('prefAgeGroup', 'any');
   setupSelectorButtons('prefSizeGroup', 'any');
-  setupSelectorButtons('prefLocationGroup', 'any');
+  prefStagedFilter = { location: 'all', shelter: null };
+  renderPrefAreaControls();
+  if (typeof renderFilterControls === 'function') renderFilterControls();
   setupSelectorButtons('prefEnergyGroup', 'any');
   setupSelectorButtons('prefAlteredGroup', 'any');
   lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));
@@ -7490,6 +8902,7 @@ const browseEmpty = document.getElementById('browseEmpty');
 
 // Track whether we're currently in browse mode (used by preferences.js)
 let isBrowseMode = false;
+let browseFetchToken = 0;
 
 async function openBrowseView(returnTo) {
   isBrowseMode = true;
@@ -7501,8 +8914,8 @@ async function openBrowseView(returnTo) {
   if (browseEmpty) browseEmpty.style.display = 'none';
   if (browseCount) browseCount.textContent = '';
 
-  // Sync the browse location selector with the main one
-  syncBrowseLocationSelect();
+  // Keep the browse filter chip in sync with the shared Location/Shelter state
+  if (typeof renderFilterControls === 'function') renderFilterControls();
 
   // Build query params from current preferences
   const params = new URLSearchParams({ email: userEmail });
@@ -7510,20 +8923,30 @@ async function openBrowseView(returnTo) {
   if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.set('age_group', currentPrefs.age_group);
   if (currentPrefs.size && currentPrefs.size !== 'any') params.set('size', currentPrefs.size);
   if (currentPrefs.location && currentPrefs.location !== 'any') params.set('location', currentPrefs.location);
+  if (currentPrefs.shelter) params.set('shelter', currentPrefs.shelter);
   if (lifestylePrefs.energy && lifestylePrefs.energy !== 'any') params.set('energy', lifestylePrefs.energy);
   if (lifestylePrefs.altered && lifestylePrefs.altered !== 'any') params.set('altered', lifestylePrefs.altered);
   if (lifestylePrefs.dogs) params.set('dogs', 'true');
   if (lifestylePrefs.houseTrained) params.set('house_trained', 'true');
 
+  const fetchToken = ++browseFetchToken;
   try {
     const res = await fetch(`/api/browse_dogs?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch dogs');
     const data = await res.json();
+    if (fetchToken !== browseFetchToken) return; // a newer filter change superseded this request
 
     if (browseLoading) browseLoading.style.display = 'none';
 
     if (!data.dogs || data.dogs.length === 0) {
-      if (browseEmpty) browseEmpty.style.display = 'flex';
+      if (browseEmpty) {
+        browseEmpty.style.display = 'flex';
+        const emptyP = browseEmpty.querySelector('p');
+        const scopeName = currentPrefs.shelter && typeof describeShelterScope === 'function' ? describeShelterScope() : '';
+        if (emptyP) emptyP.textContent = scopeName
+          ? `No dogs at ${scopeName} match your current preferences.`
+          : 'No dogs match your current preferences.';
+      }
       if (browseCount) browseCount.textContent = '0 dogs';
       return;
     }
@@ -7534,16 +8957,18 @@ async function openBrowseView(returnTo) {
     const fragment = document.createDocumentFragment();
     for (const dog of data.dogs) {
       const tile = document.createElement('a');
-      const path = dog.relative_path ? `/dogs${dog.relative_path}/${dog.animal_id}` : `/dogs/${dog.animal_id}`;
+      const path = typeof buildFilterUrl === 'function'
+        ? buildFilterUrl(undefined, dog.animal_id)
+        : (dog.relative_path ? `/dogs${dog.relative_path}/${dog.animal_id}` : `/dogs/${dog.animal_id}`);
       tile.href = path;
       tile.className = 'browse-tile';
       tile.setAttribute('data-animal-id', dog.animal_id);
 
       const img = document.createElement('img');
-      img.src = dog.image_url || 'happy_rescue_pup.png';
+      img.src = dog.image_url || '/happy_rescue_pup.png';
       img.alt = dog.name;
       img.loading = 'lazy';
-      img.onerror = function() { this.src = 'happy_rescue_pup.png'; };
+      img.onerror = function() { this.src = '/happy_rescue_pup.png'; };
       tile.appendChild(img);
 
       const info = document.createElement('div');
@@ -7566,6 +8991,7 @@ async function openBrowseView(returnTo) {
     browseGrid.appendChild(fragment);
 
   } catch (err) {
+    if (fetchToken !== browseFetchToken) return;
     console.error('Browse dogs error:', err);
     if (browseLoading) browseLoading.style.display = 'none';
     if (browseEmpty) {
@@ -7579,24 +9005,13 @@ async function openBrowseView(returnTo) {
 function closeBrowseView() {
   isBrowseMode = false;
   switchView('app');
-}
-
-// Sync the browse location dropdown with the main header's location dropdown
-function syncBrowseLocationSelect() {
-  const mainSelect = document.getElementById('headerLocationSelect');
-  const browseSelect = document.getElementById('browseLocationSelect');
-  if (!mainSelect || !browseSelect) return;
-
-  // Copy options from main select
-  browseSelect.innerHTML = '';
-  for (const opt of mainSelect.options) {
-    const newOpt = document.createElement('option');
-    newOpt.value = opt.value;
-    newOpt.textContent = opt.textContent;
-    newOpt.style.color = 'black';
-    browseSelect.appendChild(newOpt);
+  // If the filter changed while browsing and the dog on screen no longer fits, meet a new one.
+  const dogShown = currentDogData && document.body.dataset.chAppState === 'dog_loaded';
+  if (typeof dogMatchesFilter === 'function' && (!dogShown || !dogMatchesFilter(currentDogData))) {
+    fetchRandomDog();
+  } else if (currentDogData && currentDogData.animal_id) {
+    updateDogShareUrl(currentDogData.animal_id, true);
   }
-  browseSelect.value = mainSelect.value;
 }
 
 // ─── Event listeners ──────────────────────────────────────────────
@@ -7661,21 +9076,7 @@ function updateBrowseSavedBtn() {
   }
 }
 
-// Browse location selector — change location and refresh browse
-const browseLocationSelect = document.getElementById('browseLocationSelect');
-if (browseLocationSelect) {
-  browseLocationSelect.addEventListener('change', (e) => {
-    const val = e.target.value;
-    // Sync to main header select
-    const mainSelect = document.getElementById('headerLocationSelect');
-    if (mainSelect) mainSelect.value = val;
-    // Update prefs
-    currentPrefs.location = val === 'any' ? 'any' : browseLocationSelect.options[browseLocationSelect.selectedIndex].textContent.trim();
-    localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-    // Refresh browse
-    openBrowseView();
-  });
-}
+// Browse location/shelter filtering is handled by the shared filter chip (see filters.js)
 
     </script>
     <script>
@@ -8340,7 +9741,7 @@ function handleSearchInput(e) {
     resultsEl.innerHTML = shown.map(dog => `
       <button class="search-result-item" data-animal-id="${dog.id}" onclick="selectSearchDog('${dog.id}')">
         <img class="search-result-avatar" src="${dog.image_url}" alt="${dog.name}" 
-             onerror="this.src='happy_rescue_pup.png'" loading="lazy" />
+             onerror="this.src='/happy_rescue_pup.png'" loading="lazy" />
         <div class="search-result-info">
           <span class="search-result-name">${escapeHtml(dog.name)}</span>
           <span class="search-result-meta">${escapeHtml(dog.city)}${dog.state ? ', ' + dog.state : ''} · ${dog.shelter_id}</span>
@@ -8555,115 +9956,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── App Initialization ─────────────────────────────────────────────────────
 // Startup, route handling, event listener wiring, and locations population
 
-// ─── Locations Data Population ───────────────────────────────────────────
+// ─── Locations + Shelters Data Population ───────────────────────────────
+// Feeds the shared Location/Shelter filter (filters.js). Initial scope comes from the
+// URL when present (/nyc, /nyc/bideawee, /dogs/nyc/..., /dogs/alldogs/...), else stored prefs.
 window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
   try {
     const locUrl = userEmail ? '/api/locations?email=' + encodeURIComponent(userEmail) : '/api/locations';
     const res = await fetch(locUrl);
     if (res.ok) {
       const data = await res.json();
-      const group = document.getElementById('prefLocationGroup');
-      const headerSelect = document.getElementById('headerLocationSelect');
       if (data.locations) {
         window.__CH_LOCATIONS_DATA__ = data.locations;
-        
-        if (group) {
-          group.innerHTML = '<button class="pref-btn" data-value="all">All Locations 🌎</button>';
-          data.locations.forEach(loc => {
-            const btn = document.createElement('button');
-            btn.className = 'pref-btn';
-            btn.dataset.value = loc.display_name;
-            btn.textContent = loc.display_name;
-            group.appendChild(btn);
-          });
-        }
-        
-        if (headerSelect) {
-          headerSelect.innerHTML = '<option value="any" style="display:none;">Select Location...</option><option value="all" style="color: black;">All Locations 🌎</option>';
-          data.locations.forEach(loc => {
-            const opt = document.createElement('option');
-            opt.value = loc.relative_path;
-            opt.style.color = 'black';
-            opt.textContent = loc.display_name;
-            headerSelect.appendChild(opt);
-          });
-        }
-
-        // Determine initial location from injected meta or preferences
-        const initLoc = window.__CH_INITIAL_LOCATION__ || null;
-        if (initLoc && headerSelect) {
-          if (initLoc === '/alldogs') {
-            headerSelect.value = 'all';
-            setupSelectorButtons('prefLocationGroup', 'all');
-            currentPrefs.location = 'all';
-          } else {
-            headerSelect.value = initLoc;
-            // Also update preferences modal silently
-            const locObj = data.locations.find(l => l.relative_path === initLoc);
-            if (locObj) {
-              setupSelectorButtons('prefLocationGroup', locObj.display_name);
-              currentPrefs.location = locObj.display_name;
-            }
-          }
-        } else if (currentPrefs && currentPrefs.location) {
-          setupSelectorButtons('prefLocationGroup', currentPrefs.location);
-          if (currentPrefs.location === 'all' && headerSelect) {
-            headerSelect.value = 'all';
-          } else {
-            const locObj = data.locations.find(l => l.display_name === currentPrefs.location);
-            if (locObj && headerSelect) headerSelect.value = locObj.relative_path;
-          }
-        }
-
-        // Helper: toggle glow indicator on mobile when a specific location is active
-        function updateLocationIndicator() {
-          if (!headerSelect) return;
-          const v = headerSelect.value;
-          headerSelect.classList.toggle('location-active', v !== 'any' && v !== 'all');
-        }
-        updateLocationIndicator();
-
-        // Bind event listener to headerLocationSelect
-        if (headerSelect) {
-          headerSelect.addEventListener('change', async (e) => {
-            const selectedPath = e.target.value;
-            const locObj = data.locations.find(l => l.relative_path === selectedPath);
-            
-            // Update preferences
-            const prevLocation = currentPrefs.location || 'any';
-            const newLocName = locObj ? locObj.display_name : (selectedPath === 'all' ? 'all' : 'any');
-            currentPrefs.location = newLocName;
-            localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-            setupSelectorButtons('prefLocationGroup', newLocName);
-            updateLocationIndicator();
-
-            trackEvent('location_changed', { from_location: prevLocation, to_location: newLocName });
-            
-            // Check if current dog matches new location
-            let shouldKeepDog = false;
-            if ((selectedPath === 'all' || selectedPath === 'any') && currentDogData) {
-              shouldKeepDog = true;
-            } else if (locObj && currentDogData && currentDogData.shelter_id) {
-              if (locObj.shelter_ids.includes(currentDogData.shelter_id)) {
-                shouldKeepDog = true;
-              }
-            }
-            
-            if (shouldKeepDog) {
-              // Just update URL and stay
-              let targetUrl = `/dogs/${currentDogData.animal_id}`;
-              if (selectedPath === 'all') targetUrl = `/dogs/alldogs/${currentDogData.animal_id}`;
-              else if (selectedPath !== 'any') targetUrl = `/dogs${selectedPath}/${currentDogData.animal_id}`;
-              window.location.href = targetUrl;
-            } else {
-              // Redirect to the new location path (will trigger a new random fetch)
-              let targetUrl = '/dogs';
-              if (selectedPath === 'all') targetUrl = '/dogs/alldogs';
-              else if (selectedPath !== 'any') targetUrl = `/dogs${selectedPath}`;
-              window.location.href = targetUrl;
-            }
-          });
-        }
+        window.__CH_SHELTERS_DATA__ = data.shelters || [];
+        initFilterState();
       }
     }
   } catch (e) {
@@ -8761,14 +10066,7 @@ if (landingStartBtn) {
     const detectedCity = window.__CH_DETECTED_CITY__;
     if (detectedCity && (!currentPrefs.location || currentPrefs.location === 'any' || currentPrefs.location === 'all')) {
       await window.__CH_LOCATIONS_PROMISE__;  // ensure locations data is loaded
-      currentPrefs.location = detectedCity;
-      localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-      setupSelectorButtons('prefLocationGroup', detectedCity);
-      const headerSelect = document.getElementById('headerLocationSelect');
-      if (headerSelect) {
-        const locObj = (window.__CH_LOCATIONS_DATA__ || []).find(l => l.display_name === detectedCity);
-        if (locObj) headerSelect.value = locObj.relative_path;
-      }
+      setFilterState({ location: detectedCity, shelter: null }, { source: 'detect', track: false });
     } else if (!currentPrefs.location || currentPrefs.location === 'any' || currentPrefs.location === 'all') {
       // Fallback: try API detection
       try {
@@ -8777,14 +10075,7 @@ if (landingStartBtn) {
         if (detectRes.ok) {
           const detectData = await detectRes.json();
           if (detectData.location) {
-            currentPrefs.location = detectData.location;
-            localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-            setupSelectorButtons('prefLocationGroup', detectData.location);
-            const headerSelect = document.getElementById('headerLocationSelect');
-            if (headerSelect) {
-              const locObj = (window.__CH_LOCATIONS_DATA__ || []).find(l => l.display_name === detectData.location);
-              if (locObj) headerSelect.value = locObj.relative_path;
-            }
+            setFilterState({ location: detectData.location, shelter: null }, { source: 'detect', track: false });
           }
         }
       } catch (e) {
@@ -8851,6 +10142,14 @@ if (dogUnavailableCtaBtn) {
 
 
 window.addEventListener('popstate', () => {
+  // Restore the Location/Shelter scope encoded in the path (no history push, no refetch here)
+  if (typeof applyFilterFromPath === 'function') applyFilterFromPath(window.location.pathname);
+  if (typeof closeFilterPanel === 'function') closeFilterPanel({ returnFocus: false });
+
+  if (typeof isBrowseMode !== 'undefined' && isBrowseMode) {
+    openBrowseView();
+    return;
+  }
   const routeDogId = getDogIdFromPath();
   if (routeDogId) {
     openSharedDogFromRoute(routeDogId);
@@ -9063,7 +10362,7 @@ function handleSwipe() {
   <div class="orientation-overlay" aria-hidden="true">
     <div class="orientation-card">
       <div class="rotate-dog-img-container">
-        <img id="rotateDogPhoto" class="rotate-dog-img" src="happy_rescue_pup.png" alt="Rescue Pup">
+        <img id="rotateDogPhoto" class="rotate-dog-img" src="/happy_rescue_pup.png" alt="Rescue Pup">
       </div>
       <h3 class="orientation-title" id="rotateDogTitle">Find your perfect match! 🐶</h3>
       <p class="orientation-text" id="rotateDogText">ChattyHound is optimized for portrait mode. Spin your device around to continue finding and chatting with shelter dogs! 🐾</p>

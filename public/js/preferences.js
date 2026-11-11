@@ -178,21 +178,12 @@ function updateProfileButton() {
 }
 
 function getEffectiveLocation() {
-  // 1. If a location preference is already set, use it
+  // 1. If a location preference is already set (or derived from the URL), use it
   if (currentPrefs.location && currentPrefs.location !== 'any') {
     return currentPrefs.location;
   }
 
-  // 2. Check the header dropdown for the active session location
-  const headerSelect = document.getElementById('headerLocationSelect');
-  if (headerSelect && headerSelect.value && headerSelect.value !== 'any') {
-    if (headerSelect.value === 'all') return 'all';
-    const locations = window.__CH_LOCATIONS_DATA__ || [];
-    const locObj = locations.find(l => l.relative_path === headerSelect.value);
-    if (locObj) return locObj.display_name;
-  }
-
-  // 3. Compute closest location from user coordinates (same logic as random_dog.py)
+  // 2. Compute closest location from user coordinates (same logic as random_dog.py)
   if (userCoords) {
     const regionCoords = {
       'Tucson, AZ 🌵': { lat: 32.2226, lon: -110.9747 },
@@ -242,14 +233,18 @@ function openPrefModal() {
   // Always show the wizard directly (no login gate)
   if (prefLoggedInState) prefLoggedInState.style.display = 'block';
 
-  // Compute effective location default
+  // Compute effective location default and stage Location + Shelter together
   const effectiveLocation = getEffectiveLocation();
+  prefStagedFilter = normalizeFilterState({
+    location: effectiveLocation,
+    shelter: (currentPrefs.location && currentPrefs.location !== 'any') ? (currentPrefs.shelter || null) : null,
+  });
+  renderPrefAreaControls();
 
   // Setup initial button states from current preferences
   setupSelectorButtons('prefGenderGroup', currentPrefs.gender);
   setupSelectorButtons('prefAgeGroup', currentPrefs.age_group);
   setupSelectorButtons('prefSizeGroup', currentPrefs.size);
-  setupSelectorButtons('prefLocationGroup', effectiveLocation);
   setupSelectorButtons('prefEnergyGroup', lifestylePrefs.energy || 'any');
   setupSelectorButtons('prefAlteredGroup', lifestylePrefs.altered || 'any');
 
@@ -258,6 +253,53 @@ function openPrefModal() {
   setupToggleBadge('prefOptHouseTrained', lifestylePrefs.houseTrained);
 
 
+}
+
+// ─── Fit modal: Preferred Area (Location + Shelter, staged until Save) ───────────
+let prefStagedFilter = { location: 'all', shelter: null };
+
+function renderPrefAreaControls() {
+  const sel = document.getElementById('prefLocationSelect');
+  const btnText = document.getElementById('prefShelterBtnText');
+  const btn = document.getElementById('prefShelterBtn');
+  const st = prefStagedFilter;
+  if (sel) {
+    const opts = ['<option value="all">All locations 🌎</option>']
+      .concat((window.__CH_LOCATIONS_DATA__ || []).map(l => {
+        const v = String(l.display_name).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        return `<option value="${v}">${v}</option>`;
+      }));
+    sel.innerHTML = opts.join('');
+    sel.value = (!st.location || st.location === 'all' || st.location === 'any') ? 'all' : st.location;
+  }
+  if (btnText) btnText.textContent = typeof describeShelterScope === 'function' ? describeShelterScope(st) : 'All shelters';
+  if (btn) btn.classList.toggle('has-shelter', !!st.shelter);
+}
+
+const prefLocationSelect = document.getElementById('prefLocationSelect');
+if (prefLocationSelect) {
+  prefLocationSelect.addEventListener('change', (e) => {
+    // Choosing a location resets the shelter to that location's all-shelters scope
+    prefStagedFilter = normalizeFilterState({ location: e.target.value, shelter: null });
+    renderPrefAreaControls();
+  });
+}
+
+const prefShelterBtn = document.getElementById('prefShelterBtn');
+if (prefShelterBtn) {
+  prefShelterBtn.addEventListener('click', async () => {
+    if (window.__CH_LOCATIONS_PROMISE__) await window.__CH_LOCATIONS_PROMISE__;
+    openFilterPanel({
+      trigger: prefShelterBtn,
+      mode: 'staged',
+      source: 'prefs',
+      state: prefStagedFilter,
+      onChange: (state) => {
+        prefStagedFilter = state;
+        renderPrefAreaControls();
+      },
+    });
+  });
 }
 
 function closePrefModal() {
@@ -313,14 +355,12 @@ function handleSelectorClick(e) {
 const prefGenderGroup = document.getElementById('prefGenderGroup');
 const prefAgeGroup = document.getElementById('prefAgeGroup');
 const prefSizeGroup = document.getElementById('prefSizeGroup');
-const prefLocationGroup = document.getElementById('prefLocationGroup');
 const prefEnergyGroup = document.getElementById('prefEnergyGroup');
 const prefAlteredGroup = document.getElementById('prefAlteredGroup');
 
 if (prefGenderGroup) prefGenderGroup.addEventListener('click', handleSelectorClick);
 if (prefAgeGroup) prefAgeGroup.addEventListener('click', handleSelectorClick);
 if (prefSizeGroup) prefSizeGroup.addEventListener('click', handleSelectorClick);
-if (prefLocationGroup) prefLocationGroup.addEventListener('click', handleSelectorClick);
 if (prefEnergyGroup) prefEnergyGroup.addEventListener('click', handleSelectorClick);
 if (prefAlteredGroup) prefAlteredGroup.addEventListener('click', handleSelectorClick);
 
@@ -348,12 +388,10 @@ async function handleSavePreferences() {
   const genderActive = document.getElementById('prefGenderGroup').querySelector('.pref-btn.active');
   const ageActive = document.getElementById('prefAgeGroup').querySelector('.pref-btn.active');
   const sizeActive = document.getElementById('prefSizeGroup').querySelector('.pref-btn.active');
-  const locationActive = document.getElementById('prefLocationGroup').querySelector('.pref-btn.active');
 
   const gender = genderActive ? genderActive.getAttribute('data-value') : 'any';
   const age_group = ageActive ? ageActive.getAttribute('data-value') : 'any';
   const size = sizeActive ? sizeActive.getAttribute('data-value') : 'any';
-  const location = locationActive ? locationActive.getAttribute('data-value') : 'any';
 
   // Save advanced lifestyle preferences
   const energyActive = document.getElementById('prefEnergyGroup').querySelector('.pref-btn.active');
@@ -365,8 +403,10 @@ async function handleSavePreferences() {
   savePrefBtn.disabled = true;
   savePrefBtn.textContent = 'Saving...';
 
-  currentPrefs = { gender, age_group, size, location };
-  localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
+  currentPrefs = { ...currentPrefs, gender, age_group, size };
+  // Apply the staged Location + Shelter together (persists currentPrefs, re-renders chips)
+  const areaState = setFilterState(prefStagedFilter, { source: 'prefs' });
+  const location = areaState.location;
 
   // Sync to backend (non-blocking)
   fetch('/api/save_preferences', {
@@ -375,19 +415,8 @@ async function handleSavePreferences() {
     body: JSON.stringify({ email: userEmail, preferences: { gender, age_group, size, location } })
   }).catch(() => {});
 
-  // Sync header location dropdown with preference center selection
-  const headerSelect = document.getElementById('headerLocationSelect');
-  if (headerSelect && window.__CH_LOCATIONS_DATA__) {
-    if (location === 'any' || location === 'all') {
-      headerSelect.value = location === 'any' ? 'all' : 'all';
-    } else {
-      const locObj = window.__CH_LOCATIONS_DATA__.find(l => l.display_name === location);
-      if (locObj) headerSelect.value = locObj.relative_path;
-    }
-  }
-
   closePrefModal();
-  trackEvent('preferences_saved', { gender, age_group, size, location, ...lifestylePrefs });
+  trackEvent('preferences_saved', { gender, age_group, size, location, shelter: areaState.shelter || 'all', ...lifestylePrefs });
 
   // If in browse mode, stay in browse and refresh results; otherwise go to app view
   if (typeof isBrowseMode !== 'undefined' && isBrowseMode) {
@@ -403,7 +432,7 @@ async function handleSavePreferences() {
 
 async function resetPreferences() {
   // 1. Clear local state
-  currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any' };
+  currentPrefs = { gender: 'any', age_group: 'any', size: 'any', location: 'any', shelter: null };
   lifestylePrefs = {
     energy: 'any',
     altered: 'any',
@@ -426,7 +455,9 @@ async function resetPreferences() {
   setupSelectorButtons('prefGenderGroup', 'any');
   setupSelectorButtons('prefAgeGroup', 'any');
   setupSelectorButtons('prefSizeGroup', 'any');
-  setupSelectorButtons('prefLocationGroup', 'any');
+  prefStagedFilter = { location: 'all', shelter: null };
+  renderPrefAreaControls();
+  if (typeof renderFilterControls === 'function') renderFilterControls();
   setupSelectorButtons('prefEnergyGroup', 'any');
   setupSelectorButtons('prefAlteredGroup', 'any');
   lifestyleButtons.forEach(item => setupToggleBadge(item.id, false));

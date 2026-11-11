@@ -58,39 +58,45 @@ function pronounForGender(genderStr) {
   return 'them';
 }
 
+// Dog routes: /dogs/<id>, /dogs/<loc>/<id>, /dogs/<loc>/<shelterSlug>/<id>.
+// /dogs/<loc> and /dogs/<loc>/<shelterSlug> are scope-only (no dog).
 function getDogIdFromPath(pathname) {
   const path = pathname || window.location.pathname;
-  const matchWithLoc = path.match(/^\/dogs\/[^/]+\/([^/?#]+)\/?$/);
-  if (matchWithLoc) return decodeURIComponent(matchWithLoc[1]);
-  const match = path.match(/^\/dogs\/([^/?#]+)\/?$/);
-  if (match) {
-    const val = decodeURIComponent(match[1]);
+  const segs = path.split(/[?#]/)[0].split('/').filter(Boolean);
+  if (segs[0] !== 'dogs') return null;
+  const rest = segs.slice(1).map(s => { try { return decodeURIComponent(s); } catch (_) { return s; } });
+  if (rest.length >= 3) return rest[2];
+  if (rest.length === 2) {
+    if (typeof isShelterSlugPath === 'function' && isShelterSlugPath(rest[0], rest[1])) return null;
+    return rest[1];
+  }
+  if (rest.length === 1) {
+    const val = rest[0];
     if (window.__CH_INITIAL_LOCATION__ === '/' + val) return null;
+    if (typeof isLocationPathSegment === 'function' && isLocationPathSegment(val)) return null;
     return val;
   }
   return null;
 }
 
+// Canonical / share URL — location-only by design (subsequent dogs come from the whole location).
 function getCanonicalDogUrl(animalId, locationPathOverride) {
   let locPath;
   if (locationPathOverride !== undefined) {
     locPath = locationPathOverride;
   } else {
-    const sel = document.getElementById('headerLocationSelect');
-    locPath = sel && sel.value !== 'any' ? sel.value : '';
+    locPath = currentPrefs.location === 'any' ? '' : getFilterLocationPath();
   }
   if (locPath === 'all') locPath = '/alldogs';
   if (!animalId) return CH_CANONICAL_ORIGIN + '/';
   return `${CH_CANONICAL_ORIGIN}/dogs${locPath}/${encodeURIComponent(animalId)}`;
 }
 
+// Address bar — includes the shelter slug when a shelter filter is active.
 function updateDogShareUrl(animalId, replace) {
   if (!animalId) return;
-  const sel = document.getElementById('headerLocationSelect');
-  let locPath = sel && sel.value !== 'any' ? sel.value : '';
-  if (locPath === 'all') locPath = '/alldogs';
-  const target = `/dogs${locPath}/${encodeURIComponent(animalId)}`;
-  const state = { dogId: animalId, locationPath: locPath };
+  const target = buildFilterUrl(undefined, animalId);
+  const state = { dogId: animalId, filter: getFilterState() };
   if (replace) {
     history.replaceState(state, '', target);
   } else {

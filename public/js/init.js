@@ -1,115 +1,19 @@
 // ─── App Initialization ─────────────────────────────────────────────────────
 // Startup, route handling, event listener wiring, and locations population
 
-// ─── Locations Data Population ───────────────────────────────────────────
+// ─── Locations + Shelters Data Population ───────────────────────────────
+// Feeds the shared Location/Shelter filter (filters.js). Initial scope comes from the
+// URL when present (/nyc, /nyc/bideawee, /dogs/nyc/..., /dogs/alldogs/...), else stored prefs.
 window.__CH_LOCATIONS_PROMISE__ = (async function populateLocations() {
   try {
     const locUrl = userEmail ? '/api/locations?email=' + encodeURIComponent(userEmail) : '/api/locations';
     const res = await fetch(locUrl);
     if (res.ok) {
       const data = await res.json();
-      const group = document.getElementById('prefLocationGroup');
-      const headerSelect = document.getElementById('headerLocationSelect');
       if (data.locations) {
         window.__CH_LOCATIONS_DATA__ = data.locations;
-        
-        if (group) {
-          group.innerHTML = '<button class="pref-btn" data-value="all">All Locations 🌎</button>';
-          data.locations.forEach(loc => {
-            const btn = document.createElement('button');
-            btn.className = 'pref-btn';
-            btn.dataset.value = loc.display_name;
-            btn.textContent = loc.display_name;
-            group.appendChild(btn);
-          });
-        }
-        
-        if (headerSelect) {
-          headerSelect.innerHTML = '<option value="any" style="display:none;">Select Location...</option><option value="all" style="color: black;">All Locations 🌎</option>';
-          data.locations.forEach(loc => {
-            const opt = document.createElement('option');
-            opt.value = loc.relative_path;
-            opt.style.color = 'black';
-            opt.textContent = loc.display_name;
-            headerSelect.appendChild(opt);
-          });
-        }
-
-        // Determine initial location from injected meta or preferences
-        const initLoc = window.__CH_INITIAL_LOCATION__ || null;
-        if (initLoc && headerSelect) {
-          if (initLoc === '/alldogs') {
-            headerSelect.value = 'all';
-            setupSelectorButtons('prefLocationGroup', 'all');
-            currentPrefs.location = 'all';
-          } else {
-            headerSelect.value = initLoc;
-            // Also update preferences modal silently
-            const locObj = data.locations.find(l => l.relative_path === initLoc);
-            if (locObj) {
-              setupSelectorButtons('prefLocationGroup', locObj.display_name);
-              currentPrefs.location = locObj.display_name;
-            }
-          }
-        } else if (currentPrefs && currentPrefs.location) {
-          setupSelectorButtons('prefLocationGroup', currentPrefs.location);
-          if (currentPrefs.location === 'all' && headerSelect) {
-            headerSelect.value = 'all';
-          } else {
-            const locObj = data.locations.find(l => l.display_name === currentPrefs.location);
-            if (locObj && headerSelect) headerSelect.value = locObj.relative_path;
-          }
-        }
-
-        // Helper: toggle glow indicator on mobile when a specific location is active
-        function updateLocationIndicator() {
-          if (!headerSelect) return;
-          const v = headerSelect.value;
-          headerSelect.classList.toggle('location-active', v !== 'any' && v !== 'all');
-        }
-        updateLocationIndicator();
-
-        // Bind event listener to headerLocationSelect
-        if (headerSelect) {
-          headerSelect.addEventListener('change', async (e) => {
-            const selectedPath = e.target.value;
-            const locObj = data.locations.find(l => l.relative_path === selectedPath);
-            
-            // Update preferences
-            const prevLocation = currentPrefs.location || 'any';
-            const newLocName = locObj ? locObj.display_name : (selectedPath === 'all' ? 'all' : 'any');
-            currentPrefs.location = newLocName;
-            localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-            setupSelectorButtons('prefLocationGroup', newLocName);
-            updateLocationIndicator();
-
-            trackEvent('location_changed', { from_location: prevLocation, to_location: newLocName });
-            
-            // Check if current dog matches new location
-            let shouldKeepDog = false;
-            if ((selectedPath === 'all' || selectedPath === 'any') && currentDogData) {
-              shouldKeepDog = true;
-            } else if (locObj && currentDogData && currentDogData.shelter_id) {
-              if (locObj.shelter_ids.includes(currentDogData.shelter_id)) {
-                shouldKeepDog = true;
-              }
-            }
-            
-            if (shouldKeepDog) {
-              // Just update URL and stay
-              let targetUrl = `/dogs/${currentDogData.animal_id}`;
-              if (selectedPath === 'all') targetUrl = `/dogs/alldogs/${currentDogData.animal_id}`;
-              else if (selectedPath !== 'any') targetUrl = `/dogs${selectedPath}/${currentDogData.animal_id}`;
-              window.location.href = targetUrl;
-            } else {
-              // Redirect to the new location path (will trigger a new random fetch)
-              let targetUrl = '/dogs';
-              if (selectedPath === 'all') targetUrl = '/dogs/alldogs';
-              else if (selectedPath !== 'any') targetUrl = `/dogs${selectedPath}`;
-              window.location.href = targetUrl;
-            }
-          });
-        }
+        window.__CH_SHELTERS_DATA__ = data.shelters || [];
+        initFilterState();
       }
     }
   } catch (e) {
@@ -207,14 +111,7 @@ if (landingStartBtn) {
     const detectedCity = window.__CH_DETECTED_CITY__;
     if (detectedCity && (!currentPrefs.location || currentPrefs.location === 'any' || currentPrefs.location === 'all')) {
       await window.__CH_LOCATIONS_PROMISE__;  // ensure locations data is loaded
-      currentPrefs.location = detectedCity;
-      localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-      setupSelectorButtons('prefLocationGroup', detectedCity);
-      const headerSelect = document.getElementById('headerLocationSelect');
-      if (headerSelect) {
-        const locObj = (window.__CH_LOCATIONS_DATA__ || []).find(l => l.display_name === detectedCity);
-        if (locObj) headerSelect.value = locObj.relative_path;
-      }
+      setFilterState({ location: detectedCity, shelter: null }, { source: 'detect', track: false });
     } else if (!currentPrefs.location || currentPrefs.location === 'any' || currentPrefs.location === 'all') {
       // Fallback: try API detection
       try {
@@ -223,14 +120,7 @@ if (landingStartBtn) {
         if (detectRes.ok) {
           const detectData = await detectRes.json();
           if (detectData.location) {
-            currentPrefs.location = detectData.location;
-            localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-            setupSelectorButtons('prefLocationGroup', detectData.location);
-            const headerSelect = document.getElementById('headerLocationSelect');
-            if (headerSelect) {
-              const locObj = (window.__CH_LOCATIONS_DATA__ || []).find(l => l.display_name === detectData.location);
-              if (locObj) headerSelect.value = locObj.relative_path;
-            }
+            setFilterState({ location: detectData.location, shelter: null }, { source: 'detect', track: false });
           }
         }
       } catch (e) {
@@ -297,6 +187,14 @@ if (dogUnavailableCtaBtn) {
 
 
 window.addEventListener('popstate', () => {
+  // Restore the Location/Shelter scope encoded in the path (no history push, no refetch here)
+  if (typeof applyFilterFromPath === 'function') applyFilterFromPath(window.location.pathname);
+  if (typeof closeFilterPanel === 'function') closeFilterPanel({ returnFocus: false });
+
+  if (typeof isBrowseMode !== 'undefined' && isBrowseMode) {
+    openBrowseView();
+    return;
+  }
   const routeDogId = getDogIdFromPath();
   if (routeDogId) {
     openSharedDogFromRoute(routeDogId);

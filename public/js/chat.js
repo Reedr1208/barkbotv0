@@ -347,9 +347,9 @@ function buildRecommendationCard(dog, index) {
   img.alt = dog.name ? `${dog.name}, adoptable dog` : 'Adoptable dog';
   img.loading = 'lazy';
   img.decoding = 'async';
-  img.src = dog.image_url || 'happy_rescue_pup.png';
+  img.src = dog.image_url || '/happy_rescue_pup.png';
   img.addEventListener('error', () => {
-    if (!img.src.endsWith('happy_rescue_pup.png')) img.src = 'happy_rescue_pup.png';
+    if (!img.src.endsWith('happy_rescue_pup.png')) img.src = '/happy_rescue_pup.png';
   }, { once: true });
   photo.appendChild(img);
 

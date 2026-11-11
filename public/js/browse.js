@@ -9,6 +9,7 @@ const browseEmpty = document.getElementById('browseEmpty');
 
 // Track whether we're currently in browse mode (used by preferences.js)
 let isBrowseMode = false;
+let browseFetchToken = 0;
 
 async function openBrowseView(returnTo) {
   isBrowseMode = true;
@@ -20,8 +21,8 @@ async function openBrowseView(returnTo) {
   if (browseEmpty) browseEmpty.style.display = 'none';
   if (browseCount) browseCount.textContent = '';
 
-  // Sync the browse location selector with the main one
-  syncBrowseLocationSelect();
+  // Keep the browse filter chip in sync with the shared Location/Shelter state
+  if (typeof renderFilterControls === 'function') renderFilterControls();
 
   // Build query params from current preferences
   const params = new URLSearchParams({ email: userEmail });
@@ -29,20 +30,30 @@ async function openBrowseView(returnTo) {
   if (currentPrefs.age_group && currentPrefs.age_group !== 'any') params.set('age_group', currentPrefs.age_group);
   if (currentPrefs.size && currentPrefs.size !== 'any') params.set('size', currentPrefs.size);
   if (currentPrefs.location && currentPrefs.location !== 'any') params.set('location', currentPrefs.location);
+  if (currentPrefs.shelter) params.set('shelter', currentPrefs.shelter);
   if (lifestylePrefs.energy && lifestylePrefs.energy !== 'any') params.set('energy', lifestylePrefs.energy);
   if (lifestylePrefs.altered && lifestylePrefs.altered !== 'any') params.set('altered', lifestylePrefs.altered);
   if (lifestylePrefs.dogs) params.set('dogs', 'true');
   if (lifestylePrefs.houseTrained) params.set('house_trained', 'true');
 
+  const fetchToken = ++browseFetchToken;
   try {
     const res = await fetch(`/api/browse_dogs?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch dogs');
     const data = await res.json();
+    if (fetchToken !== browseFetchToken) return; // a newer filter change superseded this request
 
     if (browseLoading) browseLoading.style.display = 'none';
 
     if (!data.dogs || data.dogs.length === 0) {
-      if (browseEmpty) browseEmpty.style.display = 'flex';
+      if (browseEmpty) {
+        browseEmpty.style.display = 'flex';
+        const emptyP = browseEmpty.querySelector('p');
+        const scopeName = currentPrefs.shelter && typeof describeShelterScope === 'function' ? describeShelterScope() : '';
+        if (emptyP) emptyP.textContent = scopeName
+          ? `No dogs at ${scopeName} match your current preferences.`
+          : 'No dogs match your current preferences.';
+      }
       if (browseCount) browseCount.textContent = '0 dogs';
       return;
     }
@@ -53,16 +64,18 @@ async function openBrowseView(returnTo) {
     const fragment = document.createDocumentFragment();
     for (const dog of data.dogs) {
       const tile = document.createElement('a');
-      const path = dog.relative_path ? `/dogs${dog.relative_path}/${dog.animal_id}` : `/dogs/${dog.animal_id}`;
+      const path = typeof buildFilterUrl === 'function'
+        ? buildFilterUrl(undefined, dog.animal_id)
+        : (dog.relative_path ? `/dogs${dog.relative_path}/${dog.animal_id}` : `/dogs/${dog.animal_id}`);
       tile.href = path;
       tile.className = 'browse-tile';
       tile.setAttribute('data-animal-id', dog.animal_id);
 
       const img = document.createElement('img');
-      img.src = dog.image_url || 'happy_rescue_pup.png';
+      img.src = dog.image_url || '/happy_rescue_pup.png';
       img.alt = dog.name;
       img.loading = 'lazy';
-      img.onerror = function() { this.src = 'happy_rescue_pup.png'; };
+      img.onerror = function() { this.src = '/happy_rescue_pup.png'; };
       tile.appendChild(img);
 
       const info = document.createElement('div');
@@ -85,6 +98,7 @@ async function openBrowseView(returnTo) {
     browseGrid.appendChild(fragment);
 
   } catch (err) {
+    if (fetchToken !== browseFetchToken) return;
     console.error('Browse dogs error:', err);
     if (browseLoading) browseLoading.style.display = 'none';
     if (browseEmpty) {
@@ -98,24 +112,13 @@ async function openBrowseView(returnTo) {
 function closeBrowseView() {
   isBrowseMode = false;
   switchView('app');
-}
-
-// Sync the browse location dropdown with the main header's location dropdown
-function syncBrowseLocationSelect() {
-  const mainSelect = document.getElementById('headerLocationSelect');
-  const browseSelect = document.getElementById('browseLocationSelect');
-  if (!mainSelect || !browseSelect) return;
-
-  // Copy options from main select
-  browseSelect.innerHTML = '';
-  for (const opt of mainSelect.options) {
-    const newOpt = document.createElement('option');
-    newOpt.value = opt.value;
-    newOpt.textContent = opt.textContent;
-    newOpt.style.color = 'black';
-    browseSelect.appendChild(newOpt);
+  // If the filter changed while browsing and the dog on screen no longer fits, meet a new one.
+  const dogShown = currentDogData && document.body.dataset.chAppState === 'dog_loaded';
+  if (typeof dogMatchesFilter === 'function' && (!dogShown || !dogMatchesFilter(currentDogData))) {
+    fetchRandomDog();
+  } else if (currentDogData && currentDogData.animal_id) {
+    updateDogShareUrl(currentDogData.animal_id, true);
   }
-  browseSelect.value = mainSelect.value;
 }
 
 // ─── Event listeners ──────────────────────────────────────────────
@@ -180,18 +183,4 @@ function updateBrowseSavedBtn() {
   }
 }
 
-// Browse location selector — change location and refresh browse
-const browseLocationSelect = document.getElementById('browseLocationSelect');
-if (browseLocationSelect) {
-  browseLocationSelect.addEventListener('change', (e) => {
-    const val = e.target.value;
-    // Sync to main header select
-    const mainSelect = document.getElementById('headerLocationSelect');
-    if (mainSelect) mainSelect.value = val;
-    // Update prefs
-    currentPrefs.location = val === 'any' ? 'any' : browseLocationSelect.options[browseLocationSelect.selectedIndex].textContent.trim();
-    localStorage.setItem('chattyhound_prefs', JSON.stringify(currentPrefs));
-    // Refresh browse
-    openBrowseView();
-  });
-}
+// Browse location/shelter filtering is handled by the shared filter chip (see filters.js)

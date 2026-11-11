@@ -17,7 +17,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 # Configure logging before anything else
 logging.basicConfig(
@@ -201,6 +201,14 @@ async def serve_static_or_spa(filename: str, request: Request):
             return FileResponse(file_path, media_type="image/webp")
         return FileResponse(file_path)
 
+    # Trailing-slash app URLs (/dogs/nyc/, /nyc/bideawee/) would otherwise fall through
+    # to raw index.html, whose relative asset paths break under nested paths.
+    if filename.endswith("/") and filename.strip("/") and not filename.startswith("api/"):
+        target = "/" + filename.strip("/")
+        if request.url.query:
+            target += "?" + request.url.query
+        return RedirectResponse(url=target, status_code=301)
+
     # Check if this is a known location slug (e.g. /tucson → "Tucson, AZ 🌵")
     slug = filename.strip("/").lower()
     if slug and "/" not in slug:
@@ -218,6 +226,17 @@ async def serve_static_or_spa(filename: str, request: Request):
                 )
                 html_content = html_content.replace("<body>", f"<body>\n{bootstrap}", 1)
                 return HTMLResponse(content=html_content, headers={"Cache-Control": "public, max-age=300"})
+
+    # Shareable shelter link: /<location_slug>/<shelter_slug> (e.g. /nyc/bideawee)
+    parts = [p for p in slug.split("/") if p]
+    if len(parts) == 2 and parts[0] in _get_location_slugs():
+        from routes.shelter_slugs import resolve_shelter_slug
+        shelter = resolve_shelter_slug(parts[0], parts[1])
+        if shelter:
+            from routes.dog_meta_routes import render_shelter_scope_html
+            return HTMLResponse(content=render_shelter_scope_html(shelter), headers={"Cache-Control": "public, max-age=300"})
+        # Unknown / retired shelter slug → fall back to the location scope.
+        return RedirectResponse(url="/" + parts[0], status_code=302)
 
     # Fallback: serve index.html (SPA routing)
     index_path = os.path.join(PUBLIC_DIR, "index.html")

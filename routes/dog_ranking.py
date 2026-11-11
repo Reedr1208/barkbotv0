@@ -72,6 +72,7 @@ def apply_hard_filters(valid_ids, active_dogs, shelters_map, preferences):
 
     Filters applied (in order):
       1. Location
+      1b. Shelter     (single shelter_id; "any"/"all"/empty = no filter)
       2. Gender
       3. Age bucket   (unknowns pass through)
       4. Weight class  (unknowns pass through)
@@ -81,6 +82,7 @@ def apply_hard_filters(valid_ids, active_dogs, shelters_map, preferences):
       8. House trained  (strict — confirmed "yes" only)
     """
     pref_location = (preferences.get("location") or "any").strip()
+    pref_shelter  = (preferences.get("shelter") or "any").strip()
     pref_gender   = (preferences.get("gender") or "any").strip().lower()
     pref_age      = (preferences.get("age_group") or "any").strip().lower()
     pref_size     = (preferences.get("size") or "any").strip().lower()
@@ -96,6 +98,12 @@ def apply_hard_filters(valid_ids, active_dogs, shelters_map, preferences):
         ids = [aid for aid in ids
                if _clean_loc(pref_location) ==
                   _clean_loc(shelters_map.get(active_dogs[aid].get("shelter_id"), {}).get("location_display_name", ""))]
+
+    # 1b. Shelter
+    if pref_shelter.lower() not in ("any", "all", ""):
+        want = pref_shelter.upper()
+        ids = [aid for aid in ids
+               if (active_dogs[aid].get("shelter_id") or "").upper() == want]
 
     # 2. Gender
     if pref_gender != "any":

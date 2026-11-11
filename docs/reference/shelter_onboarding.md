@@ -102,7 +102,9 @@ Dry-run the parsers locally (no writes) against the live site; check names, gend
 | `public/js/preferences.js` | New metro only: add `'City, ST {emoji}'` to `regionCoords` (browser geolocation). Use the **exact** emoji stored in `location_display_name`. Then run `node build.js`. |
 | `routes/recommender.py` | New metro only: add to `METRO_COORDS` ("nearby" suggestions). |
 
-No changes are needed for browse/search/random-dog, SEO dog pages, `/{slug}` location routing, share URLs, or the recommender SQL view — they are data-driven from `shelters` / `active_dogs`.
+No changes are needed for browse/search/random-dog, SEO dog pages, `/{slug}` location routing, share URLs, the Shelter filter, or the recommender SQL view — they are data-driven from `shelters` / `active_dogs`.
+
+> **Shelter filter URLs:** the shelter's URL slug (e.g. `/nyc/bideawee`) is derived from `shelters.shelter_name` (`routes/shelter_slugs.py`). Pick the display name carefully. Renaming a shelter later changes its shareable URL, and old links fall back to the location scope.
 
 ---
 

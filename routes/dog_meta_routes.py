@@ -16,6 +16,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from routes.deps import get_supabase_client, get_image_base_url
+from routes.shelter_slugs import resolve_shelter_slug
 
 router = APIRouter()
 logger = logging.getLogger("barkbot.dog_meta")
@@ -101,8 +102,11 @@ def _fetch_dog_profile(animal_id):
     return profile
 
 
-def _inject_head(html_text, meta, dog_id, image_url, location_path=None):
-    if location_path and dog_id:
+def _inject_head(html_text, meta, dog_id, image_url, location_path=None, shelter_slug=None,
+                 canonical_override=None, detected_city=None):
+    if canonical_override:
+        canonical = canonical_override
+    elif location_path and dog_id:
         canonical = f"{CANONICAL_ORIGIN}/dogs{location_path}/{dog_id}"
     elif location_path:
         canonical = f"{CANONICAL_ORIGIN}/dogs{location_path}"
@@ -155,12 +159,40 @@ def _inject_head(html_text, meta, dog_id, image_url, location_path=None):
 
     extra = "window.__CH_DOG_UNAVAILABLE__=true;" if meta.get("unavailable") else ""
     loc_js = f"window.__CH_INITIAL_LOCATION__={json.dumps(location_path)};" if location_path else ""
+    shelter_js = f"window.__CH_INITIAL_SHELTER__={json.dumps(shelter_slug)};" if shelter_slug else ""
+    city_js = f"window.__CH_DETECTED_CITY__={json.dumps(detected_city)};" if detected_city else ""
     bootstrap = (
-        f'<script>{extra}{loc_js}window.__CH_INITIAL_DOG_ID__={json.dumps(dog_id)};'
+        f'<script>{extra}{city_js}{loc_js}{shelter_js}window.__CH_INITIAL_DOG_ID__={json.dumps(dog_id)};'
         f'window.__CH_PAGE_META__={json.dumps(meta)};</script>\n'
     )
     out = out.replace("<body>", f"<body>\n{bootstrap}", 1)
     return out
+
+
+def _shelter_scope_meta(shelter):
+    name = shelter.get("name") or "this shelter"
+    loc = re.sub(r"[^\w\s,.'&-]", "", shelter.get("location") or "").strip()
+    where = f" in {loc}" if loc else ""
+    return {
+        "title": f"Adoptable dogs at {name} | ChattyHound",
+        "og_title": f"Meet adoptable dogs from {name} on ChattyHound",
+        "description": f"Chat with adoptable rescue dogs from {name}{where} on ChattyHound, then continue to the official shelter page.",
+        "share_text": f"Meet adoptable dogs from {name} on ChattyHound.",
+    }
+
+
+def render_shelter_scope_html(shelter):
+    """
+    HTML for a shelter-scoped landing (/<loc>/<shelter> or /dogs/<loc>/<shelter>).
+    Boots the SPA with the shelter filter pre-selected.
+    """
+    loc_path = shelter.get("relative_path") or ""
+    canonical = f"{CANONICAL_ORIGIN}{loc_path}/{shelter['slug']}"
+    return _inject_head(
+        _load_index_html(), _shelter_scope_meta(shelter), "", DEFAULT_OG_IMAGE,
+        location_path=loc_path, shelter_slug=shelter["slug"],
+        canonical_override=canonical, detected_city=shelter.get("location") or None,
+    )
 
 
 def _load_index_html():
@@ -183,9 +215,15 @@ def _load_index_html():
     raise RuntimeError(f"index.html not found. Searched: {candidates}")
 
 
+@router.get("/dogs/{path1}/{path2}/{path3}")
+async def dog_meta_three_parts(path1: str, path2: str, path3: str, request: Request):
+    """Handle /dogs/<location>/<shelter_slug>/<dog_id>."""
+    return await _handle_dog_meta(request, path1, path2, path3)
+
+
 @router.get("/dogs/{path1}/{path2}")
 async def dog_meta_two_parts(path1: str, path2: str, request: Request):
-    """Handle /dogs/<location>/<dog_id> or /dogs/<path1>/<path2>."""
+    """Handle /dogs/<location>/<dog_id>, /dogs/<location>/<shelter_slug>, or /dogs/<path1>/<path2>."""
     return await _handle_dog_meta(request, path1, path2)
 
 
@@ -195,28 +233,40 @@ async def dog_meta_one_part(path1: str, request: Request):
     return await _handle_dog_meta(request, path1, "")
 
 
-async def _handle_dog_meta(request: Request, path1: str, path2: str):
+async def _handle_dog_meta(request: Request, path1: str, path2: str, path3: str = ""):
     """Core logic for the /dogs/ SSR route."""
     try:
         dog_id = ""
         location_path = None
+        shelter = None
 
         client = get_supabase_client()
 
         if path1:
             if path1 == "alldogs":
                 location_path = "/alldogs"
-                if path2:
-                    dog_id = path2
+                dog_id = path3 or path2
             else:
                 shelters_res = client.table("shelters").select("relative_path").eq("relative_path", "/" + path1).limit(1).execute()
                 if shelters_res.data:
                     location_path = "/" + path1
                     if path2:
-                        dog_id = path2
+                        # A second segment may be a shelter slug (shelter filter) or a dog id.
+                        shelter = resolve_shelter_slug(path1, path2, client)
+                        if shelter:
+                            dog_id = path3
+                        else:
+                            # Unknown/retired shelter slug with a dog → fall back to location scope.
+                            dog_id = path3 or path2
                 else:
                     if not dog_id:
                         dog_id = path1
+
+        if shelter and not dog_id:
+            html_out = render_shelter_scope_html(shelter)
+            return HTMLResponse(content=html_out, headers={"Cache-Control": "public, max-age=300"})
+
+        shelter_slug = shelter["slug"] if shelter else None
 
         if location_path and not dog_id:
             html_text = _load_index_html()
@@ -243,12 +293,13 @@ async def _handle_dog_meta(request: Request, path1: str, path2: str):
                 "share_text": "",
                 "unavailable": True,
             }
-            html_out = _inject_head(html_text, unavailable_meta, dog_id, DEFAULT_OG_IMAGE, location_path)
+            html_out = _inject_head(html_text, unavailable_meta, dog_id, DEFAULT_OG_IMAGE, location_path, shelter_slug)
             return HTMLResponse(content=html_out, headers={"Cache-Control": "public, max-age=300"})
 
         meta = _build_meta_copy(profile)
         image_url = _dog_image_url(profile)
-        html_out = _inject_head(html_text, meta, dog_id, image_url, location_path)
+        # Canonical stays location-only (/dogs/<loc>/<id>) even when a shelter filter is in the path.
+        html_out = _inject_head(html_text, meta, dog_id, image_url, location_path, shelter_slug)
         return HTMLResponse(content=html_out, headers={"Cache-Control": "public, max-age=300"})
 
     except Exception as e:
